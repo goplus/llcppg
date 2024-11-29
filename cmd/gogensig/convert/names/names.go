@@ -5,7 +5,14 @@ import (
 	"strings"
 )
 
-func RemovePrefixedName(name string, trimPrefixes []string) string {
+func GoName(name string, trimPrefixes []string, inCurPkg bool) string {
+	if inCurPkg {
+		name = removePrefixedName(name, trimPrefixes)
+	}
+	return PubName(name)
+}
+
+func removePrefixedName(name string, trimPrefixes []string) string {
 	if len(trimPrefixes) == 0 {
 		return name
 	}
@@ -17,7 +24,7 @@ func RemovePrefixedName(name string, trimPrefixes []string) string {
 	return name
 }
 
-func CPubName(name string) string {
+func PubName(name string) string {
 	if len(name) == 0 {
 		return name
 	}
