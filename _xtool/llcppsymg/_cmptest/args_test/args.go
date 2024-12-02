@@ -51,7 +51,7 @@ func TestParseArgs() {
 		fmt.Printf("Test case: %s\n", tc.name)
 		fmt.Printf("Input: %v\n", tc.input)
 
-		result, filteredArgs := args.ParseArgs(tc.input, swflags)
+		result, filteredArgs := args.ParseArgs(tc.input, args.LLCPPG_CFG, swflags)
 
 		fmt.Printf("Help: %v\n", result.Help)
 		fmt.Printf("Verbose: %v\n", result.Verbose)

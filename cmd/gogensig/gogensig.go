@@ -17,10 +17,13 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
@@ -36,25 +39,38 @@ func runGoCmds(wd, pkg string) {
 }
 
 func main() {
+	ags, remainArgs := args.ParseArgs(os.Args[1:], args.LLCPPG_SIGFETCH, nil)
+
+	if ags.Help {
+		fmt.Fprintln(os.Stderr, "Usage: gogensig [sigfetch-file]")
+		return
+	}
+
+	if ags.Verbose {
+		convert.SetDebug(convert.DbgFlagAll)
+	}
+
 	var data []byte
 	var err error
-	if len(os.Args) <= 1 {
-		os.Exit(1)
-	}
-
-	sigfetchFile := "llcppg.sigfetch.json"
-	if len(os.Args) > 1 {
-		sigfetchFile = os.Args[1]
-	}
-
-	if sigfetchFile == "-" {
+	if ags.UseStdin {
 		data, err = io.ReadAll(os.Stdin)
 	} else {
-		data, err = os.ReadFile(sigfetchFile)
+		data, err = os.ReadFile(ags.CfgFile)
 	}
 	check(err)
 
-	conf, err := config.GetCppgCfgFromPath("./llcppg.cfg")
+	var cfg string
+	for i := 0; i < len(remainArgs); i++ {
+		arg := remainArgs[i]
+		if strings.HasPrefix(arg, "-cfg=") {
+			cfg = args.StringArg(arg, args.LLCPPG_CFG)
+		}
+	}
+	if cfg == "" {
+		cfg = args.LLCPPG_CFG
+	}
+
+	conf, err := config.GetCppgCfgFromPath(cfg)
 	check(err)
 
 	wd, err := os.Getwd()
@@ -65,8 +81,8 @@ func main() {
 	p, _, err := basic.ConvertProcesser(&basic.Config{
 		AstConvertConfig: convert.AstConvertConfig{
 			PkgName:  conf.Name,
+			CfgFile:  filepath.Join(wd, cfg),
 			SymbFile: filepath.Join(wd, "llcppg.symb.json"),
-			CfgFile:  filepath.Join(wd, "llcppg.cfg"),
 			PubFile:  filepath.Join(wd, "llcppg.pub"),
 		},
 	})
