@@ -1,0 +1,449 @@
+[{
+		"mangle":	"cJSON_AddArrayToObject",
+		"c++":	"cJSON_AddArrayToObject(cJSON *const, const char *const)",
+		"go":	"(*CJSON).AddArrayToObject"
+	}, {
+		"mangle":	"cJSON_AddBoolToObject",
+		"c++":	"cJSON_AddBoolToObject(cJSON *const, const char *const, const cJSON_bool)",
+		"go":	"(*CJSON).AddBoolToObject"
+	}, {
+		"mangle":	"cJSON_AddFalseToObject",
+		"c++":	"cJSON_AddFalseToObject(cJSON *const, const char *const)",
+		"go":	"(*CJSON).AddFalseToObject"
+	}, {
+		"mangle":	"cJSON_AddItemReferenceToArray",
+		"c++":	"cJSON_AddItemReferenceToArray(cJSON *, cJSON *)",
+		"go":	"(*CJSON).AddItemReferenceToArray"
+	}, {
+		"mangle":	"cJSON_AddItemReferenceToObject",
+		"c++":	"cJSON_AddItemReferenceToObject(cJSON *, const char *, cJSON *)",
+		"go":	"(*CJSON).AddItemReferenceToObject"
+	}, {
+		"mangle":	"cJSON_AddItemToArray",
+		"c++":	"cJSON_AddItemToArray(cJSON *, cJSON *)",
+		"go":	"(*CJSON).AddItemToArray"
+	}, {
+		"mangle":	"cJSON_AddItemToObject",
+		"c++":	"cJSON_AddItemToObject(cJSON *, const char *, cJSON *)",
+		"go":	"(*CJSON).AddItemToObject"
+	}, {
+		"mangle":	"cJSON_AddItemToObjectCS",
+		"c++":	"cJSON_AddItemToObjectCS(cJSON *, const char *, cJSON *)",
+		"go":	"(*CJSON).AddItemToObjectCS"
+	}, {
+		"mangle":	"cJSON_AddNullToObject",
+		"c++":	"cJSON_AddNullToObject(cJSON *const, const char *const)",
+		"go":	"(*CJSON).AddNullToObject"
+	}, {
+		"mangle":	"cJSON_AddNumberToObject",
+		"c++":	"cJSON_AddNumberToObject(cJSON *const, const char *const, const double)",
+		"go":	"(*CJSON).AddNumberToObject"
+	}, {
+		"mangle":	"cJSON_AddObjectToObject",
+		"c++":	"cJSON_AddObjectToObject(cJSON *const, const char *const)",
+		"go":	"(*CJSON).AddObjectToObject"
+	}, {
+		"mangle":	"cJSON_AddRawToObject",
+		"c++":	"cJSON_AddRawToObject(cJSON *const, const char *const, const char *const)",
+		"go":	"(*CJSON).AddRawToObject"
+	}, {
+		"mangle":	"cJSON_AddStringToObject",
+		"c++":	"cJSON_AddStringToObject(cJSON *const, const char *const, const char *const)",
+		"go":	"(*CJSON).AddStringToObject"
+	}, {
+		"mangle":	"cJSON_AddTrueToObject",
+		"c++":	"cJSON_AddTrueToObject(cJSON *const, const char *const)",
+		"go":	"(*CJSON).AddTrueToObject"
+	}, {
+		"mangle":	"cJSON_Compare",
+		"c++":	"cJSON_Compare(const cJSON *const, const cJSON *const, const cJSON_bool)",
+		"go":	"(*CJSON).Compare"
+	}, {
+		"mangle":	"cJSON_CreateArray",
+		"c++":	"cJSON_CreateArray()",
+		"go":	"CreateArray"
+	}, {
+		"mangle":	"cJSON_CreateArrayReference",
+		"c++":	"cJSON_CreateArrayReference(const cJSON *)",
+		"go":	"(*CJSON).CreateArrayReference"
+	}, {
+		"mangle":	"cJSON_CreateBool",
+		"c++":	"cJSON_CreateBool(cJSON_bool)",
+		"go":	"(Bool).CreateBool"
+	}, {
+		"mangle":	"cJSON_CreateDoubleArray",
+		"c++":	"cJSON_CreateDoubleArray(const double *, int)",
+		"go":	"CreateDoubleArray"
+	}, {
+		"mangle":	"cJSON_CreateFalse",
+		"c++":	"cJSON_CreateFalse()",
+		"go":	"CreateFalse"
+	}, {
+		"mangle":	"cJSON_CreateFloatArray",
+		"c++":	"cJSON_CreateFloatArray(const float *, int)",
+		"go":	"CreateFloatArray"
+	}, {
+		"mangle":	"cJSON_CreateIntArray",
+		"c++":	"cJSON_CreateIntArray(const int *, int)",
+		"go":	"CreateIntArray"
+	}, {
+		"mangle":	"cJSON_CreateNull",
+		"c++":	"cJSON_CreateNull()",
+		"go":	"CreateNull"
+	}, {
+		"mangle":	"cJSON_CreateNumber",
+		"c++":	"cJSON_CreateNumber(double)",
+		"go":	"CreateNumber"
+	}, {
+		"mangle":	"cJSON_CreateObject",
+		"c++":	"cJSON_CreateObject()",
+		"go":	"CreateObject"
+	}, {
+		"mangle":	"cJSON_CreateObjectReference",
+		"c++":	"cJSON_CreateObjectReference(const cJSON *)",
+		"go":	"(*CJSON).CreateObjectReference"
+	}, {
+		"mangle":	"cJSON_CreateRaw",
+		"c++":	"cJSON_CreateRaw(const char *)",
+		"go":	"CreateRaw"
+	}, {
+		"mangle":	"cJSON_CreateString",
+		"c++":	"cJSON_CreateString(const char *)",
+		"go":	"CreateString"
+	}, {
+		"mangle":	"cJSON_CreateStringArray",
+		"c++":	"cJSON_CreateStringArray(const char *const *, int)",
+		"go":	"CreateStringArray"
+	}, {
+		"mangle":	"cJSON_CreateStringReference",
+		"c++":	"cJSON_CreateStringReference(const char *)",
+		"go":	"CreateStringReference"
+	}, {
+		"mangle":	"cJSON_CreateTrue",
+		"c++":	"cJSON_CreateTrue()",
+		"go":	"CreateTrue"
+	}, {
+		"mangle":	"cJSON_Delete",
+		"c++":	"cJSON_Delete(cJSON *)",
+		"go":	"(*CJSON).Delete"
+	}, {
+		"mangle":	"cJSON_DeleteItemFromArray",
+		"c++":	"cJSON_DeleteItemFromArray(cJSON *, int)",
+		"go":	"(*CJSON).DeleteItemFromArray"
+	}, {
+		"mangle":	"cJSON_DeleteItemFromObject",
+		"c++":	"cJSON_DeleteItemFromObject(cJSON *, const char *)",
+		"go":	"(*CJSON).DeleteItemFromObject"
+	}, {
+		"mangle":	"cJSON_DeleteItemFromObjectCaseSensitive",
+		"c++":	"cJSON_DeleteItemFromObjectCaseSensitive(cJSON *, const char *)",
+		"go":	"(*CJSON).DeleteItemFromObjectCaseSensitive"
+	}, {
+		"mangle":	"cJSON_DetachItemFromArray",
+		"c++":	"cJSON_DetachItemFromArray(cJSON *, int)",
+		"go":	"(*CJSON).DetachItemFromArray"
+	}, {
+		"mangle":	"cJSON_DetachItemFromObject",
+		"c++":	"cJSON_DetachItemFromObject(cJSON *, const char *)",
+		"go":	"(*CJSON).DetachItemFromObject"
+	}, {
+		"mangle":	"cJSON_DetachItemFromObjectCaseSensitive",
+		"c++":	"cJSON_DetachItemFromObjectCaseSensitive(cJSON *, const char *)",
+		"go":	"(*CJSON).DetachItemFromObjectCaseSensitive"
+	}, {
+		"mangle":	"cJSON_DetachItemViaPointer",
+		"c++":	"cJSON_DetachItemViaPointer(cJSON *, cJSON *const)",
+		"go":	"(*CJSON).DetachItemViaPointer"
+	}, {
+		"mangle":	"cJSON_Duplicate",
+		"c++":	"cJSON_Duplicate(const cJSON *, cJSON_bool)",
+		"go":	"(*CJSON).Duplicate"
+	}, {
+		"mangle":	"cJSON_GetArrayItem",
+		"c++":	"cJSON_GetArrayItem(const cJSON *, int)",
+		"go":	"(*CJSON).GetArrayItem"
+	}, {
+		"mangle":	"cJSON_GetArraySize",
+		"c++":	"cJSON_GetArraySize(const cJSON *)",
+		"go":	"(*CJSON).GetArraySize"
+	}, {
+		"mangle":	"cJSON_GetErrorPtr",
+		"c++":	"cJSON_GetErrorPtr()",
+		"go":	"GetErrorPtr"
+	}, {
+		"mangle":	"cJSON_GetNumberValue",
+		"c++":	"cJSON_GetNumberValue(const cJSON *const)",
+		"go":	"(*CJSON).GetNumberValue"
+	}, {
+		"mangle":	"cJSON_GetObjectItem",
+		"c++":	"cJSON_GetObjectItem(const cJSON *const, const char *const)",
+		"go":	"(*CJSON).GetObjectItem"
+	}, {
+		"mangle":	"cJSON_GetObjectItemCaseSensitive",
+		"c++":	"cJSON_GetObjectItemCaseSensitive(const cJSON *const, const char *const)",
+		"go":	"(*CJSON).GetObjectItemCaseSensitive"
+	}, {
+		"mangle":	"cJSON_GetStringValue",
+		"c++":	"cJSON_GetStringValue(const cJSON *const)",
+		"go":	"(*CJSON).GetStringValue"
+	}, {
+		"mangle":	"cJSON_HasObjectItem",
+		"c++":	"cJSON_HasObjectItem(const cJSON *, const char *)",
+		"go":	"(*CJSON).HasObjectItem"
+	}, {
+		"mangle":	"cJSON_InitHooks",
+		"c++":	"cJSON_InitHooks(cJSON_Hooks *)",
+		"go":	"(*Hooks).InitHooks"
+	}, {
+		"mangle":	"cJSON_InsertItemInArray",
+		"c++":	"cJSON_InsertItemInArray(cJSON *, int, cJSON *)",
+		"go":	"(*CJSON).InsertItemInArray"
+	}, {
+		"mangle":	"cJSON_IsArray",
+		"c++":	"cJSON_IsArray(const cJSON *const)",
+		"go":	"(*CJSON).IsArray"
+	}, {
+		"mangle":	"cJSON_IsBool",
+		"c++":	"cJSON_IsBool(const cJSON *const)",
+		"go":	"(*CJSON).IsBool"
+	}, {
+		"mangle":	"cJSON_IsFalse",
+		"c++":	"cJSON_IsFalse(const cJSON *const)",
+		"go":	"(*CJSON).IsFalse"
+	}, {
+		"mangle":	"cJSON_IsInvalid",
+		"c++":	"cJSON_IsInvalid(const cJSON *const)",
+		"go":	"(*CJSON).IsInvalid"
+	}, {
+		"mangle":	"cJSON_IsNull",
+		"c++":	"cJSON_IsNull(const cJSON *const)",
+		"go":	"(*CJSON).IsNull"
+	}, {
+		"mangle":	"cJSON_IsNumber",
+		"c++":	"cJSON_IsNumber(const cJSON *const)",
+		"go":	"(*CJSON).IsNumber"
+	}, {
+		"mangle":	"cJSON_IsObject",
+		"c++":	"cJSON_IsObject(const cJSON *const)",
+		"go":	"(*CJSON).IsObject"
+	}, {
+		"mangle":	"cJSON_IsRaw",
+		"c++":	"cJSON_IsRaw(const cJSON *const)",
+		"go":	"(*CJSON).IsRaw"
+	}, {
+		"mangle":	"cJSON_IsString",
+		"c++":	"cJSON_IsString(const cJSON *const)",
+		"go":	"(*CJSON).IsString"
+	}, {
+		"mangle":	"cJSON_IsTrue",
+		"c++":	"cJSON_IsTrue(const cJSON *const)",
+		"go":	"(*CJSON).IsTrue"
+	}, {
+		"mangle":	"cJSON_Minify",
+		"c++":	"cJSON_Minify(char *)",
+		"go":	"Minify"
+	}, {
+		"mangle":	"cJSON_Parse",
+		"c++":	"cJSON_Parse(const char *)",
+		"go":	"Parse"
+	}, {
+		"mangle":	"cJSON_ParseWithLength",
+		"c++":	"cJSON_ParseWithLength(const char *, size_t)",
+		"go":	"ParseWithLength"
+	}, {
+		"mangle":	"cJSON_ParseWithLengthOpts",
+		"c++":	"cJSON_ParseWithLengthOpts(const char *, size_t, const char **, cJSON_bool)",
+		"go":	"ParseWithLengthOpts"
+	}, {
+		"mangle":	"cJSON_ParseWithOpts",
+		"c++":	"cJSON_ParseWithOpts(const char *, const char **, cJSON_bool)",
+		"go":	"ParseWithOpts"
+	}, {
+		"mangle":	"cJSON_Print",
+		"c++":	"cJSON_Print(const cJSON *)",
+		"go":	"(*CJSON).Print"
+	}, {
+		"mangle":	"cJSON_PrintBuffered",
+		"c++":	"cJSON_PrintBuffered(const cJSON *, int, cJSON_bool)",
+		"go":	"(*CJSON).PrintBuffered"
+	}, {
+		"mangle":	"cJSON_PrintPreallocated",
+		"c++":	"cJSON_PrintPreallocated(cJSON *, char *, const int, const cJSON_bool)",
+		"go":	"(*CJSON).PrintPreallocated"
+	}, {
+		"mangle":	"cJSON_PrintUnformatted",
+		"c++":	"cJSON_PrintUnformatted(const cJSON *)",
+		"go":	"(*CJSON).PrintUnformatted"
+	}, {
+		"mangle":	"cJSON_ReplaceItemInArray",
+		"c++":	"cJSON_ReplaceItemInArray(cJSON *, int, cJSON *)",
+		"go":	"(*CJSON).ReplaceItemInArray"
+	}, {
+		"mangle":	"cJSON_ReplaceItemInObject",
+		"c++":	"cJSON_ReplaceItemInObject(cJSON *, const char *, cJSON *)",
+		"go":	"(*CJSON).ReplaceItemInObject"
+	}, {
+		"mangle":	"cJSON_ReplaceItemInObjectCaseSensitive",
+		"c++":	"cJSON_ReplaceItemInObjectCaseSensitive(cJSON *, const char *, cJSON *)",
+		"go":	"(*CJSON).ReplaceItemInObjectCaseSensitive"
+	}, {
+		"mangle":	"cJSON_ReplaceItemViaPointer",
+		"c++":	"cJSON_ReplaceItemViaPointer(cJSON *const, cJSON *const, cJSON *)",
+		"go":	"(*CJSON).ReplaceItemViaPointer"
+	}, {
+		"mangle":	"cJSON_SetNumberHelper",
+		"c++":	"cJSON_SetNumberHelper(cJSON *, double)",
+		"go":	"(*CJSON).SetNumberHelper"
+	}, {
+		"mangle":	"cJSON_SetValuestring",
+		"c++":	"cJSON_SetValuestring(cJSON *, const char *)",
+		"go":	"(*CJSON).SetValuestring"
+	}, {
+		"mangle":	"cJSON_Version",
+		"c++":	"cJSON_Version()",
+		"go":	"Version"
+	}, {
+		"mangle":	"cJSON_free",
+		"c++":	"cJSON_free(void *)",
+		"go":	"Free"
+	}, {
+		"mangle":	"cJSON_malloc",
+		"c++":	"cJSON_malloc(size_t)",
+		"go":	"Malloc"
+	}, {
+		"mangle":	"cJSONUtils_AddPatchToArray",
+		"c++":	"cJSONUtils_AddPatchToArray(cJSON *const, const char *const, const char *const, const cJSON *const)",
+		"go":	"(*CJSON).AddPatchToArray"
+	}, {
+		"mangle":	"cJSONUtils_ApplyPatches",
+		"c++":	"cJSONUtils_ApplyPatches(cJSON *const, const cJSON *const)",
+		"go":	"(*CJSON).ApplyPatches"
+	}, {
+		"mangle":	"cJSONUtils_ApplyPatchesCaseSensitive",
+		"c++":	"cJSONUtils_ApplyPatchesCaseSensitive(cJSON *const, const cJSON *const)",
+		"go":	"(*CJSON).ApplyPatchesCaseSensitive"
+	}, {
+		"mangle":	"cJSONUtils_FindPointerFromObjectTo",
+		"c++":	"cJSONUtils_FindPointerFromObjectTo(const cJSON *const, const cJSON *const)",
+		"go":	"(*CJSON).FindPointerFromObjectTo"
+	}, {
+		"mangle":	"cJSONUtils_GenerateMergePatch",
+		"c++":	"cJSONUtils_GenerateMergePatch(cJSON *const, cJSON *const)",
+		"go":	"(*CJSON).GenerateMergePatch"
+	}, {
+		"mangle":	"cJSONUtils_GenerateMergePatchCaseSensitive",
+		"c++":	"cJSONUtils_GenerateMergePatchCaseSensitive(cJSON *const, cJSON *const)",
+		"go":	"(*CJSON).GenerateMergePatchCaseSensitive"
+	}, {
+		"mangle":	"cJSONUtils_GeneratePatches",
+		"c++":	"cJSONUtils_GeneratePatches(cJSON *const, cJSON *const)",
+		"go":	"(*CJSON).GeneratePatches"
+	}, {
+		"mangle":	"cJSONUtils_GeneratePatchesCaseSensitive",
+		"c++":	"cJSONUtils_GeneratePatchesCaseSensitive(cJSON *const, cJSON *const)",
+		"go":	"(*CJSON).GeneratePatchesCaseSensitive"
+	}, {
+		"mangle":	"cJSONUtils_GetPointer",
+		"c++":	"cJSONUtils_GetPointer(cJSON *const, const char *)",
+		"go":	"(*CJSON).GetPointer"
+	}, {
+		"mangle":	"cJSONUtils_GetPointerCaseSensitive",
+		"c++":	"cJSONUtils_GetPointerCaseSensitive(cJSON *const, const char *)",
+		"go":	"(*CJSON).GetPointerCaseSensitive"
+	}, {
+		"mangle":	"cJSONUtils_MergePatch",
+		"c++":	"cJSONUtils_MergePatch(cJSON *, const cJSON *const)",
+		"go":	"(*CJSON).MergePatch"
+	}, {
+		"mangle":	"cJSONUtils_MergePatchCaseSensitive",
+		"c++":	"cJSONUtils_MergePatchCaseSensitive(cJSON *, const cJSON *const)",
+		"go":	"(*CJSON).MergePatchCaseSensitive"
+	}, {
+		"mangle":	"cJSONUtils_SortObject",
+		"c++":	"cJSONUtils_SortObject(cJSON *const)",
+		"go":	"(*CJSON).SortObject"
+	}, {
+		"mangle":	"cJSONUtils_SortObjectCaseSensitive",
+		"c++":	"cJSONUtils_SortObjectCaseSensitive(cJSON *const)",
+		"go":	"(*CJSON).SortObjectCaseSensitive"
+	}, {
+		"mangle":	"cJSON_AddItemToArray",
+		"c++":	"cJSON_AddItemToArray(cJSON *, cJSON *)",
+		"go":	"(*CJSON).AddItemToArray"
+	}, {
+		"mangle":	"cJSON_AddItemToObject",
+		"c++":	"cJSON_AddItemToObject(cJSON *, const char *, cJSON *)",
+		"go":	"(*CJSON).AddItemToObject"
+	}, {
+		"mangle":	"cJSON_CreateArray",
+		"c++":	"cJSON_CreateArray()",
+		"go":	"CreateArray"
+	}, {
+		"mangle":	"cJSON_CreateNull",
+		"c++":	"cJSON_CreateNull()",
+		"go":	"CreateNull"
+	}, {
+		"mangle":	"cJSON_CreateObject",
+		"c++":	"cJSON_CreateObject()",
+		"go":	"CreateObject"
+	}, {
+		"mangle":	"cJSON_CreateString",
+		"c++":	"cJSON_CreateString(const char *)",
+		"go":	"CreateString"
+	}, {
+		"mangle":	"cJSON_Delete",
+		"c++":	"cJSON_Delete(cJSON *)",
+		"go":	"(*CJSON).Delete"
+	}, {
+		"mangle":	"cJSON_DeleteItemFromObject",
+		"c++":	"cJSON_DeleteItemFromObject(cJSON *, const char *)",
+		"go":	"(*CJSON).DeleteItemFromObject"
+	}, {
+		"mangle":	"cJSON_DeleteItemFromObjectCaseSensitive",
+		"c++":	"cJSON_DeleteItemFromObjectCaseSensitive(cJSON *, const char *)",
+		"go":	"(*CJSON).DeleteItemFromObjectCaseSensitive"
+	}, {
+		"mangle":	"cJSON_DetachItemFromObject",
+		"c++":	"cJSON_DetachItemFromObject(cJSON *, const char *)",
+		"go":	"(*CJSON).DetachItemFromObject"
+	}, {
+		"mangle":	"cJSON_DetachItemFromObjectCaseSensitive",
+		"c++":	"cJSON_DetachItemFromObjectCaseSensitive(cJSON *, const char *)",
+		"go":	"(*CJSON).DetachItemFromObjectCaseSensitive"
+	}, {
+		"mangle":	"cJSON_Duplicate",
+		"c++":	"cJSON_Duplicate(const cJSON *, cJSON_bool)",
+		"go":	"(*CJSON).Duplicate"
+	}, {
+		"mangle":	"cJSON_GetObjectItem",
+		"c++":	"cJSON_GetObjectItem(const cJSON *const, const char *const)",
+		"go":	"(*CJSON).GetObjectItem"
+	}, {
+		"mangle":	"cJSON_GetObjectItemCaseSensitive",
+		"c++":	"cJSON_GetObjectItemCaseSensitive(const cJSON *const, const char *const)",
+		"go":	"(*CJSON).GetObjectItemCaseSensitive"
+	}, {
+		"mangle":	"cJSON_IsArray",
+		"c++":	"cJSON_IsArray(const cJSON *const)",
+		"go":	"(*CJSON).IsArray"
+	}, {
+		"mangle":	"cJSON_IsNull",
+		"c++":	"cJSON_IsNull(const cJSON *const)",
+		"go":	"(*CJSON).IsNull"
+	}, {
+		"mangle":	"cJSON_IsObject",
+		"c++":	"cJSON_IsObject(const cJSON *const)",
+		"go":	"(*CJSON).IsObject"
+	}, {
+		"mangle":	"cJSON_IsString",
+		"c++":	"cJSON_IsString(const cJSON *const)",
+		"go":	"(*CJSON).IsString"
+	}, {
+		"mangle":	"cJSON_free",
+		"c++":	"cJSON_free(void *)",
+		"go":	"Free"
+	}, {
+		"mangle":	"cJSON_malloc",
+		"c++":	"cJSON_malloc(size_t)",
+		"go":	"Malloc"
+	}]
