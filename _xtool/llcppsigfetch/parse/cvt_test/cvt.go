@@ -6,7 +6,6 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/c/clang"
 )
 
@@ -32,13 +31,13 @@ func RunTestWithConfig(config *clangutils.Config) {
 		panic(err)
 	}
 
-	result := converter.MarshalASTFiles()
-	str := result.Print()
-	c.Printf(c.Str("%s\n\n"), str)
+	// result := converter.MarshalASTFiles()
+	// str := result.Print()
+	// c.Printf(c.Str("%s\n\n"), str)
 
-	cjson.FreeCStr(str)
-	result.Delete()
-	converter.Dispose()
+	// cjson.FreeCStr(str)
+	// result.Delete()
+	// converter.Dispose()
 }
 
 type GetTypeOptions struct {

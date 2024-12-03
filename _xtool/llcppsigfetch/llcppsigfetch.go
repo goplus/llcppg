@@ -28,9 +28,11 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
-	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/cjson"
 )
+
+// var (
+// 	verbose = false
+// )
 
 func main() {
 	ags, remainArgs := args.ParseArgs(os.Args[1:], map[string]bool{
@@ -173,8 +175,6 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 	})
 	err = context.ProcessFiles(files)
 	check(err)
-
-	outputInfo(context, outputToFile)
 }
 
 func runExtract(file string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
@@ -188,40 +188,12 @@ func runExtract(file string, isTemp bool, isCpp bool, outToFile bool, otherArgs 
 	check(err)
 	_, err = converter.Convert()
 	check(err)
-	result := converter.MarshalOutputASTFiles()
-	cstr := result.Print()
-	outputResult(cstr, outToFile)
-	cjson.FreeCStr(cstr)
-	result.Delete()
-	converter.Dispose()
 }
 
 func check(err error) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func outputResult(result *c.Char, outputToFile bool) {
-	if outputToFile {
-		outputFile := "llcppg.sigfetch.json"
-		err := os.WriteFile(outputFile, []byte(c.GoString(result)), 0644)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error writing to output file: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Fprintf(os.Stderr, "Results saved to %s\n", outputFile)
-	} else {
-		c.Printf(c.Str("%s"), result)
-	}
-}
-
-func outputInfo(context *parse.Context, outputToFile bool) {
-	info := context.Output()
-	str := info.Print()
-	defer cjson.FreeCStr(str)
-	defer info.Delete()
-	outputResult(str, outputToFile)
 }
 
 func parseBoolArg(arg, name string, defaultValue bool) bool {

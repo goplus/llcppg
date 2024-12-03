@@ -59,6 +59,12 @@ func (p *Context) ProcessFiles(files []string) error {
 		if err := p.processFile(file); err != nil {
 			return err
 		}
+		if debugParse {
+			fmt.Fprintln(os.Stderr, "ProcessFiles: processFileEnd: files")
+			for _, file := range p.Files {
+				fmt.Fprintln(os.Stderr, file.Path)
+			}
+		}
 	}
 	return nil
 }
@@ -77,8 +83,17 @@ func (p *Context) processFile(path string) error {
 		}
 	}
 	parsedFiles, err := p.parseFile(path)
+	if debugParse {
+		fmt.Fprintln(os.Stderr, "(p *Context) parseFile()end in (p *Context) processFile")
+	}
 	if err != nil {
 		return errors.New("failed to parse file: " + path)
+	}
+	if debugParse {
+		fmt.Fprintln(os.Stderr, "processFile: parseFileEnd: files")
+		for _, file := range parsedFiles {
+			fmt.Fprintln(os.Stderr, file.Path)
+		}
 	}
 
 	p.Files = append(p.Files, parsedFiles...)
@@ -115,12 +130,26 @@ func (p *Context) parseFile(path string) ([]*FileEntry, error) {
 		}
 	}
 
+	if debugParse {
+		fmt.Fprintln(os.Stderr, "parseFile: entryFile.Path", entryFile.Path, "entryFile.IncPath", entryFile.IncPath)
+	}
+
 	if entryFile.IncPath == "" {
 		return nil, errors.New("entry file " + entryFile.Path + " is not in include list")
 	}
 
 	if err != nil {
 		return nil, err
+	}
+
+	if debugParse {
+		fmt.Fprintln(os.Stderr, "parseFile: parseFileEnd: files")
+		for _, file := range files {
+			fmt.Fprintln(os.Stderr, file.Path)
+		}
+	}
+	if debugParse {
+		fmt.Fprintln(os.Stderr, "(p *Context) parseFile()end 3")
 	}
 
 	return files, nil
