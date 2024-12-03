@@ -31,7 +31,7 @@ import (
 func main() {
 	symbFile := "llcppg.symb.json"
 
-	ags, _ := args.ParseArgs(os.Args[1:], nil)
+	ags, _ := args.ParseArgs(os.Args[1:], args.LLCPPG_CFG, nil)
 
 	var data []byte
 	var err error

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
@@ -33,7 +32,7 @@ import (
 )
 
 func main() {
-	ags, remainArgs := args.ParseArgs(os.Args[1:], map[string]bool{
+	ags, remainArgs := args.ParseArgs(os.Args[1:], args.LLCPPG_CFG, map[string]bool{
 		"--extract": true,
 	})
 
@@ -66,11 +65,11 @@ func main() {
 				os.Exit(1)
 			}
 		case strings.HasPrefix(arg, "-out="):
-			out = parseBoolArg(arg, "out", false)
+			out = args.BoolArg(arg, false)
 		case strings.HasPrefix(arg, "-temp="):
-			isTemp = parseBoolArg(arg, "temp", false)
+			isTemp = args.BoolArg(arg, false)
 		case strings.HasPrefix(arg, "-cpp="):
-			isCpp = parseBoolArg(arg, "cpp", true)
+			isCpp = args.BoolArg(arg, true)
 		default:
 			otherArgs = append(otherArgs, arg)
 		}
@@ -222,18 +221,4 @@ func outputInfo(context *parse.Context, outputToFile bool) {
 	defer cjson.FreeCStr(str)
 	defer info.Delete()
 	outputResult(str, outputToFile)
-}
-
-func parseBoolArg(arg, name string, defaultValue bool) bool {
-	parts := strings.SplitN(arg, "=", 2)
-	if len(parts) != 2 {
-		fmt.Fprintf(os.Stderr, "Warning: Invalid -%s= argument, defaulting to %v\n", name, defaultValue)
-		return defaultValue
-	}
-	value, err := strconv.ParseBool(parts[1])
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: Invalid -%s= value '%s', defaulting to %v\n", name, parts[1], defaultValue)
-		return defaultValue
-	}
-	return value
 }

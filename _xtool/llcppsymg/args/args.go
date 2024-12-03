@@ -1,6 +1,14 @@
 package args
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
+
+const LLCPPG_CFG = "llcppg.cfg"
+const LLCPPG_SYMB = "llcppg.symb.json"
+const LLCPPG_SIGFETCH = "llcppg.sigfetch.json"
+const LLCPPG_PUB = "llcppg.pub"
 
 type Args struct {
 	Help     bool
@@ -9,7 +17,7 @@ type Args struct {
 	CfgFile  string
 }
 
-func ParseArgs(args []string, swflags map[string]bool) (*Args, []string) {
+func ParseArgs(args []string, defaultCfgFile string, swflags map[string]bool) (*Args, []string) {
 	result := &Args{}
 	filteredArgs := []string{}
 	for i := 0; i < len(args); i++ {
@@ -45,7 +53,27 @@ func ParseArgs(args []string, swflags map[string]bool) (*Args, []string) {
 		}
 	}
 	if result.CfgFile == "" {
-		result.CfgFile = "llcppg.cfg"
+		result.CfgFile = defaultCfgFile
 	}
 	return result, filteredArgs
+}
+
+func BoolArg(arg string, defaultValue bool) bool {
+	parts := strings.SplitN(arg, "=", 2)
+	if len(parts) != 2 {
+		return defaultValue
+	}
+	value, err := strconv.ParseBool(parts[1])
+	if err != nil {
+		return defaultValue
+	}
+	return value
+}
+
+func StringArg(arg string, defaultValue string) string {
+	parts := strings.SplitN(arg, "=", 2)
+	if len(parts) != 2 {
+		return defaultValue
+	}
+	return parts[1]
 }
