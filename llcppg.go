@@ -25,8 +25,8 @@ import (
 	"os/exec"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
+	"github.com/goplus/llcppg/cmd/llcppcfg/llcppgcfg"
 	"github.com/goplus/llcppg/types"
-	"github.com/goplus/llgo/xtool/env"
 )
 
 var verbose bool
@@ -64,6 +64,14 @@ func gogensig(in io.Reader, cfg string) error {
 	return cmd.Run()
 }
 
+func marshalConf(conf *types.Config, expandLibs bool) ([]byte, error) {
+	conf.Include, conf.CFlags = llcppgcfg.ExpandCflags(conf.CFlags)
+	if expandLibs {
+		conf.Libs = llcppgcfg.ExpandString(conf.Libs)
+	}
+	return json.MarshalIndent(&conf, "", "  ")
+}
+
 func main() {
 	ags, _ := args.ParseArgs(os.Args[1:], args.LLCPPG_CFG, nil)
 	if ags.Help {
@@ -76,12 +84,10 @@ func main() {
 	check(err)
 	defer f.Close()
 
-	var conf types.Config
-	json.NewDecoder(f).Decode(&conf)
-	conf.CFlags = env.ExpandEnv(conf.CFlags)
-	conf.Libs = env.ExpandEnv(conf.Libs)
-
-	b, err := json.MarshalIndent(&conf, "", "  ")
+	var llcppsymgConf types.Config
+	json.NewDecoder(f).Decode(&llcppsymgConf)
+	gogensigConf := llcppsymgConf
+	b, err := marshalConf(&llcppsymgConf, true)
 	check(err)
 
 	err = llcppsymg(b)
@@ -90,7 +96,14 @@ func main() {
 	r, w := io.Pipe()
 	go llcppsigfetch(b, w)
 
-	err = gogensig(r, ags.CfgFile)
+	b, err = marshalConf(&gogensigConf, false)
+	check(err)
+
+	changedCfgFile := ags.CfgFile + ".changed"
+	err = os.WriteFile(changedCfgFile, b, 0644)
+	check(err)
+
+	err = gogensig(r, changedCfgFile)
 	check(err)
 }
 
