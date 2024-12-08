@@ -1,0 +1,4 @@
+github.com/goplus/llgo v0.9.9-0.20241205041715-4bec9b038b9a h1:y3A8lD07qeu2LDIhFWTpAjDTxgAB3wyls3Lm5pSUKtI=
+github.com/goplus/llgo v0.9.9-0.20241205041715-4bec9b038b9a/go.mod h1:1phqPJEgr/uw59PRz/NB7s54OoP+NGjC6pz0HovT5JY=
+github.com/tsingbx/libcjson v1.0.5 h1:dzCv/wCjmLUrgjEwmf4GA5sFFipe6v7rem2fhPc6lCU=
+github.com/tsingbx/libcjson v1.0.5/go.mod h1:HNIZd0xqEkxPLnjawBBLcAgW2UF5cG1L+MLUAS1aAC4=
