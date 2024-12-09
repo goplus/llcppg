@@ -16,12 +16,18 @@ brew install cjson # macos
 apt-get install libcjson-dev # linux
 llgo install ./_xtool/llcppsymg
 llgo install ./_xtool/llcppsigfetch
+go install ./cmd/llcppcfg
 go install ./cmd/gogensig
 go install .
 ```
 
 
 ## Usage
+
+```sh
+llcppcfg [libname]
+```
+llcppcfg tool is used to generate llcppg.cfg file. llcppg.cfg file is a configure file used by llcppg. Once llcppg.cfg is generated then you can run llcppg command to generate go pacakge for the c/c++ lib.
 
 ```sh
 llcppg [config-file]
