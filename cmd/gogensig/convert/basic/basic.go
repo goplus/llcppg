@@ -10,6 +10,8 @@ import (
 // For a default full convert processing,for main logic
 type Config struct {
 	convert.AstConvertConfig
+	// PkgPreprocessor is called after package initialization but before creating FileSet
+	PkgPreprocessor func(*convert.Package)
 }
 
 func ConvertProcesser(cfg *Config) (*processor.DocFileSetProcessor, *convert.Package, error) {
@@ -23,15 +25,23 @@ func ConvertProcesser(cfg *Config) (*processor.DocFileSetProcessor, *convert.Pac
 	if err != nil {
 		return nil, nil, err
 	}
+	if cfg.PkgPreprocessor != nil {
+		cfg.PkgPreprocessor(astConvert.Pkg)
+	}
 	docVisitors := []visitor.DocVisitor{astConvert}
 	visitorManager := processor.NewDocVisitorManager(docVisitors)
+
+	incs, err := astConvert.Pkg.InitDeps()
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
 		Exec: func(file *unmarshal.FileEntry) error {
 			visitorManager.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
 			return nil
 		},
-		DepIncs: astConvert.Pkg.AllDepIncs(),
+		DepIncs: incs,
 		Done: func() {
 			astConvert.WriteLinkFile()
 			astConvert.WritePubFile()

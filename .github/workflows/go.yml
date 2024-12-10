@@ -10,18 +10,6 @@ on:
     branches: [ "**" ]
 
 jobs:
-  name: Test demos
-    run: |
-      # TODO(lijie): force python3-embed to be linked with python-3.12-embed
-      # Currently, python3-embed is python-3.13-embed, doesn't work with pytorch
-      # Will remove this after pytorch is fixed.
-      pcdir=$HOME/pc
-      mkdir -p $pcdir
-      libdir=$(pkg-config --variable=libdir python-3.12-embed)
-      echo "libdir: $libdir"
-      ln -s $libdir/pkgconfig/python-3.12-embed.pc $pcdir/python3-embed.pc
-      export PKG_CONFIG_PATH=$pcdir
-      bash .github/workflows/test_demo.sh
 
   test:
     strategy:
@@ -86,6 +74,19 @@ jobs:
     - name: Test with coverage
       if: startsWith(matrix.os, 'macos')
       run: go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
+
+    - name: Test demos
+      run: |
+        # TODO(lijie): force python3-embed to be linked with python-3.12-embed
+        # Currently, python3-embed is python-3.13-embed, doesn't work with pytorch
+        # Will remove this after pytorch is fixed.
+        pcdir=$HOME/pc
+        mkdir -p $pcdir
+        libdir=$(pkg-config --variable=libdir python-3.12-embed)
+        echo "libdir: $libdir"
+        ln -s $libdir/pkgconfig/python-3.12-embed.pc $pcdir/python3-embed.pc
+        export PKG_CONFIG_PATH=$pcdir
+        bash .github/workflows/test_demo.sh
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5

@@ -1,0 +1,1 @@
+typedef int _depcjson_type;

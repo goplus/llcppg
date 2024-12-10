@@ -10,3 +10,14 @@ func (p *AnonymousFuncNotSupportError) Error() string {
 func NewAnonymousFuncNotSupportError() *AnonymousFuncNotSupportError {
 	return &AnonymousFuncNotSupportError{}
 }
+
+type ModNotFoundError struct {
+}
+
+func (p *ModNotFoundError) Error() string {
+	return "go.mod not found"
+}
+
+func NewModNotFoundError() *ModNotFoundError {
+	return &ModNotFoundError{}
+}
