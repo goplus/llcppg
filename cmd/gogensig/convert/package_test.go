@@ -2050,23 +2050,20 @@ func TestImport(t *testing.T) {
 		}
 	})
 	t.Run("invalid include path", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Fatal("expected panic")
-			}
-		}()
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: ".",
 			CppgConf: &cppgtypes.Config{
 				Deps: []string{
 					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpath",
+					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/partfinddep",
 				},
 			},
 		})
-		_, err := pkg.InitDeps()
+		_, err := pkg.LoadDeps()
 		if err != nil {
 			t.Fatal(err)
 		}
+		pkg.DepIncPaths()
 	})
 	t.Run("invalid pub file", func(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
@@ -2091,9 +2088,9 @@ func TestImport(t *testing.T) {
 				},
 			},
 		})
-		_, err := pkg.InitDeps()
+		err := pkg.InitDeps()
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("expected error")
 		}
 		_, err = pkg.Import("github.com/goplus/invaliddep")
 		if err == nil {

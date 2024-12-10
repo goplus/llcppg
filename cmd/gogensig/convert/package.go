@@ -520,6 +520,48 @@ func (p *Package) DeclName(name string, collect bool) (pubName string, changed b
 	return name, changed, nil
 }
 
+// Return all include paths of dependent packages
+func (p *Package) DepIncPaths() []string {
+	visited := make(map[string]bool)
+	var paths []string
+	var collectPaths func(pkg *Pkg)
+	var notFounds map[string][]string // pkgpath -> include path
+	var allfailed []string            // which pkg's header file failed to find any include path
+
+	collectPaths = func(pkg *Pkg) {
+		for _, dep := range pkg.Deps {
+			incPaths, notFnds, err := dep.GetIncPaths()
+			if err != nil {
+				allfailed = append(allfailed, dep.PkgPath)
+			} else if len(notFnds) > 0 {
+				if notFounds == nil {
+					notFounds = make(map[string][]string)
+				}
+				notFounds[dep.PkgPath] = notFnds
+			}
+			for _, path := range incPaths {
+				if !visited[path] {
+					visited[path] = true
+					paths = append(paths, path)
+				}
+			}
+			collectPaths(dep)
+		}
+	}
+	collectPaths(p.Pkg)
+
+	if len(notFounds) > 0 {
+		for pkgPath, notFnds := range notFounds {
+			log.Printf("failed to find some include paths: from %s\n", pkgPath)
+			log.Println(notFnds)
+		}
+	}
+	if len(allfailed) > 0 {
+		log.Println("failed to get any include paths from these package: \n", allfailed)
+	}
+	return paths
+}
+
 type PkgMapping struct {
 	Pattern string
 	Package string
@@ -637,7 +679,7 @@ type Pkg struct {
 	*Module
 	*gogen.Package
 
-	deps     []*Pkg
+	Deps     []*Pkg
 	PkgPath  string              // package path, e.g. github.com/goplus/llgo/cjson
 	Dir      string              // absolute local path of the package
 	CppgConf *cppgtypes.Config   // llcppg.cfg
@@ -660,14 +702,14 @@ func NewPkg(pkgPath string, pkgDir string, mod *Module, genPkg *gogen.Package, c
 // LoadDeps loads direct dependencies of the current package and recursively loads their
 // dependencies, to get the complete dependency.
 func (p *Pkg) LoadDeps() ([]*Pkg, error) {
-	if p.deps != nil {
-		return p.deps, nil
+	if p.Deps != nil {
+		return p.Deps, nil
 	}
 	deps, err := p.Imports(p.CppgConf.Deps)
 	if err != nil {
 		return nil, err
 	}
-	p.deps = deps
+	p.Deps = deps
 	return deps, nil
 }
 
@@ -729,44 +771,31 @@ func (p *Pkg) GetIncPaths() ([]string, []string, error) {
 }
 
 // InitDeps returns all std include paths of dependent packages
-func (p *Pkg) InitDeps() ([]string, error) {
+func (p *Pkg) InitDeps() error {
 	_, err := p.LoadDeps()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return p.RegisterDeps(), nil
+	p.RegisterDeps()
+	return nil
 }
 
 // RegisterDeps registers types from dependent packages into the current conversion project's scope
-func (p *Pkg) RegisterDeps() []string {
-	allDepIncs := make([]string, 0)
-	for _, dep := range p.deps {
-		allDepIncs = append(allDepIncs, p.RegisterDep(dep)...)
+func (p *Pkg) RegisterDeps() {
+	for _, dep := range p.Deps {
+		p.RegisterDep(dep)
 	}
-	return allDepIncs
 }
 
-func (p *Pkg) RegisterDep(dep *Pkg) []string {
-	// todo: check whether the dependent package has been registered
+func (p *Pkg) RegisterDep(dep *Pkg) {
 	if _, ok := dep.regCache[dep.PkgPath]; ok {
-		return []string{}
+		return
 	}
 	dep.regCache[dep.PkgPath] = struct{}{}
-	allDepIncs := make([]string, 0)
 	genPkg := p.Package
 	scope := genPkg.Types.Scope()
-	incPaths, notFounds, err := dep.GetIncPaths()
-	if len(notFounds) > 0 {
-		log.Println("failed to find some include paths: from ", dep.PkgPath, "\n", notFounds)
-		if err != nil {
-			log.Println("failed to get any include paths: from ", dep.PkgPath, err.Error())
-		}
-	}
-	allDepIncs = append(allDepIncs, incPaths...)
-	if len(dep.CppgConf.Deps) > 0 {
-		allDepIncs = append(allDepIncs, dep.RegisterDeps()...)
-	}
 	depPkg := genPkg.Import(dep.PkgPath)
+	dep.RegisterDeps()
 	for cName, pubGoName := range dep.Pubs {
 		if pubGoName == "" {
 			pubGoName = cName
@@ -783,5 +812,4 @@ func (p *Pkg) RegisterDep(dep *Pkg) []string {
 			}
 		}
 	}
-	return allDepIncs
 }
