@@ -147,14 +147,19 @@ func RunCommand(dir, cmdName string, args ...string) error {
 	return execCmd.Run()
 }
 
-func CreateJSONFile(filename string, data interface{}) (string, error) {
+func CreateTmpJSONFile(filename string, data any) (string, error) {
 	filePath := filepath.Join(os.TempDir(), filename)
-	file, err := os.Create(filePath)
+	err := CreateJSONFile(filePath, data)
+	return filePath, err
+}
+
+func CreateJSONFile(filepath string, data any) error {
+	file, err := os.Create(filepath)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer file.Close()
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	return filePath, encoder.Encode(data)
+	return encoder.Encode(data)
 }

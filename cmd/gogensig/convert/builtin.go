@@ -11,12 +11,6 @@ import (
 type BuiltinTypeMap struct {
 	pkgMap         map[string]gogen.PkgRef
 	builtinTypeMap map[ast.BuiltinType]types.Type
-	typeAliases    map[string]typeAliasInfo
-}
-
-type typeAliasInfo struct {
-	Type       types.Type
-	HeaderFile string
 }
 
 func NewBuiltinTypeMapWithPkgRefS(pkgs ...gogen.PkgRef) *BuiltinTypeMap {

@@ -16,8 +16,15 @@ import (
 	cppgtypes "github.com/goplus/llcppg/types"
 )
 
+var dir string
+
 func init() {
 	convert.SetDebug(convert.DbgFlagAll)
+	var err error
+	dir, err = os.Getwd()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TestUnionDecl(t *testing.T) {
@@ -94,7 +101,7 @@ type U struct {
 }
 
 func TestLinkFileOK(t *testing.T) {
-	tempDir, err := os.MkdirTemp("", "test_package_link")
+	tempDir, err := os.MkdirTemp(dir, "test_package_link")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
@@ -113,9 +120,8 @@ func TestLinkFileOK(t *testing.T) {
 }
 
 func TestLinkFileFail(t *testing.T) {
-
 	t.Run("not link lib", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp("", "test_package_link")
+		tempDir, err := os.MkdirTemp(dir, "test_package_link")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
@@ -131,7 +137,7 @@ func TestLinkFileFail(t *testing.T) {
 		}
 	})
 	t.Run("no permission", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp("", "test_package_link")
+		tempDir, err := os.MkdirTemp(dir, "test_package_link")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
@@ -226,7 +232,7 @@ func TestPackageWrite(t *testing.T) {
 	genPath := names.HeaderFileToGo(filePath)
 
 	t.Run("OutputToTempDir", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp("", "test_package_write")
+		tempDir, err := os.MkdirTemp(dir, "test_package_write")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
@@ -235,7 +241,10 @@ func TestPackageWrite(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: tempDir,
 		})
-		pkg.SetCurFile(filePath, incPath, true, true, false)
+		err = pkg.SetCurFile(filePath, incPath, true, true, false)
+		if err != nil {
+			t.Fatalf("SetCurFile method failed: %v", err)
+		}
 		err = pkg.Write(filePath)
 		if err != nil {
 			t.Fatalf("Write method failed: %v", err)
@@ -246,11 +255,7 @@ func TestPackageWrite(t *testing.T) {
 	})
 
 	t.Run("OutputToCurrentDir", func(t *testing.T) {
-		currentDir, err := os.Getwd()
-		if err != nil {
-			t.Fatalf("Failed to get current directory: %v", err)
-		}
-		testpkgDir := filepath.Join(currentDir, "testpkg")
+		testpkgDir := filepath.Join(dir, "testpkg")
 		if err := os.MkdirAll(testpkgDir, 0755); err != nil {
 			t.Fatalf("Failed to create testpkg directory: %v", err)
 		}
@@ -263,7 +268,10 @@ func TestPackageWrite(t *testing.T) {
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: testpkgDir,
 		})
-		pkg.SetCurFile(filePath, incPath, true, true, false)
+		err := pkg.SetCurFile(filePath, incPath, true, true, false)
+		if err != nil {
+			t.Fatalf("SetCurFile method failed: %v", err)
+		}
 		err = pkg.Write(filePath)
 		if err != nil {
 			t.Fatalf("Write method failed: %v", err)
@@ -274,6 +282,11 @@ func TestPackageWrite(t *testing.T) {
 	})
 
 	t.Run("InvalidOutputDir", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("Expected an error for invalid output directory, but got nil")
+			}
+		}()
 		pkg := createTestPkg(t, &convert.PackageConfig{
 			OutputDir: "/nonexistent/directory",
 		})
@@ -284,7 +297,7 @@ func TestPackageWrite(t *testing.T) {
 	})
 
 	t.Run("UnwritableOutputDir", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp("", "test_package_write_unwritable")
+		tempDir, err := os.MkdirTemp(dir, "test_package_write_unwritable")
 		if err != nil {
 			t.Fatalf("Failed to create temporary directory: %v", err)
 		}
@@ -2026,4 +2039,62 @@ func TestIncPathToPkg(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestImport(t *testing.T) {
+	t.Run("invalid mod", func(t *testing.T) {
+		pkg := &convert.Pkg{}
+		_, err := pkg.Import("pkg")
+		if err == nil {
+			t.Fatal("expected error")
+		}
+	})
+	t.Run("invalid include path", func(t *testing.T) {
+		pkg := createTestPkg(t, &convert.PackageConfig{
+			OutputDir: ".",
+			CppgConf: &cppgtypes.Config{
+				Deps: []string{
+					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpath",
+					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/partfinddep",
+				},
+			},
+		})
+		_, err := pkg.LoadDeps()
+		if err != nil {
+			t.Fatal(err)
+		}
+		pkg.DepIncPaths()
+	})
+	t.Run("invalid pub file", func(t *testing.T) {
+		pkg := createTestPkg(t, &convert.PackageConfig{
+			OutputDir: ".",
+			CppgConf: &cppgtypes.Config{
+				Deps: []string{
+					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invalidpub",
+				},
+			},
+		})
+		_, err := pkg.LoadDeps()
+		if err == nil {
+			t.Fatal("expected error")
+		}
+	})
+	t.Run("invalid dep", func(t *testing.T) {
+		pkg := createTestPkg(t, &convert.PackageConfig{
+			OutputDir: ".",
+			CppgConf: &cppgtypes.Config{
+				Deps: []string{
+					"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/invaliddep",
+				},
+			},
+		})
+		err := pkg.InitDeps()
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		_, err = pkg.Import("github.com/goplus/invaliddep")
+		if err == nil {
+			t.Fatal("expected error")
+		}
+	})
 }

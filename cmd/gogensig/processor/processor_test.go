@@ -1,6 +1,7 @@
 package processor_test
 
 import (
+	"errors"
 	"os"
 	"reflect"
 	"testing"
@@ -46,13 +47,17 @@ func TestProcessValidSigfetchContent(t *testing.T) {
 		},
 	}
 
-	tempFileName, err := config.CreateJSONFile("llcppg.sigfetch-test.json", content)
+	tempFileName, err := config.CreateTmpJSONFile("llcppg.sigfetch-test.json", content)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer os.Remove(tempFileName)
 
-	tempDir, err := os.MkdirTemp("", "gogensig-test")
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	tempDir, err := os.MkdirTemp(dir, "gogensig-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,7 +112,7 @@ func TestProcessInvalidSigfetchContent(t *testing.T) {
 	}()
 
 	invalidContent := "invalid json content"
-	tempFileName, err := config.CreateJSONFile("llcppg.sigfetch-panic.json", invalidContent)
+	tempFileName, err := config.CreateTmpJSONFile("llcppg.sigfetch-panic.json", invalidContent)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,20 +141,34 @@ func TestProcessInvalidSigfetchContent(t *testing.T) {
 	}
 }
 
-func TestDefaultExec(t *testing.T) {
+var errCustomExec = errors.New("custom exec error")
+
+func TestCustomExec(t *testing.T) {
+	defer func() {
+		if e := recover(); e == nil {
+			t.Errorf("%s", "expect panic")
+		}
+	}()
 	file := unmarshal.FileSet{
 		{
-			Path:  "foo.h",
+			Path:  "/path/to/foo.h",
 			IsSys: false,
 			Doc:   &ast.File{},
 		},
 	}
-	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{})
-	p.ProcessFileSet(file)
+	p := processor.NewDocFileSetProcessor(&processor.ProcesserConfig{
+		Exec: func(file *unmarshal.FileEntry) error {
+			return errCustomExec
+		},
+	})
+	err := p.ProcessFileSet(file)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestExecOrder(t *testing.T) {
-	depIncs := []string{"int16_t.h"}
+	depIncs := []string{"/path/to/int16_t.h"}
 	fileSet := unmarshal.FileSet{
 		{
 			Path:    "/path/to/foo.h",

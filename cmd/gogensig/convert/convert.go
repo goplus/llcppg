@@ -129,7 +129,13 @@ func (p *AstConvert) VisitTypedefDecl(typedefDecl *ast.TypedefDecl) {
 
 func (p *AstConvert) VisitStart(path string, incPath string, isSys bool) {
 	inPkgIncPath := false
-	incPaths := p.Pkg.GetIncPaths()
+	incPaths, notFounds, err := p.Pkg.GetIncPaths()
+	if len(notFounds) > 0 {
+		log.Println("failed to find some include paths: \n", notFounds)
+		if err != nil {
+			log.Println("failed to get any include paths: \n", err.Error())
+		}
+	}
 	for _, includePath := range incPaths {
 		if includePath == path {
 			inPkgIncPath = true

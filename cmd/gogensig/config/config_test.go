@@ -266,3 +266,46 @@ stdio`
 		t.Fatalf("expect file %s, got error %v", notExistFile, err)
 	}
 }
+
+func TestCreateSONFile(t *testing.T) {
+	type TestConfig struct {
+		Enabled bool   `json:"enabled"`
+		Key     string `json:"key"`
+	}
+
+	testData := TestConfig{
+		Enabled: true,
+		Key:     "test-key",
+	}
+
+	filePath, err := config.CreateTmpJSONFile("test_tmp_config.json", testData)
+	if err != nil {
+		t.Fatalf("Failed to create temporary JSON file: %v", err)
+	}
+	defer os.Remove(filePath)
+
+	_, err = os.Stat(filePath)
+	if os.IsNotExist(err) {
+		t.Fatalf("Temporary JSON file was not created: %v", err)
+	}
+
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatalf("Failed to read temporary JSON file: %v", err)
+	}
+
+	expectedJSON := `{
+  "enabled": true,
+  "key": "test-key"
+}`
+	if strings.TrimSpace(string(content)) != strings.TrimSpace(expectedJSON) {
+		t.Errorf("Temporary JSON file content mismatch. Got:\n%s\nExpected:\n%s", string(content), expectedJSON)
+	}
+}
+
+func TestCreateJSONFileError(t *testing.T) {
+	err := config.CreateJSONFile("/nonexistent/directory/file.json", map[string]string{"key": "value"})
+	if err == nil {
+		t.Fatal("Expected error when creating JSON file in nonexistent directory, but got nil")
+	}
+}
