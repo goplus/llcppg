@@ -41,7 +41,7 @@ type OsslLibCtxSt struct {
 }
 type OSSLLIBCTX OsslLibCtxSt
 //go:linkname ProviderAddBuiltin C.OSSL_PROVIDER_add_builtin
-func ProviderAddBuiltin(*OSSLLIBCTX, name *int8, init_fn *OSSLProviderInitFn2) c.Int
+func ProviderAddBuiltin(*OSSLLIBCTX, name *int8, init_fn OSSLProviderInitFn2) c.Int
 
 ===== llcppg.pub =====
 CallBack

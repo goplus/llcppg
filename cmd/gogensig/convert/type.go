@@ -129,12 +129,22 @@ func (p *TypeConv) handlePointerType(t *ast.PointerType) (types.Type, error) {
 	if p.typeMap.IsVoidType(baseType) {
 		return p.typeMap.CType("Pointer"), nil
 	}
+
+	if p.ctx == Param {
+		if named, ok := baseType.(*types.Named); ok {
+			if _, ok := named.Underlying().(*types.Signature); ok {
+				return baseType, nil
+			}
+		}
+	}
+
 	if baseFuncType, ok := baseType.(*types.Signature); ok {
 		if p.ctx == Record {
 			return p.typeMap.CType("Pointer"), nil
 		}
 		return baseFuncType, nil
 	}
+
 	return types.NewPointer(baseType), nil
 }
 
