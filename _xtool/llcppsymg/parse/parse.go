@@ -104,6 +104,12 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 	if typ.Kind == clang.TypePointer {
 		namedType := typ.PointeeType().NamedType().String()
 		return isInCurPkg, true, names.GoName(clang.GoString(namedType), p.Prefixes, isInCurPkg)
+	} else if typ.Kind == clang.TypeElaborated ||
+		typ.Kind == clang.TypeTypedef {
+		canonicalType := typ.CanonicalType()
+		if canonicalType.Kind == clang.TypePointer {
+			return p.isMethod(canonicalType.TypeDeclaration(), isArg)
+		}
 	}
 	namedType := typ.NamedType().String()
 	return isInCurPkg, false, names.GoName(clang.GoString(namedType), p.Prefixes, isInCurPkg)
