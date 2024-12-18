@@ -1,8 +1,12 @@
 [
-    {
-      "mangle": "lua_getstack",
-      "c++": "lua_getstack",
-      "go": "Getstack"
-    }
-  ]
-  
+  {
+    "mangle": "lua_getstack",
+    "c++": "lua_getstack",
+    "go": "Getstack"
+  },
+  {
+    "mangle": "fts5_extension_function",
+    "c++": "fts5_extension_function",
+    "go": "Fts5ExtensionFunction"
+  }
+]

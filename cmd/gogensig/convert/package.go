@@ -553,18 +553,19 @@ func (p *Package) DeclName(name string) (pubName string, changed bool, err error
 
 // For a decl name, if it's a current package, remove the prefixed name
 func (p *Package) GetGoName(name string) (pubName string, changed bool) {
-	prefixes := []string{}
+	if goName, exists := p.Pubs[name]; exists {
+		if goName == "" {
+			return name, false
+		}
+		return goName, goName != name
+	}
+	var prefixes []string
 	if p.curFile.inCurPkg {
 		prefixes = p.CppgConf.TrimPrefixes
 	}
-	goName, ok := p.Pubs[name]
-	if ok {
-		pubName = goName
-	} else {
-		pubName = names.GoName(name, prefixes)
-	}
-	changed = pubName != name
-	return
+
+	pubName = names.GoName(name, prefixes)
+	return pubName, pubName != name
 }
 
 func (p *Package) CollectNameMapping(originName, newName string) {

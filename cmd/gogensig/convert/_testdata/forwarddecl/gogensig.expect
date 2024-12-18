@@ -84,12 +84,41 @@ type CallInfo struct {
 	Unused [8]uint8
 }
 
+type Fts5ExtensionApi struct {
+	Unused [8]uint8
+}
+
+type Fts5Context struct {
+	Unused [8]uint8
+}
+
+type Fts5PhraseIter struct {
+	A *int8
+	B *int8
+}
+
+type Value struct {
+	Unused [8]uint8
+}
+
+type Context struct {
+	Unused [8]uint8
+}
+// llgo:type C
+type Fts5ExtensionFunction func(*Fts5ExtensionApi, *Fts5Context, *Context, c.Int, **Value)
+
 ===== llcppg.pub =====
+Fts5Context
+Fts5ExtensionApi
+Fts5PhraseIter
 bar Bar
+fts5_extension_function Fts5ExtensionFunction
 lua_Debug Debug
 lua_State State
+sqlite3_context Context
 sqlite3_file File
 sqlite3_io_methods IoMethods
 sqlite3_pcache Pcache
 sqlite3_pcache_methods2 PcacheMethods2
 sqlite3_pcache_page PcachePage
+sqlite3_value Value

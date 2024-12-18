@@ -5,7 +5,6 @@ struct bar
     foo *a;
 };
 
-
 typedef struct sqlite3_file sqlite3_file;
 struct sqlite3_file
 {
@@ -72,4 +71,23 @@ struct lua_Debug
     char short_src[LUA_IDSIZE];
     /* private part */
     struct CallInfo *i_ci; /* active function */
+};
+
+typedef struct Fts5ExtensionApi Fts5ExtensionApi;
+typedef struct Fts5Context Fts5Context;
+typedef struct Fts5PhraseIter Fts5PhraseIter;
+
+typedef struct sqlite3_value sqlite3_value;
+typedef struct sqlite3_context sqlite3_context;
+typedef void (*fts5_extension_function)(const Fts5ExtensionApi *pApi, /* API offered by current FTS version */
+                                        Fts5Context *pFts,            /* First arg to pass to pApi functions */
+                                        sqlite3_context *pCtx,        /* Context for returning result/error */
+                                        int nVal,                     /* Number of values in apVal[] array */
+                                        sqlite3_value **apVal         /* Array of trailing arguments */
+);
+
+struct Fts5PhraseIter
+{
+    const unsigned char *a;
+    const unsigned char *b;
 };
