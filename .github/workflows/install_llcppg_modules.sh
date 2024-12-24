@@ -9,3 +9,4 @@ go install ./cmd/llcppgtest
 llgo install ./_xtool/llcppsymg
 llgo install ./_xtool/llcppsigfetch
 go install ./cmd/gogensig
+go install .
