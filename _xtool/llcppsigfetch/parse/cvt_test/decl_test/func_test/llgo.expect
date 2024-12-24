@@ -13,6 +13,7 @@ TestFuncDecl Case 1:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -56,6 +57,7 @@ TestFuncDecl Case 2:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3fooi",
@@ -76,6 +78,7 @@ TestFuncDecl Case 2:
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}]
@@ -114,6 +117,7 @@ TestFuncDecl Case 3:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3fooiz",
@@ -134,6 +138,7 @@ TestFuncDecl Case 3:
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}, {
@@ -182,6 +187,7 @@ TestFuncDecl Case 4:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3fooid",
@@ -202,6 +208,7 @@ TestFuncDecl Case 4:
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}, {
@@ -217,6 +224,7 @@ TestFuncDecl Case 4:
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"b"
 									}]
 							}]
@@ -258,6 +266,7 @@ TestFuncDecl Case 5:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"add"
 				},
 				"MangledName":	"_ZL3addii",
@@ -278,6 +287,7 @@ TestFuncDecl Case 5:
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}, {
@@ -293,6 +303,7 @@ TestFuncDecl Case 5:
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"b"
 									}]
 							}]
@@ -331,6 +342,7 @@ TestFuncDecl Case 6:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"fntype"
 				},
 				"Type":	{
@@ -355,6 +367,7 @@ TestFuncDecl Case 6:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -398,6 +411,7 @@ TestFuncDecl Case 7:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"fntype"
 				},
 				"Type":	{
@@ -434,10 +448,15 @@ TestFuncDecl Case 7:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"fntype2"
 				},
 				"Type":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"fntype"
 				}
 			}, {
@@ -450,6 +469,7 @@ TestFuncDecl Case 7:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3fool",
@@ -505,6 +525,7 @@ TestFuncDecl Case 8:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"OSSL_CORE_HANDLE"
 				},
 				"Type":	{
@@ -526,6 +547,7 @@ TestFuncDecl Case 8:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"OSSL_DISPATCH"
 				},
 				"Type":	{
@@ -547,6 +569,7 @@ TestFuncDecl Case 8:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"OSSL_provider_init_fn"
 				},
 				"Type":	{
@@ -559,6 +582,10 @@ TestFuncDecl Case 8:
 									"_Type":	"PointerType",
 									"X":	{
 										"_Type":	"Ident",
+										"DefLoc":	{
+											"_Type":	"Location",
+											"File":	"temp.h"
+										},
 										"Name":	"OSSL_CORE_HANDLE"
 									}
 								},
@@ -573,6 +600,10 @@ TestFuncDecl Case 8:
 									"_Type":	"PointerType",
 									"X":	{
 										"_Type":	"Ident",
+										"DefLoc":	{
+											"_Type":	"Location",
+											"File":	"temp.h"
+										},
 										"Name":	"OSSL_DISPATCH"
 									}
 								},
@@ -589,6 +620,10 @@ TestFuncDecl Case 8:
 										"_Type":	"PointerType",
 										"X":	{
 											"_Type":	"Ident",
+											"DefLoc":	{
+												"_Type":	"Location",
+												"File":	"temp.h"
+											},
 											"Name":	"OSSL_DISPATCH"
 										}
 									}
@@ -634,6 +669,7 @@ TestFuncDecl Case 8:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"OSSL_provider_init"
 				},
 				"MangledName":	"_Z18OSSL_provider_initPK16OSSL_CORE_HANDLEPK13OSSL_DISPATCHPS4_PPv",
@@ -647,6 +683,10 @@ TestFuncDecl Case 8:
 									"_Type":	"PointerType",
 									"X":	{
 										"_Type":	"Ident",
+										"DefLoc":	{
+											"_Type":	"Location",
+											"File":	"temp.h"
+										},
 										"Name":	"OSSL_CORE_HANDLE"
 									}
 								},
@@ -661,6 +701,10 @@ TestFuncDecl Case 8:
 									"_Type":	"PointerType",
 									"X":	{
 										"_Type":	"Ident",
+										"DefLoc":	{
+											"_Type":	"Location",
+											"File":	"temp.h"
+										},
 										"Name":	"OSSL_DISPATCH"
 									}
 								},
@@ -677,6 +721,10 @@ TestFuncDecl Case 8:
 										"_Type":	"PointerType",
 										"X":	{
 											"_Type":	"Ident",
+											"DefLoc":	{
+												"_Type":	"Location",
+												"File":	"temp.h"
+											},
 											"Name":	"OSSL_DISPATCH"
 										}
 									}

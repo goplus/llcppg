@@ -12,6 +12,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Foo"
 				},
 				"Type":	{
@@ -27,6 +28,10 @@
 										"_Type":	"TagExpr",
 										"Name":	{
 											"_Type":	"Ident",
+											"DefLoc":	{
+												"_Type":	"Location",
+												"File":	"./hfile/forwarddecl.h"
+											},
 											"Name":	"bar"
 										},
 										"Tag":	0
@@ -38,6 +43,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"b"
 									}]
 							}]
@@ -54,6 +60,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"bar"
 				},
 				"Type":	{
@@ -74,6 +81,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}]
@@ -90,6 +98,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"sqlite3_pcache_page"
 				},
 				"Type":	{
@@ -111,6 +120,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"sqlite3_pcache_page"
 				},
 				"Type":	{
@@ -134,6 +144,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"pExtra"
 									}]
 							}]
@@ -150,6 +161,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"sqlite3_pcache"
 				},
 				"Type":	{
@@ -171,6 +183,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"sqlite3_pcache_methods2"
 				},
 				"Type":	{
@@ -192,6 +205,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"sqlite3_pcache_methods2"
 				},
 				"Type":	{
@@ -212,6 +226,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"iVersion"
 									}]
 							}, {
@@ -252,6 +267,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"xShutdown"
 									}]
 							}, {
@@ -304,6 +320,10 @@
 											"_Type":	"PointerType",
 											"X":	{
 												"_Type":	"Ident",
+												"DefLoc":	{
+													"_Type":	"Location",
+													"File":	"./hfile/forwarddecl.h"
+												},
 												"Name":	"sqlite3_pcache"
 											}
 										}
@@ -315,6 +335,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"xCreate"
 									}]
 							}]
@@ -331,6 +352,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"sqlite3_file"
 				},
 				"Type":	{
@@ -352,6 +374,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"sqlite3_file"
 				},
 				"Type":	{
@@ -365,6 +388,10 @@
 									"_Type":	"PointerType",
 									"X":	{
 										"_Type":	"Ident",
+										"DefLoc":	{
+											"_Type":	"Location",
+											"File":	"./hfile/forwarddecl.h"
+										},
 										"Name":	"sqlite3_io_methods"
 									}
 								},
@@ -374,6 +401,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"pMethods"
 									}]
 							}]
@@ -390,6 +418,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"sqlite3_io_methods"
 				},
 				"Type":	{
@@ -411,6 +440,10 @@
 														"_Type":	"PointerType",
 														"X":	{
 															"_Type":	"Ident",
+															"DefLoc":	{
+																"_Type":	"Location",
+																"File":	"./hfile/forwarddecl.h"
+															},
 															"Name":	"sqlite3_file"
 														}
 													},
@@ -461,6 +494,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"xUnfetch"
 									}]
 							}]
@@ -477,6 +511,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"lua_State"
 				},
 				"Type":	{
@@ -498,6 +533,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"lua_Debug"
 				},
 				"Type":	{
@@ -519,6 +555,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"lua_getstack"
 				},
 				"MangledName":	"lua_getstack",
@@ -532,6 +569,10 @@
 									"_Type":	"PointerType",
 									"X":	{
 										"_Type":	"Ident",
+										"DefLoc":	{
+											"_Type":	"Location",
+											"File":	"./hfile/forwarddecl.h"
+										},
 										"Name":	"lua_State"
 									}
 								},
@@ -541,6 +582,7 @@
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"L"
 									}]
 							}, {
@@ -556,6 +598,7 @@
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"level"
 									}]
 							}, {
@@ -564,6 +607,10 @@
 									"_Type":	"PointerType",
 									"X":	{
 										"_Type":	"Ident",
+										"DefLoc":	{
+											"_Type":	"Location",
+											"File":	"./hfile/forwarddecl.h"
+										},
 										"Name":	"lua_Debug"
 									}
 								},
@@ -573,6 +620,7 @@
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"ar"
 									}]
 							}]
@@ -601,6 +649,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"lua_Debug"
 				},
 				"Type":	{
@@ -629,6 +678,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"short_src"
 									}]
 							}, {
@@ -639,6 +689,10 @@
 										"_Type":	"TagExpr",
 										"Name":	{
 											"_Type":	"Ident",
+											"DefLoc":	{
+												"_Type":	"Location",
+												"File":	""
+											},
 											"Name":	"CallInfo"
 										},
 										"Tag":	0
@@ -650,6 +704,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"i_ci"
 									}]
 							}]
@@ -687,6 +742,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"f"
 				},
 				"MangledName":	"f",
@@ -700,6 +756,10 @@
 									"_Type":	"PointerType",
 									"X":	{
 										"_Type":	"Ident",
+										"DefLoc":	{
+											"_Type":	"Location",
+											"File":	"./hfile/def.h"
+										},
 										"Name":	"foo"
 									}
 								},
@@ -709,6 +769,7 @@
 								"Access":	0,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"f"
 									}]
 							}]
@@ -746,6 +807,7 @@
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"Type":	{
@@ -766,6 +828,7 @@
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}]

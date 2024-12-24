@@ -150,12 +150,19 @@ func MarshalASTDecl(decl ast.Decl) *cjson.JSON {
 }
 
 func MarshalASTDeclBase(decl ast.DeclBase, root *cjson.JSON) {
-	loc := cjson.Object()
-	loc.SetItem(c.Str("_Type"), stringField("Location"))
-	loc.SetItem(c.Str("File"), stringField(decl.Loc.File))
-	root.SetItem(c.Str("Loc"), loc)
+	root.SetItem(c.Str("Loc"), MarshalASTLocation(decl.Loc))
 	root.SetItem(c.Str("Doc"), MarshalASTExpr(decl.Doc))
 	root.SetItem(c.Str("Parent"), MarshalASTExpr(decl.Parent))
+}
+
+func MarshalASTLocation(loc *ast.Location) *cjson.JSON {
+	if loc == nil {
+		return cjson.Null()
+	}
+	root := cjson.Object()
+	root.SetItem(c.Str("_Type"), stringField("Location"))
+	root.SetItem(c.Str("File"), stringField(loc.File))
+	return root
 }
 
 func MarshalASTExpr(t ast.Expr) *cjson.JSON {
@@ -204,10 +211,11 @@ func MarshalASTExpr(t ast.Expr) *cjson.JSON {
 	case *ast.Variadic:
 		root.SetItem(c.Str("_Type"), stringField("Variadic"))
 	case *ast.Ident:
-		root.SetItem(c.Str("_Type"), stringField("Ident"))
 		if d == nil {
 			return cjson.Null()
 		}
+		root.SetItem(c.Str("_Type"), stringField("Ident"))
+		root.SetItem(c.Str("DefLoc"), MarshalASTLocation(d.DefLoc))
 		root.SetItem(c.Str("Name"), stringField(d.Name))
 	case *ast.TagExpr:
 		root.SetItem(c.Str("_Type"), stringField("TagExpr"))

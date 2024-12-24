@@ -118,6 +118,10 @@ Type: int &&:
 Type: Foo:
 {
 	"_Type":	"Ident",
+	"DefLoc":	{
+		"_Type":	"Location",
+		"File":	"temp.h"
+	},
 	"Name":	"Foo"
 }
 Type: struct Foo:
@@ -125,6 +129,10 @@ Type: struct Foo:
 	"_Type":	"TagExpr",
 	"Name":	{
 		"_Type":	"Ident",
+		"DefLoc":	{
+			"_Type":	"Location",
+			"File":	"temp.h"
+		},
 		"Name":	"Foo"
 	},
 	"Tag":	0
@@ -148,6 +156,7 @@ Type: struct (unnamed struct at temp.h:1:1):
 				"Access":	1,
 				"Names":	[{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"x"
 					}]
 			}]
@@ -157,6 +166,10 @@ Type: struct (unnamed struct at temp.h:1:1):
 Type: Foo:
 {
 	"_Type":	"Ident",
+	"DefLoc":	{
+		"_Type":	"Location",
+		"File":	"temp.h"
+	},
 	"Name":	"Foo"
 }
 Type: union Foo:
@@ -164,6 +177,10 @@ Type: union Foo:
 	"_Type":	"TagExpr",
 	"Name":	{
 		"_Type":	"Ident",
+		"DefLoc":	{
+			"_Type":	"Location",
+			"File":	"temp.h"
+		},
 		"Name":	"Foo"
 	},
 	"Tag":	1
@@ -187,6 +204,7 @@ Type: union (unnamed union at temp.h:1:1):
 				"Access":	1,
 				"Names":	[{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"x"
 					}]
 			}]
@@ -196,6 +214,10 @@ Type: union (unnamed union at temp.h:1:1):
 Type: Foo:
 {
 	"_Type":	"Ident",
+	"DefLoc":	{
+		"_Type":	"Location",
+		"File":	"temp.h"
+	},
 	"Name":	"Foo"
 }
 Type: enum Foo:
@@ -203,6 +225,10 @@ Type: enum Foo:
 	"_Type":	"TagExpr",
 	"Name":	{
 		"_Type":	"Ident",
+		"DefLoc":	{
+			"_Type":	"Location",
+			"File":	"temp.h"
+		},
 		"Name":	"Foo"
 	},
 	"Tag":	2
@@ -214,6 +240,7 @@ Type: enum (unnamed enum at temp.h:1:1):
 			"_Type":	"EnumItem",
 			"Name":	{
 				"_Type":	"Ident",
+				"DefLoc":	null,
 				"Name":	"x"
 			},
 			"Value":	{
@@ -226,6 +253,10 @@ Type: enum (unnamed enum at temp.h:1:1):
 Type: Foo:
 {
 	"_Type":	"Ident",
+	"DefLoc":	{
+		"_Type":	"Location",
+		"File":	"temp.h"
+	},
 	"Name":	"Foo"
 }
 Type: class Foo:
@@ -233,6 +264,10 @@ Type: class Foo:
 	"_Type":	"TagExpr",
 	"Name":	{
 		"_Type":	"Ident",
+		"DefLoc":	{
+			"_Type":	"Location",
+			"File":	"temp.h"
+		},
 		"Name":	"Foo"
 	},
 	"Tag":	3
@@ -256,6 +291,7 @@ Type: class (unnamed class at temp.h:1:1):
 				"Access":	3,
 				"Names":	[{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"x"
 					}]
 			}]
@@ -267,16 +303,22 @@ Type: a::b::c:
 	"_Type":	"ScopingExpr",
 	"X":	{
 		"_Type":	"Ident",
+		"DefLoc":	null,
 		"Name":	"c"
 	},
 	"Parent":	{
 		"_Type":	"ScopingExpr",
 		"X":	{
 			"_Type":	"Ident",
+			"DefLoc":	null,
 			"Name":	"b"
 		},
 		"Parent":	{
 			"_Type":	"Ident",
+			"DefLoc":	{
+				"_Type":	"Location",
+				"File":	"temp.h"
+			},
 			"Name":	"a"
 		}
 	}
@@ -288,16 +330,22 @@ Type: class a::b::c:
 		"_Type":	"ScopingExpr",
 		"X":	{
 			"_Type":	"Ident",
+			"DefLoc":	null,
 			"Name":	"c"
 		},
 		"Parent":	{
 			"_Type":	"ScopingExpr",
 			"X":	{
 				"_Type":	"Ident",
+				"DefLoc":	null,
 				"Name":	"b"
 			},
 			"Parent":	{
 				"_Type":	"Ident",
+				"DefLoc":	{
+					"_Type":	"Location",
+					"File":	"temp.h"
+				},
 				"Name":	"a"
 			}
 		}

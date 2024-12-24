@@ -13,6 +13,7 @@ TestClassDecl Case 1:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"A"
 				},
 				"Type":	{
@@ -33,6 +34,7 @@ TestClassDecl Case 1:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}, {
@@ -48,6 +50,7 @@ TestClassDecl Case 1:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"b"
 									}]
 							}]
@@ -74,6 +77,7 @@ TestClassDecl Case 2:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"A"
 				},
 				"Type":	{
@@ -94,6 +98,7 @@ TestClassDecl Case 2:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}, {
@@ -109,6 +114,7 @@ TestClassDecl Case 2:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"b"
 									}]
 							}]
@@ -122,10 +128,15 @@ TestClassDecl Case 2:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"A"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"foo"
 							},
 							"MangledName":	"_ZN1A3fooEid",
@@ -146,6 +157,7 @@ TestClassDecl Case 2:
 											"Access":	0,
 											"Names":	[{
 													"_Type":	"Ident",
+													"DefLoc":	null,
 													"Name":	"a"
 												}]
 										}, {
@@ -161,6 +173,7 @@ TestClassDecl Case 2:
 											"Access":	0,
 											"Names":	[{
 													"_Type":	"Ident",
+													"DefLoc":	null,
 													"Name":	"b"
 												}]
 										}]
@@ -201,6 +214,7 @@ TestClassDecl Case 3:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"A"
 				},
 				"Type":	{
@@ -219,10 +233,15 @@ TestClassDecl Case 3:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"A"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"A"
 							},
 							"MangledName":	"_ZN1AC1Ev",
@@ -255,10 +274,15 @@ TestClassDecl Case 3:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"A"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"A"
 							},
 							"MangledName":	"_ZN1AC1Ev",
@@ -291,10 +315,15 @@ TestClassDecl Case 3:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"A"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"~A"
 							},
 							"MangledName":	"_ZN1AD1Ev",
@@ -327,10 +356,15 @@ TestClassDecl Case 3:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"A"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"foo"
 							},
 							"MangledName":	"_ZN1A3fooEv",
@@ -376,6 +410,7 @@ TestClassDecl Case 4:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Base"
 				},
 				"Type":	{
@@ -394,10 +429,15 @@ TestClassDecl Case 4:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"Base"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"Base"
 							},
 							"MangledName":	"_ZN4BaseC1Ev",
@@ -430,10 +470,15 @@ TestClassDecl Case 4:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"Base"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"~Base"
 							},
 							"MangledName":	"_ZN4BaseD1Ev",
@@ -466,10 +511,15 @@ TestClassDecl Case 4:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"Base"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"foo"
 							},
 							"MangledName":	"_ZN4Base3fooEv",
@@ -505,6 +555,7 @@ TestClassDecl Case 4:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Derived"
 				},
 				"Type":	{
@@ -523,10 +574,15 @@ TestClassDecl Case 4:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"Derived"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"Derived"
 							},
 							"MangledName":	"_ZN7DerivedC1Ev",
@@ -559,10 +615,15 @@ TestClassDecl Case 4:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"Derived"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"~Derived"
 							},
 							"MangledName":	"_ZN7DerivedD1Ev",
@@ -595,10 +656,15 @@ TestClassDecl Case 4:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"Derived"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"foo"
 							},
 							"MangledName":	"_ZN7Derived3fooEv",
@@ -643,10 +709,15 @@ TestClassDecl Case 5:
 				"Doc":	null,
 				"Parent":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"A"
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Foo"
 				},
 				"Type":	{
@@ -669,15 +740,21 @@ TestClassDecl Case 5:
 					"_Type":	"ScopingExpr",
 					"X":	{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"Foo"
 					},
 					"Parent":	{
 						"_Type":	"Ident",
+						"DefLoc":	{
+							"_Type":	"Location",
+							"File":	"temp.h"
+						},
 						"Name":	"A"
 					}
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"bar"
 				},
 				"MangledName":	"_ZN1A3Foo3barEv",
