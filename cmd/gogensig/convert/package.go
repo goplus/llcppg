@@ -155,7 +155,7 @@ func (p *Package) newReceiver(typ *ast.FuncType) *types.Var {
 	if err != nil {
 		log.Println(err)
 	}
-	return p.p.NewParam(token.NoPos, "p", recvType)
+	return p.p.NewParam(token.NoPos, "recv_", recvType)
 }
 
 func (p *Package) ToSigSignature(goFuncName *GoFuncName, funcDecl *ast.FuncDecl) (*types.Signature, error) {
