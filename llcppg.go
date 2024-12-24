@@ -96,6 +96,7 @@ func main() {
 
 func check(err error) {
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1) // trigger github action failure
 	}
 }

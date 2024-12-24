@@ -96,6 +96,9 @@ func runPkgs(pkgs []string, runMode runPkgMode) {
 	wd, _ := os.Getwd()
 	wg := sync.WaitGroup{}
 	wg.Add(len(pkgs))
+
+	errChan := make(chan error, len(pkgs))
+
 	llcppcfgArg := []string{}
 	if runMode&withCpp != 0 {
 		llcppcfgArg = append(llcppcfgArg, "-cpp")
@@ -115,13 +118,26 @@ func runPkgs(pkgs []string, runMode runPkgMode) {
 		curDir := wd + "/out/" + pkg
 		RunCommandInDir(curDir, func(error) {
 			runs = append(runs, pkg)
-			go RunCommandInDir(curDir, func(error) {
+			go RunCommandInDir(curDir, func(err error) {
+				errChan <- err
 				wg.Done()
 			}, "llcppg", llcppgArg...)
 		}, "llcppcfg", append(llcppcfgArg, pkg)...)
 	}
-	wg.Wait()
-	fmt.Printf("llcppgtest run %v finished!\n", runs)
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case err := <-errChan:
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	case <-done:
+		fmt.Printf("llcppgtest run %v finished!\n", runs)
+	}
 }
 
 func randIndex(maxInt int) int {
