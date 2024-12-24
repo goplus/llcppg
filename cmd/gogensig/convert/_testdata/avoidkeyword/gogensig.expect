@@ -12,7 +12,7 @@ type LuaState struct {
 // llgo:type C
 type LuaHook func(*LuaState)
 //go:linkname Sethook C.lua_sethook
-func Sethook(L *LuaState, func_ LuaHook, mask c.Int, count c.Int)
+func Sethook(*LuaState, LuaHook, c.Int, c.Int)
 
 ===== llcppg.pub =====
 lua_Hook LuaHook

@@ -13,7 +13,7 @@ type Foo struct {
 }
 /// ExecuteFoo comment
 //go:linkname CustomExecuteFoo C.ExecuteFoo
-func CustomExecuteFoo(a c.Int, b Foo) c.Int
+func CustomExecuteFoo(c.Int, Foo) c.Int
 
 ===== llcppg.pub =====
 Foo
