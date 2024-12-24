@@ -22,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
@@ -40,8 +41,11 @@ func main() {
 		printUsage()
 		return
 	}
+	if ags.VerboseSigfetchParse {
+		dbg.SetDebugParse()
+	}
 	if ags.Verbose {
-		parse.SetDebug(parse.DbgFlagAll)
+		dbg.SetDebugAll()
 	}
 	extract := false
 	out := false
