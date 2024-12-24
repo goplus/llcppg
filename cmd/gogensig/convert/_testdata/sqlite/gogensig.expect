@@ -12,9 +12,9 @@ func Sourceid() *int8
 //go:linkname LibversionNumber C.sqlite3_libversion_number
 func LibversionNumber() c.Int
 //go:linkname CompileoptionUsed C.sqlite3_compileoption_used
-func CompileoptionUsed(zOptName *int8) c.Int
+func CompileoptionUsed(*int8) c.Int
 //go:linkname CompileoptionGet C.sqlite3_compileoption_get
-func CompileoptionGet(N c.Int) *int8
+func CompileoptionGet(c.Int) *int8
 //go:linkname Threadsafe C.sqlite3_threadsafe
 func Threadsafe() c.Int
 
@@ -36,7 +36,7 @@ func (p *Sqlite3) CloseV2() c.Int {
 // llgo:type C
 type Callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int
 // llgo:link (*Sqlite3).Exec C.sqlite3_exec
-func (p *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, __llgo_arg_2 unsafe.Pointer, errmsg **int8) c.Int {
+func (p *Sqlite3) Exec(*int8, func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, unsafe.Pointer, **int8) c.Int {
 	return 0
 }
 
