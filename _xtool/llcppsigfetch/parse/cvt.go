@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/token"
@@ -47,7 +48,7 @@ type Config struct {
 }
 
 func NewConverter(config *clangutils.Config) (*Converter, error) {
-	if debugParse {
+	if dbg.GetDebugParse() {
 		fmt.Fprintln(os.Stderr, "NewConverter: config")
 		fmt.Fprintln(os.Stderr, "config.File", config.File)
 		fmt.Fprintln(os.Stderr, "config.Args", config.Args)
@@ -131,12 +132,12 @@ func (ct *Converter) decIndent() {
 }
 
 func (ct *Converter) logf(format string, args ...interface{}) {
-	if debugParse {
+	if dbg.GetDebugParse() {
 		fmt.Fprintf(os.Stderr, ct.logBase()+format, args...)
 	}
 }
 func (ct *Converter) logln(args ...interface{}) {
-	if debugParse {
+	if dbg.GetDebugParse() {
 		if len(args) > 0 {
 			firstArg := fmt.Sprintf("%s%v", ct.logBase(), args[0])
 			fmt.Fprintln(os.Stderr, append([]interface{}{firstArg}, args[1:]...)...)
