@@ -41,6 +41,9 @@ func main() {
 		printUsage()
 		return
 	}
+	if ags.VerboseSigfetchParse {
+		dbg.SetDebugParse()
+	}
 	if ags.Verbose {
 		dbg.SetDebugAll()
 	}
