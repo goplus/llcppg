@@ -24,7 +24,7 @@ type Color c.Int
 
 const ColorRED Color = 0
 //go:linkname Func C.func
-func Func(a c.Int, b c.Int)
+func Func(c.Int, c.Int)
 
 ===== llcppg.pub =====
 Capital

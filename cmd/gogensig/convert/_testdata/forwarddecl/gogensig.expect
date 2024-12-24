@@ -78,7 +78,7 @@ type Debug struct {
 	ICi             *CallInfo
 }
 //go:linkname Getstack C.lua_getstack
-func Getstack(L *State, level c.Int, ar *Debug) c.Int
+func Getstack(*State, c.Int, *Debug) c.Int
 
 type CallInfo struct {
 	Unused [8]uint8
