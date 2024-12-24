@@ -525,9 +525,10 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 
 	// For function type references (e.g. `typedef void (fntype)(); fntype foo;`),
 	// params are already processed in ProcessType via CanonicalType
+	/* delete by xlj
 	if fnType.Kind != clang.TypeElaborated {
 		funcType.Params = ct.ProcessFieldList(cursor)
-	}
+	}*/
 
 	// Linux has one less leading underscore than macOS, so remove one leading underscore on macOS
 	if runtime.GOOS == "darwin" {
