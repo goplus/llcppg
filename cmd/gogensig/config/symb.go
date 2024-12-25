@@ -2,7 +2,8 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
+
+	"github.com/goplus/llcppg/cmd/gogensig/errs"
 )
 
 type MangleNameType = string
@@ -46,14 +47,14 @@ func CreateSymbolTable(symbs []SymbolEntry) *SymbolTable {
 
 func (t *SymbolTable) LookupSymbol(name MangleNameType) (*SymbolEntry, error) {
 	if t == nil || t.t == nil {
-		return nil, fmt.Errorf("symbol table not initialized")
+		return nil, errs.NewSymbolTableNotInitializedError()
 	}
-	if len(name) <= 0 {
-		return nil, fmt.Errorf("symbol not found")
+	if len(name) == 0 {
+		return nil, errs.NewSymbolNotFoudError(name)
 	}
 	symbol, ok := t.t[name]
 	if ok {
 		return &symbol, nil
 	}
-	return nil, fmt.Errorf("symbol not found")
+	return nil, errs.NewSymbolNotFoudError(name)
 }

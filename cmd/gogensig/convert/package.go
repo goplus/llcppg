@@ -13,23 +13,10 @@ import (
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
+	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
 	"github.com/goplus/mod/gopmod"
 )
-
-const (
-	DbgFlagAll = 1
-)
-
-var (
-	debug bool
-)
-
-func SetDebug(flags int) {
-	if flags != 0 {
-		debug = true
-	}
-}
 
 // In Processing Package
 type Package struct {
@@ -117,7 +104,7 @@ func (p *Package) SetCurFile(file string, incPath string, isHeaderFile bool, inC
 	p.files = append(p.files, curHeaderFile)
 	p.curFile = curHeaderFile
 	fileName := p.curFile.ToGoFileName()
-	if debug {
+	if dbg.GetDebugLog() {
 		log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, inCurPkg)
 	}
 	if _, err := p.p.SetCurFile(fileName, true); err != nil {
@@ -207,12 +194,12 @@ func (p *Package) newFuncDeclAndComment(goFuncName *GoFuncName, sig *types.Signa
 func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 	skip, anony, err := p.cvt.handleSysType(funcDecl.Name, funcDecl.Loc, p.curFile.sysIncPath)
 	if skip {
-		if debug {
+		if dbg.GetDebugLog() {
 			log.Printf("NewFuncDecl: %v is a function of system header file\n", funcDecl.Name)
 		}
 		return err
 	}
-	if debug {
+	if dbg.GetDebugLog() {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
 	}
 	if anony {
@@ -242,16 +229,16 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 	skip, anony, err := p.cvt.handleSysType(typeDecl.Name, typeDecl.Loc, p.curFile.sysIncPath)
 	if skip {
-		if debug {
+		if dbg.GetDebugLog() {
 			log.Printf("NewTypeDecl: %s type of system header\n", typeDecl.Name)
 		}
 		return err
 	}
-	if debug {
+	if dbg.GetDebugLog() {
 		log.Printf("NewTypeDecl: %v\n", typeDecl.Name)
 	}
 	if anony {
-		if debug {
+		if dbg.GetDebugLog() {
 			log.Println("NewTypeDecl:Skip a anonymous type")
 		}
 		return nil
@@ -326,12 +313,12 @@ func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) *gogen.TypeD
 func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 	skip, _, err := p.cvt.handleSysType(typedefDecl.Name, typedefDecl.Loc, p.curFile.sysIncPath)
 	if skip {
-		if debug {
+		if dbg.GetDebugLog() {
 			log.Printf("NewTypedefDecl: %v is a typedef of system header file\n", typedefDecl.Name)
 		}
 		return err
 	}
-	if debug {
+	if dbg.GetDebugLog() {
 		log.Printf("NewTypedefDecl: %v\n", typedefDecl.Name)
 	}
 	name, changed, err := p.DeclName(typedefDecl.Name.Name)
@@ -408,12 +395,12 @@ func (p *Package) NewTypedefs(name string, typ types.Type) *gogen.TypeDecl {
 func (p *Package) NewEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) error {
 	skip, _, err := p.cvt.handleSysType(enumTypeDecl.Name, enumTypeDecl.Loc, p.curFile.sysIncPath)
 	if skip {
-		if debug {
+		if dbg.GetDebugLog() {
 			log.Printf("NewEnumTypeDecl: %v is a enum type of system header file\n", enumTypeDecl.Name)
 		}
 		return err
 	}
-	if debug {
+	if dbg.GetDebugLog() {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
 	}
 	enumType, enumTypeName, err := p.createEnumType(enumTypeDecl.Name)
@@ -511,7 +498,7 @@ func (p *Package) WritePkgFiles() error {
 func (p *Package) Write(headerFile string) error {
 	fileName := names.HeaderFileToGo(headerFile)
 	filePath := filepath.Join(p.GetOutputDir(), fileName)
-	if debug {
+	if dbg.GetDebugLog() {
 		log.Printf("Write HeaderFile [%s] from  gogen:[%s] to [%s]\n", headerFile, fileName, filePath)
 	}
 	return p.writeToFile(fileName, filePath)
@@ -525,7 +512,7 @@ func (p *Package) WriteLinkFile() (string, error) {
 		return "", fmt.Errorf("failed to set current file: %w", err)
 	}
 	err = p.linkLib(p.conf.CppgConf.Libs)
-	if debug {
+	if dbg.GetDebugLog() {
 		log.Printf("Write LinkFile [%s] from  gogen:[%s] to [%s]\n", fileName, fileName, filePath)
 	}
 	if err != nil {

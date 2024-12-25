@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
+	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 )
 
 type HeaderFile struct {
@@ -22,7 +23,7 @@ func (p *HeaderFile) setSysIncPath(isSys bool, incPath string) error {
 			return fmt.Errorf("system header file %s has no include path", p.file)
 		}
 		p.sysIncPath = incPath
-		if debug {
+		if dbg.GetDebugLog() {
 			log.Printf("%s is a system header file,include path: %s\n", p.file, incPath)
 		}
 		return nil

@@ -27,6 +27,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
+	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 )
 
@@ -47,7 +48,7 @@ func main() {
 	}
 
 	if ags.Verbose {
-		convert.SetDebug(convert.DbgFlagAll)
+		dbg.SetDebugAll()
 	}
 
 	var data []byte

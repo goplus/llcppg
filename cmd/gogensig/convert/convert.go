@@ -6,6 +6,7 @@ import (
 
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/visitor"
 	cppgtypes "github.com/goplus/llcppg/types"
 )
@@ -32,7 +33,7 @@ func NewAstConvert(config *AstConvertConfig) (*AstConvert, error) {
 	p.BaseDocVisitor = visitor.NewBaseDocVisitor(p)
 	symbTable, err := cfg.NewSymbolTable(config.SymbFile)
 	if err != nil {
-		if debug {
+		if dbg.GetDebugError() {
 			log.Printf("Can't get llcppg.symb.json from %s Use empty table\n", config.SymbFile)
 		}
 		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
@@ -40,7 +41,7 @@ func NewAstConvert(config *AstConvertConfig) (*AstConvert, error) {
 
 	conf, err := cfg.GetCppgCfgFromPath(config.CfgFile)
 	if err != nil {
-		if debug {
+		if dbg.GetDebugError() {
 			log.Printf("Cant get llcppg.cfg from %s Use empty config\n", config.CfgFile)
 		}
 		conf = &cppgtypes.Config{}
@@ -80,7 +81,9 @@ func (p *AstConvert) WritePubFile() {
 func (p *AstConvert) VisitFuncDecl(funcDecl *ast.FuncDecl) {
 	err := p.Pkg.NewFuncDecl(funcDecl)
 	if err != nil {
-		log.Printf("NewFuncDecl %s Fail: %s\n", funcDecl.Name.Name, err.Error())
+		if dbg.GetDebugError() {
+			log.Printf("NewFuncDecl %s Fail: %s\n", funcDecl.Name.Name, err.Error())
+		}
 	}
 }
 

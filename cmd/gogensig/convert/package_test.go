@@ -13,6 +13,7 @@ import (
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/names"
+	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	cppgtypes "github.com/goplus/llcppg/types"
 	"github.com/goplus/mod/gopmod"
 )
@@ -20,7 +21,7 @@ import (
 var dir string
 
 func init() {
-	convert.SetDebug(convert.DbgFlagAll)
+	dbg.SetDebugAll()
 	var err error
 	dir, err = os.Getwd()
 	if err != nil {
