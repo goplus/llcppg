@@ -13,6 +13,7 @@ TestDoc Case 1:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -56,6 +57,7 @@ TestDoc Case 2:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -105,6 +107,7 @@ TestDoc Case 3:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -154,6 +157,7 @@ TestDoc Case 4:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -203,6 +207,7 @@ TestDoc Case 5:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -255,6 +260,7 @@ TestDoc Case 6:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -307,6 +313,7 @@ TestDoc Case 7:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -359,6 +366,7 @@ TestDoc Case 8:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -417,6 +425,7 @@ TestDoc Case 9:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -460,6 +469,7 @@ TestDoc Case 10:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Foo"
 				},
 				"Type":	{
@@ -486,6 +496,7 @@ TestDoc Case 10:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"x"
 									}]
 							}, {
@@ -507,6 +518,7 @@ TestDoc Case 10:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"y"
 									}]
 							}, {
@@ -528,6 +540,7 @@ TestDoc Case 10:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"z"
 									}]
 							}]
@@ -554,6 +567,7 @@ TestDoc Case 11:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Doc"
 				},
 				"Type":	{
@@ -586,6 +600,7 @@ TestDoc Case 11:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"x"
 									}]
 							}, {
@@ -607,6 +622,7 @@ TestDoc Case 11:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"y"
 									}]
 							}, {
@@ -634,6 +650,7 @@ TestDoc Case 11:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"a"
 									}]
 							}, {
@@ -655,6 +672,7 @@ TestDoc Case 11:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"b"
 									}]
 							}, {
@@ -676,6 +694,7 @@ TestDoc Case 11:
 								"Access":	2,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"value"
 									}]
 							}]
@@ -701,10 +720,15 @@ TestDoc Case 11:
 							},
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"Doc"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"Foo"
 							},
 							"MangledName":	"_ZN3Doc3FooEv",

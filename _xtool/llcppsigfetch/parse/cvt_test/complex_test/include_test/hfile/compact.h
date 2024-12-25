@@ -1,0 +1,1 @@
+typedef gnutls_cipher_algorithm_t gnutls_cipher_algorithm;

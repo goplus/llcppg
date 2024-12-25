@@ -13,6 +13,7 @@ TestScope Case 1:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_Z3foov",
@@ -55,10 +56,15 @@ TestScope Case 2:
 				"Doc":	null,
 				"Parent":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"a"
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_ZN1a3fooEv",
@@ -103,15 +109,21 @@ TestScope Case 3:
 					"_Type":	"ScopingExpr",
 					"X":	{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"b"
 					},
 					"Parent":	{
 						"_Type":	"Ident",
+						"DefLoc":	{
+							"_Type":	"Location",
+							"File":	"temp.h"
+						},
 						"Name":	"a"
 					}
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"foo"
 				},
 				"MangledName":	"_ZN1a1b3fooEv",
@@ -155,6 +167,7 @@ TestScope Case 4:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"a"
 				},
 				"Type":	{
@@ -173,10 +186,15 @@ TestScope Case 4:
 							"Doc":	null,
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"a"
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"foo"
 							},
 							"MangledName":	"_ZN1a3fooEv",
@@ -221,10 +239,15 @@ TestScope Case 5:
 				"Doc":	null,
 				"Parent":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"a"
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"b"
 				},
 				"Type":	{
@@ -245,15 +268,21 @@ TestScope Case 5:
 								"_Type":	"ScopingExpr",
 								"X":	{
 									"_Type":	"Ident",
+									"DefLoc":	null,
 									"Name":	"b"
 								},
 								"Parent":	{
 									"_Type":	"Ident",
+									"DefLoc":	{
+										"_Type":	"Location",
+										"File":	"temp.h"
+									},
 									"Name":	"a"
 								}
 							},
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"foo"
 							},
 							"MangledName":	"_ZN1a1b3fooEv",

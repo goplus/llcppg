@@ -134,6 +134,7 @@ TestMacroExpansionOtherFile:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"NewType"
 				},
 				"Type":	{
@@ -162,6 +163,7 @@ TestMacroExpansionOtherFile:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"__val"
 									}]
 							}]

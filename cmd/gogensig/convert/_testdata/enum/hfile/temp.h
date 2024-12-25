@@ -1,3 +1,4 @@
+
 enum { enum1, enum2 };
 enum spectrum { red, orange, yello, green, blue, violet };
 
@@ -17,4 +18,4 @@ typedef enum {
     NULL2 = 1,
 } algorithm_t2;
 
-typedef algorithm_t algorithm;
+#include <compact.h>

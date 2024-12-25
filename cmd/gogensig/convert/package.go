@@ -243,7 +243,7 @@ func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 	skip, anony, err := p.cvt.handleSysType(typeDecl.Name, typeDecl.Loc, p.curFile.sysIncPath)
 	if skip {
 		if debug {
-			log.Printf("NewTypeDecl: %s type of system header\n", typeDecl.Name)
+			log.Printf("NewTypeDecl: %s type of system header\n", typeDecl.Name.Name)
 		}
 		return err
 	}

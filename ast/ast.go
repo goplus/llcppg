@@ -114,7 +114,8 @@ func (*BuiltinType) exprNode() {}
 
 // Name
 type Ident struct {
-	Name string
+	Name   string
+	DefLoc *Location
 }
 
 func (*Ident) exprNode() {}

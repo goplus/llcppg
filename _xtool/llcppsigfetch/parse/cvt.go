@@ -953,7 +953,7 @@ func (ct *Converter) ProcessBuiltinType(t clang.Type) *ast.BuiltinType {
 // For anonymous decl of typedef references, use their anonymous name
 func (ct *Converter) BuildScopingExpr(cursor clang.Cursor) ast.Expr {
 	parts := clangutils.BuildScopingParts(cursor)
-	return buildScopingFromParts(parts)
+	return buildScopingFromParts(cursor, parts)
 }
 
 func (ct *Converter) MarshalASTFiles() *cjson.JSON {
@@ -999,12 +999,19 @@ func isMethod(cursor clang.Cursor) bool {
 	return cursor.Kind == clang.CursorCXXMethod || cursor.Kind == clang.CursorConstructor || cursor.Kind == clang.CursorDestructor
 }
 
-func buildScopingFromParts(parts []string) ast.Expr {
+func buildScopingFromParts(cursor clang.Cursor, parts []string) ast.Expr {
 	if len(parts) == 0 {
 		return nil
 	}
 
-	var expr ast.Expr = &ast.Ident{Name: parts[0]}
+	loc := clang.GoString(cursor.Definition().Location().File().FileName())
+	var expr ast.Expr = &ast.Ident{
+		Name: parts[0],
+		DefLoc: &ast.Location{
+			File: loc,
+		},
+	}
+
 	for _, part := range parts[1:] {
 		expr = &ast.ScopingExpr{
 			Parent: expr,

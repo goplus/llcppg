@@ -13,6 +13,7 @@ TestTypeDefDecl Case 1:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"INT"
 				},
 				"Type":	{
@@ -40,6 +41,7 @@ TestTypeDefDecl Case 2:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"INT"
 				},
 				"Type":	{
@@ -57,10 +59,15 @@ TestTypeDefDecl Case 2:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"STANDARD_INT"
 				},
 				"Type":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"INT"
 				}
 			}],
@@ -83,6 +90,7 @@ TestTypeDefDecl Case 3:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"INT"
 				},
 				"Type":	{
@@ -100,6 +108,7 @@ TestTypeDefDecl Case 3:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"IntPtr"
 				},
 				"Type":	{
@@ -120,6 +129,7 @@ TestTypeDefDecl Case 3:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"IntArr"
 				},
 				"Type":	{
@@ -151,6 +161,7 @@ TestTypeDefDecl Case 4:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Foo"
 				},
 				"Type":	{
@@ -222,6 +233,7 @@ TestTypeDefDecl Case 5:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Foo"
 				},
 				"Type":	{
@@ -273,6 +285,7 @@ TestTypeDefDecl Case 5:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Bar"
 				},
 				"Type":	{
@@ -339,10 +352,15 @@ TestTypeDefDecl Case 6:
 				"Doc":	null,
 				"Parent":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"A"
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"Foo"
 				},
 				"Type":	{
@@ -363,6 +381,7 @@ TestTypeDefDecl Case 6:
 								"Access":	3,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"x"
 									}]
 							}]
@@ -378,10 +397,15 @@ TestTypeDefDecl Case 6:
 				"Doc":	null,
 				"Parent":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"A"
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyClass"
 				},
 				"Type":	{
@@ -390,10 +414,15 @@ TestTypeDefDecl Case 6:
 						"_Type":	"ScopingExpr",
 						"X":	{
 							"_Type":	"Ident",
+							"DefLoc":	null,
 							"Name":	"Foo"
 						},
 						"Parent":	{
 							"_Type":	"Ident",
+							"DefLoc":	{
+								"_Type":	"Location",
+								"File":	"temp.h"
+							},
 							"Name":	"A"
 						}
 					},
@@ -408,10 +437,15 @@ TestTypeDefDecl Case 6:
 				"Doc":	null,
 				"Parent":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"A"
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyClassPtr"
 				},
 				"Type":	{
@@ -422,10 +456,15 @@ TestTypeDefDecl Case 6:
 							"_Type":	"ScopingExpr",
 							"X":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"Foo"
 							},
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"A"
 							}
 						},
@@ -441,10 +480,15 @@ TestTypeDefDecl Case 6:
 				"Doc":	null,
 				"Parent":	{
 					"_Type":	"Ident",
+					"DefLoc":	{
+						"_Type":	"Location",
+						"File":	"temp.h"
+					},
 					"Name":	"A"
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyClassArray"
 				},
 				"Type":	{
@@ -455,10 +499,15 @@ TestTypeDefDecl Case 6:
 							"_Type":	"ScopingExpr",
 							"X":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"Foo"
 							},
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"A"
 							}
 						},
@@ -486,6 +535,7 @@ TestTypeDefDecl Case 7:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyStruct"
 				},
 				"Type":	{
@@ -506,6 +556,7 @@ TestTypeDefDecl Case 7:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"x"
 									}]
 							}]
@@ -532,6 +583,7 @@ TestTypeDefDecl Case 8:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyUnion"
 				},
 				"Type":	{
@@ -552,6 +604,7 @@ TestTypeDefDecl Case 8:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"x"
 									}]
 							}]
@@ -578,6 +631,7 @@ TestTypeDefDecl Case 9:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyEnum"
 				},
 				"Type":	{
@@ -586,6 +640,7 @@ TestTypeDefDecl Case 9:
 							"_Type":	"EnumItem",
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"RED"
 							},
 							"Value":	{
@@ -597,6 +652,7 @@ TestTypeDefDecl Case 9:
 							"_Type":	"EnumItem",
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"GREEN"
 							},
 							"Value":	{
@@ -608,6 +664,7 @@ TestTypeDefDecl Case 9:
 							"_Type":	"EnumItem",
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"BLUE"
 							},
 							"Value":	{
@@ -637,6 +694,7 @@ TestTypeDefDecl Case 10:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyStruct"
 				},
 				"Type":	{
@@ -657,6 +715,7 @@ TestTypeDefDecl Case 10:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"x"
 									}]
 							}]
@@ -673,12 +732,17 @@ TestTypeDefDecl Case 10:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyStruct2"
 				},
 				"Type":	{
 					"_Type":	"TagExpr",
 					"Name":	{
 						"_Type":	"Ident",
+						"DefLoc":	{
+							"_Type":	"Location",
+							"File":	"temp.h"
+						},
 						"Name":	"MyStruct"
 					},
 					"Tag":	0
@@ -693,6 +757,7 @@ TestTypeDefDecl Case 10:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"StructPtr"
 				},
 				"Type":	{
@@ -701,6 +766,10 @@ TestTypeDefDecl Case 10:
 						"_Type":	"TagExpr",
 						"Name":	{
 							"_Type":	"Ident",
+							"DefLoc":	{
+								"_Type":	"Location",
+								"File":	"temp.h"
+							},
 							"Name":	"MyStruct"
 						},
 						"Tag":	0
@@ -716,6 +785,7 @@ TestTypeDefDecl Case 10:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"StructArr"
 				},
 				"Type":	{
@@ -724,6 +794,10 @@ TestTypeDefDecl Case 10:
 						"_Type":	"TagExpr",
 						"Name":	{
 							"_Type":	"Ident",
+							"DefLoc":	{
+								"_Type":	"Location",
+								"File":	"temp.h"
+							},
 							"Name":	"MyStruct"
 						},
 						"Tag":	0
@@ -750,6 +824,7 @@ TestTypeDefDecl Case 11:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyEnum"
 				},
 				"Type":	{
@@ -758,6 +833,7 @@ TestTypeDefDecl Case 11:
 							"_Type":	"EnumItem",
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"RED"
 							},
 							"Value":	{
@@ -769,6 +845,7 @@ TestTypeDefDecl Case 11:
 							"_Type":	"EnumItem",
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"GREEN"
 							},
 							"Value":	{
@@ -780,6 +857,7 @@ TestTypeDefDecl Case 11:
 							"_Type":	"EnumItem",
 							"Name":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"BLUE"
 							},
 							"Value":	{
@@ -799,12 +877,17 @@ TestTypeDefDecl Case 11:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyEnum2"
 				},
 				"Type":	{
 					"_Type":	"TagExpr",
 					"Name":	{
 						"_Type":	"Ident",
+						"DefLoc":	{
+							"_Type":	"Location",
+							"File":	"temp.h"
+						},
 						"Name":	"MyEnum"
 					},
 					"Tag":	2
@@ -819,6 +902,7 @@ TestTypeDefDecl Case 11:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"EnumPtr"
 				},
 				"Type":	{
@@ -827,6 +911,10 @@ TestTypeDefDecl Case 11:
 						"_Type":	"TagExpr",
 						"Name":	{
 							"_Type":	"Ident",
+							"DefLoc":	{
+								"_Type":	"Location",
+								"File":	"temp.h"
+							},
 							"Name":	"MyEnum"
 						},
 						"Tag":	2
@@ -842,6 +930,7 @@ TestTypeDefDecl Case 11:
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"EnumArr"
 				},
 				"Type":	{
@@ -850,6 +939,10 @@ TestTypeDefDecl Case 11:
 						"_Type":	"TagExpr",
 						"Name":	{
 							"_Type":	"Ident",
+							"DefLoc":	{
+								"_Type":	"Location",
+								"File":	"temp.h"
+							},
 							"Name":	"MyEnum"
 						},
 						"Tag":	2
@@ -877,15 +970,21 @@ TestTypeDefDecl Case 12:
 					"_Type":	"ScopingExpr",
 					"X":	{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"B"
 					},
 					"Parent":	{
 						"_Type":	"Ident",
+						"DefLoc":	{
+							"_Type":	"Location",
+							"File":	"temp.h"
+						},
 						"Name":	"A"
 					}
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyStruct"
 				},
 				"Type":	{
@@ -906,6 +1005,7 @@ TestTypeDefDecl Case 12:
 								"Access":	1,
 								"Names":	[{
 										"_Type":	"Ident",
+										"DefLoc":	null,
 										"Name":	"x"
 									}]
 							}]
@@ -923,15 +1023,21 @@ TestTypeDefDecl Case 12:
 					"_Type":	"ScopingExpr",
 					"X":	{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"B"
 					},
 					"Parent":	{
 						"_Type":	"Ident",
+						"DefLoc":	{
+							"_Type":	"Location",
+							"File":	"temp.h"
+						},
 						"Name":	"A"
 					}
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"MyStruct2"
 				},
 				"Type":	{
@@ -940,16 +1046,22 @@ TestTypeDefDecl Case 12:
 						"_Type":	"ScopingExpr",
 						"X":	{
 							"_Type":	"Ident",
+							"DefLoc":	null,
 							"Name":	"MyStruct"
 						},
 						"Parent":	{
 							"_Type":	"ScopingExpr",
 							"X":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"B"
 							},
 							"Parent":	{
 								"_Type":	"Ident",
+								"DefLoc":	{
+									"_Type":	"Location",
+									"File":	"temp.h"
+								},
 								"Name":	"A"
 							}
 						}
@@ -967,15 +1079,21 @@ TestTypeDefDecl Case 12:
 					"_Type":	"ScopingExpr",
 					"X":	{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"B"
 					},
 					"Parent":	{
 						"_Type":	"Ident",
+						"DefLoc":	{
+							"_Type":	"Location",
+							"File":	"temp.h"
+						},
 						"Name":	"A"
 					}
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"StructPtr"
 				},
 				"Type":	{
@@ -986,16 +1104,22 @@ TestTypeDefDecl Case 12:
 							"_Type":	"ScopingExpr",
 							"X":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"MyStruct"
 							},
 							"Parent":	{
 								"_Type":	"ScopingExpr",
 								"X":	{
 									"_Type":	"Ident",
+									"DefLoc":	null,
 									"Name":	"B"
 								},
 								"Parent":	{
 									"_Type":	"Ident",
+									"DefLoc":	{
+										"_Type":	"Location",
+										"File":	"temp.h"
+									},
 									"Name":	"A"
 								}
 							}
@@ -1014,15 +1138,21 @@ TestTypeDefDecl Case 12:
 					"_Type":	"ScopingExpr",
 					"X":	{
 						"_Type":	"Ident",
+						"DefLoc":	null,
 						"Name":	"B"
 					},
 					"Parent":	{
 						"_Type":	"Ident",
+						"DefLoc":	{
+							"_Type":	"Location",
+							"File":	"temp.h"
+						},
 						"Name":	"A"
 					}
 				},
 				"Name":	{
 					"_Type":	"Ident",
+					"DefLoc":	null,
 					"Name":	"StructArr"
 				},
 				"Type":	{
@@ -1033,16 +1163,22 @@ TestTypeDefDecl Case 12:
 							"_Type":	"ScopingExpr",
 							"X":	{
 								"_Type":	"Ident",
+								"DefLoc":	null,
 								"Name":	"MyStruct"
 							},
 							"Parent":	{
 								"_Type":	"ScopingExpr",
 								"X":	{
 									"_Type":	"Ident",
+									"DefLoc":	null,
 									"Name":	"B"
 								},
 								"Parent":	{
 									"_Type":	"Ident",
+									"DefLoc":	{
+										"_Type":	"Location",
+										"File":	"temp.h"
+									},
 									"Name":	"A"
 								}
 							}
