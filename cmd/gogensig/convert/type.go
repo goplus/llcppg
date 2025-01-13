@@ -334,7 +334,19 @@ func (p *TypeConv) fieldToVar(field *ast.Field, hasNamedParam bool, argIndex int
 	return types.NewVar(token.NoPos, p.Types, name, typ), nil
 }
 
-func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (types.Type, error) {
+func (p *TypeConv) newStruct(fields []*types.Var, tags []string) (retType types.Type, retError error) {
+	defer func() {
+		e := recover()
+		if e != nil {
+			fields = p.uniqueFields(fields)
+			retType = types.NewStruct(fields, nil)
+		}
+	}()
+	retType = types.NewStruct(fields, tags)
+	return retType, retError
+}
+
+func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (retType types.Type, retError error) {
 	ctx := p.ctx
 	p.ctx = Record
 	defer func() { p.ctx = ctx }()
@@ -361,7 +373,35 @@ func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (types.Type, e
 			fields = []*types.Var{maxFld}
 		}
 	}
-	return types.NewStruct(fields, nil), nil
+	return p.newStruct(fields, nil)
+}
+
+func genUniqueName(name string, index int, fieldMap map[string]struct{}) string {
+	newName := fmt.Sprintf("%s%d", name, index)
+	_, ok := fieldMap[newName]
+	if !ok {
+		return newName
+	}
+	return genUniqueName(name, index+1, fieldMap)
+}
+
+func (p *TypeConv) uniqueFields(fields []*types.Var) []*types.Var {
+	fieldMap := make(map[string]struct{})
+	newFields := make([]*types.Var, 0, len(fields))
+	for index, field := range fields {
+		name := field.Name()
+		_, ok := fieldMap[name]
+		if ok {
+			name = genUniqueName(field.Name(), index, fieldMap)
+			fieldVar := types.NewVar(token.NoPos, p.Types, name, field.Type())
+			newFields = append(newFields, fieldVar)
+			fieldMap[name] = struct{}{}
+		} else {
+			fieldMap[name] = struct{}{}
+			newFields = append(newFields, field)
+		}
+	}
+	return newFields
 }
 
 func (p *TypeConv) ToDefaultEnumType() types.Type {

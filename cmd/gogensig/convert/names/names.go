@@ -74,10 +74,23 @@ func removePrefixedName(name string, trimPrefixes []string) string {
 	return name
 }
 
+func getSuffixUndercores(name string) string {
+	suffix := ""
+	for before, found := strings.CutSuffix(name, "_"); found; {
+		suffix += "_"
+		name = before
+		before, found = strings.CutSuffix(name, "_")
+	}
+	return suffix
+}
+
 func PubName(name string) string {
 	if len(name) == 0 {
 		return name
 	}
+
+	originSuffix := getSuffixUndercores(name)
+
 	toCamelCase := func(s string) string {
 		parts := strings.Split(s, "_")
 		for i := 0; i < len(parts); i++ {
@@ -93,11 +106,11 @@ func PubName(name string) string {
 			i++
 		}
 		prefix := name[:i]
-		return "X" + prefix + toCamelCase(name[i:])
+		return "X" + prefix + toCamelCase(name[i:]) + originSuffix
 	} else if unicode.IsDigit(rune(name[0])) {
-		return "X" + toCamelCase(name)
+		return "X" + toCamelCase(name) + originSuffix
 	}
-	return toCamelCase(name)
+	return toCamelCase(name) + originSuffix
 }
 
 // /path/to/foo.h -> foo.go

@@ -70,7 +70,7 @@ func main() {
 	check(err)
 
 	err = runGoCmds(wd, conf.Name)
-	check(err)
+	fmt.Println(err)
 
 	p, _, err := basic.ConvertProcesser(&basic.Config{
 		AstConvertConfig: convert.AstConvertConfig{
