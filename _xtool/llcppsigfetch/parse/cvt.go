@@ -177,7 +177,9 @@ func (ct *Converter) GetCurFile(cursor clang.Cursor) *ast.File {
 }
 
 func (ct *Converter) CreateDeclBase(cursor clang.Cursor) ast.DeclBase {
+	usr := toStr(cursor.USR())
 	base := ast.DeclBase{
+		USR: usr,
 		Loc: &ast.Location{
 			File: ct.curLoc.File,
 		},

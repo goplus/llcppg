@@ -7,7 +7,8 @@ TestFuncDecl Case 1:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -50,7 +51,8 @@ TestFuncDecl Case 2:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#I#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -108,7 +110,8 @@ TestFuncDecl Case 3:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#I.#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -176,7 +179,8 @@ TestFuncDecl Case 4:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#I#d#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -252,7 +256,8 @@ TestFuncDecl Case 5:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:temp.h@F@add#I#I#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -325,7 +330,8 @@ TestFuncDecl Case 6:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:temp.h@T@fntype"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -349,7 +355,8 @@ TestFuncDecl Case 6:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -392,7 +399,8 @@ TestFuncDecl Case 7:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:temp.h@T@fntype"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -428,7 +436,8 @@ TestFuncDecl Case 7:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:temp.h@T@fntype2"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -444,7 +453,8 @@ TestFuncDecl Case 7:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#L#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -499,7 +509,8 @@ TestFuncDecl Case 8:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@OSSL_CORE_HANDLE"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -520,7 +531,8 @@ TestFuncDecl Case 8:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@OSSL_DISPATCH"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -541,7 +553,8 @@ TestFuncDecl Case 8:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:temp.h@T@OSSL_provider_init_fn"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -628,7 +641,8 @@ TestFuncDecl Case 8:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@OSSL_provider_init#*1$@S@OSSL_CORE_HANDLE#*1$@S@OSSL_DISPATCH#*S2_#**v#"
 				},
 				"Doc":	null,
 				"Parent":	null,

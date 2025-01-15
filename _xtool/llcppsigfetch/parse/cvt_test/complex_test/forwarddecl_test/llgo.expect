@@ -6,7 +6,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@Foo"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -48,7 +49,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@bar"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -84,7 +86,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@sqlite3_pcache_page"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -105,7 +108,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@sqlite3_pcache_page"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -144,7 +148,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@sqlite3_pcache"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -165,7 +170,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@sqlite3_pcache_methods2"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -186,7 +192,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@sqlite3_pcache_methods2"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -325,7 +332,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@sqlite3_file"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -346,7 +354,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@sqlite3_file"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -384,7 +393,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@sqlite3_io_methods"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -471,7 +481,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@lua_State"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -492,7 +503,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@lua_Debug"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -513,7 +525,8 @@
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@F@lua_getstack"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -595,7 +608,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/forwarddecl.h"
+					"File":	"./hfile/forwarddecl.h",
+					"USR":	"c:@S@lua_Debug"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -681,7 +695,8 @@
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/def.h"
+					"File":	"./hfile/def.h",
+					"USR":	"c:@F@f"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -740,7 +755,8 @@
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./hfile/impl.h"
+					"File":	"./hfile/impl.h",
+					"USR":	"c:@S@foo"
 				},
 				"Doc":	null,
 				"Parent":	null,

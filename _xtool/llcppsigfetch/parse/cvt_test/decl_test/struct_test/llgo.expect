@@ -7,7 +7,8 @@ TestStructDecl Case 1:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:temp.h@Sa"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -50,7 +51,8 @@ TestStructDecl Case 2:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@A"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -111,7 +113,8 @@ TestStructDecl Case 3:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@A"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -172,7 +175,8 @@ TestStructDecl Case 4:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@A"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -267,7 +271,8 @@ TestStructDecl Case 5:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@Person"
 				},
 				"Doc":	null,
 				"Parent":	null,

@@ -7,7 +7,8 @@ TestUnionDecl Case 1:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:temp.h@Ua"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -65,7 +66,8 @@ TestUnionDecl Case 2:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@U@A"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -126,7 +128,8 @@ TestUnionDecl Case 3:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@U@OuterUnion"
 				},
 				"Doc":	null,
 				"Parent":	null,

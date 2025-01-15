@@ -7,7 +7,8 @@ TestEnumDecl Case 1:
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@Ea@a"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -63,7 +64,8 @@ TestEnumDecl Case 2:
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@E@Foo"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -122,7 +124,8 @@ TestEnumDecl Case 3:
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@E@Foo"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -181,7 +184,8 @@ TestEnumDecl Case 4:
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@E@Foo"
 				},
 				"Doc":	null,
 				"Parent":	null,

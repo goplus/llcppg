@@ -153,6 +153,7 @@ func MarshalASTDeclBase(decl ast.DeclBase, root *cjson.JSON) {
 	loc := cjson.Object()
 	loc.SetItem(c.Str("_Type"), stringField("Location"))
 	loc.SetItem(c.Str("File"), stringField(decl.Loc.File))
+	loc.SetItem(c.Str("USR"), stringField(decl.USR))
 	root.SetItem(c.Str("Loc"), loc)
 	root.SetItem(c.Str("Doc"), MarshalASTExpr(decl.Doc))
 	root.SetItem(c.Str("Parent"), MarshalASTExpr(decl.Parent))

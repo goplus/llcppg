@@ -128,7 +128,8 @@ TestMacroExpansionOtherFile:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"./testdata/macroexpan/ref.h"
+					"File":	"./testdata/macroexpan/ref.h",
+					"USR":	"c:@SA@NewType"
 				},
 				"Doc":	null,
 				"Parent":	null,
