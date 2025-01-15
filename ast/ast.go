@@ -16,7 +16,9 @@
 
 package ast
 
-import "github.com/goplus/llcppg/token"
+import (
+	"github.com/goplus/llcppg/token"
+)
 
 // =============================================================================
 
@@ -272,6 +274,7 @@ type Location struct {
 }
 
 type DeclBase struct {
+	USR    string
 	Doc    *CommentGroup // associated documentation; or nil
 	Loc    *Location
 	Parent Expr // namespace or class
@@ -377,3 +380,14 @@ type File struct {
 }
 
 // =============================================================================
+
+type FileEntry struct {
+	Path    string
+	IncPath string
+	IsSys   bool
+	Doc     *File
+}
+
+type FileSet struct {
+	Files []*FileEntry
+}

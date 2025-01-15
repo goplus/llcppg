@@ -32,3 +32,8 @@ type SymbolInfo struct {
 	CPP    string `json:"c++"`    // C++ function name
 	Go     string `json:"go"`     // Go function name
 }
+
+type Info struct {
+	// if have the complete type,use the complete type's USR
+	Uses map[string]string // Use Ident USR -> Type Define USR
+}
