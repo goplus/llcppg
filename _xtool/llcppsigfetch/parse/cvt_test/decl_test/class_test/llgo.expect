@@ -7,7 +7,8 @@ TestClassDecl Case 1:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@A"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -68,7 +69,8 @@ TestClassDecl Case 2:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@A"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -117,7 +119,8 @@ TestClassDecl Case 2:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@A@F@foo#I#d#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -183,7 +186,8 @@ TestClassDecl Case 2:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@A@F@vafoo#I.#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -256,7 +260,8 @@ TestClassDecl Case 3:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@A"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -275,7 +280,8 @@ TestClassDecl Case 3:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@A@F@A#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -311,7 +317,8 @@ TestClassDecl Case 3:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@A@F@A#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -347,7 +354,8 @@ TestClassDecl Case 3:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@A@F@~A#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -383,7 +391,8 @@ TestClassDecl Case 3:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@A@F@foo#S"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -431,7 +440,8 @@ TestClassDecl Case 4:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@Base"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -450,7 +460,8 @@ TestClassDecl Case 4:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@Base@F@Base#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -486,7 +497,8 @@ TestClassDecl Case 4:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@Base@F@~Base#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -522,7 +534,8 @@ TestClassDecl Case 4:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@Base@F@foo#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -560,7 +573,8 @@ TestClassDecl Case 4:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@Derived"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -579,7 +593,8 @@ TestClassDecl Case 4:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@Derived@F@Derived#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -615,7 +630,8 @@ TestClassDecl Case 4:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@Derived@F@~Derived#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -651,7 +667,8 @@ TestClassDecl Case 4:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@Derived@F@foo#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -699,7 +716,8 @@ TestClassDecl Case 5:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@N@A@S@Foo"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -723,7 +741,8 @@ TestClassDecl Case 5:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@N@A@S@Foo@F@bar#"
 				},
 				"Doc":	null,
 				"Parent":	{

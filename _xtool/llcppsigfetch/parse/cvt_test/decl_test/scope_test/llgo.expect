@@ -7,7 +7,8 @@ TestScope Case 1:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -50,7 +51,8 @@ TestScope Case 2:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@N@a@F@foo#"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -96,7 +98,8 @@ TestScope Case 3:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@N@a@N@b@F@foo#"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -149,7 +152,8 @@ TestScope Case 4:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@a"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -168,7 +172,8 @@ TestScope Case 4:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@a@F@foo#"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -216,7 +221,8 @@ TestScope Case 5:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@N@a@S@b"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -238,7 +244,8 @@ TestScope Case 5:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@N@a@S@b@F@foo#"
 							},
 							"Doc":	null,
 							"Parent":	{

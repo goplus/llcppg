@@ -7,7 +7,8 @@ TestDoc Case 1:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -50,7 +51,8 @@ TestDoc Case 2:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -93,7 +95,8 @@ TestDoc Case 3:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	{
 					"_Type":	"CommentGroup",
@@ -142,7 +145,8 @@ TestDoc Case 4:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	{
 					"_Type":	"CommentGroup",
@@ -191,7 +195,8 @@ TestDoc Case 5:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	{
 					"_Type":	"CommentGroup",
@@ -240,7 +245,8 @@ TestDoc Case 6:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	{
 					"_Type":	"CommentGroup",
@@ -292,7 +298,8 @@ TestDoc Case 7:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	{
 					"_Type":	"CommentGroup",
@@ -344,7 +351,8 @@ TestDoc Case 8:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	{
 					"_Type":	"CommentGroup",
@@ -396,7 +404,8 @@ TestDoc Case 9:
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@F@foo#"
 				},
 				"Doc":	{
 					"_Type":	"CommentGroup",
@@ -454,7 +463,8 @@ TestDoc Case 10:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@Foo"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -548,7 +558,8 @@ TestDoc Case 11:
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"temp.h",
+					"USR":	"c:@S@Doc"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -684,7 +695,8 @@ TestDoc Case 11:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"temp.h",
+								"USR":	"c:@S@Doc@F@Foo#"
 							},
 							"Doc":	{
 								"_Type":	"CommentGroup",
