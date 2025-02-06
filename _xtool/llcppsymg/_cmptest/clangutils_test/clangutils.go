@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
+	"path/filepath"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llgo/c"
@@ -11,6 +13,8 @@ import (
 
 func main() {
 	TestClangUtil()
+	TestComposeIncludes()
+	TestPreprocess()
 }
 
 func TestClangUtil() {
@@ -78,17 +82,7 @@ func TestClangUtil() {
 			Temp:  tc.isTemp,
 			IsCpp: tc.isCpp,
 		}
-		index, unit, err := clangutils.CreateTranslationUnit(config)
-		if err != nil {
-			fmt.Printf("CreateTranslationUnit failed: %v\n", err)
-			continue
-		}
-
-		fmt.Println("CreateTranslationUnit succeeded")
-
-		cursor := unit.Cursor()
-
-		clangutils.VisitChildren(cursor, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+		outputInfoFromTranslationUnit(config, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
 			switch cursor.Kind {
 			case clang.CursorFunctionDecl, clang.CursorCXXMethod:
 				funcName := cursor.String()
@@ -100,15 +94,15 @@ func TestClangUtil() {
 				className := cursor.String()
 				fmt.Printf("Class: %s\n", c.GoString(className.CStr()))
 				className.Dispose()
+				return clang.ChildVisit_Recurse
 			case clang.CursorNamespace:
 				namespaceName := cursor.String()
 				fmt.Printf("Namespace: %s\n", c.GoString(namespaceName.CStr()))
 				namespaceName.Dispose()
+				return clang.ChildVisit_Recurse
 			}
-			return clang.ChildVisit_Recurse
+			return clang.ChildVisit_Continue
 		})
-		index.Dispose()
-		unit.Dispose()
 
 		if !tc.isTemp && tempFile != nil {
 			os.Remove(tempFile.Name())
@@ -116,4 +110,107 @@ func TestClangUtil() {
 
 		fmt.Println()
 	}
+}
+
+func TestComposeIncludes() {
+	fmt.Println("=== Test ComposeIncludes ===")
+	testCases := []struct {
+		name  string
+		files []string
+	}{
+		{
+			name:  "One file",
+			files: []string{"file1.h"},
+		},
+		{
+			name:  "Two files",
+			files: []string{"file1.h", "file2.h"},
+		},
+		{
+			name:  "Empty files",
+			files: []string{},
+		},
+	}
+	for _, tc := range testCases {
+		outfile, err := os.CreateTemp("", "compose_*.h")
+		if err != nil {
+			panic(err)
+		}
+		err = clangutils.ComposeIncludes(tc.files, outfile.Name())
+		if err != nil {
+			panic(err)
+		}
+		content, err := os.ReadFile(outfile.Name())
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(string(content))
+		outfile.Close()
+		os.Remove(outfile.Name())
+	}
+}
+
+func TestPreprocess() {
+	fmt.Println("=== TestPreprocess ===")
+	outfile, err := os.CreateTemp("", "compose_*.h")
+	if err != nil {
+		panic(err)
+	}
+	absPath, err := filepath.Abs("./hfile")
+	if err != nil {
+		panic(err)
+	}
+	clangutils.ComposeIncludes([]string{"main.h", "compat.h"}, outfile.Name())
+
+	efile, err := os.CreateTemp("", "temp_*.i")
+	if err != nil {
+		panic(err)
+	}
+	defer os.Remove(efile.Name())
+
+	cfg := &clangutils.PreprocessConfig{
+		File:    outfile.Name(),
+		IsCpp:   true,
+		Args:    []string{"-I" + absPath},
+		OutFile: efile.Name(),
+	}
+	err = clangutils.Preprocess(cfg)
+	if err != nil {
+		panic(err)
+	}
+	config := &clangutils.Config{
+		File:  efile.Name(),
+		Temp:  false,
+		IsCpp: false,
+	}
+	outputInfoFromTranslationUnit(config, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+		switch cursor.Kind {
+		case clang.CursorEnumDecl, clang.CursorStructDecl, clang.CursorUnionDecl, clang.CursorTypedefDecl:
+			declName := cursor.String()
+			var filename clang.String
+			var line, column c.Uint
+			cursor.Location().PresumedLocation(&filename, &line, &column)
+			fmt.Printf("TypeKind: %d Name: %s\n", cursor.Kind, c.GoString(declName.CStr()))
+			fmt.Printf("Location: %s:%d:%d\n", path.Base(c.GoString(filename.CStr())), line, column)
+			declName.Dispose()
+		}
+		return clang.ChildVisit_Continue
+	})
+	outfile.Close()
+	os.Remove(outfile.Name())
+}
+
+func outputInfoFromTranslationUnit(config *clangutils.Config, visitFunc func(cursor, parent clang.Cursor) clang.ChildVisitResult) {
+	index, unit, err := clangutils.CreateTranslationUnit(config)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("CreateTranslationUnit succeeded")
+
+	cursor := unit.Cursor()
+
+	clangutils.VisitChildren(cursor, visitFunc)
+	index.Dispose()
+	unit.Dispose()
 }
