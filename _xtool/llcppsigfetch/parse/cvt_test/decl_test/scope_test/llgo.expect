@@ -1,13 +1,13 @@
 #stdout
 TestScope Case 1:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -39,18 +39,24 @@ TestScope Case 1:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestScope Case 2:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -85,18 +91,24 @@ TestScope Case 2:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestScope Case 3:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -138,18 +150,24 @@ TestScope Case 3:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestScope Case 4:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -168,7 +186,7 @@ TestScope Case 4:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"./temp.h"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -205,18 +223,24 @@ TestScope Case 4:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestScope Case 5:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -238,7 +262,7 @@ TestScope Case 5:
 							"_Type":	"FuncDecl",
 							"Loc":	{
 								"_Type":	"Location",
-								"File":	"temp.h"
+								"File":	"./temp.h"
 							},
 							"Doc":	null,
 							"Parent":	{
@@ -282,6 +306,12 @@ TestScope Case 5:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 

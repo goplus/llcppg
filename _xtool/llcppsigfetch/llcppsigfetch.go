@@ -152,12 +152,20 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 		os.Exit(1)
 	}
 
-	context, err := parse.Do(conf.Config)
+	pkg, err := parse.Do(&parse.ParseConfig{
+		Conf: conf.Config,
+	})
 	check(err)
 
-	outputInfo(context, outputToFile)
+	info := parse.MarshalPkg(pkg)
+	str := info.Print()
+	defer cjson.FreeCStr(str)
+	defer info.Delete()
+	outputResult(str, outputToFile)
 }
 
+// todo:use new converter
+func runExtract(file string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
 func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
 	var file string
 	if isTemp {
@@ -211,12 +219,4 @@ func outputResult(result *c.Char, outputToFile bool) {
 	} else {
 		c.Printf(c.Str("%s"), result)
 	}
-}
-
-func outputInfo(context *parse.Context, outputToFile bool) {
-	info := context.Output()
-	str := info.Print()
-	defer cjson.FreeCStr(str)
-	defer info.Delete()
-	outputResult(str, outputToFile)
 }

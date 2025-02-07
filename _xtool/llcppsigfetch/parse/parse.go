@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
@@ -95,21 +96,85 @@ func (p *Context) parseFile(path string) ([]*llcppg.FileEntry, error) {
 	return files, nil
 }
 
-func Do(conf *llcppg.Config) (*Context, error) {
-	pkgHfiles := config.PkgHfileInfo(conf, []string{})
-	if dbg.GetDebugParse() {
-		fmt.Fprintln(os.Stderr, "interfaces", pkgHfiles.Inters)
-		fmt.Fprintln(os.Stderr, "implements", pkgHfiles.Impls)
-		fmt.Fprintln(os.Stderr, "thirdhfile", pkgHfiles.Thirds)
+type ParseConfig struct {
+	Conf             *llcppg.Config
+	CombinedFile     string
+	PreprocessedFile string
+	OutputFile       bool
+}
+
+func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
+	if cfg.CombinedFile == "" {
+		combinedFile, err := os.CreateTemp("", cfg.Conf.Name+"*.h")
+		if err != nil {
+			return nil, err
+		}
+		defer combinedFile.Close()
+		cfg.CombinedFile = combinedFile.Name()
 	}
 
-	context := NewContext(&ContextConfig{
-		Conf:        conf,
-		PkgFileInfo: pkgHfiles,
-	})
-	err := context.ProcessFiles(pkgHfiles.Inters)
+	if cfg.PreprocessedFile == "" {
+		preprocessedFile, err := os.CreateTemp("", cfg.Conf.Name+"*.i")
+		if err != nil {
+			return nil, err
+		}
+		defer preprocessedFile.Close()
+		cfg.PreprocessedFile = preprocessedFile.Name()
+	}
+
+	if dbg.GetDebugParse() {
+		fmt.Fprintln(os.Stderr, "Do: combinedFile", cfg.CombinedFile)
+		fmt.Fprintln(os.Stderr, "Do: preprocessedFile", cfg.PreprocessedFile)
+	}
+	err := clangutils.ComposeIncludes(cfg.Conf.Include, cfg.CombinedFile)
 	if err != nil {
 		return nil, err
 	}
-	return context, nil
+
+	clangFlags := strings.Fields(cfg.Conf.CFlags)
+	// flags = append(flags, "-nobuiltininc")
+	// to avoid libclang & clang different search path,but it will cause
+	// 	   /opt/homebrew/include/lua/lua.h:11:10: fatal error: 'stdarg.h' file not found
+	//     11 | #include <stdarg.h>
+	// so use llvm-config --cflags to libclang to ensure the same search path for libclang and clang
+	clangFlags = append(clangFlags, "-C")  // keep comment
+	clangFlags = append(clangFlags, "-dD") // keep macro
+
+	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
+		File:    cfg.CombinedFile,
+		IsCpp:   cfg.Conf.Cplusplus,
+		Args:    clangFlags,
+		OutFile: cfg.PreprocessedFile,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	libclangFlags := append(strings.Fields(cfg.Conf.CFlags), llvmCflags()...)
+	converter, err := NewConverterX(
+		&Config{
+			CombinedFile: cfg.CombinedFile,
+			Cfg: &clangutils.Config{
+				File:  cfg.PreprocessedFile,
+				IsCpp: cfg.Conf.Cplusplus,
+				Args:  libclangFlags,
+			},
+		})
+	if err != nil {
+		return nil, err
+	}
+	pkg, err := converter.ConvertX()
+	if err != nil {
+		return nil, err
+	}
+
+	return pkg, nil
+}
+
+func llvmCflags() []string {
+	out, err := exec.Command("llvm-config", "--cflags").Output()
+	if err != nil {
+		panic(err)
+	}
+	return strings.Fields(string(out))
 }

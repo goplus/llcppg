@@ -1,12 +1,11 @@
 #stdout
 === TestSystemHeader ===
-stdio.h is absolute path
 include files are all system headers
 === TestInclusionMap ===
 sys/types.h include path found
 TestDefine Case 1:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[],
 		"includes":	[],
@@ -19,12 +18,18 @@ TestDefine Case 1:
 						"Lit":	"DEBUG"
 					}]
 			}]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestDefine Case 2:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[],
 		"includes":	[],
@@ -41,12 +46,18 @@ TestDefine Case 2:
 						"Lit":	"1"
 					}]
 			}]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestDefine Case 3:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[],
 		"includes":	[],
@@ -107,22 +118,18 @@ TestDefine Case 3:
 						"Lit":	")"
 					}]
 			}]
-	}
-}
-
-TestInclude Case 1:
-{
-	"temp.h":	{
-		"_Type":	"File",
-		"decls":	[],
-		"includes":	[],
-		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestMacroExpansionOtherFile:
 {
-	"./testdata/macroexpan/ref.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
@@ -169,15 +176,6 @@ TestMacroExpansionOtherFile:
 					"Methods":	[]
 				}
 			}],
-		"includes":	[{
-				"_Type":	"Include",
-				"Path":	"./testdata/macroexpan/def.h"
-			}],
-		"macros":	[]
-	},
-	"./testdata/macroexpan/def.h":	{
-		"_Type":	"File",
-		"decls":	[],
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
@@ -224,6 +222,16 @@ TestMacroExpansionOtherFile:
 						"Lit":	"}"
 					}]
 			}]
+	},
+	"FileMap":	{
+		"./testdata/macroexpan/def.h":	{
+			"IsSys":	false,
+			"IncPath":	"def.h"
+		},
+		"./testdata/macroexpan/ref.h":	{
+			"IsSys":	false,
+			"IncPath":	"ref.h"
+		}
 	}
 }
 

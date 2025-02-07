@@ -1,8 +1,17 @@
+/*
+ * @Author: Zhang Zhi Yang
+ * @Date: 2025-03-04 11:16:39
+ * @LastEditors: Zhang Zhi Yang
+ * @LastEditTime: 2025-03-04 11:21:07
+ * @FilePath: /llcppg/_xtool/llcppsigfetch/parse/cvt_test/cvt.go
+ * @Description:
+ */
 package cvttest
 
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
@@ -21,27 +30,50 @@ func RunTest(testName string, testCases []string) {
 		include := []string{tempIncFile}
 		cflags := "-I./"
 		c.Printf(c.Str("%s Case %d:\n"), c.AllocaCStr(testName), c.Int(i+1))
-		RunTestWithConfig(&llcppg.Config{
-			Cplusplus: true,
-			Include:   include,
-			CFlags:    cflags,
+		RunTestWithConfig(&parse.ParseConfig{
+			Conf: &llcppg.Config{
+				Cplusplus: true,
+				Include:   include,
+				CFlags:    cflags,
+			},
 		})
 		os.Remove(tempIncFile)
 	}
 }
 
-func RunTestWithConfig(config *llcppg.Config) {
-	context, err := parse.Do(config)
+func RunTestWithConfig(config *parse.ParseConfig) {
+
+	pkg, err := parse.Do(config)
 	if err != nil {
 		panic(err)
 	}
-
-	result := parse.MarshalASTFiles(context.FileSet)
+	result := MarshalPkg(pkg)
 	str := result.Print()
 	c.Printf(c.Str("%s\n\n"), str)
-
 	cjson.FreeCStr(str)
 	result.Delete()
+}
+
+// for test order map
+func MarshalPkg(pkg *llcppg.Pkg) *cjson.JSON {
+	root := cjson.Object()
+	root.SetItem(c.Str("File"), parse.MarshalASTFile(pkg.File))
+	root.SetItem(c.Str("FileMap"), MarshalFileMap(pkg.FileMap))
+	return root
+}
+
+// for test order map
+func MarshalFileMap(fmap map[string]*llcppg.FileInfo) *cjson.JSON {
+	root := cjson.Object()
+	keys := make([]string, 0, len(fmap))
+	for path := range fmap {
+		keys = append(keys, path)
+	}
+	sort.Strings(keys)
+	for _, path := range keys {
+		root.SetItem(c.AllocaCStr(path), parse.MarshalFileInfo(fmap[path]))
+	}
+	return root
 }
 
 type GetTypeOptions struct {

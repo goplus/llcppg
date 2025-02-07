@@ -56,7 +56,7 @@ func TestCommentSlashStar(t *testing.T) {
 			GoName:     "CustomExecuteFoo",
 		},
 	},
-		&cppgtypes.Config{},
+		&llcppg.Config{},
 		`
 /*
 Foo comment
@@ -94,7 +94,7 @@ func TestCommentSlashSlash(t *testing.T) {
 			GoName:     "CustomExecuteFoo",
 		},
 	},
-		&cppgtypes.Config{},
+		&llcppg.Config{},
 		`
 // Foo comment
 struct Foo { int a; double b; bool c; };

@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
@@ -14,7 +15,6 @@ import (
 
 func main() {
 	TestDefine()
-	TestInclude()
 	TestSystemHeader()
 	TestInclusionMap()
 	TestMacroExpansionOtherFile()
@@ -27,14 +27,6 @@ func TestDefine() {
 		`#define SQUARE(x) ((x) * (x))`,
 	}
 	test.RunTest("TestDefine", testCases)
-}
-
-func TestInclude() {
-	testCases := []string{
-		`#include "foo.h"`,
-		// `#include <limits.h>`, //  Standard libraries are mostly platform-dependent
-	}
-	test.RunTest("TestInclude", testCases)
 }
 
 func TestInclusionMap() {
@@ -61,39 +53,36 @@ func TestInclusionMap() {
 
 func TestSystemHeader() {
 	fmt.Println("=== TestSystemHeader ===")
-	context, err := parse.Do(&llcppg.Config{
-		Include: []string{"inc.h"},
-		CFlags:  "-I./testdata/sysinc",
+	temp := path.Join(os.TempDir(), "temp.h")
+	os.WriteFile(temp, []byte("#include <stdio.h>"), 0644)
+	converter, err := parse.NewConverterX(&parse.Config{
+		Cfg: &clangutils.Config{
+			File: temp,
+		},
+		CombinedFile: temp,
 	})
 	if err != nil {
 		panic(err)
 	}
-
-	if len(context.FileSet) < 2 {
-		panic("expect 2 files")
-	}
-	if context.FileSet[0].FileType != llcppg.Inter {
-		panic("entry file is not third header")
+	pkg, err := converter.ConvertX()
+	if err != nil {
+		panic(err)
 	}
 
-	includePath := context.FileSet[0].Doc.Includes[0].Path
-	if strings.HasSuffix(includePath, "stdio.h") && filepath.IsAbs(includePath) {
-		fmt.Println("stdio.h is absolute path")
-	}
-
-	for i := 1; i < len(context.FileSet); i++ {
-		if context.FileSet[i].FileType != llcppg.Third {
-			panic(fmt.Errorf("include file is not third header: %s", context.FileSet[i].Path))
+	for path, info := range pkg.FileMap {
+		if !info.IsSys {
+			panic(fmt.Errorf("include file is not system header: %s", path))
 		}
-		for _, decl := range context.FileSet[i].Doc.Decls {
-			switch decl := decl.(type) {
-			case *ast.TypeDecl:
-			case *ast.EnumTypeDecl:
-			case *ast.FuncDecl:
-			case *ast.TypedefDecl:
-				if decl.DeclBase.Loc.File != context.FileSet[i].Path {
-					fmt.Println("Decl is not in the file", decl.DeclBase.Loc.File, "expect", context.FileSet[i].Path)
-				}
+	}
+
+	for _, decl := range pkg.File.Decls {
+		switch decl := decl.(type) {
+		case *ast.TypeDecl:
+		case *ast.EnumTypeDecl:
+		case *ast.FuncDecl:
+		case *ast.TypedefDecl:
+			if _, ok := pkg.FileMap[decl.DeclBase.Loc.File]; !ok {
+				fmt.Println("Decl is not Found in the fileMap", decl.DeclBase.Loc.File)
 			}
 		}
 	}
@@ -102,8 +91,10 @@ func TestSystemHeader() {
 
 func TestMacroExpansionOtherFile() {
 	c.Printf(c.Str("TestMacroExpansionOtherFile:\n"))
-	test.RunTestWithConfig(&llcppg.Config{
-		Include: []string{"ref.h"},
-		CFlags:  "-I./testdata/macroexpan",
+	test.RunTestWithConfig(&parse.ParseConfig{
+		Conf: &llcppg.Config{
+			Include: []string{"ref.h"},
+			CFlags:  "-I./testdata/macroexpan",
+		},
 	})
 }
