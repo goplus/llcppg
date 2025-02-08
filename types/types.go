@@ -16,6 +16,8 @@
 
 package types
 
+import "github.com/goplus/llcppg/ast"
+
 // Config represents a configuration for the llcppg tool.
 type Config struct {
 	Name         string   `json:"name"`
@@ -31,4 +33,14 @@ type SymbolInfo struct {
 	Mangle string `json:"mangle"` // C++ Symbol
 	CPP    string `json:"c++"`    // C++ function name
 	Go     string `json:"go"`     // Go function name
+}
+
+type FileInfo struct {
+	IsSys   bool
+	IncPath string
+}
+
+type Pkg struct {
+	File    *ast.File
+	FileMap map[string]*FileInfo
 }

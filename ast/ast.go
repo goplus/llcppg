@@ -376,6 +376,7 @@ type File struct {
 	Macros   []*Macro   `json:"macros,omitempty"`
 }
 
+// todo:remove
 type FileEntry struct {
 	Path    string
 	IncPath string

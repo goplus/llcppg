@@ -11,6 +11,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/token"
+	"github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/c/clang"
@@ -22,6 +23,7 @@ type Converter struct {
 	curLoc    ast.Location
 	index     *clang.Index
 	unit      *clang.TranslationUnit
+	pkg       *types.Pkg
 
 	indent int // for verbose debug
 }
@@ -34,10 +36,63 @@ var tagMap = map[string]ast.Tag{
 }
 
 type Config struct {
-	File  string
-	Temp  bool
-	Args  []string
-	IsCpp bool
+	Cfg          *clangutils.Config
+	CombinedFile string
+}
+
+func NewConverterX(config *Config) (*Converter, error) {
+	if dbg.GetDebugParse() {
+		fmt.Fprintln(os.Stderr, "NewConverter: config")
+		fmt.Fprintln(os.Stderr, "config.File", config.Cfg.File)
+		fmt.Fprintln(os.Stderr, "config.Args", config.Cfg.Args)
+		fmt.Fprintln(os.Stderr, "config.IsCpp", config.Cfg.IsCpp)
+		fmt.Fprintln(os.Stderr, "config.Temp", config.Cfg.Temp)
+	}
+
+	index, unit, err := clangutils.CreateTranslationUnit(config.Cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	fileMap, err := initFileMap(config)
+	if err != nil {
+		return nil, err
+	}
+	return &Converter{
+		index: index,
+		unit:  unit,
+		pkg: &types.Pkg{
+			File:    &ast.File{},
+			FileMap: fileMap,
+		},
+	}, nil
+}
+
+// combine file
+func initFileMap(cfg *Config) (map[string]*types.FileInfo, error) {
+	fileMap := make(map[string]*types.FileInfo)
+	combineConf := cfg.Cfg
+	combineConf.File = cfg.CombinedFile
+	index, unit, err := clangutils.CreateTranslationUnit(combineConf)
+	if err != nil {
+		return nil, err
+	}
+	defer index.Dispose()
+	defer unit.Dispose()
+	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
+		loc := unit.GetLocation(inced, 1, 1)
+		incedFile := toStr(inced.FileName())
+		var incPath string
+		if len(incins) > 0 {
+			cur := unit.GetCursor(&incins[0])
+			incPath = toStr(cur.String())
+			fileMap[incedFile] = &types.FileInfo{
+				IsSys:   loc.IsInSystemHeader() != 0,
+				IncPath: incPath,
+			}
+		}
+	})
+	return fileMap, nil
 }
 
 func NewConverter(config *clangutils.Config) (*Converter, error) {
@@ -60,8 +115,11 @@ func NewConverter(config *clangutils.Config) (*Converter, error) {
 		Files: files,
 		index: index,
 		unit:  unit,
+		pkg: &types.Pkg{
+			File:    &ast.File{},
+			FileMap: make(map[string]*types.FileInfo),
+		},
 	}, nil
-
 }
 
 func (ct *Converter) Dispose() {
@@ -114,6 +172,7 @@ func (ct *Converter) GetTokens(cursor clang.Cursor) []*ast.Token {
 func (ct *Converter) logBase() string {
 	return strings.Repeat(" ", ct.indent)
 }
+
 func (ct *Converter) incIndent() {
 	ct.indent++
 }
@@ -142,10 +201,10 @@ func (ct *Converter) logln(args ...interface{}) {
 
 func (ct *Converter) GetCurFile(cursor clang.Cursor) *ast.File {
 	loc := cursor.Location()
-	var file clang.File
-	loc.SpellingLocation(&file, nil, nil, nil)
-	filePath := toStr(file.FileName())
-	if filePath == "" {
+	var file clang.String
+	loc.PresumedLocation(&file, nil, nil)
+	filePath := clang.GoString(file)
+	if filePath == "" || filePath == "<command line>" {
 		//todo(zzy): For some built-in macros, there is no file.
 		ct.curLoc = ast.Location{File: ""}
 		ct.logln("GetCurFile: NO FILE")
@@ -170,9 +229,13 @@ func (ct *Converter) GetCurFile(cursor clang.Cursor) *ast.File {
 }
 
 func (ct *Converter) CreateDeclBase(cursor clang.Cursor) ast.DeclBase {
+	var file clang.String
+	loc := cursor.Location()
+	loc.PresumedLocation(&file, nil, nil)
+	filename := clang.GoString(file)
 	base := ast.DeclBase{
 		Loc: &ast.Location{
-			File: ct.curLoc.File,
+			File: filename,
 		},
 		Parent: ct.BuildScopingExpr(cursor.SemanticParent()),
 	}
@@ -239,16 +302,23 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 			ct.logln(err)
 			return clang.ChildVisit_Continue
 		}
+		ct.pkg.File.Includes = append(ct.pkg.File.Includes, include)
 		curFile.Includes = append(curFile.Includes, include)
 		ct.logln("visitTop: ProcessInclude END ", include.Path)
 	case clang.CursorMacroDefinition:
 		macro := ct.ProcessMacro(cursor)
 		curFile.Macros = append(curFile.Macros, macro)
+		if cursor.Location().IsInSystemHeader() == 0 || cursor.IsMacroBuiltin() != 0 {
+			loc := cursor.Location()
+			var file clang.String
+			loc.PresumedLocation(&file, nil, nil)
+			ct.pkg.File.Macros = append(ct.pkg.File.Macros, macro)
+		}
 		ct.logln("visitTop: ProcessMacro END ", macro.Name, "Tokens Length:", len(macro.Tokens))
 	case clang.CursorEnumDecl:
 		enum := ct.ProcessEnumDecl(cursor)
+		ct.pkg.File.Decls = append(ct.pkg.File.Decls, enum)
 		curFile.Decls = append(curFile.Decls, enum)
-
 		ct.logf("visitTop: ProcessEnumDecl END")
 		if enum.Name != nil {
 			ct.logln(enum.Name.Name)
@@ -259,12 +329,13 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	case clang.CursorClassDecl:
 		classDecl := ct.ProcessClassDecl(cursor)
 		curFile.Decls = append(curFile.Decls, classDecl)
+		ct.pkg.File.Decls = append(ct.pkg.File.Decls, classDecl)
 		// class havent anonymous situation
 		ct.logln("visitTop: ProcessClassDecl END", classDecl.Name.Name)
 	case clang.CursorStructDecl:
 		structDecl := ct.ProcessStructDecl(cursor)
 		curFile.Decls = append(curFile.Decls, structDecl)
-
+		ct.pkg.File.Decls = append(ct.pkg.File.Decls, structDecl)
 		ct.logf("visitTop: ProcessStructDecl END")
 		if structDecl.Name != nil {
 			ct.logln(structDecl.Name.Name)
@@ -274,7 +345,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	case clang.CursorUnionDecl:
 		unionDecl := ct.ProcessUnionDecl(cursor)
 		curFile.Decls = append(curFile.Decls, unionDecl)
-
+		ct.pkg.File.Decls = append(ct.pkg.File.Decls, unionDecl)
 		ct.logf("visitTop: ProcessUnionDecl END")
 		if unionDecl.Name != nil {
 			ct.logln(unionDecl.Name.Name)
@@ -286,6 +357,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		// Example: void MyClass::myMethod() { ... } out-of-class method
 		funcDecl := ct.ProcessFuncDecl(cursor)
 		curFile.Decls = append(curFile.Decls, funcDecl)
+		ct.pkg.File.Decls = append(ct.pkg.File.Decls, funcDecl)
 		ct.logln("visitTop: ProcessFuncDecl END", funcDecl.Name.Name, funcDecl.MangledName, "isStatic:", funcDecl.IsStatic, "isInline:", funcDecl.IsInline)
 	case clang.CursorTypedefDecl:
 		typedefDecl := ct.ProcessTypeDefDecl(cursor)
@@ -293,6 +365,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 			return clang.ChildVisit_Continue
 		}
 		curFile.Decls = append(curFile.Decls, typedefDecl)
+		ct.pkg.File.Decls = append(ct.pkg.File.Decls, typedefDecl)
 		ct.logln("visitTop: ProcessTypeDefDecl END", typedefDecl.Name.Name)
 	case clang.CursorNamespace:
 		clangutils.VisitChildren(cursor, ct.visitTop)
@@ -305,6 +378,14 @@ func (ct *Converter) Convert() ([]*ast.FileEntry, error) {
 	// visit top decls (struct,class,function & macro,include)
 	clangutils.VisitChildren(cursor, ct.visitTop)
 	return ct.Files, nil
+}
+
+// for flatten ast,keep type order
+// input is clang -E 's result
+func (ct *Converter) ConvertX() (*types.Pkg, error) {
+	cursor := ct.unit.Cursor()
+	clangutils.VisitChildren(cursor, ct.visitTop)
+	return ct.pkg, nil
 }
 
 func (ct *Converter) ProcessType(t clang.Type) ast.Expr {

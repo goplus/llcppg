@@ -2,9 +2,32 @@ package parse
 
 import (
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 )
+
+func MarshalPkg(pkg *types.Pkg) *cjson.JSON {
+	root := cjson.Object()
+	root.SetItem(c.Str("File"), MarshalASTFile(pkg.File))
+	root.SetItem(c.Str("FileMap"), MarshalFileMap(pkg.FileMap))
+	return root
+}
+
+func MarshalFileMap(fmap map[string]*types.FileInfo) *cjson.JSON {
+	root := cjson.Object()
+	for path, info := range fmap {
+		root.SetItem(c.AllocaCStr(path), MarshalFileInfo(info))
+	}
+	return root
+}
+
+func MarshalFileInfo(info *types.FileInfo) *cjson.JSON {
+	root := cjson.Object()
+	root.SetItem(c.Str("IsSys"), boolField(info.IsSys))
+	root.SetItem(c.Str("IncPath"), stringField(info.IncPath))
+	return root
+}
 
 func MarshalFileSet(files []*ast.FileEntry) *cjson.JSON {
 	root := cjson.Array()

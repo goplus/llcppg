@@ -112,3 +112,73 @@ func (p *Context) parseFile(path string) ([]*ast.FileEntry, error) {
 
 	return files, nil
 }
+
+type ParseConfig struct {
+	Conf             *types.Config
+	CombinedFile     string
+	PreprocessedFile string
+	OutputFile       bool
+}
+
+func Do(cfg *ParseConfig) (*types.Pkg, error) {
+	if cfg.CombinedFile == "" {
+		combinedFile, err := os.CreateTemp("", cfg.Conf.Name+"*.h")
+		if err != nil {
+			return nil, err
+		}
+		defer combinedFile.Close()
+		cfg.CombinedFile = combinedFile.Name()
+	}
+
+	if cfg.PreprocessedFile == "" {
+		preprocessedFile, err := os.CreateTemp("", cfg.Conf.Name+"*.i")
+		if err != nil {
+			return nil, err
+		}
+		defer preprocessedFile.Close()
+		cfg.PreprocessedFile = preprocessedFile.Name()
+	}
+
+	if dbg.GetDebugParse() {
+		fmt.Fprintln(os.Stderr, "Do: combinedFile", cfg.CombinedFile)
+		fmt.Fprintln(os.Stderr, "Do: preprocessedFile", cfg.PreprocessedFile)
+	}
+	err := clangutils.ComposeIncludes(cfg.Conf.Include, cfg.CombinedFile)
+	if err != nil {
+		return nil, err
+	}
+
+	flags := strings.Fields(cfg.Conf.CFlags)
+	flags = append(flags, "-nobuiltininc") // to avoid libclang & clang different search path
+	flags = append(flags, "-C")            // keep comment
+	flags = append(flags, "-dD")           // keep macro
+
+	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
+		File:    cfg.CombinedFile,
+		IsCpp:   cfg.Conf.Cplusplus,
+		Args:    flags,
+		OutFile: cfg.PreprocessedFile,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	converter, err := NewConverterX(
+		&Config{
+			CombinedFile: cfg.CombinedFile,
+			Cfg: &clangutils.Config{
+				File:  cfg.PreprocessedFile,
+				IsCpp: cfg.Conf.Cplusplus,
+				Args:  strings.Fields(cfg.Conf.CFlags),
+			},
+		})
+	if err != nil {
+		return nil, err
+	}
+	pkg, err := converter.ConvertX()
+	if err != nil {
+		return nil, err
+	}
+
+	return pkg, nil
+}

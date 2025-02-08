@@ -1,13 +1,13 @@
 #stdout
 TestUnionDecl Case 1:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -54,18 +54,24 @@ TestUnionDecl Case 1:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestUnionDecl Case 2:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -115,18 +121,24 @@ TestUnionDecl Case 2:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
 TestUnionDecl Case 3:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -225,6 +237,12 @@ TestUnionDecl Case 3:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./temp.h":	{
+			"IsSys":	false,
+			"IncPath":	"temp.h"
+		}
 	}
 }
 
