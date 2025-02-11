@@ -1,3 +1,10 @@
+===== forwarddecl_autogen_macros.go =====
+package forwarddecl
+
+import _ "unsafe"
+
+const LUAIDSIZE = 60
+
 ===== impl.go =====
 package forwarddecl
 
@@ -25,8 +32,6 @@ import (
 	"github.com/goplus/llgo/c"
 	"unsafe"
 )
-
-const IDSIZE = 60
 
 type Bar struct {
 	A *Foo

@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -67,7 +68,7 @@ func SigfetchConfig(configFile string, dir string) ([]byte, error) {
 }
 
 func executeSigfetch(args []string, dir string) ([]byte, error) {
-	cmd := exec.Command("llcppsigfetch", args...)
+	cmd := exec.Command("llcppsigfetch", append(args, "-resourceIncDir="+ClangResourceDir())...)
 	if dir != "" {
 		cmd.Dir = dir
 	}
@@ -169,4 +170,13 @@ func CreateJSONFile(filepath string, data any) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(data)
+}
+
+// temp to avoid call exec.Command in llcppsigfetch
+func ClangResourceDir() string {
+	res, err := exec.Command("clang", "-print-resource-dir").Output()
+	if err != nil {
+		panic(err)
+	}
+	return path.Join(strings.TrimSpace(string(res)), "include")
 }

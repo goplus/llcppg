@@ -354,6 +354,18 @@ func (recv_ *JSON) SortObject() {
 func (recv_ *JSON) SortObjectCaseSensitive() {
 }
 
+===== cjson_autogen_macros.go =====
+package cjson
+
+import _ "unsafe"
+
+const CJSONVERSIONMAJOR = 1
+const CJSONVERSIONMINOR = 7
+const CJSONVERSIONPATCH = 18
+const CJSONIsReference = 256
+const CJSONStringIsConst = 512
+const CJSONNESTINGLIMIT = 1000
+
 ===== llcppg.pub =====
 cJSON JSON
 cJSON_Hooks Hooks

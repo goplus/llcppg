@@ -73,6 +73,9 @@ func main() {
 			isTemp = args.BoolArg(arg, false)
 		case strings.HasPrefix(arg, "-cpp="):
 			isCpp = args.BoolArg(arg, true)
+		case strings.HasPrefix(arg, "-resourceIncDir="):
+			// temp to avoid call clang -print-resource-dir in llcppsigfetch,will cause hang
+			parse.ResourceIncDir = args.StringArg(arg, "")
 		default:
 			otherArgs = append(otherArgs, arg)
 		}

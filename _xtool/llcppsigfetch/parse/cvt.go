@@ -88,7 +88,7 @@ func initFileMap(cfg *Config) (map[string]*llcppg.FileInfo, error) {
 			cur := unit.GetCursor(&incins[0])
 			incPath = toStr(cur.String())
 			fileMap[incedFile] = &llcppg.FileInfo{
-				IsSys:   loc.IsInSystemHeader() != 0,
+				IsSys:   loc.IsInSystemHeader() != 0 || strings.HasPrefix(incedFile, ResourceIncDir),
 				IncPath: incPath,
 			}
 		}

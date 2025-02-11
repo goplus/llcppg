@@ -1747,6 +1747,151 @@ func TestUnmarshalFileSet(t *testing.T) {
 	}
 }
 
+func TestUnmarshalPkg(t *testing.T) {
+	files := `
+{
+  "File": {
+    "_Type": "File",
+    "decls": [
+      {
+        "_Type": "TypeDecl",
+        "Loc": {
+          "_Type": "Location",
+          "File": "/opt/homebrew/include/lua/lua.h"
+        },
+        "Doc": null,
+        "Parent": null,
+        "Name": {
+          "_Type": "Ident",
+          "Name": "lua_State"
+        },
+        "Type": {
+          "_Type": "RecordType",
+          "Tag": 0,
+          "Fields": {
+            "_Type": "FieldList",
+            "List": null
+          },
+          "Methods": []
+        }
+      },
+      {
+        "_Type": "TypedefDecl",
+        "Loc": {
+          "_Type": "Location",
+          "File": "/opt/homebrew/include/lua/lua.h"
+        },
+        "Doc": null,
+        "Parent": null,
+        "Name": {
+          "_Type": "Ident",
+          "Name": "lua_Number"
+        },
+        "Type": {
+          "_Type": "BuiltinType",
+          "Kind": 8,
+          "Flags": 16
+        }
+      }
+    ],
+    "includes": [],
+    "macros": []
+  },
+  "FileMap": {
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_rsize_t.h": {
+      "IsSys": true,
+      "IncPath": "sys/_types/_rsize_t.h"
+    },
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_seek_set.h": {
+      "IsSys": true,
+      "IncPath": "sys/_types/_seek_set.h"
+    },
+    "/opt/homebrew/include/lua/lua.h": {
+      "IsSys": false,
+      "IncPath": "lua.h"
+    },
+    "/opt/homebrew/include/lua/luaconf.h": {
+      "IsSys": false,
+      "IncPath": "luaconf.h"
+    }
+  }
+}
+`
+
+	expected := &llcppg.Pkg{
+		File: &ast.File{
+			Decls: []ast.Decl{
+				&ast.TypeDecl{
+					DeclBase: ast.DeclBase{
+						Loc: &ast.Location{
+							File: "/opt/homebrew/include/lua/lua.h",
+						},
+					},
+					Name: &ast.Ident{Name: "lua_State"},
+					Type: &ast.RecordType{
+						Tag:     0,
+						Fields:  &ast.FieldList{},
+						Methods: []*ast.FuncDecl{},
+					},
+				},
+				&ast.TypedefDecl{
+					DeclBase: ast.DeclBase{
+						Loc: &ast.Location{
+							File: "/opt/homebrew/include/lua/lua.h",
+						},
+					},
+					Name: &ast.Ident{Name: "lua_Number"},
+					Type: &ast.BuiltinType{
+						Kind:  8,
+						Flags: 16,
+					},
+				},
+			},
+			Includes: []*ast.Include{},
+			Macros:   []*ast.Macro{},
+		},
+		FileMap: map[string]*llcppg.FileInfo{
+			"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_rsize_t.h": {
+				IsSys:   true,
+				IncPath: "sys/_types/_rsize_t.h",
+			},
+			"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_seek_set.h": {
+				IsSys:   true,
+				IncPath: "sys/_types/_seek_set.h",
+			},
+			"/opt/homebrew/include/lua/lua.h": {
+				IsSys:   false,
+				IncPath: "lua.h",
+			},
+			"/opt/homebrew/include/lua/luaconf.h": {
+				IsSys:   false,
+				IncPath: "luaconf.h",
+			},
+		},
+	}
+
+	fileSet, err := unmarshal.Pkg([]byte(files))
+
+	if err != nil {
+		t.Fatalf("UnmarshalNode failed: %v", err)
+	}
+
+	resultJSON, err := json.MarshalIndent(fileSet, "", " ")
+	if err != nil {
+		t.Fatalf("Failed to marshal result to JSON: %v", err)
+	}
+
+	expectedJSON, err := json.MarshalIndent(expected, "", " ")
+
+	if err != nil {
+		t.Fatalf("Failed to marshal expected result to JSON: %v", err)
+	}
+
+	if string(resultJSON) != string(expectedJSON) {
+		t.Errorf("JSON mismatch.\nExpected: %s\nGot: %s", string(expectedJSON), string(resultJSON))
+	}
+}
+
 func TestUnmarshalErrors(t *testing.T) {
 	testCases := []struct {
 		name        string

@@ -14,6 +14,9 @@ import (
 	"github.com/goplus/llgo/c/cjson"
 )
 
+// temp to avoid call clang -print-resource-dir in llcppsigfetch,will cause hang
+var ResourceIncDir string
+
 type Context struct {
 	FileSet []*llcppg.FileEntry
 	*ContextConfig
@@ -132,7 +135,7 @@ func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
 	}
 
 	clangFlags := strings.Fields(cfg.Conf.CFlags)
-	// flags = append(flags, "-nobuiltininc")
+	// clangFlags = append(clangFlags, "-nobuiltininc")
 	// to avoid libclang & clang different search path,but it will cause
 	// 	   /opt/homebrew/include/lua/lua.h:11:10: fatal error: 'stdarg.h' file not found
 	//     11 | #include <stdarg.h>
@@ -149,8 +152,8 @@ func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	libclangFlags := append(strings.Fields(cfg.Conf.CFlags), llvmCflags()...)
+	libclangFlags := append(strings.Fields(cfg.Conf.CFlags), "-I"+ResourceIncDir)
+	// llvm cflags is not clang's include search path
 	converter, err := NewConverterX(
 		&Config{
 			CombinedFile: cfg.CombinedFile,

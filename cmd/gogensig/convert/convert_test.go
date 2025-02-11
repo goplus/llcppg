@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -26,6 +27,217 @@ func init() {
 
 func TestFromTestdata(t *testing.T) {
 	testFromDir(t, "./_testdata", false)
+}
+
+func TestAvoid(t *testing.T) {
+	name := "avoidkeyword"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestCjson(t *testing.T) {
+	name := "cjson"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestEnum(t *testing.T) {
+	name := "enum"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestForwarddecl(t *testing.T) {
+	name := "forwarddecl"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestKeepComment(t *testing.T) {
+	name := "keepcomment"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestGpgerror(t *testing.T) {
+	name := "gpgerror"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestFuncrefer(t *testing.T) {
+	name := "funcrefer"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestLua(t *testing.T) {
+	name := "lua"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), true, nil)
+}
+func TestMacro(t *testing.T) {
+	name := "macro"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestNested(t *testing.T) {
+	name := "nested"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestPubfile(t *testing.T) {
+	name := "pubfile"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestReceiver(t *testing.T) {
+	name := "receiver"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestSelfref(t *testing.T) {
+	name := "selfref"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestSqlite(t *testing.T) {
+	name := "sqlite"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestStdtype(t *testing.T) {
+	name := "stdtype"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+func TestUnion(t *testing.T) {
+	name := "union"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+}
+
+// test sys type in stdinclude to package
+func TestSysToPkg(t *testing.T) {
+	name := "_systopkg"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package) {
+		typConv := pkg.GetTypeConv()
+		if typConv.SysTypeLoc == nil {
+			t.Fatal("sysTypeLoc is nil")
+		}
+		pkgIncTypes := make(map[string]map[string][]string)
+
+		// full type in all std lib
+		for name, info := range typConv.SysTypeLoc {
+			targetPkg, isDefault := convert.IncPathToPkg(info.IncPath)
+			if isDefault {
+				targetPkg = "github.com/goplus/llgo/c [default]"
+			}
+			if pkgIncTypes[targetPkg] == nil {
+				pkgIncTypes[targetPkg] = make(map[string][]string, 0)
+			}
+			if pkgIncTypes[targetPkg][info.IncPath] == nil {
+				pkgIncTypes[targetPkg][info.IncPath] = make([]string, 0)
+			}
+			pkgIncTypes[targetPkg][info.IncPath] = append(pkgIncTypes[targetPkg][info.IncPath], name)
+		}
+
+		for pkg, incTypes := range pkgIncTypes {
+			t.Logf("\x1b[1;32m %s \x1b[0m Package contains inc types:", pkg)
+			for incPath, types := range incTypes {
+				t.Logf("\x1b[1;33m  - %s\x1b[0m (%s):", incPath, pkg)
+				sort.Strings(types)
+				t.Logf("    - %s", strings.Join(types, " "))
+			}
+		}
+
+		// check referd type in std lib
+		// Expected type to package mappings
+		expected := map[string]string{
+			"mbstate_t":   "github.com/goplus/llgo/c",
+			"wint_t":      "github.com/goplus/llgo/c",
+			"ptrdiff_t":   "github.com/goplus/llgo/c",
+			"int8_t":      "github.com/goplus/llgo/c",
+			"max_align_t": "github.com/goplus/llgo/c",
+			"FILE":        "github.com/goplus/llgo/c",
+			"tm":          "github.com/goplus/llgo/c/time",
+			"time_t":      "github.com/goplus/llgo/c/time",
+			"clock_t":     "github.com/goplus/llgo/c/time",
+			"fenv_t":      "github.com/goplus/llgo/c/math",
+			"size_t":      "github.com/goplus/llgo/c",
+		}
+
+		for name, exp := range expected {
+			if _, ok := typConv.SysTypePkg[name]; ok {
+				if typConv.SysTypePkg[name].PkgPath != exp {
+					t.Errorf("type [%s]: expected package [%s], got [%s] in header [%s]", name, exp, typConv.SysTypePkg[name].PkgPath, typConv.SysTypePkg[name].Header.IncPath)
+				} else {
+					t.Logf("refer type [%s] expected package [%s] from header [%s]", name, exp, typConv.SysTypePkg[name].Header.IncPath)
+				}
+			} else {
+				t.Logf("missing expected type %s (package: %s)", name, exp)
+			}
+		}
+	})
 }
 
 func TestDepPkg(t *testing.T) {
@@ -188,15 +400,26 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 		t.Fatal(err)
 	}
 
-	inputdata, err := unmarshal.FileSet(bytes)
+	convertPkg, err := unmarshal.Pkg(bytes)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = p.ProcessFileSet(inputdata)
+	cvt, err := convert.NewConverter(&convert.ConverterConfig{
+		PkgName:   name,
+		SymbFile:  symbPath,
+		CfgFile:   flagedCfgPath,
+		OutputDir: outputDir,
+		PubFile:   pubPath,
+		Pkg:       convertPkg,
+	})
+
+	preprocess(cvt.GenPkg)
+
 	if err != nil {
 		t.Fatal(err)
 	}
+	cvt.Process()
 
 	var res strings.Builder
 
@@ -237,7 +460,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 	}
 
 	if validateFunc != nil {
-		validateFunc(t, pkg)
+		validateFunc(t, cvt.GenPkg)
 	}
 }
 
