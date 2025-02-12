@@ -13,7 +13,6 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/filesetprocessor"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/llcppg"
@@ -27,149 +26,6 @@ func init() {
 
 func TestFromTestdata(t *testing.T) {
 	testFromDir(t, "./_testdata", false)
-}
-
-func TestAvoid(t *testing.T) {
-	name := "avoidkeyword"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestCjson(t *testing.T) {
-	name := "cjson"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestEnum(t *testing.T) {
-	name := "enum"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestForwarddecl(t *testing.T) {
-	name := "forwarddecl"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestKeepComment(t *testing.T) {
-	name := "keepcomment"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestGpgerror(t *testing.T) {
-	name := "gpgerror"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestFuncrefer(t *testing.T) {
-	name := "funcrefer"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestLua(t *testing.T) {
-	name := "lua"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), true, nil)
-}
-func TestMacro(t *testing.T) {
-	name := "macro"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestNested(t *testing.T) {
-	name := "nested"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestPubfile(t *testing.T) {
-	name := "pubfile"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestReceiver(t *testing.T) {
-	name := "receiver"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestSelfref(t *testing.T) {
-	name := "selfref"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestSqlite(t *testing.T) {
-	name := "sqlite"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestStdtype(t *testing.T) {
-	name := "stdtype"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
-func TestUnion(t *testing.T) {
-	name := "union"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
 }
 
 // test sys type in stdinclude to package
@@ -241,7 +97,6 @@ func TestSysToPkg(t *testing.T) {
 }
 
 func TestDepPkg(t *testing.T) {
-	name := "_depcjson"
 	dir, err := os.Getwd()
 	if err != nil {
 		t.Fatal("Getwd failed:", err)
@@ -384,18 +239,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 	}
 	defer os.RemoveAll(outputDir)
 
-	p, pkg, err := filesetprocessor.New(&convert.Config{
-		PkgName:   name,
-		SymbFile:  symbPath,
-		CfgFile:   flagedCfgPath,
-		OutputDir: outputDir,
-		PubFile:   pubPath,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	bytes, err := config.SigfetchConfig(flagedCfgPath, confPath)
+	bytes, err := config.SigfetchConfig(flagedCfgPath, confPath, cfg.Cplusplus)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -413,8 +257,6 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 		PubFile:   pubPath,
 		Pkg:       convertPkg,
 	})
-
-	preprocess(cvt.GenPkg)
 
 	if err != nil {
 		t.Fatal(err)

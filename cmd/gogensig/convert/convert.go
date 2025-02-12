@@ -183,6 +183,7 @@ type Converter struct {
 	Pkg    *cppgtypes.Pkg
 	GenPkg *Package
 	Conf   *ConverterConfig
+	incMap map[string]bool // abs path is dependency
 }
 
 func NewConverter(config *ConverterConfig) (*Converter, error) {
@@ -219,39 +220,56 @@ func NewConverter(config *ConverterConfig) (*Converter, error) {
 		OutputDir:   config.OutputDir,
 		SymbolTable: symbTable,
 	})
+	incs := pkg.DepIncPaths()
+	incmap := make(map[string]bool)
+	for _, inc := range incs {
+		incmap[inc] = true
+	}
 	return &Converter{
 		GenPkg: pkg,
 		Pkg:    config.Pkg,
 		Conf:   config,
+		incMap: incmap,
 	}, nil
 }
 
 func (p *Converter) Process() {
+	processDecl := func(file string, name *ast.Ident, declType string, process func() error) {
+		var declName string
+		if name != nil {
+			declName = name.Name
+		} else {
+			declName = "<anonymous>"
+		}
+		if !p.setCurFile(file) {
+			return
+		}
+		if err := process(); err != nil {
+			log.Printf("Convert%s %s Fail: %s", declType, declName, err.Error())
+		}
+	}
 
 	for _, decl := range p.Pkg.File.Decls {
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
-			p.setCurFile(decl.DeclBase.Loc.File)
-			if err := p.GenPkg.NewTypeDecl(decl); err != nil {
-				log.Printf("ConvertTypeDecl %s Fail: %s", decl.Name.Name, err.Error())
-			}
+			processDecl(decl.DeclBase.Loc.File, decl.Name, "TypeDecl", func() error {
+				return p.GenPkg.NewTypeDecl(decl)
+			})
 		case *ast.EnumTypeDecl:
-			p.setCurFile(decl.DeclBase.Loc.File)
-			if err := p.GenPkg.NewEnumTypeDecl(decl); err != nil {
-				log.Printf("ConvertEnumTyleDecl %s Fail: %s", decl.Name.Name, err.Error())
-			}
+			processDecl(decl.DeclBase.Loc.File, decl.Name, "EnumTypeDecl", func() error {
+				return p.GenPkg.NewEnumTypeDecl(decl)
+			})
 		case *ast.TypedefDecl:
-			p.setCurFile(decl.DeclBase.Loc.File)
-			if err := p.GenPkg.NewTypedefDecl(decl); err != nil {
-				log.Printf("ConvertTypedefDecl %s Fail: %s", decl.Name.Name, err.Error())
-			}
+			processDecl(decl.DeclBase.Loc.File, decl.Name, "TypedefDecl", func() error {
+				return p.GenPkg.NewTypedefDecl(decl)
+			})
 		case *ast.FuncDecl:
-			p.setCurFile(decl.DeclBase.Loc.File)
-			if err := p.GenPkg.NewFuncDecl(decl); err != nil {
-				log.Printf("ConvertFuncDecl %s Fail: %s", decl.Name.Name, err.Error())
-			}
+			processDecl(decl.DeclBase.Loc.File, decl.Name, "FuncDecl", func() error {
+				return p.GenPkg.NewFuncDecl(decl)
+			})
 		}
 	}
+
 	err := p.GenPkg.WritePkgFiles()
 	if err != nil {
 		log.Printf("WritePkgFiles: %v", err)
@@ -282,9 +300,21 @@ func (p *Converter) Process() {
 	}
 }
 
-func (p *Converter) setCurFile(file string) {
-	info := p.Pkg.FileMap[file]
+func (p *Converter) setCurFile(file string) bool {
+	if _, ok := p.incMap[file]; ok {
+		return false
+	}
+	info, exist := p.Pkg.FileMap[file]
+	if !exist {
+		var availableFiles []string
+		for f := range p.Pkg.FileMap {
+			availableFiles = append(availableFiles, f)
+		}
+		log.Fatalf("File %q not found in FileMap. Available files:\n%s",
+			file, strings.Join(availableFiles, "\n"))
+	}
 	p.GenPkg.SetCurFile(Hfile(p.GenPkg, file, info.IncPath, info.IsSys))
+	return true
 }
 
 func Hfile(pkg *Package, path string, incPath string, isSys bool) *HeaderFile {

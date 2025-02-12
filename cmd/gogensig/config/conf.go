@@ -7,11 +7,11 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/llcppg"
 )
@@ -59,16 +59,16 @@ func SigfetchExtract(cfg *SigfetchExtractConfig) ([]byte, error) {
 		args = append(args, "-cpp=false")
 	}
 
-	return executeSigfetch(args, cfg.Dir)
+	return executeSigfetch(args, cfg.Dir, cfg.IsCpp)
 }
 
-func SigfetchConfig(configFile string, dir string) ([]byte, error) {
+func SigfetchConfig(configFile string, dir string, isCpp bool) ([]byte, error) {
 	args := []string{configFile}
-	return executeSigfetch(args, dir)
+	return executeSigfetch(args, dir, isCpp)
 }
 
-func executeSigfetch(args []string, dir string) ([]byte, error) {
-	cmd := exec.Command("llcppsigfetch", append(args, "-resourceIncDir="+ClangResourceDir())...)
+func executeSigfetch(args []string, dir string, isCpp bool) ([]byte, error) {
+	cmd := exec.Command("llcppsigfetch", append(args, "-ClangResourceDir="+ClangResourceDir(), "-ClangSearchPath="+strings.Join(clangutils.GetIncludePaths(isCpp), ","))...)
 	if dir != "" {
 		cmd.Dir = dir
 	}
@@ -178,5 +178,5 @@ func ClangResourceDir() string {
 	if err != nil {
 		panic(err)
 	}
-	return path.Join(strings.TrimSpace(string(res)), "include")
+	return strings.TrimSpace(string(res))
 }

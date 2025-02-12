@@ -42,7 +42,6 @@ func RunTest(testName string, testCases []string) {
 }
 
 func RunTestWithConfig(config *parse.ParseConfig) {
-
 	pkg, err := parse.Do(config)
 	if err != nil {
 		panic(err)

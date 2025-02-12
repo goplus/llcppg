@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
@@ -14,8 +14,9 @@ import (
 	"github.com/goplus/llgo/c/cjson"
 )
 
-// temp to avoid call clang -print-resource-dir in llcppsigfetch,will cause hang
-var ResourceIncDir string
+// temp to avoid call clang in llcppsigfetch,will cause hang
+var ClangSearchPath []string
+var ClangResourceDir string
 
 type Context struct {
 	FileSet []*llcppg.FileEntry
@@ -100,46 +101,38 @@ func (p *Context) parseFile(path string) ([]*llcppg.FileEntry, error) {
 }
 
 type ParseConfig struct {
-	Conf             *llcppg.Config
-	CombinedFile     string
-	PreprocessedFile string
-	OutputFile       bool
+	Conf                  *llcppg.Config
+	CombinedFile          string
+	PreprocessedFile      string
+	IncedPreprocessedFile string
+	OutputFile            bool
 }
 
-func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
-	if cfg.CombinedFile == "" {
-		combinedFile, err := os.CreateTemp("", cfg.Conf.Name+"*.h")
-		if err != nil {
-			return nil, err
-		}
-		defer combinedFile.Close()
-		cfg.CombinedFile = combinedFile.Name()
+func Do(cfg *ParseConfig) (*types.Pkg, error) {
+	if err := createTempIfNoExist(&cfg.CombinedFile, cfg.Conf.Name+"*.h"); err != nil {
+		return nil, err
 	}
-
-	if cfg.PreprocessedFile == "" {
-		preprocessedFile, err := os.CreateTemp("", cfg.Conf.Name+"*.i")
-		if err != nil {
-			return nil, err
-		}
-		defer preprocessedFile.Close()
-		cfg.PreprocessedFile = preprocessedFile.Name()
+	if err := createTempIfNoExist(&cfg.PreprocessedFile, cfg.Conf.Name+"*.i"); err != nil {
+		return nil, err
+	}
+	if err := createTempIfNoExist(&cfg.IncedPreprocessedFile, cfg.Conf.Name+"*.i"); err != nil {
+		return nil, err
 	}
 
 	if dbg.GetDebugParse() {
 		fmt.Fprintln(os.Stderr, "Do: combinedFile", cfg.CombinedFile)
 		fmt.Fprintln(os.Stderr, "Do: preprocessedFile", cfg.PreprocessedFile)
+		fmt.Fprintln(os.Stderr, "Do: incedPreprocessedFile", cfg.IncedPreprocessedFile)
 	}
+
+	// compose includes to a combined file
 	err := clangutils.ComposeIncludes(cfg.Conf.Include, cfg.CombinedFile)
 	if err != nil {
 		return nil, err
 	}
 
+	// prepare clang flags to preprocess the combined file
 	clangFlags := strings.Fields(cfg.Conf.CFlags)
-	// clangFlags = append(clangFlags, "-nobuiltininc")
-	// to avoid libclang & clang different search path,but it will cause
-	// 	   /opt/homebrew/include/lua/lua.h:11:10: fatal error: 'stdarg.h' file not found
-	//     11 | #include <stdarg.h>
-	// so use llvm-config --cflags to libclang to ensure the same search path for libclang and clang
 	clangFlags = append(clangFlags, "-C")  // keep comment
 	clangFlags = append(clangFlags, "-dD") // keep macro
 
@@ -152,11 +145,29 @@ func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
 	if err != nil {
 		return nil, err
 	}
-	libclangFlags := append(strings.Fields(cfg.Conf.CFlags), "-I"+ResourceIncDir)
-	// llvm cflags is not clang's include search path
+
+	// preprocess the combined file to get the include paths
+	incFlags := strings.Fields(cfg.Conf.CFlags)
+	incFlags = append(incFlags, "-dI")
+	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
+		File:    cfg.CombinedFile,
+		IsCpp:   cfg.Conf.Cplusplus,
+		Args:    incFlags,
+		OutFile: cfg.IncedPreprocessedFile,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the preprocessed file & prepare the same flag as clang's flag
+	libclangFlags := []string{}
+	if ClangResourceDir != "" {
+		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
+	}
+	libclangFlags = append(libclangFlags, strings.Fields(cfg.Conf.CFlags)...)
 	converter, err := NewConverterX(
 		&Config{
-			CombinedFile: cfg.CombinedFile,
+			IncPreprocessedFile: cfg.IncedPreprocessedFile,
 			Cfg: &clangutils.Config{
 				File:  cfg.PreprocessedFile,
 				IsCpp: cfg.Conf.Cplusplus,
@@ -174,10 +185,14 @@ func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
 	return pkg, nil
 }
 
-func llvmCflags() []string {
-	out, err := exec.Command("llvm-config", "--cflags").Output()
-	if err != nil {
-		panic(err)
+func createTempIfNoExist(filename *string, pattern string) error {
+	if *filename != "" {
+		return nil
 	}
-	return strings.Fields(string(out))
+	f, err := os.CreateTemp("", pattern)
+	if err != nil {
+		return err
+	}
+	*filename = f.Name()
+	return nil
 }
