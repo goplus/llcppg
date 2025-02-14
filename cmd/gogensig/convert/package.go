@@ -659,6 +659,15 @@ func (p *Package) Write(headerFile string) error {
 	return p.writeToFile(fileName, filePath)
 }
 
+// todo(zzy):insert in coresponding file
+func (p *Package) WriteMacrosFile() error {
+	err := p.Write(p.conf.Name + "_autogen_macros")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *Package) WriteLinkFile() (string, error) {
 	fileName := p.conf.Name + "_autogen_link.go"
 	filePath := filepath.Join(p.GetOutputDir(), fileName)

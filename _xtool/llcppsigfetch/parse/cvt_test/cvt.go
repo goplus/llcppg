@@ -2,9 +2,12 @@ package cvttest
 
 import (
 	"fmt"
+	"os"
+	"sort"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
+	"github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/c/clang"
@@ -12,33 +15,56 @@ import (
 
 func RunTest(testName string, testCases []string) {
 	for i, content := range testCases {
+		tempIncFile := "temp.h"
+		if err := os.WriteFile(tempIncFile, []byte(content), 0644); err != nil {
+			panic(err)
+		}
+		include := []string{tempIncFile}
+		cflags := "-I./"
 		c.Printf(c.Str("%s Case %d:\n"), c.AllocaCStr(testName), c.Int(i+1))
-		RunTestWithConfig(&clangutils.Config{
-			File:  content,
-			Temp:  true,
-			IsCpp: true,
+		RunTestWithConfig(&parse.ParseConfig{
+			Conf: &types.Config{
+				Cplusplus: true,
+				Include:   include,
+				CFlags:    cflags,
+			},
 		})
+		os.Remove(tempIncFile)
 	}
 }
 
-func RunTestWithConfig(config *clangutils.Config) {
-	converter, err := parse.NewConverter(config)
+func RunTestWithConfig(config *parse.ParseConfig) {
+	pkg, err := parse.Do(config)
 	if err != nil {
 		panic(err)
 	}
-
-	_, err = converter.Convert()
-	if err != nil {
-		panic(err)
-	}
-
-	result := converter.MarshalASTFiles()
+	result := MarshalPkg(pkg)
 	str := result.Print()
 	c.Printf(c.Str("%s\n\n"), str)
-
 	cjson.FreeCStr(str)
 	result.Delete()
-	converter.Dispose()
+}
+
+// for test order map
+func MarshalPkg(pkg *types.Pkg) *cjson.JSON {
+	root := cjson.Object()
+	root.SetItem(c.Str("File"), parse.MarshalASTFile(pkg.File))
+	root.SetItem(c.Str("FileMap"), MarshalFileMap(pkg.FileMap))
+	return root
+}
+
+// for test order map
+func MarshalFileMap(fmap map[string]*types.FileInfo) *cjson.JSON {
+	root := cjson.Object()
+	keys := make([]string, 0, len(fmap))
+	for path := range fmap {
+		keys = append(keys, path)
+	}
+	sort.Strings(keys)
+	for _, path := range keys {
+		root.SetItem(c.AllocaCStr(path), parse.MarshalFileInfo(fmap[path]))
+	}
+	return root
 }
 
 type GetTypeOptions struct {

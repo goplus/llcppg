@@ -13,7 +13,6 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	ctoken "github.com/goplus/llcppg/token"
@@ -98,12 +97,63 @@ func TestSysToPkg(t *testing.T) {
 }
 
 func TestDepPkg(t *testing.T) {
-	name := "_depcjson"
 	dir, err := os.Getwd()
 	if err != nil {
 		t.Fatal("Getwd failed:", err)
 	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
+	const hfileDir = "hfile"
+	testDataDir := "testdata"
+
+	buildTestPath := func(components ...string) string {
+		return path.Join(components...)
+	}
+	inc := func(cfgPath string, incFlag string) func() {
+		origContent, err := os.ReadFile(cfgPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		cfg, err := config.GetCppgCfgFromPath(cfgPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		cfg.CFlags = cfg.CFlags + incFlag
+		err = config.CreateJSONFile(cfgPath, cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return func() {
+			if err := os.WriteFile(cfgPath, origContent, 0644); err != nil {
+				t.Fatal("Failed to restore original config:", err)
+			}
+		}
+	}
+
+	name := "_depcjson"
+	depcjson := path.Join(dir, "_testdata", name)
+	depcjsonConf := path.Join(depcjson, "conf", "llcppg.cfg")
+
+	thirdDepPath := buildTestPath(dir, testDataDir, "thirddep")
+	thirdDep2Path := buildTestPath(dir, testDataDir, "thirddep2")
+	basicDepPath := buildTestPath(dir, testDataDir, "basicdep")
+
+	thirdDepHFile := buildTestPath(thirdDepPath, hfileDir)
+	thirdDep2HFile := buildTestPath(thirdDep2Path, hfileDir)
+	basicDepHFile := buildTestPath(basicDepPath, hfileDir)
+
+	cleanups := []func(){
+		inc(depcjsonConf, fmt.Sprintf(" -I%s -I%s -I%s", thirdDepHFile, thirdDep2HFile, basicDepHFile)),
+		inc(buildTestPath(thirdDepPath, "llcppg.cfg"), fmt.Sprintf(" -I%s -I%s", thirdDepHFile, basicDepHFile)),
+		inc(buildTestPath(thirdDep2Path, "llcppg.cfg"), fmt.Sprintf(" -I%s -I%s -I%s", thirdDep2HFile, thirdDepHFile, basicDepHFile)),
+		inc(buildTestPath(basicDepPath, "llcppg.cfg"), fmt.Sprintf(" -I%s", basicDepHFile)),
+	}
+
+	for i := len(cleanups) - 1; i >= 0; i-- {
+		defer cleanups[i]()
+	}
+
+	testFrom(t, name, depcjson, false, nil)
 }
 
 func testFromDir(t *testing.T, relDir string, gen bool) {
@@ -170,60 +220,34 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 		}
 	}()
 	outputDir, err := ModInit(name)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer os.RemoveAll(outputDir)
 
-	// patch the test file's cflags
-	preprocess := func(p *convert.Package) {
-		var patchFlags func(pkg *convert.PkgInfo)
-		patchFlags = func(pkg *convert.PkgInfo) {
-			if pkg.PkgPath != "." {
-				incFlags := " -I" + filepath.Join(pkg.Dir, "hfile")
-				pkg.CppgConf.CFlags += incFlags
-				cfg.CFlags += incFlags
-			}
-
-			for _, dep := range pkg.Deps {
-				patchFlags(dep)
-				if err != nil {
-					t.Fatal(err)
-				}
-			}
-		}
-		patchFlags(p.PkgInfo)
-		err = config.CreateJSONFile(flagedCfgPath, cfg)
-		if err != nil {
-			t.Fatal(err)
-		}
+	bytes, err := config.SigfetchConfig(flagedCfgPath, confPath, cfg.Cplusplus)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	p, pkg, err := basic.ConvertProcesser(&basic.Config{
-		PkgPreprocessor: preprocess,
-		AstConvertConfig: convert.AstConvertConfig{
-			PkgName:   name,
-			SymbFile:  symbPath,
-			CfgFile:   flagedCfgPath,
-			OutputDir: outputDir,
-			PubFile:   pubPath,
-		},
+	convertPkg, err := unmarshal.Pkg(bytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cvt, err := convert.NewConverter(&convert.ConverterConfig{
+		PkgName:   name,
+		SymbFile:  symbPath,
+		CfgFile:   flagedCfgPath,
+		OutputDir: outputDir,
+		PubFile:   pubPath,
+		Pkg:       convertPkg,
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	bytes, err := config.SigfetchConfig(flagedCfgPath, confPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	inputdata, err := unmarshal.FileSet(bytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = p.ProcessFileSet(inputdata)
-	if err != nil {
-		t.Fatal(err)
-	}
+	cvt.Process()
 
 	var res strings.Builder
 
@@ -264,7 +288,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 	}
 
 	if validateFunc != nil {
-		validateFunc(t, pkg)
+		validateFunc(t, cvt.GenPkg)
 	}
 }
 

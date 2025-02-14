@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
-	"strings"
+	"os"
+	"path"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	test "github.com/goplus/llcppg/_xtool/llcppsigfetch/parse/cvt_test"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/c"
 )
 
 func main() {
 	TestDefine()
-	TestInclude()
 	TestSystemHeader()
 	TestInclusionMap()
 	TestMacroExpansionOtherFile()
@@ -27,14 +27,6 @@ func TestDefine() {
 		`#define SQUARE(x) ((x) * (x))`,
 	}
 	test.RunTest("TestDefine", testCases)
-}
-
-func TestInclude() {
-	testCases := []string{
-		`#include "foo.h"`,
-		// `#include <limits.h>`, //  Standard libraries are mostly platform-dependent
-	}
-	test.RunTest("TestInclude", testCases)
 }
 
 func TestInclusionMap() {
@@ -62,40 +54,36 @@ func TestInclusionMap() {
 
 func TestSystemHeader() {
 	fmt.Println("=== TestSystemHeader ===")
-	converter, err := parse.NewConverter(&clangutils.Config{
-		File:  "#include <stdio.h>",
-		Temp:  true,
-		IsCpp: false,
+	temp := path.Join(os.TempDir(), "temp.h")
+	os.WriteFile(temp, []byte("#include <stdio.h>"), 0644)
+	converter, err := parse.NewConverterX(&parse.Config{
+		Cfg: &clangutils.Config{
+			File: temp,
+		},
+		IncPreprocessedFile: temp,
 	})
 	if err != nil {
 		panic(err)
 	}
-	converter.Convert()
-	if len(converter.Files) < 2 {
-		panic("expect 2 files")
-	}
-	if converter.Files[0].IsSys {
-		panic("entry file is not system header")
+	pkg, err := converter.ConvertX()
+	if err != nil {
+		panic(err)
 	}
 
-	includePath := converter.Files[0].Doc.Includes[0].Path
-	if strings.HasSuffix(includePath, "stdio.h") && filepath.IsAbs(includePath) {
-		fmt.Println("stdio.h is absolute path")
-	}
-
-	for i := 1; i < len(converter.Files); i++ {
-		if !converter.Files[i].IsSys {
-			panic(fmt.Errorf("include file is not system header: %s", converter.Files[i].Path))
+	for path, info := range pkg.FileMap {
+		if !info.IsSys {
+			panic(fmt.Errorf("include file is not system header: %s", path))
 		}
-		for _, decl := range converter.Files[i].Doc.Decls {
-			switch decl := decl.(type) {
-			case *ast.TypeDecl:
-			case *ast.EnumTypeDecl:
-			case *ast.FuncDecl:
-			case *ast.TypedefDecl:
-				if decl.DeclBase.Loc.File != converter.Files[i].Path {
-					fmt.Println("Decl is not in the file", decl.DeclBase.Loc.File, "expect", converter.Files[i].Path)
-				}
+	}
+
+	for _, decl := range pkg.File.Decls {
+		switch decl := decl.(type) {
+		case *ast.TypeDecl:
+		case *ast.EnumTypeDecl:
+		case *ast.FuncDecl:
+		case *ast.TypedefDecl:
+			if _, ok := pkg.FileMap[decl.DeclBase.Loc.File]; !ok {
+				fmt.Println("Decl is not Found in the fileMap", decl.DeclBase.Loc.File)
 			}
 		}
 	}
@@ -104,9 +92,10 @@ func TestSystemHeader() {
 
 func TestMacroExpansionOtherFile() {
 	c.Printf(c.Str("TestMacroExpansionOtherFile:\n"))
-	test.RunTestWithConfig(&clangutils.Config{
-		File:  "./testdata/macroexpan/ref.h",
-		Temp:  false,
-		IsCpp: false,
+	test.RunTestWithConfig(&parse.ParseConfig{
+		Conf: &types.Config{
+			Include: []string{"ref.h"},
+			CFlags:  "-I./testdata/macroexpan",
+		},
 	})
 }

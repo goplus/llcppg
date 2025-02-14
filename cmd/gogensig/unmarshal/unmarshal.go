@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/types"
 )
 
 type NodeUnmarshaler func(data []byte) (ast.Node, error)
@@ -43,7 +44,9 @@ func init() {
 		"TypeDecl":     TypeDecl,
 		"EnumTypeDecl": EnumTypeDecl,
 
-		"File":      File,
+		"File": File,
+
+		// todo:remove
 		"FileEntry": FileEntry,
 	}
 }
@@ -69,6 +72,32 @@ func FileSet(data []byte) ([]*ast.FileEntry, error) {
 	}
 
 	return fileSet, nil
+}
+
+func Pkg(data []byte) (*types.Pkg, error) {
+	type pkgTemp struct {
+		File    json.RawMessage
+		FileMap map[string]*types.FileInfo
+	}
+	var pkgData pkgTemp
+
+	if err := json.Unmarshal(data, &pkgData); err != nil {
+		return nil, newDeserializeError("Pkg", pkgData, data, err)
+	}
+	fileNode, err := Node(pkgData.File)
+	if err != nil {
+		return nil, newUnmarshalFieldError("Pkg", pkgData, "File", data, err)
+	}
+
+	file, ok := fileNode.(*ast.File)
+	if !ok {
+		return nil, newUnexpectType("FileEntry", fileNode, &ast.File{})
+	}
+
+	return &types.Pkg{
+		File:    file,
+		FileMap: pkgData.FileMap,
+	}, nil
 }
 
 func FileEntry(data []byte) (ast.Node, error) {

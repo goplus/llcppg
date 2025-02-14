@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <thirddep.h>
 #include <thirddep2.h>
-#include <type.h>
+#include "type.h"
 // This file is supposed to depend on cjson in its cflags, but for testing,
 // we will simulate its API using libcjson instead.
 //   "cflags" :"$(pkg-config --cflags libcjson)"
