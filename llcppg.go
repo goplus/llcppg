@@ -77,7 +77,7 @@ func llcppsymg(conf []byte, v verboseFlags) error {
 func llcppsigfetch(conf []byte, v verboseFlags, out *io.PipeWriter) {
 	cmd := command(CommandOptions{
 		Name:    "llcppsigfetch",
-		Args:    []string{"-", "-resourceIncDir=" + config.ClangResourceDir()},
+		Args:    []string{"-", "-ClangResourceDir=" + config.ClangResourceDir()},
 		Verbose: (v & VerboseSigfetch) != 0,
 	})
 	cmd.Stdin = bytes.NewReader(conf)
