@@ -660,6 +660,10 @@
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./hfile/forwarddecl.h"
+				},
 				"Name":	"LUA_IDSIZE",
 				"Tokens":	[{
 						"_Type":	"Token",

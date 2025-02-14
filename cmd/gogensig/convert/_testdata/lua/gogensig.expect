@@ -6,6 +6,11 @@ import (
 	"unsafe"
 )
 
+const GNAME = "_G"
+const LOADEDTABLE = "_LOADED"
+const PRELOADTABLE = "_PRELOAD"
+const FILEHANDLE = "FILE*"
+
 type Buffer struct {
 	B    *int8
 	Size uintptr
@@ -123,6 +128,65 @@ import (
 	"github.com/goplus/llgo/c"
 	"unsafe"
 )
+
+const VERSIONMAJOR = "5"
+const VERSIONMINOR = "4"
+const VERSIONRELEASE = "7"
+const VERSIONNUM = 504
+const AUTHORS = "R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
+const SIGNATURE = "\x1bLua"
+const OK = 0
+const YIELD = 1
+const ERRRUN = 2
+const ERRSYNTAX = 3
+const ERRMEM = 4
+const ERRERR = 5
+const TNIL = 0
+const TBOOLEAN = 1
+const TLIGHTUSERDATA = 2
+const TNUMBER = 3
+const TSTRING = 4
+const TTABLE = 5
+const TFUNCTION = 6
+const TUSERDATA = 7
+const TTHREAD = 8
+const NUMTYPES = 9
+const MINSTACK = 20
+const RIDXMAINTHREAD = 1
+const RIDXGLOBALS = 2
+const OPADD = 0
+const OPSUB = 1
+const OPMUL = 2
+const OPMOD = 3
+const OPPOW = 4
+const OPDIV = 5
+const OPIDIV = 6
+const OPBAND = 7
+const OPBOR = 8
+const OPBXOR = 9
+const OPSHL = 10
+const OPSHR = 11
+const OPUNM = 12
+const OPBNOT = 13
+const OPEQ = 0
+const OPLT = 1
+const OPLE = 2
+const GCSTOP = 0
+const GCRESTART = 1
+const GCCOLLECT = 2
+const GCCOUNT = 3
+const GCCOUNTB = 4
+const GCSTEP = 5
+const GCSETPAUSE = 6
+const GCSETSTEPMUL = 7
+const GCISRUNNING = 9
+const GCGEN = 10
+const GCINC = 11
+const HOOKCALL = 0
+const HOOKRET = 1
+const HOOKLINE = 2
+const HOOKCOUNT = 3
+const HOOKTAILCALL = 4
 
 type State struct {
 	Unused [8]uint8
@@ -369,101 +433,30 @@ package lua
 
 const LLGoPackage string = "link: $(pkg-config --libs lua);"
 
-===== lua_autogen_macros.go =====
+===== luaconf.go =====
 package lua
 
 import _ "unsafe"
 
-const LUAINTINT = 1
-const LUAINTLONG = 2
-const LUAINTLONGLONG = 3
-const LUAFLOATFLOAT = 1
-const LUAFLOATDOUBLE = 2
-const LUAFLOATLONGDOUBLE = 3
-const LUA32BITS = 0
-const LUAC89NUMBERS = 0
-const LUAPATHSEP = ";"
-const LUAPATHMARK = "?"
-const LUAEXECDIR = "!"
-const LUAROOT = "/opt/homebrew/"
-const LUADIRSEP = "/"
-const LUAIGMARK = "-"
-const LUANUMBERFRMLEN = ""
-const LUANUMBERFMT = "%.14g"
-const LUAINTEGERFRMLEN = "ll"
+const INTINT = 1
+const INTLONG = 2
+const INTLONGLONG = 3
+const FLOATFLOAT = 1
+const FLOATDOUBLE = 2
+const FLOATLONGDOUBLE = 3
+const X32BITS = 0
+const C89NUMBERS = 0
+const PATHSEP = ";"
+const PATHMARK = "?"
+const EXECDIR = "!"
+const ROOT = "/opt/homebrew/"
+const DIRSEP = "/"
+const IGMARK = "-"
+const NUMBERFRMLEN = ""
+const NUMBERFMT = "%.14g"
+const INTEGERFRMLEN = "ll"
 const LUAIMAXSTACK = 1000000
-const LUAIDSIZE = 60
-const LUAVERSIONMAJOR = "5"
-const LUAVERSIONMINOR = "4"
-const LUAVERSIONRELEASE = "7"
-const LUAVERSIONNUM = 504
-const LUAAUTHORS = "R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
-const LUASIGNATURE = "\x1bLua"
-const LUAOK = 0
-const LUAYIELD = 1
-const LUAERRRUN = 2
-const LUAERRSYNTAX = 3
-const LUAERRMEM = 4
-const LUAERRERR = 5
-const LUATNIL = 0
-const LUATBOOLEAN = 1
-const LUATLIGHTUSERDATA = 2
-const LUATNUMBER = 3
-const LUATSTRING = 4
-const LUATTABLE = 5
-const LUATFUNCTION = 6
-const LUATUSERDATA = 7
-const LUATTHREAD = 8
-const LUANUMTYPES = 9
-const LUAMINSTACK = 20
-const LUARIDXMAINTHREAD = 1
-const LUARIDXGLOBALS = 2
-const LUAOPADD = 0
-const LUAOPSUB = 1
-const LUAOPMUL = 2
-const LUAOPMOD = 3
-const LUAOPPOW = 4
-const LUAOPDIV = 5
-const LUAOPIDIV = 6
-const LUAOPBAND = 7
-const LUAOPBOR = 8
-const LUAOPBXOR = 9
-const LUAOPSHL = 10
-const LUAOPSHR = 11
-const LUAOPUNM = 12
-const LUAOPBNOT = 13
-const LUAOPEQ = 0
-const LUAOPLT = 1
-const LUAOPLE = 2
-const LUAGCSTOP = 0
-const LUAGCRESTART = 1
-const LUAGCCOLLECT = 2
-const LUAGCCOUNT = 3
-const LUAGCCOUNTB = 4
-const LUAGCSTEP = 5
-const LUAGCSETPAUSE = 6
-const LUAGCSETSTEPMUL = 7
-const LUAGCISRUNNING = 9
-const LUAGCGEN = 10
-const LUAGCINC = 11
-const LUAHOOKCALL = 0
-const LUAHOOKRET = 1
-const LUAHOOKLINE = 2
-const LUAHOOKCOUNT = 3
-const LUAHOOKTAILCALL = 4
-const LUAGNAME = "_G"
-const LUALOADEDTABLE = "_LOADED"
-const LUAPRELOADTABLE = "_PRELOAD"
-const LUAFILEHANDLE = "FILE*"
-const LUACOLIBNAME = "coroutine"
-const LUATABLIBNAME = "table"
-const LUAIOLIBNAME = "io"
-const LUAOSLIBNAME = "os"
-const LUASTRLIBNAME = "string"
-const LUAUTF8LIBNAME = "utf8"
-const LUAMATHLIBNAME = "math"
-const LUADBLIBNAME = "debug"
-const LUALOADLIBNAME = "package"
+const IDSIZE = 60
 
 ===== lualib.go =====
 package lua
@@ -472,6 +465,16 @@ import (
 	"github.com/goplus/llgo/c"
 	_ "unsafe"
 )
+
+const COLIBNAME = "coroutine"
+const TABLIBNAME = "table"
+const IOLIBNAME = "io"
+const OSLIBNAME = "os"
+const STRLIBNAME = "string"
+const UTF8LIBNAME = "utf8"
+const MATHLIBNAME = "math"
+const DBLIBNAME = "debug"
+const LOADLIBNAME = "package"
 //go:linkname Base C.luaopen_base
 func Base(L *State) c.Int
 //go:linkname Coroutine C.luaopen_coroutine

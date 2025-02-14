@@ -105,6 +105,10 @@
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./hfile/compat.h"
+				},
 				"Name":	"COMPAT_H",
 				"Tokens":	[{
 						"_Type":	"Token",

@@ -1,17 +1,12 @@
-===== macro_autogen_link.go =====
-package macro
-
-const LLGoPackage string = "link: $(pkg-config --libs xxx);"
-
-===== macro_autogen_macros.go =====
+===== macro.go =====
 package macro
 
 import _ "unsafe"
 
-const MACROVALUE = 123
-const MACROSTRING = "hello"
-const MACROFLOAT = 1.23
-const LUA32BITS = 0
+const VALUE = 123
+const STRING = "hello"
+const FLOAT = 1.23
+const X32BITS = 0
 const XMLSAX2MAGIC = 0xDEEDBEAF
 const ZSTDMAGICNUMBER = 0xFD2FB528
 const ZSTDMAGICDICTIONARY = 0xEC30A437
@@ -23,4 +18,9 @@ const INT32MAXDEC = 2147483647
 const UINT32MAX = 0xFFFFFFFF
 const UINT64MAX = 0xFFFFFFFFFFFFFFFF
 const INT64MAX = 9223372036854775807
+
+===== macro_autogen_link.go =====
+package macro
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 

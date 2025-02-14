@@ -11,6 +11,10 @@ TestDefine Case 1:
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./temp.h"
+				},
 				"Name":	"DEBUG",
 				"Tokens":	[{
 						"_Type":	"Token",
@@ -35,6 +39,10 @@ TestDefine Case 2:
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./temp.h"
+				},
 				"Name":	"OK",
 				"Tokens":	[{
 						"_Type":	"Token",
@@ -63,6 +71,10 @@ TestDefine Case 3:
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./temp.h"
+				},
 				"Name":	"SQUARE",
 				"Tokens":	[{
 						"_Type":	"Token",
@@ -179,6 +191,10 @@ TestMacroExpansionOtherFile:
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./testdata/macroexpan/def.h"
+				},
 				"Name":	"__FSID_T_TYPE",
 				"Tokens":	[{
 						"_Type":	"Token",

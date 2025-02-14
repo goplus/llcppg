@@ -362,6 +362,7 @@ type Token struct {
 }
 
 type Macro struct {
+	Loc    *Location
 	Name   string
 	Tokens []*Token // Tokens[0].Lit is the macro name
 }

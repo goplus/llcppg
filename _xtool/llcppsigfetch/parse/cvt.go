@@ -258,14 +258,8 @@ func (ct *Converter) GetCurFile(cursor clang.Cursor) *ast.File {
 }
 
 func (ct *Converter) CreateDeclBase(cursor clang.Cursor) ast.DeclBase {
-	var file clang.String
-	loc := cursor.Location()
-	loc.PresumedLocation(&file, nil, nil)
-	filename := clang.GoString(file)
 	base := ast.DeclBase{
-		Loc: &ast.Location{
-			File: filename,
-		},
+		Loc:    createLoc(cursor),
 		Parent: ct.BuildScopingExpr(cursor.SemanticParent()),
 	}
 	commentGroup, isDoc := ct.ParseCommentGroup(cursor)
@@ -273,6 +267,16 @@ func (ct *Converter) CreateDeclBase(cursor clang.Cursor) ast.DeclBase {
 		base.Doc = commentGroup
 	}
 	return base
+}
+
+func createLoc(cursor clang.Cursor) *ast.Location {
+	var file clang.String
+	loc := cursor.Location()
+	loc.PresumedLocation(&file, nil, nil)
+	filename := clang.GoString(file)
+	return &ast.Location{
+		File: filename,
+	}
 }
 
 // extracts and parses comments associated with a given Clang cursor,
@@ -338,9 +342,6 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		macro := ct.ProcessMacro(cursor)
 		curFile.Macros = append(curFile.Macros, macro)
 		if cursor.Location().IsInSystemHeader() == 0 || cursor.IsMacroBuiltin() != 0 {
-			loc := cursor.Location()
-			var file clang.String
-			loc.PresumedLocation(&file, nil, nil)
 			ct.pkg.File.Macros = append(ct.pkg.File.Macros, macro)
 		}
 		ct.logln("visitTop: ProcessMacro END ", macro.Name, "Tokens Length:", len(macro.Tokens))
@@ -755,10 +756,9 @@ func (ct *Converter) ProcessEnumDecl(cursor clang.Cursor) *ast.EnumTypeDecl {
 
 // current only collect macro which defined in file
 func (ct *Converter) ProcessMacro(cursor clang.Cursor) *ast.Macro {
-	name := toStr(cursor.String())
-
 	macro := &ast.Macro{
-		Name:   name,
+		Loc:    createLoc(cursor),
+		Name:   clang.GoString(cursor.String()),
 		Tokens: ct.GetTokens(cursor),
 	}
 	return macro

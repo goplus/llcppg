@@ -249,6 +249,12 @@ func (p *Converter) Process() {
 		}
 	}
 
+	for _, macro := range p.Pkg.File.Macros {
+		processDecl(macro.Loc.File, &ast.Ident{Name: macro.Name}, "Macro", func() error {
+			return p.GenPkg.NewMacro(macro)
+		})
+	}
+
 	for _, decl := range p.Pkg.File.Decls {
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
@@ -281,22 +287,6 @@ func (p *Converter) Process() {
 	err = p.GenPkg.WritePubFile()
 	if err != nil {
 		log.Printf("WritePubFile: %v", err)
-	}
-
-	if len(p.Pkg.File.Macros) != 0 {
-		p.GenPkg.SetCurFile(&HeaderFile{
-			File:         p.Conf.PkgName + "_autogen_macros",
-			IsHeaderFile: false,
-		})
-		for _, macro := range p.Pkg.File.Macros {
-			if err := p.GenPkg.NewMacro(macro); err != nil {
-				log.Printf("NewMacro %s Fail: %s\n", macro.Name, err.Error())
-			}
-		}
-		err = p.GenPkg.WriteMacrosFile()
-		if err != nil {
-			log.Printf("WriteMacrosFile: %v", err)
-		}
 	}
 }
 
