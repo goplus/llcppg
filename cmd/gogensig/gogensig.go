@@ -26,7 +26,6 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/basic"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 )
@@ -72,21 +71,22 @@ func main() {
 	err = prepareEnv(wd, conf.Name, conf.Deps)
 	check(err)
 
-	p, _, err := basic.ConvertProcesser(&basic.Config{
-		AstConvertConfig: convert.AstConvertConfig{
-			PkgName:  conf.Name,
-			CfgFile:  filepath.Join(wd, cfg),
-			SymbFile: filepath.Join(wd, "llcppg.symb.json"),
-			PubFile:  filepath.Join(wd, "llcppg.pub"),
-		},
+	convertPkg, err := unmarshal.Pkg(data)
+	if err != nil {
+		check(err)
+	}
+
+	cvt, err := convert.NewConverter(&convert.ConverterConfig{
+		PkgName:  conf.Name,
+		SymbFile: filepath.Join(wd, args.LLCPPG_SYMB),
+		CfgFile:  filepath.Join(wd, cfg),
+		PubFile:  filepath.Join(wd, args.LLCPPG_PUB),
+		Pkg:      convertPkg,
 	})
-	check(err)
-
-	inputdata, err := unmarshal.FileSet(data)
-	check(err)
-
-	err = p.ProcessFileSet(inputdata)
-	check(err)
+	if err != nil {
+		check(err)
+	}
+	cvt.Process()
 }
 
 func check(err error) {

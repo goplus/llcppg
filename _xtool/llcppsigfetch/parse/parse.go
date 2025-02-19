@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
@@ -12,6 +13,10 @@ import (
 	"github.com/goplus/llcppg/types"
 	"github.com/goplus/llgo/c/cjson"
 )
+
+// temp to avoid call clang in llcppsigfetch,will cause hang
+var ClangSearchPath []string
+var ClangResourceDir string
 
 type Context struct {
 	FileSet []*ast.FileEntry
@@ -111,4 +116,101 @@ func (p *Context) parseFile(path string) ([]*ast.FileEntry, error) {
 	}
 
 	return files, nil
+}
+
+type ParseConfig struct {
+	Conf                  *types.Config
+	CombinedFile          string
+	PreprocessedFile      string
+	IncedPreprocessedFile string
+	OutputFile            bool
+}
+
+func Do(cfg *ParseConfig) (*types.Pkg, error) {
+	if err := createTempIfNoExist(&cfg.CombinedFile, cfg.Conf.Name+"*.h"); err != nil {
+		return nil, err
+	}
+	if err := createTempIfNoExist(&cfg.PreprocessedFile, cfg.Conf.Name+"*.i"); err != nil {
+		return nil, err
+	}
+	if err := createTempIfNoExist(&cfg.IncedPreprocessedFile, cfg.Conf.Name+"*.i"); err != nil {
+		return nil, err
+	}
+
+	if dbg.GetDebugParse() {
+		fmt.Fprintln(os.Stderr, "Do: combinedFile", cfg.CombinedFile)
+		fmt.Fprintln(os.Stderr, "Do: preprocessedFile", cfg.PreprocessedFile)
+		fmt.Fprintln(os.Stderr, "Do: incedPreprocessedFile", cfg.IncedPreprocessedFile)
+	}
+
+	// compose includes to a combined file
+	err := clangutils.ComposeIncludes(cfg.Conf.Include, cfg.CombinedFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// prepare clang flags to preprocess the combined file
+	clangFlags := strings.Fields(cfg.Conf.CFlags)
+	clangFlags = append(clangFlags, "-C")  // keep comment
+	clangFlags = append(clangFlags, "-dD") // keep macro
+
+	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
+		File:    cfg.CombinedFile,
+		IsCpp:   cfg.Conf.Cplusplus,
+		Args:    clangFlags,
+		OutFile: cfg.PreprocessedFile,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// preprocess the combined file to get the include paths
+	incFlags := strings.Fields(cfg.Conf.CFlags)
+	incFlags = append(incFlags, "-dI")
+	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
+		File:    cfg.CombinedFile,
+		IsCpp:   cfg.Conf.Cplusplus,
+		Args:    incFlags,
+		OutFile: cfg.IncedPreprocessedFile,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the preprocessed file & prepare the same flag as clang's flag
+	libclangFlags := []string{}
+	if ClangResourceDir != "" {
+		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
+	}
+	libclangFlags = append(libclangFlags, strings.Fields(cfg.Conf.CFlags)...)
+	converter, err := NewConverterX(
+		&Config{
+			IncPreprocessedFile: cfg.IncedPreprocessedFile,
+			Cfg: &clangutils.Config{
+				File:  cfg.PreprocessedFile,
+				IsCpp: cfg.Conf.Cplusplus,
+				Args:  libclangFlags,
+			},
+		})
+	if err != nil {
+		return nil, err
+	}
+	pkg, err := converter.ConvertX()
+	if err != nil {
+		return nil, err
+	}
+
+	return pkg, nil
+}
+
+func createTempIfNoExist(filename *string, pattern string) error {
+	if *filename != "" {
+		return nil
+	}
+	f, err := os.CreateTemp("", pattern)
+	if err != nil {
+		return err
+	}
+	*filename = f.Name()
+	return nil
 }

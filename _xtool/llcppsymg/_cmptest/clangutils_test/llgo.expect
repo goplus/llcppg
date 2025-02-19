@@ -17,6 +17,23 @@ Namespace: TestNamespace
 Function/Method: namespaced_function
 Scoping parts: [TestNamespace namespaced_function]
 
+=== Test ComposeIncludes ===
+#include <file1.h>
+
+#include <file1.h>
+#include <file2.h>
+
+
+=== TestPreprocess ===
+CreateTranslationUnit succeeded
+TypeKind: 2 Name: A
+Location: main.h:3:16
+TypeKind: 20 Name: A
+Location: main.h:6:3
+TypeKind: 20 Name: B
+Location: compat.h:3:11
+TypeKind: 20 Name: C
+Location: main.h:8:11
 
 #stderr
 

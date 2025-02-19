@@ -29,10 +29,6 @@ type Time struct {
 	T4 time.Timespec
 }
 
-type Uchar struct {
-	Unused [8]uint8
-}
-
 type Wchar struct {
 	Unused [8]uint8
 }
@@ -43,5 +39,4 @@ stddef Stddef
 stdint Stdint
 stdio Stdio
 time Time
-uchar Uchar
 wchar Wchar

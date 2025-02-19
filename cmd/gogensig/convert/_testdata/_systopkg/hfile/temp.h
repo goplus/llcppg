@@ -24,18 +24,16 @@
 #include <tgmath.h>
 // #include <threads.h> mac not supported
 #include <time.h>
-#include <uchar.h>
 #include <wchar.h>
 #include <wctype.h>
 
-
 // https://en.cppreference.com/w/c/header
-struct fenv{
+struct fenv {
     fenv_t t1;
     fexcept_t t2;
 };
 
-struct stddef{
+struct stddef {
     size_t t1;
     ptrdiff_t t2;
     nullptr_t t3;
@@ -73,26 +71,19 @@ struct stdint {
     uintptr_t t28;
 };
 
-struct stdio
-{
+struct stdio {
     FILE *t1;
     fpos_t t2;
 };
 
-struct time{
+struct time {
     tm t1;
     time_t t2;
     clock_t t3;
     timespec t4;
 };
 
-struct uchar{
-    mbstate_t t1;
-    char16_t t2;
-    char32_t t3;
-};
-
-struct wchar{
+struct wchar {
     wint_t t2;
     wctrans_t t3;
     wctype_t t4;

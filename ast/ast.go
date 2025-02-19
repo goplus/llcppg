@@ -362,6 +362,7 @@ type Token struct {
 }
 
 type Macro struct {
+	Loc    *Location
 	Name   string
 	Tokens []*Token // Tokens[0].Lit is the macro name
 }
@@ -376,6 +377,7 @@ type File struct {
 	Macros   []*Macro   `json:"macros,omitempty"`
 }
 
+// todo:remove
 type FileEntry struct {
 	Path    string
 	IncPath string
