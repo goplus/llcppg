@@ -2,6 +2,7 @@ package clangutils
 
 import (
 	"errors"
+	"os"
 	"unsafe"
 
 	"github.com/goplus/llgo/c"
@@ -75,6 +76,17 @@ func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit
 	}
 
 	return index, unit, nil
+}
+
+// ComposeIncludes create Include list
+// #include <file1.h>
+// #include <file2.h>
+func ComposeIncludes(files []string, outfile string) error {
+	var str string
+	for _, file := range files {
+		str += ("#include <" + file + ">\n")
+	}
+	return os.WriteFile(outfile, []byte(str), 0644)
 }
 
 func GetLocation(loc clang.SourceLocation) (file clang.File, line c.Uint, column c.Uint, offset c.Uint) {

@@ -16,6 +16,34 @@ import (
 	"github.com/goplus/llgo/c/clang"
 )
 
+var (
+	// https://en.cppreference.com/w/c/header
+	CHeaders = []string{
+		"assert.h", "ctype.h", "errno.h", "fenv.h", "float.h",
+		"inttypes.h", "iso646.h", "limits.h", "locale.h", "math.h",
+		"setjmp.h", "signal.h", "stdalign.h", "stdarg.h", "stdatomic.h",
+		"stdbit.h", "stdbool.h", "stdckdint.h", "stddef.h", "stdint.h",
+		"stdio.h", "stdlib.h", "stdmchar.h", "stdnoreturn.h", "string.h",
+		"tgmath.h", "threads.h", "time.h", "uchar.h", "wchar.h",
+		"wctype.h",
+	}
+	// https://pubs.opengroup.org/onlinepubs/9699919799/idx/head.html
+	PosixHeaders = []string{
+		"aio.h", "arpa/inet.h", "complex.h", "cpio.h", "dirent.h",
+		"dlfcn.h", "fcntl.h", "fmtmsg.h", "fnmatch.h", "ftw.h",
+		"glob.h", "grp.h", "iconv.h", "langinfo.h", "libgen.h",
+		"monetary.h", "mqueue.h", "ndbm.h", "net/if.h", "netdb.h",
+		"netinet/in.h", "netinet/tcp.h", "nl_types.h", "poll.h", "pthread.h",
+		"pwd.h", "regex.h", "sched.h", "search.h", "semaphore.h",
+		"spawn.h", "strings.h", "stropts.h", "sys/ipc.h", "sys/mman.h",
+		"sys/msg.h", "sys/resource.h", "sys/select.h", "sys/sem.h", "sys/shm.h",
+		"sys/socket.h", "sys/stat.h", "sys/statvfs.h", "sys/time.h", "sys/times.h",
+		"sys/types.h", "sys/uio.h", "sys/un.h", "sys/utsname.h", "sys/wait.h", "syslog.h",
+		"tar.h", "termios.h", "trace.h", "ulimit.h", "unistd.h",
+		"utime.h", "utmpx.h", "wordexp.h",
+	}
+)
+
 type Converter struct {
 	Files     []*ast.FileEntry
 	FileOrder []string // todo(zzy): more efficient struct
@@ -54,7 +82,12 @@ func NewConverter(config *clangutils.Config) (*Converter, error) {
 		return nil, err
 	}
 
-	files := initFileEntries(unit)
+	stdHfiles, err := getStdFiles(config)
+	if err != nil {
+		return nil, err
+	}
+
+	files := initFileEntries(unit, stdHfiles)
 
 	return &Converter{
 		Files: files,
@@ -70,20 +103,20 @@ func (ct *Converter) Dispose() {
 	ct.unit.Dispose()
 }
 
-func initFileEntries(unit *clang.TranslationUnit) []*ast.FileEntry {
+func initFileEntries(unit *clang.TranslationUnit, stdHfiles map[string]struct{}) []*ast.FileEntry {
 	files := make([]*ast.FileEntry, 0)
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
-		loc := unit.GetLocation(inced, 1, 1)
 		incedFile := toStr(inced.FileName())
 		var incPath string
 		if len(incins) > 0 {
 			cur := unit.GetCursor(&incins[0])
 			incPath = toStr(cur.String())
 		}
+		_, isSys := stdHfiles[incedFile]
 		files = append(files, &ast.FileEntry{
 			Path:    incedFile,
 			IncPath: incPath,
-			IsSys:   loc.IsInSystemHeader() != 0,
+			IsSys:   isSys,
 			Doc:     &ast.File{},
 		})
 	})
@@ -1024,4 +1057,35 @@ func getCursorDesc(cursor clang.Cursor) (name string, kind string) {
 	name = toStr(cursor.String())
 	kind = toStr(cursor.Kind.String())
 	return
+}
+
+func getStdFiles(config *clangutils.Config) (map[string]struct{}, error) {
+	stdTemp, err := os.CreateTemp("", "temp.h")
+	if err != nil {
+		panic(err)
+	}
+	defer stdTemp.Close()
+	headers := CHeaders
+	if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
+		headers = append(headers, PosixHeaders...)
+	}
+	err = clangutils.ComposeIncludes(headers, stdTemp.Name())
+	if err != nil {
+		panic(err)
+	}
+	config.Temp = false
+	config.File = stdTemp.Name()
+	index, unit, err := clangutils.CreateTranslationUnit(config)
+	defer unit.Dispose()
+	defer index.Dispose()
+	if err != nil {
+		return nil, err
+	}
+	files := make(map[string]struct{})
+	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
+		if len(incins) > 0 {
+			files[clang.GoString(inced.FileName())] = struct{}{}
+		}
+	})
+	return files, nil
 }

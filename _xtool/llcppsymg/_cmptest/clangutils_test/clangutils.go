@@ -11,6 +11,7 @@ import (
 
 func main() {
 	TestClangUtil()
+	TestComposeIncludes()
 }
 
 func TestClangUtil() {
@@ -115,5 +116,43 @@ func TestClangUtil() {
 		}
 
 		fmt.Println()
+	}
+}
+
+func TestComposeIncludes() {
+	fmt.Println("=== Test ComposeIncludes ===")
+	testCases := []struct {
+		name  string
+		files []string
+	}{
+		{
+			name:  "One file",
+			files: []string{"file1.h"},
+		},
+		{
+			name:  "Two files",
+			files: []string{"file1.h", "file2.h"},
+		},
+		{
+			name:  "Empty files",
+			files: []string{},
+		},
+	}
+	for _, tc := range testCases {
+		outfile, err := os.CreateTemp("", "compose_*.h")
+		if err != nil {
+			panic(err)
+		}
+		err = clangutils.ComposeIncludes(tc.files, outfile.Name())
+		if err != nil {
+			panic(err)
+		}
+		content, err := os.ReadFile(outfile.Name())
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(string(content))
+		outfile.Close()
+		os.Remove(outfile.Name())
 	}
 }

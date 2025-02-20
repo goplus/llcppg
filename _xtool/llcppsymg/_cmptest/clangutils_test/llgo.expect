@@ -17,6 +17,13 @@ Namespace: TestNamespace
 Function/Method: namespaced_function
 Scoping parts: [TestNamespace namespaced_function]
 
+=== Test ComposeIncludes ===
+#include <file1.h>
+
+#include <file1.h>
+#include <file2.h>
+
+
 
 #stderr
 
