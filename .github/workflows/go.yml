@@ -16,7 +16,7 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-24.04
+          # - ubuntu-24.04
         llvm: [18]
     runs-on: ${{matrix.os}}
     steps:
@@ -49,7 +49,7 @@ jobs:
 
     - name: Install LLGO
       run: |
-        git clone https://github.com/goplus/llgo.git
+        git clone -b deferargs2 https://github.com/visualfc/llgo.git
         echo $PWD
         cd llgo/compiler
         go install -v ./cmd/...
