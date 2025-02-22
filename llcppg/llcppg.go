@@ -45,9 +45,18 @@ type SymbolInfo struct {
 	Go     string `json:"go"`     // Go function name
 }
 
+type FileType uint
+
+const (
+	Inter FileType = iota + 1
+	Impl
+	Third
+)
+
 type FileEntry struct {
-	Path    string
-	IncPath string
-	IsSys   bool
-	Doc     *ast.File
+	Path     string
+	IncPath  string
+	IsSys    bool
+	FileType FileType
+	Doc      *ast.File
 }

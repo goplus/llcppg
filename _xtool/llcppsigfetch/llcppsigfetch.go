@@ -27,8 +27,6 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 )
@@ -154,41 +152,36 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 		os.Exit(1)
 	}
 
-	cflag := cfgparse.ParseCFlags(conf.CFlags)
-	files, notFounds, err := cflag.GenHeaderFilePaths(conf.Include, syspath.GetIncludePaths())
-	check(err)
-
-	if verbose {
-		fmt.Fprintln(os.Stderr, "runFromConfig: header file paths", files)
-		if len(notFounds) > 0 {
-			fmt.Fprintln(os.Stderr, "runFromConfig: not found header files", notFounds)
-		}
-	}
-
-	// Generate include directory flags (-I flags)
-	incFlags := make([]string, 0, len(cflag.Paths))
-	for _, path := range cflag.Paths {
-		incFlags = append(incFlags, "-I"+path)
-	}
-
-	context := parse.NewContext(&parse.ContextConfig{
-		Conf:     conf.Config,
-		IncFlags: incFlags,
-	})
-	err = context.ProcessFiles(files)
+	context, err := parse.Do(conf.Config)
 	check(err)
 
 	outputInfo(context, outputToFile)
 }
 
-func runExtract(file string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
+func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
+	var file string
+	if isTemp {
+		temp, err := os.Create(clangutils.TEMP_FILE)
+		if err != nil {
+			panic(err)
+		}
+		defer temp.Close()
+		defer os.Remove(file)
+		temp.Write([]byte(content))
+		file = temp.Name()
+	} else {
+		file = content
+	}
 	cfg := &clangutils.Config{
 		File:  file,
 		Args:  otherArgs,
 		IsCpp: isCpp,
-		Temp:  isTemp,
+		Temp:  false,
 	}
-	converter, err := parse.NewConverter(cfg)
+
+	converter, err := parse.NewConverter(cfg, &config.PkgHfilesInfo{
+		Inters: []string{file},
+	})
 	check(err)
 	_, err = converter.Convert()
 	check(err)

@@ -9,6 +9,7 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
+	"github.com/goplus/llcppg/llcppg"
 )
 
 func main() {
@@ -17,6 +18,7 @@ func main() {
 	TestGenDylibPaths()
 	TestParseCFlags()
 	TestGenHeaderFilePath()
+	TestPkgHfileInfo()
 }
 
 func TestGetConf() {
@@ -328,5 +330,46 @@ func TestGenHeaderFilePath() {
 			fmt.Printf("Output: %v\n", relativeResult)
 		}
 		fmt.Println()
+	}
+}
+
+func TestPkgHfileInfo() {
+	confs := []*llcppg.Config{{
+		CFlags:  "-I./hfile -I ./thirdhfile",
+		Include: []string{"temp1.h", "temp2.h"},
+	}, {
+		CFlags:  "-I./hfile -I ./thirdhfile",
+		Include: []string{"temp1.h", "temp2.h"},
+		Mix:     true,
+	}}
+	for i, conf := range confs {
+		fmt.Printf("=== Test PkgHfileInfo Case %d ===\n", i+1)
+		info := config.PkgHfileInfo(conf, []string{})
+		fmt.Println("interfaces", info.Inters)
+		fmt.Println("implements", info.Impls)
+
+		thirdhfile, err := filepath.Abs("./thirdhfile/third.h")
+		if err != nil {
+			panic(err)
+		}
+		tfileFound := false
+		stdioFound := false
+		for _, tfile := range info.Thirds {
+			absTfile, err := filepath.Abs(tfile)
+			if err != nil {
+				panic(err)
+			}
+			if absTfile == thirdhfile {
+				tfileFound = true
+				fmt.Println("third hfile found", tfile)
+			}
+			if strings.HasSuffix(absTfile, "stdio.h") {
+				stdioFound = true
+			}
+		}
+		if !tfileFound || !stdioFound {
+			panic("third hfile or std hfile not found")
+		}
+		fmt.Println("All third hfile found")
 	}
 }

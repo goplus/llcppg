@@ -2,9 +2,11 @@ package cvttest
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
+	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/c/cjson"
 	"github.com/goplus/llgo/c/clang"
@@ -12,33 +14,34 @@ import (
 
 func RunTest(testName string, testCases []string) {
 	for i, content := range testCases {
+		tempIncFile := clangutils.TEMP_FILE
+		if err := os.WriteFile(tempIncFile, []byte(content), 0644); err != nil {
+			panic(err)
+		}
+		include := []string{tempIncFile}
+		cflags := "-I./"
 		c.Printf(c.Str("%s Case %d:\n"), c.AllocaCStr(testName), c.Int(i+1))
-		RunTestWithConfig(&clangutils.Config{
-			File:  content,
-			Temp:  true,
-			IsCpp: true,
+		RunTestWithConfig(&llcppg.Config{
+			Cplusplus: true,
+			Include:   include,
+			CFlags:    cflags,
 		})
+		os.Remove(tempIncFile)
 	}
 }
 
-func RunTestWithConfig(config *clangutils.Config) {
-	converter, err := parse.NewConverter(config)
+func RunTestWithConfig(config *llcppg.Config) {
+	context, err := parse.Do(config)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = converter.Convert()
-	if err != nil {
-		panic(err)
-	}
-
-	result := converter.MarshalASTFiles()
+	result := parse.MarshalASTFiles(context.FileSet)
 	str := result.Print()
 	c.Printf(c.Str("%s\n\n"), str)
 
 	cjson.FreeCStr(str)
 	result.Delete()
-	converter.Dispose()
 }
 
 type GetTypeOptions struct {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llcppg/token"
@@ -41,7 +42,7 @@ type Config struct {
 	IsCpp bool
 }
 
-func NewConverter(config *clangutils.Config) (*Converter, error) {
+func NewConverter(config *clangutils.Config, pkgFileInfo *config.PkgHfilesInfo) (*Converter, error) {
 	if dbg.GetDebugParse() {
 		fmt.Fprintln(os.Stderr, "NewConverter: config")
 		fmt.Fprintln(os.Stderr, "config.File", config.File)
@@ -54,8 +55,7 @@ func NewConverter(config *clangutils.Config) (*Converter, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	files := initFileEntries(unit)
+	files := initFileEntries(unit, pkgFileInfo)
 
 	return &Converter{
 		Files: files,
@@ -71,7 +71,22 @@ func (ct *Converter) Dispose() {
 	ct.unit.Dispose()
 }
 
-func initFileEntries(unit *clang.TranslationUnit) []*llcppg.FileEntry {
+func initFileEntries(unit *clang.TranslationUnit, pkgHfileInfo *config.PkgHfilesInfo) []*llcppg.FileEntry {
+	inters := make(map[string]struct{})
+	impls := make(map[string]struct{})
+	thirds := make(map[string]struct{})
+	if pkgHfileInfo != nil {
+		for _, file := range pkgHfileInfo.Inters {
+			inters[file] = struct{}{}
+		}
+		for _, file := range pkgHfileInfo.Impls {
+			impls[file] = struct{}{}
+		}
+		for _, file := range pkgHfileInfo.Thirds {
+			thirds[file] = struct{}{}
+		}
+	}
+
 	files := make([]*llcppg.FileEntry, 0)
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		loc := unit.GetLocation(inced, 1, 1)
@@ -81,11 +96,22 @@ func initFileEntries(unit *clang.TranslationUnit) []*llcppg.FileEntry {
 			cur := unit.GetCursor(&incins[0])
 			incPath = toStr(cur.String())
 		}
+		var fileType llcppg.FileType
+		if _, ok := inters[incedFile]; ok {
+			fileType = llcppg.Inter
+		} else if _, ok := impls[incedFile]; ok {
+			fileType = llcppg.Impl
+		} else if _, ok := thirds[incedFile]; ok {
+			fileType = llcppg.Third
+		} else {
+			panic("unknown file type: " + incedFile)
+		}
 		files = append(files, &llcppg.FileEntry{
-			Path:    incedFile,
-			IncPath: incPath,
-			IsSys:   loc.IsInSystemHeader() != 0,
-			Doc:     &ast.File{},
+			Path:     incedFile,
+			IncPath:  incPath,
+			IsSys:    loc.IsInSystemHeader() != 0,
+			Doc:      &ast.File{},
+			FileType: fileType,
 		})
 	})
 	return files
