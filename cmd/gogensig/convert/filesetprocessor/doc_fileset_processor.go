@@ -140,7 +140,7 @@ func New(cfg *convert.Config) (*DocFileSetProcessor, *convert.Package, error) {
 
 	return NewDocFileSetProcessor(&ProcesserConfig{
 		Exec: func(file *llcppg.FileEntry) error {
-			visitorList.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
+			visitorList.Visit(file.Doc, file.Path, file.IncPath, file.IsSys, file.FileType)
 			return nil
 		},
 		DepIncs: incs,
@@ -168,7 +168,7 @@ func Process(cfg *convert.Config) error {
 
 	p := NewDocFileSetProcessor(&ProcesserConfig{
 		Exec: func(file *llcppg.FileEntry) error {
-			visitorList.Visit(file.Doc, file.Path, file.IncPath, file.IsSys)
+			visitorList.Visit(file.Doc, file.Path, file.IncPath, file.IsSys, file.FileType)
 			return nil
 		},
 		DepIncs: incs,

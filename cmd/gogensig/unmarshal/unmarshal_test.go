@@ -1150,6 +1150,7 @@ func TestUnmarshalFileSet(t *testing.T) {
     "path": "/opt/homebrew/Cellar/inih/58/include/INIReader.h",
     "isSys": false,
 	"incPath": "INIReader.h",
+	"fileType":1,
     "doc": {
       "_Type": "File",
       "decls": [
@@ -1514,9 +1515,10 @@ func TestUnmarshalFileSet(t *testing.T) {
 
 	expected := []*llcppg.FileEntry{
 		{
-			Path:    "/opt/homebrew/Cellar/inih/58/include/INIReader.h",
-			IsSys:   false,
-			IncPath: "INIReader.h",
+			Path:     "/opt/homebrew/Cellar/inih/58/include/INIReader.h",
+			IsSys:    false,
+			IncPath:  "INIReader.h",
+			FileType: llcppg.Inter,
 			Doc: &ast.File{
 				Decls: []ast.Decl{
 					&ast.TypeDecl{

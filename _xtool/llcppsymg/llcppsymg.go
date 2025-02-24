@@ -24,11 +24,9 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symbol"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 )
 
 func main() {
@@ -79,22 +77,13 @@ func main() {
 	symbols, err := symbol.ParseDylibSymbols(conf.Libs)
 	check(err)
 
-	cflag := cfgparse.ParseCFlags(conf.CFlags)
-	syspaths := syspath.GetIncludePaths()
-	if ags.Verbose {
-		fmt.Println("syspaths", syspaths)
+	pkgHfiles := config.PkgHfileInfo(conf.Config, []string{})
+	if dbg.GetDebugSymbol() {
+		fmt.Println("interfaces", pkgHfiles.Inters)
+		fmt.Println("implements", pkgHfiles.Impls)
+		fmt.Println("thirdhfile", pkgHfiles.Thirds)
 	}
-	filepaths, notFounds, err := cflag.GenHeaderFilePaths(conf.Include, syspaths)
-	check(err)
-
-	if ags.Verbose {
-		fmt.Println("header file paths", filepaths)
-		if len(notFounds) > 0 {
-			fmt.Println("not found header files", notFounds)
-		}
-	}
-
-	headerInfos, err := parse.ParseHeaderFile(filepaths, conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, false)
+	headerInfos, err := parse.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, false)
 	check(err)
 
 	symbolData, err := symbol.GenerateAndUpdateSymbolTable(symbols, headerInfos, symbFile)

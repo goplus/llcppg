@@ -74,10 +74,11 @@ func FileSet(data []byte) ([]*llcppg.FileEntry, error) {
 
 func FileEntry(data []byte) (ast.Node, error) {
 	type fileEntryTemp struct {
-		Path    string          `json:"path"`
-		IsSys   bool            `json:"isSys"`
-		IncPath string          `json:"incPath"`
-		Doc     json.RawMessage `json:"doc"`
+		Path     string          `json:"path"`
+		IsSys    bool            `json:"isSys"`
+		IncPath  string          `json:"incPath"`
+		Doc      json.RawMessage `json:"doc"`
+		FileType llcppg.FileType `json:"fileType"`
 	}
 	var fileEntryData fileEntryTemp
 	if err := json.Unmarshal(data, &fileEntryData); err != nil {
@@ -95,10 +96,11 @@ func FileEntry(data []byte) (ast.Node, error) {
 	}
 
 	return &llcppg.FileEntry{
-		Path:    fileEntryData.Path,
-		IsSys:   fileEntryData.IsSys,
-		IncPath: fileEntryData.IncPath,
-		Doc:     file,
+		Path:     fileEntryData.Path,
+		IsSys:    fileEntryData.IsSys,
+		IncPath:  fileEntryData.IncPath,
+		FileType: fileEntryData.FileType,
+		Doc:      file,
 	}, nil
 }
 

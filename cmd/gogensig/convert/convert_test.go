@@ -432,31 +432,13 @@ func TestWritePkgFilesFail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to change directory permissions: %v", err)
 	}
-	converter.VisitStart("test.h", "/path/to/test.h", false)
+	converter.VisitStart("test.h", "/path/to/test.h", false, llcppg.Inter)
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("Expected panic, but got: %v", r)
 		}
 	}()
 	converter.WritePkgFiles()
-}
-
-func TestGetIncPathFail(t *testing.T) {
-	cfg, err := config.CreateTmpJSONFile("llcppg.cfg", &llcppg.Config{
-		Include: []string{"unexist.h"},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	converter, err := convert.NewAstConvert(&convert.Config{
-		PkgName:  "test",
-		SymbFile: "",
-		CfgFile:  cfg,
-	})
-	if err != nil {
-		t.Fatal("NewAstConvert Fail")
-	}
-	converter.VisitStart("test.h", "", false)
 }
 
 func ModInit(name string) (string, error) {

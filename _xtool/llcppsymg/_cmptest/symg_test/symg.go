@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
@@ -85,13 +86,10 @@ func TestParseHeaderFile() {
 		if err != nil {
 			fmt.Println("Read Symb File Error:", err)
 		}
-		files := []string{}
-		for _, include := range cfg.Include {
-			files = append(files, filepath.Join(projPath, include))
-		}
 
-		cflags := []string{"-I" + projPath}
-		headerSymbolMap, err := parse.ParseHeaderFile(files, cfg.TrimPrefixes, cflags, cfg.Cplusplus, false)
+		cfg.CFlags = "-I" + projPath
+		pkgHfileInfo := config.PkgHfileInfo(cfg.Config, []string{})
+		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, false)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}

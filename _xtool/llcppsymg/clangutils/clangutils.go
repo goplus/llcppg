@@ -2,6 +2,7 @@ package clangutils
 
 import (
 	"errors"
+	"os"
 	"unsafe"
 
 	"github.com/goplus/llgo/c"
@@ -108,4 +109,15 @@ func GetInclusions(unit *clang.TranslationUnit, visitor InclusionVisitor) {
 		cfn := *(*InclusionVisitor)(data)
 		cfn(inced, ics)
 	}, unsafe.Pointer(&visitor))
+}
+
+// ComposeIncludes create Include list
+// #include <file1.h>
+// #include <file2.h>
+func ComposeIncludes(files []string, outfile string) error {
+	var str string
+	for _, file := range files {
+		str += ("#include <" + file + ">\n")
+	}
+	return os.WriteFile(outfile, []byte(str), 0644)
 }

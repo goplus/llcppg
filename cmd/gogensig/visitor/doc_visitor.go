@@ -1,9 +1,12 @@
 package visitor
 
-import "github.com/goplus/llcppg/ast"
+import (
+	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/llcppg"
+)
 
 type DocVisitor interface {
-	VisitStart(path string, incPath string, isSys bool)
+	VisitStart(path string, incPath string, isSys bool, fileType llcppg.FileType)
 	Visit(node ast.Node)
 	VisitFuncDecl(funcDecl *ast.FuncDecl)
 	VisitDone(path string)
@@ -24,9 +27,9 @@ func NewDocVisitorList(visitorList []DocVisitor) *DocVisitorList {
 	return &DocVisitorList{VisitorList: visitorList}
 }
 
-func (p *DocVisitorList) Visit(node ast.Node, path string, incPath string, isSys bool) bool {
+func (p *DocVisitorList) Visit(node ast.Node, path string, incPath string, isSys bool, fileType llcppg.FileType) bool {
 	for _, v := range p.VisitorList {
-		v.VisitStart(path, incPath, isSys)
+		v.VisitStart(path, incPath, isSys, fileType)
 		v.Visit(node)
 		v.VisitDone(path)
 	}

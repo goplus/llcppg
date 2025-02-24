@@ -8,6 +8,7 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c/cjson"
 )
@@ -18,17 +19,15 @@ type Context struct {
 }
 
 type ContextConfig struct {
-	Conf     *llcppg.Config
-	IncFlags []string
+	Conf        *llcppg.Config
+	IncFlags    []string
+	PkgFileInfo *config.PkgHfilesInfo
 }
 
 func NewContext(cfg *ContextConfig) *Context {
 	return &Context{
-		FileSet: make([]*llcppg.FileEntry, 0),
-		ContextConfig: &ContextConfig{
-			Conf:     cfg.Conf,
-			IncFlags: cfg.IncFlags,
-		},
+		FileSet:       make([]*llcppg.FileEntry, 0),
+		ContextConfig: cfg,
 	}
 }
 
@@ -74,13 +73,14 @@ func (p *Context) processFile(path string) error {
 func (p *Context) parseFile(path string) ([]*llcppg.FileEntry, error) {
 	if dbg.GetDebugParse() {
 		fmt.Fprintln(os.Stderr, "parseFile: path", path)
+		fmt.Fprintln(os.Stderr, p.PkgFileInfo != nil)
 	}
 	converter, err := NewConverter(&clangutils.Config{
 		File:  path,
 		Temp:  false,
 		IsCpp: p.Conf.Cplusplus,
-		Args:  p.IncFlags,
-	})
+		Args:  strings.Fields(p.Conf.CFlags),
+	}, p.PkgFileInfo)
 	if err != nil {
 		return nil, errors.New("failed to create converter " + path)
 	}
@@ -110,4 +110,23 @@ func (p *Context) parseFile(path string) ([]*llcppg.FileEntry, error) {
 	}
 
 	return files, nil
+}
+
+func Do(conf *llcppg.Config) (*Context, error) {
+	pkgHfiles := config.PkgHfileInfo(conf, []string{})
+	if dbg.GetDebugParse() {
+		fmt.Fprintln(os.Stderr, "interfaces", pkgHfiles.Inters)
+		fmt.Fprintln(os.Stderr, "implements", pkgHfiles.Impls)
+		fmt.Fprintln(os.Stderr, "thirdhfile", pkgHfiles.Thirds)
+	}
+
+	context := NewContext(&ContextConfig{
+		Conf:        conf,
+		PkgFileInfo: pkgHfiles,
+	})
+	err := context.ProcessFiles(pkgHfiles.Inters)
+	if err != nil {
+		return nil, err
+	}
+	return context, nil
 }
