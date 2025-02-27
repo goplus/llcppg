@@ -12,5 +12,4 @@ type X__u struct {
 type U X__u
 
 ===== llcppg.pub =====
-__u X__u
 u U

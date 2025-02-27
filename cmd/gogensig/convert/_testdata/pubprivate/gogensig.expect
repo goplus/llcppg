@@ -1,0 +1,14 @@
+===== temp.go =====
+package pubprivate
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type PublicType c.Long
+type X_privateTyp c.Long
+
+===== llcppg.pub =====
+_private_typ X_privateTyp
+public_type PublicType

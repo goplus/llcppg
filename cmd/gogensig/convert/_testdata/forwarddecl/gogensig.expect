@@ -119,7 +119,6 @@ type HtmlParserCtxt XmlParserCtxt
 Fts5Context
 Fts5ExtensionApi
 Fts5PhraseIter
-_xmlParserCtxt X_xmlParserCtxt
 bar Bar
 foo Foo
 fts5_extension_function Fts5ExtensionFunction

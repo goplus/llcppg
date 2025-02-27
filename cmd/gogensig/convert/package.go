@@ -751,6 +751,9 @@ func (p *Package) CollectNameMapping(originName, newName string) {
 	}
 	p.nameMapper.SetMapping(originName, value)
 	if p.curFile.InCurPkg {
+		if !p.conf.CppgConf.KeepUnderScore && rune(originName[0]) == '_' {
+			return
+		}
 		p.Pubs[originName] = value
 	}
 }

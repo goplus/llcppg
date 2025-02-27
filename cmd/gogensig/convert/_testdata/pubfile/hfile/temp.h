@@ -15,3 +15,4 @@ enum color {
     RED = 0,
 };
 void func(int a, int b);
+typedef long _private_typ;
