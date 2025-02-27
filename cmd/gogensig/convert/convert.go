@@ -176,14 +176,13 @@ type ConverterConfig struct {
 	PubFile   string // llcppg.pub
 	OutputDir string
 
-	Pkg *cppgtypes.Pkg
+	Pkg *llcppg.Pkg
 }
 
 type Converter struct {
-	Pkg    *cppgtypes.Pkg
+	Pkg    *llcppg.Pkg
 	GenPkg *Package
 	Conf   *ConverterConfig
-	incMap map[string]bool // abs path is dependency
 }
 
 func NewConverter(config *ConverterConfig) (*Converter, error) {
@@ -203,7 +202,7 @@ func NewConverter(config *ConverterConfig) (*Converter, error) {
 		if dbg.GetDebugError() {
 			log.Printf("Cant get llcppg.cfg from %s Use empty config\n", config.CfgFile)
 		}
-		conf = &cppgtypes.Config{}
+		conf = &llcppg.Config{}
 	}
 
 	pubs, err := cfg.GetPubFromPath(config.PubFile)
@@ -220,16 +219,10 @@ func NewConverter(config *ConverterConfig) (*Converter, error) {
 		OutputDir:   config.OutputDir,
 		SymbolTable: symbTable,
 	})
-	incs := pkg.DepIncPaths()
-	incmap := make(map[string]bool)
-	for _, inc := range incs {
-		incmap[inc] = true
-	}
 	return &Converter{
 		GenPkg: pkg,
 		Pkg:    config.Pkg,
 		Conf:   config,
-		incMap: incmap,
 	}, nil
 }
 
@@ -291,9 +284,6 @@ func (p *Converter) Process() {
 }
 
 func (p *Converter) setCurFile(file string) bool {
-	if _, ok := p.incMap[file]; ok {
-		return false
-	}
 	info, exist := p.Pkg.FileMap[file]
 	if !exist {
 		var availableFiles []string
@@ -303,30 +293,6 @@ func (p *Converter) setCurFile(file string) bool {
 		log.Fatalf("File %q not found in FileMap. Available files:\n%s",
 			file, strings.Join(availableFiles, "\n"))
 	}
-	p.GenPkg.SetCurFile(Hfile(p.GenPkg, file, info.IncPath, info.IsSys))
+	p.GenPkg.SetCurFile(NewHeaderFile(file, info.Typ))
 	return true
-}
-
-func Hfile(pkg *Package, path string, incPath string, isSys bool) *HeaderFile {
-	inPkgIncPath := false
-	incPaths, notFounds, err := pkg.GetIncPaths()
-	if len(notFounds) > 0 {
-		log.Println("failed to find some include paths: \n", notFounds)
-		if err != nil {
-			log.Println("failed to get any include paths: \n", err.Error())
-		}
-	}
-	for _, includePath := range incPaths {
-		if includePath == path {
-			inPkgIncPath = true
-			break
-		}
-	}
-	return &HeaderFile{
-		File:         path,
-		IncPath:      incPath,
-		IsHeaderFile: true,
-		InCurPkg:     inPkgIncPath,
-		IsSys:        isSys,
-	}
 }

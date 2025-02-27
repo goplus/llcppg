@@ -108,7 +108,7 @@ type ParseConfig struct {
 	OutputFile            bool
 }
 
-func Do(cfg *ParseConfig) (*types.Pkg, error) {
+func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
 	if err := createTempIfNoExist(&cfg.CombinedFile, cfg.Conf.Name+"*.h"); err != nil {
 		return nil, err
 	}

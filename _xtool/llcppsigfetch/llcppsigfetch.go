@@ -171,7 +171,6 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 }
 
 // todo:use new converter
-func runExtract(file string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
 func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
 	var file string
 	if isTemp {

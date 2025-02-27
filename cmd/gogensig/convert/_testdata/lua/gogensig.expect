@@ -7,8 +7,8 @@ import (
 )
 
 const GNAME = "_G"
-const LOADEDTABLE = "_LOADED"
-const PRELOADTABLE = "_PRELOAD"
+const LOADED_TABLE = "_LOADED"
+const PRELOAD_TABLE = "_PRELOAD"
 const FILEHANDLE = "FILE*"
 
 type Buffer struct {
@@ -129,10 +129,10 @@ import (
 	"unsafe"
 )
 
-const VERSIONMAJOR = "5"
-const VERSIONMINOR = "4"
-const VERSIONRELEASE = "7"
-const VERSIONNUM = 504
+const VERSION_MAJOR = "5"
+const VERSION_MINOR = "4"
+const VERSION_RELEASE = "7"
+const VERSION_NUM = 504
 const AUTHORS = "R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
 const SIGNATURE = "\x1bLua"
 const OK = 0
@@ -152,8 +152,8 @@ const TUSERDATA = 7
 const TTHREAD = 8
 const NUMTYPES = 9
 const MINSTACK = 20
-const RIDXMAINTHREAD = 1
-const RIDXGLOBALS = 2
+const RIDX_MAINTHREAD = 1
+const RIDX_GLOBALS = 2
 const OPADD = 0
 const OPSUB = 1
 const OPMUL = 2
@@ -438,24 +438,24 @@ package lua
 
 import _ "unsafe"
 
-const INTINT = 1
-const INTLONG = 2
-const INTLONGLONG = 3
-const FLOATFLOAT = 1
-const FLOATDOUBLE = 2
-const FLOATLONGDOUBLE = 3
+const INT_INT = 1
+const INT_LONG = 2
+const INT_LONGLONG = 3
+const FLOAT_FLOAT = 1
+const FLOAT_DOUBLE = 2
+const FLOAT_LONGDOUBLE = 3
 const X32BITS = 0
-const C89NUMBERS = 0
-const PATHSEP = ";"
-const PATHMARK = "?"
-const EXECDIR = "!"
+const C89_NUMBERS = 0
+const PATH_SEP = ";"
+const PATH_MARK = "?"
+const EXEC_DIR = "!"
 const ROOT = "/opt/homebrew/"
 const DIRSEP = "/"
 const IGMARK = "-"
-const NUMBERFRMLEN = ""
-const NUMBERFMT = "%.14g"
-const INTEGERFRMLEN = "ll"
-const LUAIMAXSTACK = 1000000
+const NUMBER_FRMLEN = ""
+const NUMBER_FMT = "%.14g"
+const INTEGER_FRMLEN = "ll"
+const LUAI_MAXSTACK = 1000000
 const IDSIZE = 60
 
 ===== lualib.go =====

@@ -60,8 +60,7 @@ type FileEntry struct {
 }
 
 type FileInfo struct {
-	IsSys   bool
-	IncPath string
+	Typ FileType
 }
 
 type Pkg struct {
