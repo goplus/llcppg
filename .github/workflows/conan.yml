@@ -1,0 +1,101 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-24.04
+        llvm: [18]
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Install dependencies
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew update
+          brew install llvm@${{matrix.llvm}} bdw-gc openssl libffi libuv
+          brew install conan cmake 
+          brew link --force libffi
+          echo "$(brew --prefix llvm@${{matrix.llvm}})/bin" >> $GITHUB_PATH
+
+          # llcppg dependencies
+          brew install cjson
+
+      - name: Install dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{matrix.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get install -y llvm-${{matrix.llvm}}-dev clang-${{matrix.llvm}} libunwind-dev libclang-${{matrix.llvm}}-dev lld-${{matrix.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev libuv1-dev
+          sudo apt-get install -y python3 python3-pip cmake
+          echo "/usr/lib/llvm-${{matrix.llvm}}/bin" >> $GITHUB_PATH
+          python3 -m pip install conan
+
+      - name: Check conan
+        run: |
+          conan -v
+      - name: Install LLGO
+        run: |
+          git clone https://github.com/goplus/llgo.git
+          echo $PWD
+          cd llgo/compiler
+          go install -v ./cmd/...
+          export LLGO_ROOT=$GITHUB_WORKSPACE/llgo
+          echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Install llcppg modules
+        run: |
+          echo "Using LLGO_ROOT: $LLGO_ROOT"
+          bash ./install.sh
+
+      - name: Prepare demo env
+        run: |
+          echo "Prepare demo env"
+
+      - name: Test demos with generated pkgs
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          # install demo's lib
+          brew install lua zlib isl libgpg-error raylib z3 sqlite3 gmp libxml2 libxslt
+
+          export PKG_CONFIG_PATH="/opt/homebrew/opt/zlib/lib/pkgconfig"
+          export PKG_CONFIG_PATH="/opt/homebrew/opt/sqlite/lib/pkgconfig:$PKG_CONFIG_PATH"
+          export PKG_CONFIG_PATH="/opt/homebrew/opt/libxml2/lib/pkgconfig:$PKG_CONFIG_PATH"
+          export PKG_CONFIG_PATH="/opt/homebrew/opt/libxslt/lib/pkgconfig:$PKG_CONFIG_PATH"
+          pkg-config --cflags --libs sqlite3
+          pkg-config --cflags --libs libxslt
+
+          llcppgtest -demo ./_llcppgtest/cjson
+
+      - name: Test demos with generated pkgs
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          # install demo's lib
+          sudo apt install liblua5.4-dev libsqlite3-dev libgmp-dev libgpg-error-dev zlib1g-dev -y
+          llcppgtest -demo ./_llcppgtest/cjson
+          llcppgtest -demo ./_llcppgtest/lua
+          llcppgtest -demo ./_llcppgtest/sqlite
+          llcppgtest -demo ./_llcppgtest/gmp
+          llcppgtest -demo ./_llcppgtest/gpgerror
+          llcppgtest -demo ./_llcppgtest/zlib
