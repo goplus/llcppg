@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/llcppg"
 )
@@ -68,7 +67,7 @@ func SigfetchConfig(configFile string, dir string, isCpp bool) ([]byte, error) {
 }
 
 func executeSigfetch(args []string, dir string, isCpp bool) ([]byte, error) {
-	cmd := exec.Command("llcppsigfetch", append(args, "-ClangResourceDir="+ClangResourceDir(), "-ClangSearchPath="+strings.Join(clangutils.GetIncludePaths(isCpp), ","))...)
+	cmd := exec.Command("llcppsigfetch", append(args, "-ClangResourceDir="+ClangResourceDir())...)
 	if dir != "" {
 		cmd.Dir = dir
 	}

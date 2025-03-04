@@ -1799,20 +1799,16 @@ func TestUnmarshalPkg(t *testing.T) {
   },
   "FileMap": {
     "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_rsize_t.h": {
-      "IsSys": true,
-      "IncPath": "sys/_types/_rsize_t.h"
+      "FileType":3
     },
     "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_seek_set.h": {
-      "IsSys": true,
-      "IncPath": "sys/_types/_seek_set.h"
+      "FileType":3
     },
     "/opt/homebrew/include/lua/lua.h": {
-      "IsSys": false,
-      "IncPath": "lua.h"
+      "FileType":3
     },
     "/opt/homebrew/include/lua/luaconf.h": {
-      "IsSys": false,
-      "IncPath": "luaconf.h"
+      "FileType":1
     }
   }
 }
@@ -1852,20 +1848,16 @@ func TestUnmarshalPkg(t *testing.T) {
 		},
 		FileMap: map[string]*llcppg.FileInfo{
 			"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_rsize_t.h": {
-				IsSys:   true,
-				IncPath: "sys/_types/_rsize_t.h",
+				FileType: llcppg.Third,
 			},
 			"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/sys/_types/_seek_set.h": {
-				IsSys:   true,
-				IncPath: "sys/_types/_seek_set.h",
+				FileType: llcppg.Third,
 			},
 			"/opt/homebrew/include/lua/lua.h": {
-				IsSys:   false,
-				IncPath: "lua.h",
+				FileType: llcppg.Third,
 			},
 			"/opt/homebrew/include/lua/luaconf.h": {
-				IsSys:   false,
-				IncPath: "luaconf.h",
+				FileType: llcppg.Inter,
 			},
 		},
 	}

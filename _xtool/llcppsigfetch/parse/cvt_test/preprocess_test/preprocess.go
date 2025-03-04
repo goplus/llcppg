@@ -6,7 +6,6 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	test "github.com/goplus/llcppg/_xtool/llcppsigfetch/parse/cvt_test"
-	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/c"
 )
@@ -69,20 +68,6 @@ func TestSystemHeader() {
 		}
 	}
 
-	for _, decl := range pkg.File.Decls {
-		switch decl := decl.(type) {
-		case *ast.TypeDecl:
-		case *ast.EnumTypeDecl:
-		case *ast.FuncDecl:
-		case *ast.TypedefDecl:
-			if _, ok := pkg.FileMap[decl.DeclBase.Loc.File]; !ok {
-				fmt.Printf("Decl %s %s is not Found in the fileMap\n", decl.Name.Name, decl.DeclBase.Loc.File)
-				for path := range pkg.FileMap {
-					fmt.Printf("  %s\n", path)
-				}
-			}
-		}
-	}
 	fmt.Println("include files are all system headers")
 }
 

@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
 	"strings"
 	"testing"
 
@@ -28,69 +27,30 @@ func TestFromTestdata(t *testing.T) {
 	testFromDir(t, "./_testdata", false)
 }
 
-// test sys type in stdinclude to package
 func TestSysToPkg(t *testing.T) {
 	name := "_systopkg"
 	dir, err := os.Getwd()
 	if err != nil {
 		t.Fatal("Getwd failed:", err)
 	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package) {
-		typConv := pkg.GetTypeConv()
-		if typConv.SysTypeLoc == nil {
-			t.Fatal("sysTypeLoc is nil")
-		}
-		pkgIncTypes := make(map[string]map[string][]string)
-
-		// full type in all std lib
-		for name, info := range typConv.SysTypeLoc {
-			targetPkg, isDefault := convert.IncPathToPkg(info.IncPath)
-			if isDefault {
-				targetPkg = "github.com/goplus/llgo/c [default]"
-			}
-			if pkgIncTypes[targetPkg] == nil {
-				pkgIncTypes[targetPkg] = make(map[string][]string, 0)
-			}
-			if pkgIncTypes[targetPkg][info.IncPath] == nil {
-				pkgIncTypes[targetPkg][info.IncPath] = make([]string, 0)
-			}
-			pkgIncTypes[targetPkg][info.IncPath] = append(pkgIncTypes[targetPkg][info.IncPath], name)
-		}
-
-		for pkg, incTypes := range pkgIncTypes {
-			t.Logf("\x1b[1;32m %s \x1b[0m Package contains inc types:", pkg)
-			for incPath, types := range incTypes {
-				t.Logf("\x1b[1;33m  - %s\x1b[0m (%s):", incPath, pkg)
-				sort.Strings(types)
-				t.Logf("    - %s", strings.Join(types, " "))
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
+		// check FileMap's info is right
+		inFileMap := func(file string) {
+			_, ok := cvt.Pkg.FileMap[file]
+			if !ok {
+				t.Fatal("File not found in FileMap:", file)
 			}
 		}
-
-		// check referd type in std lib
-		// Expected type to package mappings
-		expected := map[string]string{
-			"mbstate_t":   "github.com/goplus/llgo/c",
-			"wint_t":      "github.com/goplus/llgo/c",
-			"ptrdiff_t":   "github.com/goplus/llgo/c",
-			"int8_t":      "github.com/goplus/llgo/c",
-			"max_align_t": "github.com/goplus/llgo/c",
-			"FILE":        "github.com/goplus/llgo/c",
-			"tm":          "github.com/goplus/llgo/c/time",
-			"time_t":      "github.com/goplus/llgo/c/time",
-			"clock_t":     "github.com/goplus/llgo/c/time",
-			"fenv_t":      "github.com/goplus/llgo/c/math",
-			"size_t":      "github.com/goplus/llgo/c",
-		}
-
-		for name, exp := range expected {
-			if _, ok := typConv.SysTypePkg[name]; ok {
-				if typConv.SysTypePkg[name].PkgPath != exp {
-					t.Errorf("type [%s]: expected package [%s], got [%s] in header [%s]", name, exp, typConv.SysTypePkg[name].PkgPath, typConv.SysTypePkg[name].Header.IncPath)
-				} else {
-					t.Logf("refer type [%s] expected package [%s] from header [%s]", name, exp, typConv.SysTypePkg[name].Header.IncPath)
-				}
-			} else {
-				t.Logf("missing expected type %s (package: %s)", name, exp)
+		for _, decl := range cvt.Pkg.File.Decls {
+			switch decl := decl.(type) {
+			case *ast.TypeDecl:
+				inFileMap(decl.DeclBase.Loc.File)
+			case *ast.EnumTypeDecl:
+				inFileMap(decl.DeclBase.Loc.File)
+			case *ast.TypedefDecl:
+				inFileMap(decl.DeclBase.Loc.File)
+			case *ast.FuncDecl:
+				inFileMap(decl.DeclBase.Loc.File)
 			}
 		}
 	})
@@ -159,15 +119,6 @@ func TestDepPkg(t *testing.T) {
 	testFrom(t, name, depcjson, false, nil)
 }
 
-func TestSysToPkg(t *testing.T) {
-	name := "_systopkg"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
 func testFromDir(t *testing.T, relDir string, gen bool) {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -189,7 +140,7 @@ func testFromDir(t *testing.T, relDir string, gen bool) {
 	}
 }
 
-func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package)) {
+func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package, converter *convert.Converter)) {
 	confPath := filepath.Join(dir, "conf")
 	cfgPath := filepath.Join(confPath, "llcppg.cfg")
 	symbPath := filepath.Join(confPath, "llcppg.symb.json")
@@ -303,7 +254,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 	}
 
 	if validateFunc != nil {
-		validateFunc(t, cvt.GenPkg)
+		validateFunc(t, cvt.GenPkg, cvt)
 	}
 }
 

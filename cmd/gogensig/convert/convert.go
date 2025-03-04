@@ -293,6 +293,6 @@ func (p *Converter) setCurFile(file string) bool {
 		log.Fatalf("File %q not found in FileMap. Available files:\n%s",
 			file, strings.Join(availableFiles, "\n"))
 	}
-	p.GenPkg.SetCurFile(NewHeaderFile(file, info.Typ))
+	p.GenPkg.SetCurFile(NewHeaderFile(file, info.FileType))
 	return true
 }
