@@ -41,9 +41,8 @@ TestDoc Case 1:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -90,9 +89,8 @@ TestDoc Case 2:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -145,9 +143,8 @@ TestDoc Case 3:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -200,9 +197,8 @@ TestDoc Case 4:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -255,9 +251,8 @@ TestDoc Case 5:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -313,9 +308,8 @@ TestDoc Case 6:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -371,9 +365,8 @@ TestDoc Case 7:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -429,9 +422,8 @@ TestDoc Case 8:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -493,9 +485,8 @@ TestDoc Case 9:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -593,9 +584,8 @@ TestDoc Case 10:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -795,9 +785,8 @@ TestDoc Case 11:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }

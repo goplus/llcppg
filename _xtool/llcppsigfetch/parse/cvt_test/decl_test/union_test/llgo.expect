@@ -56,9 +56,8 @@ TestUnionDecl Case 1:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -123,9 +122,8 @@ TestUnionDecl Case 2:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -239,9 +237,8 @@ TestUnionDecl Case 3:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }

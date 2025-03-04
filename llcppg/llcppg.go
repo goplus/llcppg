@@ -60,7 +60,7 @@ type FileEntry struct {
 }
 
 type FileInfo struct {
-	Typ FileType
+	FileType FileType
 }
 
 type Pkg struct {

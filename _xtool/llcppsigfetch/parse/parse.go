@@ -159,14 +159,25 @@ func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
 		return nil, err
 	}
 
-	// parse the preprocessed file & prepare the same flag as clang's flag
+	// https://github.com/goplus/llgo/issues/603
+	// we need exec.Command("clang", "-print-resource-dir").Output() in llcppsigfetch to obtain the resource directory
+	// to ensure consistency between clang preprocessing and libclang-extracted header filelink cflags.
+	// Currently, directly calling exec.Command in the main flow of llcppsigfetch will cause hang and fail to execute correctly.
+	// As a solution, the resource directory is externally provided by llcppg.
 	libclangFlags := []string{}
 	if ClangResourceDir != "" {
 		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
 	}
+	pkgHfiles := config.PkgHfileInfo(cfg.Conf, libclangFlags)
+	if dbg.GetDebugParse() {
+		fmt.Fprintln(os.Stderr, "interfaces", pkgHfiles.Inters)
+		fmt.Fprintln(os.Stderr, "implements", pkgHfiles.Impls)
+		fmt.Fprintln(os.Stderr, "thirdhfile", pkgHfiles.Thirds)
+	}
 	libclangFlags = append(libclangFlags, strings.Fields(cfg.Conf.CFlags)...)
 	converter, err := NewConverterX(
 		&Config{
+			HfileInfo:           pkgHfiles,
 			IncPreprocessedFile: cfg.IncedPreprocessedFile,
 			Cfg: &clangutils.Config{
 				File:  cfg.PreprocessedFile,

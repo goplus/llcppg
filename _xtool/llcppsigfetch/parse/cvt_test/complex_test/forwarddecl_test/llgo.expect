@@ -678,8 +678,7 @@
 	},
 	"FileMap":	{
 		"./hfile/forwarddecl.h":	{
-			"IsSys":	false,
-			"IncPath":	"forwarddecl.h"
+			"FileType":	1
 		}
 	}
 }
@@ -779,12 +778,10 @@
 	},
 	"FileMap":	{
 		"./hfile/def.h":	{
-			"IsSys":	false,
-			"IncPath":	"def.h"
+			"FileType":	1
 		},
 		"./hfile/impl.h":	{
-			"IsSys":	false,
-			"IncPath":	"impl.h"
+			"FileType":	2
 		}
 	}
 }

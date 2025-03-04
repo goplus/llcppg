@@ -3,7 +3,6 @@ package parse
 import (
 	"fmt"
 	"os"
-	"path"
 	"runtime"
 	"strings"
 	"unsafe"
@@ -38,6 +37,7 @@ var tagMap = map[string]ast.Tag{
 }
 
 type Config struct {
+	HfileInfo           *config.PkgHfilesInfo
 	Cfg                 *clangutils.Config
 	IncPreprocessedFile string // Which keep origin Include info's processed file
 }
@@ -73,40 +73,27 @@ func NewConverterX(config *Config) (*Converter, error) {
 // combine file
 func initFileMap(cfg *Config) (map[string]*llcppg.FileInfo, error) {
 	fileMap := make(map[string]*llcppg.FileInfo)
-	combineConf := cfg.Cfg
-	combineConf.File = cfg.IncPreprocessedFile
-	if dbg.GetDebugParse() {
-		fmt.Fprintln(os.Stderr, "initFileMap: config")
-		fmt.Fprintln(os.Stderr, "config.File", combineConf.File)
-		fmt.Fprintln(os.Stderr, "config.Args", combineConf.Args)
-		fmt.Fprintln(os.Stderr, "config.IsCpp", combineConf.IsCpp)
-		fmt.Fprintln(os.Stderr, "config.Temp", combineConf.Temp)
+	fileTypes := []struct {
+		files []string
+		fType llcppg.FileType
+	}{
+		{cfg.HfileInfo.Inters, llcppg.Inter},
+		{cfg.HfileInfo.Impls, llcppg.Impl},
+		{cfg.HfileInfo.Thirds, llcppg.Third},
 	}
-	index, unit, err := clangutils.CreateTranslationUnit(combineConf)
-	if err != nil {
-		return nil, err
+	for _, file := range cfg.HfileInfo.Inters {
+		fileMap[file] = &llcppg.FileInfo{
+			FileType: llcppg.Inter,
+		}
 	}
-	defer index.Dispose()
-	defer unit.Dispose()
-	clangutils.VisitChildren(unit.Cursor(), func(cursor, parent clang.Cursor) clang.ChildVisitResult {
-		if cursor.Kind == clang.CursorInclusionDirective {
-			name := toStr(cursor.String())
-			includedFile := cursor.IncludedFile()
-			includedPath := toStr(includedFile.FileName())
-			if includedPath == "" {
-				return clang.ChildVisit_Continue
-			}
-
-			if _, ok := fileMap[includedPath]; !ok {
-				loc := unit.GetLocation(includedFile, 1, 1)
-				fileMap[includedPath] = &llcppg.FileInfo{
-					IsSys:   loc.IsInSystemHeader() != 0 || (ClangResourceDir != "" && strings.HasPrefix(includedPath, path.Join(ClangResourceDir, "include"))),
-					IncPath: name,
-				}
+	for _, ft := range fileTypes {
+		for _, file := range ft.files {
+			fileMap[file] = &llcppg.FileInfo{
+				FileType: ft.fType,
 			}
 		}
-		return clang.ChildVisit_Continue
-	})
+	}
+
 	return fileMap, nil
 }
 

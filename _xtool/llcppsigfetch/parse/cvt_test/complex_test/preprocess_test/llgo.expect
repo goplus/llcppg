@@ -119,12 +119,10 @@
 	},
 	"FileMap":	{
 		"./hfile/compat.h":	{
-			"IsSys":	false,
-			"IncPath":	"compat.h"
+			"FileType":	1
 		},
 		"./hfile/main.h":	{
-			"IsSys":	false,
-			"IncPath":	"main.h"
+			"FileType":	1
 		}
 	}
 }

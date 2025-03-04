@@ -25,9 +25,8 @@ TestTypeDefDecl Case 1:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -74,9 +73,8 @@ TestTypeDefDecl Case 2:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -148,9 +146,8 @@ TestTypeDefDecl Case 3:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -225,9 +222,8 @@ TestTypeDefDecl Case 4:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -349,9 +345,8 @@ TestTypeDefDecl Case 5:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -501,9 +496,8 @@ TestTypeDefDecl Case 6:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -553,9 +547,8 @@ TestTypeDefDecl Case 7:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -605,9 +598,8 @@ TestTypeDefDecl Case 8:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -670,9 +662,8 @@ TestTypeDefDecl Case 9:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -789,9 +780,8 @@ TestTypeDefDecl Case 10:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -921,9 +911,8 @@ TestTypeDefDecl Case 11:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -1122,9 +1111,8 @@ TestTypeDefDecl Case 12:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }

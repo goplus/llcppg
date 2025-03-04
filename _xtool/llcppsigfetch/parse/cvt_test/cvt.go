@@ -1,11 +1,3 @@
-/*
- * @Author: Zhang Zhi Yang
- * @Date: 2025-03-04 11:16:39
- * @LastEditors: Zhang Zhi Yang
- * @LastEditTime: 2025-03-04 11:21:07
- * @FilePath: /llcppg/_xtool/llcppsigfetch/parse/cvt_test/cvt.go
- * @Description:
- */
 package cvttest
 
 import (

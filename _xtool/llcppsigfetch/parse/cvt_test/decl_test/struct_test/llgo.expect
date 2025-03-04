@@ -41,9 +41,8 @@ TestStructDecl Case 1:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -108,9 +107,8 @@ TestStructDecl Case 2:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -175,9 +173,8 @@ TestStructDecl Case 3:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -276,9 +273,8 @@ TestStructDecl Case 4:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -392,9 +388,8 @@ TestStructDecl Case 5:
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }

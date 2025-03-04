@@ -24,9 +24,8 @@ TestDefine Case 1:
 			}]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -56,9 +55,8 @@ TestDefine Case 2:
 			}]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
@@ -132,14 +130,13 @@ TestDefine Case 3:
 			}]
 	},
 	"FileMap":	{
-		"./temp.h":	{
-			"IsSys":	false,
-			"IncPath":	"temp.h"
+		"temp.h":	{
+			"FileType":	1
 		}
 	}
 }
 
-TestMacroExpansionOtherFile:
+=== TestMacroExpansionOtherFile ===
 {
 	"File":	{
 		"_Type":	"File",
@@ -241,12 +238,10 @@ TestMacroExpansionOtherFile:
 	},
 	"FileMap":	{
 		"./testdata/macroexpan/def.h":	{
-			"IsSys":	false,
-			"IncPath":	"def.h"
+			"FileType":	2
 		},
 		"./testdata/macroexpan/ref.h":	{
-			"IsSys":	false,
-			"IncPath":	"ref.h"
+			"FileType":	1
 		}
 	}
 }

@@ -24,8 +24,7 @@ func MarshalFileMap(fmap map[string]*llcppg.FileInfo) *cjson.JSON {
 
 func MarshalFileInfo(info *llcppg.FileInfo) *cjson.JSON {
 	root := cjson.Object()
-	root.SetItem(c.Str("IsSys"), boolField(info.IsSys))
-	root.SetItem(c.Str("IncPath"), stringField(info.IncPath))
+	root.SetItem(c.Str("FileType"), numberField(uint(info.FileType)))
 	return root
 }
 
