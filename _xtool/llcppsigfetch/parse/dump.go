@@ -7,6 +7,27 @@ import (
 	"github.com/goplus/llgo/c/cjson"
 )
 
+func MarshalPkg(pkg *llcppg.Pkg) *cjson.JSON {
+	root := cjson.Object()
+	root.SetItem(c.Str("File"), MarshalASTFile(pkg.File))
+	root.SetItem(c.Str("FileMap"), MarshalFileMap(pkg.FileMap))
+	return root
+}
+
+func MarshalFileMap(fmap map[string]*llcppg.FileInfo) *cjson.JSON {
+	root := cjson.Object()
+	for path, info := range fmap {
+		root.SetItem(c.AllocaCStr(path), MarshalFileInfo(info))
+	}
+	return root
+}
+
+func MarshalFileInfo(info *llcppg.FileInfo) *cjson.JSON {
+	root := cjson.Object()
+	root.SetItem(c.Str("FileType"), numberField(uint(info.FileType)))
+	return root
+}
+
 func MarshalFileSet(files []*llcppg.FileEntry) *cjson.JSON {
 	root := cjson.Array()
 	for _, entry := range files {
@@ -64,6 +85,7 @@ func MarshalMacroList(list []*ast.Macro) *cjson.JSON {
 	for _, item := range list {
 		macro := cjson.Object()
 		macro.SetItem(c.Str("_Type"), stringField("Macro"))
+		macro.SetItem(c.Str("Loc"), MarshalLocation(item.Loc))
 		macro.SetItem(c.Str("Name"), stringField(item.Name))
 		macro.SetItem(c.Str("Tokens"), MarshalTokenList(item.Tokens))
 		root.AddItem(macro)
@@ -150,12 +172,19 @@ func MarshalASTDecl(decl ast.Decl) *cjson.JSON {
 }
 
 func MarshalASTDeclBase(decl ast.DeclBase, root *cjson.JSON) {
-	loc := cjson.Object()
-	loc.SetItem(c.Str("_Type"), stringField("Location"))
-	loc.SetItem(c.Str("File"), stringField(decl.Loc.File))
-	root.SetItem(c.Str("Loc"), loc)
+	root.SetItem(c.Str("Loc"), MarshalLocation(decl.Loc))
 	root.SetItem(c.Str("Doc"), MarshalASTExpr(decl.Doc))
 	root.SetItem(c.Str("Parent"), MarshalASTExpr(decl.Parent))
+}
+
+func MarshalLocation(loc *ast.Location) *cjson.JSON {
+	if loc == nil {
+		return cjson.Null()
+	}
+	root := cjson.Object()
+	root.SetItem(c.Str("_Type"), stringField("Location"))
+	root.SetItem(c.Str("File"), stringField(loc.File))
+	return root
 }
 
 func MarshalASTExpr(t ast.Expr) *cjson.JSON {

@@ -58,16 +58,16 @@ func SigfetchExtract(cfg *SigfetchExtractConfig) ([]byte, error) {
 		args = append(args, "-cpp=false")
 	}
 
-	return executeSigfetch(args, cfg.Dir)
+	return executeSigfetch(args, cfg.Dir, cfg.IsCpp)
 }
 
-func SigfetchConfig(configFile string, dir string) ([]byte, error) {
+func SigfetchConfig(configFile string, dir string, isCpp bool) ([]byte, error) {
 	args := []string{configFile}
-	return executeSigfetch(args, dir)
+	return executeSigfetch(args, dir, isCpp)
 }
 
-func executeSigfetch(args []string, dir string) ([]byte, error) {
-	cmd := exec.Command("llcppsigfetch", args...)
+func executeSigfetch(args []string, dir string, isCpp bool) ([]byte, error) {
+	cmd := exec.Command("llcppsigfetch", append(args, "-ClangResourceDir="+ClangResourceDir())...)
 	if dir != "" {
 		cmd.Dir = dir
 	}
@@ -169,4 +169,13 @@ func CreateJSONFile(filepath string, data any) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(data)
+}
+
+// temp to avoid call exec.Command in llcppsigfetch
+func ClangResourceDir() string {
+	res, err := exec.Command("clang", "-print-resource-dir").Output()
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(string(res))
 }

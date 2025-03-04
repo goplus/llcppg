@@ -73,6 +73,12 @@ func main() {
 			isTemp = args.BoolArg(arg, false)
 		case strings.HasPrefix(arg, "-cpp="):
 			isCpp = args.BoolArg(arg, true)
+		case strings.HasPrefix(arg, "-ClangResourceDir="):
+			// temp to avoid call clang  in llcppsigfetch,will cause hang
+			parse.ClangResourceDir = args.StringArg(arg, "")
+		case strings.HasPrefix(arg, "-ClangSearchPath="):
+			// temp to avoid call clang  in llcppsigfetch,will cause hang
+			parse.ClangSearchPath = strings.Split(args.StringArg(arg, ""), ",")
 		default:
 			otherArgs = append(otherArgs, arg)
 		}
@@ -152,12 +158,19 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 		os.Exit(1)
 	}
 
-	context, err := parse.Do(conf.Config)
+	pkg, err := parse.Do(&parse.ParseConfig{
+		Conf: conf.Config,
+	})
 	check(err)
 
-	outputInfo(context, outputToFile)
+	info := parse.MarshalPkg(pkg)
+	str := info.Print()
+	defer cjson.FreeCStr(str)
+	defer info.Delete()
+	outputResult(str, outputToFile)
 }
 
+// todo:use new converter
 func runExtract(content string, isTemp bool, isCpp bool, outToFile bool, otherArgs []string, verbose bool) {
 	var file string
 	if isTemp {
@@ -211,12 +224,4 @@ func outputResult(result *c.Char, outputToFile bool) {
 	} else {
 		c.Printf(c.Str("%s"), result)
 	}
-}
-
-func outputInfo(context *parse.Context, outputToFile bool) {
-	info := context.Output()
-	str := info.Print()
-	defer cjson.FreeCStr(str)
-	defer info.Delete()
-	outputResult(str, outputToFile)
 }

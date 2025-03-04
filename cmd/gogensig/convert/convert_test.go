@@ -12,7 +12,6 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/filesetprocessor"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	"github.com/goplus/llcppg/llcppg"
@@ -26,6 +25,35 @@ func init() {
 
 func TestFromTestdata(t *testing.T) {
 	testFromDir(t, "./_testdata", false)
+}
+
+func TestSysToPkg(t *testing.T) {
+	name := "_systopkg"
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	testFrom(t, name, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
+		// check FileMap's info is right
+		inFileMap := func(file string) {
+			_, ok := cvt.Pkg.FileMap[file]
+			if !ok {
+				t.Fatal("File not found in FileMap:", file)
+			}
+		}
+		for _, decl := range cvt.Pkg.File.Decls {
+			switch decl := decl.(type) {
+			case *ast.TypeDecl:
+				inFileMap(decl.DeclBase.Loc.File)
+			case *ast.EnumTypeDecl:
+				inFileMap(decl.DeclBase.Loc.File)
+			case *ast.TypedefDecl:
+				inFileMap(decl.DeclBase.Loc.File)
+			case *ast.FuncDecl:
+				inFileMap(decl.DeclBase.Loc.File)
+			}
+		}
+	})
 }
 
 func TestDepPkg(t *testing.T) {
@@ -91,15 +119,6 @@ func TestDepPkg(t *testing.T) {
 	testFrom(t, name, depcjson, false, nil)
 }
 
-func TestSysToPkg(t *testing.T) {
-	name := "_systopkg"
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	testFrom(t, name, path.Join(dir, "_testdata", name), false, nil)
-}
-
 func testFromDir(t *testing.T, relDir string, gen bool) {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -121,7 +140,7 @@ func testFromDir(t *testing.T, relDir string, gen bool) {
 	}
 }
 
-func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package)) {
+func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *testing.T, pkg *convert.Package, converter *convert.Converter)) {
 	confPath := filepath.Join(dir, "conf")
 	cfgPath := filepath.Join(confPath, "llcppg.cfg")
 	symbPath := filepath.Join(confPath, "llcppg.symb.json")
@@ -172,31 +191,29 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 	}
 	defer os.RemoveAll(outputDir)
 
-	p, pkg, err := filesetprocessor.New(&convert.Config{
+	bytes, err := config.SigfetchConfig(flagedCfgPath, confPath, cfg.Cplusplus)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	convertPkg, err := unmarshal.Pkg(bytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cvt, err := convert.NewConverter(&convert.ConverterConfig{
 		PkgName:   name,
 		SymbFile:  symbPath,
 		CfgFile:   flagedCfgPath,
 		OutputDir: outputDir,
 		PubFile:   pubPath,
+		Pkg:       convertPkg,
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	bytes, err := config.SigfetchConfig(flagedCfgPath, confPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	inputdata, err := unmarshal.FileSet(bytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = p.ProcessFileSet(inputdata)
-	if err != nil {
-		t.Fatal(err)
-	}
+	cvt.Process()
 
 	var res strings.Builder
 
@@ -237,7 +254,7 @@ func testFrom(t *testing.T, name, dir string, gen bool, validateFunc func(t *tes
 	}
 
 	if validateFunc != nil {
-		validateFunc(t, pkg)
+		validateFunc(t, cvt.GenPkg, cvt)
 	}
 }
 

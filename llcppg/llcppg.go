@@ -58,3 +58,12 @@ type FileEntry struct {
 	FileType FileType
 	Doc      *ast.File
 }
+
+type FileInfo struct {
+	FileType FileType
+}
+
+type Pkg struct {
+	File    *ast.File
+	FileMap map[string]*FileInfo
+}

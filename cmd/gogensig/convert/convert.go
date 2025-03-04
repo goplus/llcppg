@@ -168,3 +168,131 @@ func (p *AstConvert) WritePkgFiles() {
 		log.Panicf("WritePkgFiles: %v", err)
 	}
 }
+
+type ConverterConfig struct {
+	PkgName   string
+	SymbFile  string // llcppg.symb.json
+	CfgFile   string // llcppg.cfg
+	PubFile   string // llcppg.pub
+	OutputDir string
+
+	Pkg *llcppg.Pkg
+}
+
+type Converter struct {
+	Pkg    *llcppg.Pkg
+	GenPkg *Package
+	Conf   *ConverterConfig
+}
+
+func NewConverter(config *ConverterConfig) (*Converter, error) {
+	if config == nil {
+		return nil, errors.New("config is nil")
+	}
+	symbTable, err := cfg.NewSymbolTable(config.SymbFile)
+	if err != nil {
+		if dbg.GetDebugError() {
+			log.Printf("Can't get llcppg.symb.json from %s Use empty table\n", config.SymbFile)
+		}
+		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
+	}
+
+	conf, err := cfg.GetCppgCfgFromPath(config.CfgFile)
+	if err != nil {
+		if dbg.GetDebugError() {
+			log.Printf("Cant get llcppg.cfg from %s Use empty config\n", config.CfgFile)
+		}
+		conf = &llcppg.Config{}
+	}
+
+	pubs, err := cfg.GetPubFromPath(config.PubFile)
+	if err != nil {
+		return nil, err
+	}
+	pkg := NewPackage(&PackageConfig{
+		PkgBase: PkgBase{
+			PkgPath:  ".",
+			CppgConf: conf,
+			Pubs:     pubs,
+		},
+		Name:        config.PkgName,
+		OutputDir:   config.OutputDir,
+		SymbolTable: symbTable,
+	})
+	return &Converter{
+		GenPkg: pkg,
+		Pkg:    config.Pkg,
+		Conf:   config,
+	}, nil
+}
+
+func (p *Converter) Process() {
+	processDecl := func(file string, name *ast.Ident, declType string, process func() error) {
+		var declName string
+		if name != nil {
+			declName = name.Name
+		} else {
+			declName = "<anonymous>"
+		}
+		if !p.setCurFile(file) {
+			return
+		}
+		if err := process(); err != nil {
+			log.Printf("Convert%s %s Fail: %s", declType, declName, err.Error())
+		}
+	}
+
+	for _, macro := range p.Pkg.File.Macros {
+		processDecl(macro.Loc.File, &ast.Ident{Name: macro.Name}, "Macro", func() error {
+			return p.GenPkg.NewMacro(macro)
+		})
+	}
+
+	for _, decl := range p.Pkg.File.Decls {
+		switch decl := decl.(type) {
+		case *ast.TypeDecl:
+			processDecl(decl.DeclBase.Loc.File, decl.Name, "TypeDecl", func() error {
+				return p.GenPkg.NewTypeDecl(decl)
+			})
+		case *ast.EnumTypeDecl:
+			processDecl(decl.DeclBase.Loc.File, decl.Name, "EnumTypeDecl", func() error {
+				return p.GenPkg.NewEnumTypeDecl(decl)
+			})
+		case *ast.TypedefDecl:
+			processDecl(decl.DeclBase.Loc.File, decl.Name, "TypedefDecl", func() error {
+				return p.GenPkg.NewTypedefDecl(decl)
+			})
+		case *ast.FuncDecl:
+			processDecl(decl.DeclBase.Loc.File, decl.Name, "FuncDecl", func() error {
+				return p.GenPkg.NewFuncDecl(decl)
+			})
+		}
+	}
+
+	err := p.GenPkg.WritePkgFiles()
+	if err != nil {
+		log.Printf("WritePkgFiles: %v", err)
+	}
+	_, err = p.GenPkg.WriteLinkFile()
+	if err != nil {
+		log.Printf("WriteLinkFile: %v", err)
+	}
+	err = p.GenPkg.WritePubFile()
+	if err != nil {
+		log.Printf("WritePubFile: %v", err)
+	}
+}
+
+func (p *Converter) setCurFile(file string) bool {
+	info, exist := p.Pkg.FileMap[file]
+	if !exist {
+		var availableFiles []string
+		for f := range p.Pkg.FileMap {
+			availableFiles = append(availableFiles, f)
+		}
+		log.Fatalf("File %q not found in FileMap. Available files:\n%s",
+			file, strings.Join(availableFiles, "\n"))
+	}
+	p.GenPkg.SetCurFile(NewHeaderFile(file, info.FileType))
+	return true
+}

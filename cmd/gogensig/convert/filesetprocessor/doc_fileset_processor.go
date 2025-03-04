@@ -100,7 +100,7 @@ func FindEntry(files []*llcppg.FileEntry, path string) int {
 	return -1
 }
 
-func readSigfetchFile(sigfetchFile string) ([]byte, error) {
+func ReadSigfetchFile(sigfetchFile string) ([]byte, error) {
 	_, file := filepath.Split(sigfetchFile)
 	var data []byte
 	var err error
@@ -155,7 +155,7 @@ func Process(cfg *convert.Config) error {
 		},
 	})
 
-	sigfetchFileData, err := readSigfetchFile(cfg.SigfetchFile)
+	sigfetchFileData, err := ReadSigfetchFile(cfg.SigfetchFile)
 	if err != nil {
 		return err
 	}

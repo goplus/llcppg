@@ -3,6 +3,9 @@ package clangutils
 import (
 	"errors"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"unsafe"
 
 	"github.com/goplus/llgo/c"
@@ -26,11 +29,7 @@ const TEMP_FILE = "temp.h"
 func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit, error) {
 	// default use the c/c++ standard of clang; c:gnu17 c++:gnu++17
 	// https://clang.llvm.org/docs/CommandGuide/clang.html
-	defaultArgs := []string{"-x", "c"}
-	if config.IsCpp {
-		defaultArgs = []string{"-x", "c++"}
-	}
-	allArgs := append(defaultArgs, config.Args...)
+	allArgs := append(defaultArgs(config.IsCpp), config.Args...)
 
 	cArgs := make([]*c.Char, len(allArgs))
 	for i, arg := range allArgs {
@@ -120,4 +119,62 @@ func ComposeIncludes(files []string, outfile string) error {
 		str += ("#include <" + file + ">\n")
 	}
 	return os.WriteFile(outfile, []byte(str), 0644)
+}
+
+func defaultArgs(isCpp bool) []string {
+	args := []string{"-x", "c"}
+	if isCpp {
+		args = []string{"-x", "c++"}
+	}
+	return args
+}
+
+type PreprocessConfig struct {
+	File    string
+	IsCpp   bool
+	Args    []string
+	OutFile string
+}
+
+func Preprocess(cfg *PreprocessConfig) error {
+	args := []string{"-E"}
+	args = append(args, defaultArgs(cfg.IsCpp)...)
+	args = append(args, cfg.Args...)
+	args = append(args, cfg.File)
+	args = append(args, "-o", cfg.OutFile)
+	cmd := exec.Command("clang", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func GetIncludePaths(isCpp bool) []string {
+	args := []string{"-E", "-v"}
+	args = append(args, defaultArgs(isCpp)...)
+	args = append(args, "/dev/null")
+	cmd := exec.Command("clang", args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		panic(err)
+	}
+	return ParseClangIncOutput(string(output))
+}
+
+func ParseClangIncOutput(output string) []string {
+	var paths []string
+	start := strings.Index(output, "#include <...> search starts here:")
+	end := strings.Index(output, "End of search list.")
+	if start == -1 || end == -1 {
+		return paths
+	}
+	content := output[start:end]
+	lines := strings.Split(content, "\n")
+	for _, line := range lines[1:] {
+		for _, item := range strings.Fields(line) {
+			if path := strings.TrimSpace(item); filepath.IsAbs(path) {
+				paths = append(paths, path)
+			}
+		}
+	}
+	return paths
 }

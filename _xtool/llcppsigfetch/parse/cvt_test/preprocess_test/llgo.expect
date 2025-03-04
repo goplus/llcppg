@@ -1,17 +1,20 @@
 #stdout
 === TestSystemHeader ===
-stdio.h is absolute path
 include files are all system headers
 === TestInclusionMap ===
 sys/types.h include path found
 TestDefine Case 1:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[],
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./temp.h"
+				},
 				"Name":	"DEBUG",
 				"Tokens":	[{
 						"_Type":	"Token",
@@ -19,17 +22,26 @@ TestDefine Case 1:
 						"Lit":	"DEBUG"
 					}]
 			}]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestDefine Case 2:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[],
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./temp.h"
+				},
 				"Name":	"OK",
 				"Tokens":	[{
 						"_Type":	"Token",
@@ -41,17 +53,26 @@ TestDefine Case 2:
 						"Lit":	"1"
 					}]
 			}]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestDefine Case 3:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[],
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./temp.h"
+				},
 				"Name":	"SQUARE",
 				"Tokens":	[{
 						"_Type":	"Token",
@@ -107,22 +128,17 @@ TestDefine Case 3:
 						"Lit":	")"
 					}]
 			}]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
-TestInclude Case 1:
+=== TestMacroExpansionOtherFile ===
 {
-	"temp.h":	{
-		"_Type":	"File",
-		"decls":	[],
-		"includes":	[],
-		"macros":	[]
-	}
-}
-
-TestMacroExpansionOtherFile:
-{
-	"./testdata/macroexpan/ref.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
@@ -169,18 +185,13 @@ TestMacroExpansionOtherFile:
 					"Methods":	[]
 				}
 			}],
-		"includes":	[{
-				"_Type":	"Include",
-				"Path":	"./testdata/macroexpan/def.h"
-			}],
-		"macros":	[]
-	},
-	"./testdata/macroexpan/def.h":	{
-		"_Type":	"File",
-		"decls":	[],
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./testdata/macroexpan/def.h"
+				},
 				"Name":	"__FSID_T_TYPE",
 				"Tokens":	[{
 						"_Type":	"Token",
@@ -224,6 +235,14 @@ TestMacroExpansionOtherFile:
 						"Lit":	"}"
 					}]
 			}]
+	},
+	"FileMap":	{
+		"./testdata/macroexpan/def.h":	{
+			"FileType":	2
+		},
+		"./testdata/macroexpan/ref.h":	{
+			"FileType":	1
+		}
 	}
 }
 

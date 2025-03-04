@@ -1,6 +1,6 @@
 #stdout
 {
-	"./hfile/forwarddecl.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
@@ -660,6 +660,10 @@
 		"includes":	[],
 		"macros":	[{
 				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./hfile/forwarddecl.h"
+				},
 				"Name":	"LUA_IDSIZE",
 				"Tokens":	[{
 						"_Type":	"Token",
@@ -671,13 +675,54 @@
 						"Lit":	"60"
 					}]
 			}]
+	},
+	"FileMap":	{
+		"./hfile/forwarddecl.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 {
-	"./hfile/def.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
+				"_Type":	"TypeDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./hfile/impl.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"foo"
+				},
+				"Type":	{
+					"_Type":	"RecordType",
+					"Tag":	0,
+					"Fields":	{
+						"_Type":	"FieldList",
+						"List":	[{
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"BuiltinType",
+									"Kind":	6,
+									"Flags":	0
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	1,
+								"Names":	[{
+										"_Type":	"Ident",
+										"Name":	"a"
+									}]
+							}]
+					},
+					"Methods":	[]
+				}
+			}, {
 				"_Type":	"FuncDecl",
 				"Loc":	{
 					"_Type":	"Location",
@@ -728,53 +773,16 @@
 				"IsVirtual":	false,
 				"IsOverride":	false
 			}],
-		"includes":	[{
-				"_Type":	"Include",
-				"Path":	"./hfile/impl.h"
-			}],
-		"macros":	[]
-	},
-	"./hfile/impl.h":	{
-		"_Type":	"File",
-		"decls":	[{
-				"_Type":	"TypeDecl",
-				"Loc":	{
-					"_Type":	"Location",
-					"File":	"./hfile/impl.h"
-				},
-				"Doc":	null,
-				"Parent":	null,
-				"Name":	{
-					"_Type":	"Ident",
-					"Name":	"foo"
-				},
-				"Type":	{
-					"_Type":	"RecordType",
-					"Tag":	0,
-					"Fields":	{
-						"_Type":	"FieldList",
-						"List":	[{
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"BuiltinType",
-									"Kind":	6,
-									"Flags":	0
-								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	1,
-								"Names":	[{
-										"_Type":	"Ident",
-										"Name":	"a"
-									}]
-							}]
-					},
-					"Methods":	[]
-				}
-			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"./hfile/def.h":	{
+			"FileType":	1
+		},
+		"./hfile/impl.h":	{
+			"FileType":	2
+		}
 	}
 }
 

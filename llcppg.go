@@ -26,6 +26,7 @@ import (
 	"os/exec"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
+	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/xtool/env"
 )
@@ -76,7 +77,7 @@ func llcppsymg(conf []byte, v verboseFlags) error {
 func llcppsigfetch(conf []byte, v verboseFlags, out *io.PipeWriter) {
 	cmd := command(CommandOptions{
 		Name:    "llcppsigfetch",
-		Args:    []string{"-"},
+		Args:    []string{"-", "-ClangResourceDir=" + config.ClangResourceDir()},
 		Verbose: (v & VerboseSigfetch) != 0,
 	})
 	cmd.Stdin = bytes.NewReader(conf)

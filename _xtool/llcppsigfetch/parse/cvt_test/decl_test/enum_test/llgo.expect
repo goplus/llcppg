@@ -1,13 +1,13 @@
 #stdout
 TestEnumDecl Case 1:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -52,18 +52,23 @@ TestEnumDecl Case 1:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestEnumDecl Case 2:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -111,18 +116,23 @@ TestEnumDecl Case 2:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestEnumDecl Case 3:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -170,18 +180,23 @@ TestEnumDecl Case 3:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestEnumDecl Case 4:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -229,6 +244,11 @@ TestEnumDecl Case 4:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 

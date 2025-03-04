@@ -26,7 +26,7 @@ func main() {
 		z3.ModelIncRef(ctx, model)
 
 		var val z3.Ast
-		z3.ModelEval(ctx, model, x, 1, &val)
+		z3.ModelEval(ctx, model, x, true, &val)
 		c.Printf(c.Str("find solution: x = %s\n"), z3.AstToString(ctx, val))
 
 		z3.ModelDecRef(ctx, model)

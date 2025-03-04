@@ -1,0 +1,133 @@
+#stdout
+=== TestPreProcess ===
+{
+	"File":	{
+		"_Type":	"File",
+		"decls":	[{
+				"_Type":	"TypeDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./hfile/main.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"A"
+				},
+				"Type":	{
+					"_Type":	"RecordType",
+					"Tag":	0,
+					"Fields":	{
+						"_Type":	"FieldList",
+						"List":	[{
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"BuiltinType",
+									"Kind":	6,
+									"Flags":	0
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	1,
+								"Names":	[{
+										"_Type":	"Ident",
+										"Name":	"a"
+									}]
+							}, {
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"BuiltinType",
+									"Kind":	6,
+									"Flags":	0
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	1,
+								"Names":	[{
+										"_Type":	"Ident",
+										"Name":	"b"
+									}]
+							}, {
+								"_Type":	"Field",
+								"Type":	{
+									"_Type":	"BuiltinType",
+									"Kind":	6,
+									"Flags":	0
+								},
+								"Doc":	null,
+								"Comment":	null,
+								"IsStatic":	false,
+								"Access":	1,
+								"Names":	[{
+										"_Type":	"Ident",
+										"Name":	"c"
+									}]
+							}]
+					},
+					"Methods":	[]
+				}
+			}, {
+				"_Type":	"TypedefDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./hfile/compat.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"B"
+				},
+				"Type":	{
+					"_Type":	"Ident",
+					"Name":	"A"
+				}
+			}, {
+				"_Type":	"TypedefDecl",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./hfile/main.h"
+				},
+				"Doc":	null,
+				"Parent":	null,
+				"Name":	{
+					"_Type":	"Ident",
+					"Name":	"C"
+				},
+				"Type":	{
+					"_Type":	"Ident",
+					"Name":	"B"
+				}
+			}],
+		"includes":	[],
+		"macros":	[{
+				"_Type":	"Macro",
+				"Loc":	{
+					"_Type":	"Location",
+					"File":	"./hfile/compat.h"
+				},
+				"Name":	"COMPAT_H",
+				"Tokens":	[{
+						"_Type":	"Token",
+						"Token":	3,
+						"Lit":	"COMPAT_H"
+					}]
+			}]
+	},
+	"FileMap":	{
+		"./hfile/compat.h":	{
+			"FileType":	1
+		},
+		"./hfile/main.h":	{
+			"FileType":	1
+		}
+	}
+}
+
+
+#stderr
+
+#exit 0

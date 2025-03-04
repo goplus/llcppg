@@ -27,6 +27,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/filesetprocessor"
 	"github.com/goplus/llcppg/cmd/gogensig/dbg"
+	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 )
 
 func main() {
@@ -61,18 +62,23 @@ func main() {
 	err = prepareEnv(wd, conf.Name, conf.Deps)
 	check(err)
 
-	sigfetchFile := ags.CfgFile
-
-	config := &convert.Config{
-		PkgName:      conf.Name,
-		SigfetchFile: filepath.Join(wd, sigfetchFile),
-		CfgFile:      filepath.Join(wd, cfgFile),
-		SymbFile:     filepath.Join(wd, "llcppg.symb.json"),
-		PubFile:      filepath.Join(wd, "llcppg.pub"),
-	}
-
-	err = filesetprocessor.Process(config)
+	data, err := filesetprocessor.ReadSigfetchFile(filepath.Join(wd, ags.CfgFile))
 	check(err)
+
+	convertPkg, err := unmarshal.Pkg(data)
+	check(err)
+
+	cvt, err := convert.NewConverter(&convert.ConverterConfig{
+		PkgName:  conf.Name,
+		SymbFile: filepath.Join(wd, args.LLCPPG_SYMB),
+		CfgFile:  filepath.Join(wd, cfgFile),
+		PubFile:  filepath.Join(wd, args.LLCPPG_PUB),
+		Pkg:      convertPkg,
+	})
+	if err != nil {
+		check(err)
+	}
+	cvt.Process()
 }
 
 func check(err error) {

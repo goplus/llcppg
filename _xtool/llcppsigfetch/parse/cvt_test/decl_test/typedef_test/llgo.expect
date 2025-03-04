@@ -1,13 +1,13 @@
 #stdout
 TestTypeDefDecl Case 1:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -23,18 +23,23 @@ TestTypeDefDecl Case 1:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 2:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -51,7 +56,7 @@ TestTypeDefDecl Case 2:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -66,18 +71,23 @@ TestTypeDefDecl Case 2:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 3:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -94,7 +104,7 @@ TestTypeDefDecl Case 3:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -114,7 +124,7 @@ TestTypeDefDecl Case 3:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -134,18 +144,23 @@ TestTypeDefDecl Case 3:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 4:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -205,18 +220,23 @@ TestTypeDefDecl Case 4:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 5:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -267,7 +287,7 @@ TestTypeDefDecl Case 5:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -323,18 +343,23 @@ TestTypeDefDecl Case 5:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 6:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -373,7 +398,7 @@ TestTypeDefDecl Case 6:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -403,7 +428,7 @@ TestTypeDefDecl Case 6:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -436,7 +461,7 @@ TestTypeDefDecl Case 6:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -469,18 +494,23 @@ TestTypeDefDecl Case 6:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 7:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -515,18 +545,23 @@ TestTypeDefDecl Case 7:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 8:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -561,18 +596,23 @@ TestTypeDefDecl Case 8:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 9:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -620,18 +660,23 @@ TestTypeDefDecl Case 9:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 10:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -667,7 +712,7 @@ TestTypeDefDecl Case 10:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -687,7 +732,7 @@ TestTypeDefDecl Case 10:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -710,7 +755,7 @@ TestTypeDefDecl Case 10:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -733,18 +778,23 @@ TestTypeDefDecl Case 10:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 11:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"EnumTypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -793,7 +843,7 @@ TestTypeDefDecl Case 11:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -813,7 +863,7 @@ TestTypeDefDecl Case 11:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -836,7 +886,7 @@ TestTypeDefDecl Case 11:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	null,
@@ -859,18 +909,23 @@ TestTypeDefDecl Case 11:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
 TestTypeDefDecl Case 12:
 {
-	"temp.h":	{
+	"File":	{
 		"_Type":	"File",
 		"decls":	[{
 				"_Type":	"TypeDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -916,7 +971,7 @@ TestTypeDefDecl Case 12:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -960,7 +1015,7 @@ TestTypeDefDecl Case 12:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -1007,7 +1062,7 @@ TestTypeDefDecl Case 12:
 				"_Type":	"TypedefDecl",
 				"Loc":	{
 					"_Type":	"Location",
-					"File":	"temp.h"
+					"File":	"./temp.h"
 				},
 				"Doc":	null,
 				"Parent":	{
@@ -1054,6 +1109,11 @@ TestTypeDefDecl Case 12:
 			}],
 		"includes":	[],
 		"macros":	[]
+	},
+	"FileMap":	{
+		"temp.h":	{
+			"FileType":	1
+		}
 	}
 }
 
