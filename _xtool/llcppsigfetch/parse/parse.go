@@ -192,7 +192,13 @@ func Do(cfg *ParseConfig) (*llcppg.Pkg, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	if dbg.GetDebugParse() {
+		fmt.Fprintln(os.Stderr, "Have %d Macros", len(pkg.File.Macros))
+		for _, macro := range pkg.File.Macros {
+			fmt.Fprintf(os.Stderr, "Macro %s", macro.Name)
+		}
+		fmt.Fprintln(os.Stderr)
+	}
 	return pkg, nil
 }
 

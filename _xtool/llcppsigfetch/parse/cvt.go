@@ -223,7 +223,8 @@ func (ct *Converter) GetCurFile(cursor clang.Cursor) *ast.File {
 	var file clang.String
 	loc.PresumedLocation(&file, nil, nil)
 	filePath := clang.GoString(file)
-	if filePath == "" || filePath == "<command line>" {
+	ct.logf("GetCurFile: PresumedLocation %s cursor.Location() %s\n", filePath, clang.GoString(loc.File().FileName()))
+	if filePath == "<built-in>" || filePath == "<command line>" {
 		//todo(zzy): For some built-in macros, there is no file.
 		ct.curLoc = ast.Location{File: ""}
 		ct.logln("GetCurFile: NO FILE")
@@ -328,7 +329,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	case clang.CursorMacroDefinition:
 		macro := ct.ProcessMacro(cursor)
 		curFile.Macros = append(curFile.Macros, macro)
-		if cursor.Location().IsInSystemHeader() == 0 || cursor.IsMacroBuiltin() != 0 {
+		if cursor.IsMacroBuiltin() == 0 {
 			ct.pkg.File.Macros = append(ct.pkg.File.Macros, macro)
 		}
 		ct.logln("visitTop: ProcessMacro END ", macro.Name, "Tokens Length:", len(macro.Tokens))
