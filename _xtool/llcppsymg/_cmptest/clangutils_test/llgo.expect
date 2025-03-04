@@ -17,6 +17,15 @@ Namespace: TestNamespace
 Function/Method: namespaced_function
 Scoping parts: [TestNamespace namespaced_function]
 
+CreateTranslationUnit succeeded
+temp.h inter.h
+./hfile/inter.h compat.h
+temp.h compat.h
+./hfile/inter.h foo
+./hfile/compat.h foo2
+./hfile/compat.h foo
+./hfile/inter.h foo3
+./hfile/inter.h foo2
 
 #stderr
 

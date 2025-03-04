@@ -11,6 +11,7 @@ import (
 
 func main() {
 	TestClangUtil()
+	TestPreProcess()
 }
 
 func TestClangUtil() {
@@ -116,4 +117,33 @@ func TestClangUtil() {
 
 		fmt.Println()
 	}
+}
+
+func TestPreProcess() {
+	config := &clangutils.Config{
+		File: `
+		#include <inter.h>
+		#include <compat.h>
+		`,
+		Temp:  true,
+		IsCpp: false,
+		Args:  []string{"-I./hfile", "-E"},
+	}
+	index, unit, err := clangutils.CreateTranslationUnit(config)
+	if err != nil {
+		fmt.Printf("CreateTranslationUnit failed: %v\n", err)
+	}
+
+	fmt.Println("CreateTranslationUnit succeeded")
+
+	cursor := unit.Cursor()
+
+	clangutils.VisitChildren(cursor, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+		if cursor.Kind != clang.CursorMacroDefinition {
+			fmt.Println(clang.GoString(cursor.Location().File().FileName()), clang.GoString(cursor.String()))
+		}
+		return clang.ChildVisit_Recurse
+	})
+	index.Dispose()
+	unit.Dispose()
 }
