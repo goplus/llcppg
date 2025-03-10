@@ -14,8 +14,10 @@ import (
 type LuaState struct {
 	Unused [8]uint8
 }
+
 // llgo:type C
 type LuaHook func(*LuaState)
+
 //go:linkname Sethook C.lua_sethook
 func Sethook(L *LuaState, func_ LuaHook, mask c.Int, count c.Int)
 

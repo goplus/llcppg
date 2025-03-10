@@ -7,14 +7,17 @@ import (
 )
 
 type ErrorT c.Uint
+
 // llgo:link ErrorT.Strerror C.gpg_strerror
 func (recv_ ErrorT) Strerror() *int8 {
 	return nil
 }
+
 // llgo:link ErrorT.StrerrorR C.gpg_strerror_r
 func (recv_ ErrorT) StrerrorR(buf *int8, buflen uintptr) c.Int {
 	return 0
 }
+
 // llgo:link ErrorT.Strsource C.gpg_strsource
 func (recv_ ErrorT) Strsource() *int8 {
 	return nil
@@ -35,22 +38,27 @@ type GpgrtLockT struct {
 		X_priv [64]int8
 	}
 }
+
 // llgo:link (*GpgrtLockT).LockInit C.gpgrt_lock_init
 func (recv_ *GpgrtLockT) LockInit() CodeT {
 	return 0
 }
+
 // llgo:link (*GpgrtLockT).LockLock C.gpgrt_lock_lock
 func (recv_ *GpgrtLockT) LockLock() CodeT {
 	return 0
 }
+
 // llgo:link (*GpgrtLockT).LockTrylock C.gpgrt_lock_trylock
 func (recv_ *GpgrtLockT) LockTrylock() CodeT {
 	return 0
 }
+
 // llgo:link (*GpgrtLockT).LockUnlock C.gpgrt_lock_unlock
 func (recv_ *GpgrtLockT) LockUnlock() CodeT {
 	return 0
 }
+
 // llgo:link (*GpgrtLockT).LockDestroy C.gpgrt_lock_destroy
 func (recv_ *GpgrtLockT) LockDestroy() CodeT {
 	return 0

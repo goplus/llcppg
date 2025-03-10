@@ -33,6 +33,12 @@ func TestPkgFail(t *testing.T) {
 			FileMap: map[string]*llcppg.FileInfo{},
 		},
 	})
+	t.Run("FmtFail", func(t *testing.T) {
+		defer func() {
+			checkPanic(t, recover(), "go fmt:")
+		}()
+		converter.Fmt()
+	})
 	t.Run("ProcessFail", func(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "File \"noexist.h\" not found in FileMap")

@@ -132,16 +132,22 @@ const FTS5_TOKENIZE_PREFIX = 0x0002
 const FTS5_TOKENIZE_DOCUMENT = 0x0004
 const FTS5_TOKENIZE_AUX = 0x0008
 const FTS5_TOKEN_COLOCATED = 0x0001
+
 //go:linkname Libversion C.sqlite3_libversion
 func Libversion() *int8
+
 //go:linkname Sourceid C.sqlite3_sourceid
 func Sourceid() *int8
+
 //go:linkname LibversionNumber C.sqlite3_libversion_number
 func LibversionNumber() c.Int
+
 //go:linkname CompileoptionUsed C.sqlite3_compileoption_used
 func CompileoptionUsed(zOptName *int8) c.Int
+
 //go:linkname CompileoptionGet C.sqlite3_compileoption_get
 func CompileoptionGet(N c.Int) *int8
+
 //go:linkname Threadsafe C.sqlite3_threadsafe
 func Threadsafe() c.Int
 
@@ -152,16 +158,20 @@ type SqliteInt64 c.LongLong
 type SqliteUint64 c.UlongLong
 type Int64 SqliteInt64
 type Uint64 SqliteUint64
+
 // llgo:link (*Sqlite3).Close C.sqlite3_close
 func (recv_ *Sqlite3) Close() c.Int {
 	return 0
 }
+
 // llgo:link (*Sqlite3).CloseV2 C.sqlite3_close_v2
 func (recv_ *Sqlite3) CloseV2() c.Int {
 	return 0
 }
+
 // llgo:type C
 type Callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int
+
 // llgo:link (*Sqlite3).Exec C.sqlite3_exec
 func (recv_ *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, __llgo_arg_2 unsafe.Pointer, errmsg **int8) c.Int {
 	return 0
@@ -510,6 +520,7 @@ type Fts5PhraseIter struct {
 	A *int8
 	B *int8
 }
+
 // llgo:type C
 type Fts5ExtensionFunction func(*Fts5ExtensionApi, *Fts5Context, *Context, c.Int, **Value)
 
@@ -546,6 +557,7 @@ import (
 	"github.com/goplus/llgo/c"
 	_ "unsafe"
 )
+
 // llgo:type C
 type LoadextEntry func(*Sqlite3, **int8, *ApiRoutines) c.Int
 

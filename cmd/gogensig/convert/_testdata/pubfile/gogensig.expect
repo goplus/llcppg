@@ -28,6 +28,7 @@ type UintT c.Uint
 type Color c.Int
 
 const RED Color = 0
+
 //go:linkname Func C.func
 func Func(a c.Int, b c.Int)
 

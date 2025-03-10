@@ -3,6 +3,8 @@ package convert
 import (
 	"errors"
 	"log"
+	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/goplus/llcppg/ast"
@@ -71,6 +73,7 @@ func NewConverter(config *Config) (*Converter, error) {
 func (p *Converter) Convert() {
 	p.Process()
 	p.Write()
+	p.Fmt()
 }
 
 func (p *Converter) Process() {
@@ -127,6 +130,17 @@ func (p *Converter) Write() {
 	_, err = p.GenPkg.WriteLinkFile()
 	if err != nil {
 		log.Panicf("WriteLinkFile: %v\n", err)
+	}
+}
+
+func (p *Converter) Fmt() {
+	cmd := exec.Command("go", "fmt", ".")
+	cmd.Dir = p.Conf.OutputDir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		log.Panicf("go fmt: %v\n", err)
 	}
 }
 

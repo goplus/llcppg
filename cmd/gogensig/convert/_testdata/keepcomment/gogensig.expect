@@ -10,13 +10,16 @@ import (
 	"github.com/goplus/llgo/c"
 	_ "unsafe"
 )
-/// Foo comment
+
+// / Foo comment
 type Foo struct {
 	A c.Int
 	B float64
 	C c.Int
 }
-/// ExecuteFoo comment
+
+// / ExecuteFoo comment
+//
 //go:linkname CustomExecuteFoo C.ExecuteFoo
 func CustomExecuteFoo(a c.Int, b Foo) c.Int
 
