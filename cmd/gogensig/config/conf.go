@@ -68,7 +68,7 @@ func SigfetchExtract(cfg *SigfetchExtractConfig) ([]byte, error) {
 	return executeSigfetch(args, cfg.Dir, cfg.IsCpp)
 }
 
-func SigfetchConfig(configFile string, dir string, isCpp bool) ([]byte, error) {
+func SigfetchConfigTest(configFile string, dir string, isCpp bool) ([]byte, error) {
 	args := []string{configFile}
 	return executeSigfetch(args, dir, isCpp)
 }

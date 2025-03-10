@@ -282,6 +282,9 @@ type Debug struct {
 // llgo:type C
 type Hook func(*State, *Debug)
 
+/*
+** state manipulation
+ */
 //go:linkname Newstate C.lua_newstate
 func Newstate(f Alloc, ud unsafe.Pointer) *State
 
@@ -303,6 +306,9 @@ func Atpanic(L *State, panicf CFunction) CFunction
 //go:linkname Version C.lua_version
 func Version(L *State) Number
 
+/*
+** basic stack manipulation
+ */
 //go:linkname Absindex C.lua_absindex
 func Absindex(L *State, idx c.Int) c.Int
 
@@ -327,6 +333,9 @@ func Checkstack(L *State, n c.Int) c.Int
 //go:linkname Xmove C.lua_xmove
 func Xmove(from *State, to *State, n c.Int)
 
+/*
+** access functions (stack -> C)
+ */
 //go:linkname Isnumber C.lua_isnumber
 func Isnumber(L *State, idx c.Int) c.Int
 
@@ -384,6 +393,9 @@ func Rawequal(L *State, idx1 c.Int, idx2 c.Int) c.Int
 //go:linkname Compare C.lua_compare
 func Compare(L *State, idx1 c.Int, idx2 c.Int, op c.Int) c.Int
 
+/*
+** push functions (C -> stack)
+ */
 //go:linkname Pushnil C.lua_pushnil
 func Pushnil(L *State)
 
@@ -399,6 +411,9 @@ func Pushlstring(L *State, s *int8, len uintptr) *int8
 //go:linkname Pushstring C.lua_pushstring
 func Pushstring(L *State, s *int8) *int8
 
+// todo(zzy):on macos undef va_list will be a int,it is mistake
+// LUA_API const char *(lua_pushvfstring)(lua_State *L, const char *fmt, va_list argp);
+//
 //go:linkname Pushfstring C.lua_pushfstring
 func Pushfstring(L *State, fmt *int8, __llgo_va_list ...interface{}) *int8
 
@@ -414,6 +429,9 @@ func Pushlightuserdata(L *State, p unsafe.Pointer)
 //go:linkname Pushthread C.lua_pushthread
 func Pushthread(L *State) c.Int
 
+/*
+** get functions (Lua -> stack)
+ */
 //go:linkname Getglobal C.lua_getglobal
 func Getglobal(L *State, name *int8) c.Int
 
@@ -447,6 +465,9 @@ func Getmetatable(L *State, objindex c.Int) c.Int
 //go:linkname Getiuservalue C.lua_getiuservalue
 func Getiuservalue(L *State, idx c.Int, n c.Int) c.Int
 
+/*
+** set functions (stack -> Lua)
+ */
 //go:linkname Setglobal C.lua_setglobal
 func Setglobal(L *State, name *int8)
 
@@ -474,6 +495,9 @@ func Setmetatable(L *State, objindex c.Int) c.Int
 //go:linkname Setiuservalue C.lua_setiuservalue
 func Setiuservalue(L *State, idx c.Int, n c.Int) c.Int
 
+/*
+** 'load' and 'call' functions (load and run Lua code)
+ */
 //go:linkname Callk C.lua_callk
 func Callk(L *State, nargs c.Int, nresults c.Int, ctx KContext, k KFunction)
 
@@ -486,6 +510,9 @@ func Load(L *State, reader Reader, dt unsafe.Pointer, chunkname *int8, mode *int
 //go:linkname Dump C.lua_dump
 func Dump(L *State, writer Writer, data unsafe.Pointer, strip c.Int) c.Int
 
+/*
+** coroutine functions
+ */
 //go:linkname Yieldk C.lua_yieldk
 func Yieldk(L *State, nresults c.Int, ctx KContext, k KFunction) c.Int
 
@@ -498,6 +525,9 @@ func Status(L *State) c.Int
 //go:linkname Isyieldable C.lua_isyieldable
 func Isyieldable(L *State) c.Int
 
+/*
+** Warning-related functions
+ */
 //go:linkname Setwarnf C.lua_setwarnf
 func Setwarnf(L *State, f WarnFunction, ud unsafe.Pointer)
 
@@ -507,6 +537,9 @@ func Warning(L *State, msg *int8, tocont c.Int)
 //go:linkname Gc C.lua_gc
 func Gc(L *State, what c.Int, __llgo_va_list ...interface{}) c.Int
 
+/*
+** miscellaneous functions
+ */
 //go:linkname Error C.lua_error
 func Error(L *State) c.Int
 
@@ -652,6 +685,7 @@ func Math(L *State) c.Int
 //go:linkname Package C.luaopen_package
 func Package(L *State) c.Int
 
+/* open all previous libraries */
 //go:linkname Openlibs C.luaL_openlibs
 func Openlibs(L *State)
 

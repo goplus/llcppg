@@ -8,16 +8,27 @@ import (
 
 type ErrorT c.Uint
 
+/* Return a pointer to a string containing a description of the error
+ * code in the error value ERR.  This function is not thread-safe.  */
 // llgo:link ErrorT.Strerror C.gpg_strerror
 func (recv_ ErrorT) Strerror() *int8 {
 	return nil
 }
 
+/* Return the error string for ERR in the user-supplied buffer BUF of
+ * size BUFLEN.  This function is, in contrast to gpg_strerror,
+ * thread-safe if a thread-safe strerror_r() function is provided by
+ * the system.  If the function succeeds, 0 is returned and BUF
+ * contains the string describing the error.  If the buffer was not
+ * large enough, ERANGE is returned and BUF contains as much of the
+ * beginning of the error string as fits into the buffer.  */
 // llgo:link ErrorT.StrerrorR C.gpg_strerror_r
 func (recv_ ErrorT) StrerrorR(buf *int8, buflen uintptr) c.Int {
 	return 0
 }
 
+/* Return a pointer to a string containing a description of the error
+ * source in the error value ERR.  */
 // llgo:link ErrorT.Strsource C.gpg_strsource
 func (recv_ ErrorT) Strsource() *int8 {
 	return nil
@@ -39,6 +50,8 @@ type GpgrtLockT struct {
 	}
 }
 
+/* NB: If GPGRT_LOCK_DEFINE is not used, zero out the lock variable
+   before passing it to gpgrt_lock_init.  */
 // llgo:link (*GpgrtLockT).LockInit C.gpgrt_lock_init
 func (recv_ *GpgrtLockT) LockInit() CodeT {
 	return 0
