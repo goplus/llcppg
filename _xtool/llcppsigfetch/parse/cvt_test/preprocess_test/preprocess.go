@@ -28,7 +28,7 @@ func TestDefine() {
 
 func TestInclusionMap() {
 	fmt.Println("=== TestInclusionMap ===")
-	cvt, err := parse.Do(&parse.ParseConfig{
+	cvt, err := parse.Test(&parse.ParseConfig{
 		Conf: &llcppg.Config{
 			Include: []string{"sys.h"},
 			CFlags:  "-I./testdata/sysinc",
@@ -52,7 +52,7 @@ func TestInclusionMap() {
 
 func TestSystemHeader() {
 	fmt.Println("=== TestSystemHeader ===")
-	cvt, err := parse.Do(&parse.ParseConfig{
+	cvt, err := parse.Test(&parse.ParseConfig{
 		Conf: &llcppg.Config{
 			Include: []string{"inc.h"},
 			CFlags:  "-I./testdata/sysinc",

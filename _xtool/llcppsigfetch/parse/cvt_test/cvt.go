@@ -34,7 +34,7 @@ func RunTest(testName string, testCases []string) {
 }
 
 func RunTestWithConfig(config *parse.ParseConfig) {
-	cvt, err := parse.Do(config)
+	cvt, err := parse.Test(config)
 	if err != nil {
 		panic(err)
 	}
