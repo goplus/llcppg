@@ -122,9 +122,9 @@ func ComposeIncludes(files []string, outfile string) error {
 }
 
 func defaultArgs(isCpp bool) []string {
-	args := []string{"-x", "c"}
+	args := []string{"-x", "c", "-fparse-all-comments"}
 	if isCpp {
-		args = []string{"-x", "c++"}
+		args = []string{"-x", "c++", "-fparse-all-comments"}
 	}
 	return args
 }
