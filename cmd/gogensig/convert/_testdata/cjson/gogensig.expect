@@ -13,6 +13,8 @@ const IsReference = 256
 const StringIsConst = 512
 const NESTING_LIMIT = 1000
 
+/* The cJSON structure: */
+
 type JSON struct {
 	Next        *JSON
 	Prev        *JSON
@@ -30,59 +32,74 @@ type Hooks struct {
 }
 type CustomBool c.Int
 
+/* returns the version of cJSON as a string */
 //go:linkname Version C.cJSON_Version
 func Version() *int8
 
+/* Supply malloc, realloc and free functions to cJSON */
 // llgo:link (*Hooks).InitHooks C.cJSON_InitHooks
 func (recv_ *Hooks) InitHooks() {
 }
 
+/* Memory Management: the caller is always responsible to free the results from all variants of cJSON_Parse (with cJSON_Delete) and cJSON_Print (with stdlib free, cJSON_Hooks.free_fn, or cJSON_free as appropriate). The exception is cJSON_PrintPreallocated, where the caller has full responsibility of the buffer. */
+/* Supply a block of JSON, and this returns a cJSON object you can interrogate. */
 //go:linkname Parse C.cJSON_Parse
 func Parse(value *int8) *JSON
 
 //go:linkname ParseWithLength C.cJSON_ParseWithLength
 func ParseWithLength(value *int8, buffer_length uintptr) *JSON
 
+/* ParseWithOpts allows you to require (and check) that the JSON is null terminated, and to retrieve the pointer to the final byte parsed. */
+/* If you supply a ptr in return_parse_end and parsing fails, then return_parse_end will contain a pointer to the error so will match cJSON_GetErrorPtr(). */
 //go:linkname ParseWithOpts C.cJSON_ParseWithOpts
 func ParseWithOpts(value *int8, return_parse_end **int8, require_null_terminated CustomBool) *JSON
 
 //go:linkname ParseWithLengthOpts C.cJSON_ParseWithLengthOpts
 func ParseWithLengthOpts(value *int8, buffer_length uintptr, return_parse_end **int8, require_null_terminated CustomBool) *JSON
 
+/* Render a cJSON entity to text for transfer/storage. */
 // llgo:link (*JSON).Print C.cJSON_Print
 func (recv_ *JSON) Print() *int8 {
 	return nil
 }
 
+/* Render a cJSON entity to text for transfer/storage without any formatting. */
 // llgo:link (*JSON).PrintUnformatted C.cJSON_PrintUnformatted
 func (recv_ *JSON) PrintUnformatted() *int8 {
 	return nil
 }
 
+/* Render a cJSON entity to text using a buffered strategy. prebuffer is a guess at the final size. guessing well reduces reallocation. fmt=0 gives unformatted, =1 gives formatted */
 // llgo:link (*JSON).PrintBuffered C.cJSON_PrintBuffered
 func (recv_ *JSON) PrintBuffered(prebuffer c.Int, fmt CustomBool) *int8 {
 	return nil
 }
 
+/* Render a cJSON entity to text using a buffer already allocated in memory with given length. Returns 1 on success and 0 on failure. */
+/* NOTE: cJSON is not always 100% accurate in estimating how much memory it will use, so to be safe allocate 5 bytes more than you actually need */
 // llgo:link (*JSON).PrintPreallocated C.cJSON_PrintPreallocated
 func (recv_ *JSON) PrintPreallocated(buffer *int8, length c.Int, format CustomBool) CustomBool {
 	return 0
 }
 
+/* Delete a cJSON entity and all subentities. */
 // llgo:link (*JSON).Delete C.cJSON_Delete
 func (recv_ *JSON) Delete() {
 }
 
+/* Returns the number of items in an array (or object). */
 // llgo:link (*JSON).GetArraySize C.cJSON_GetArraySize
 func (recv_ *JSON) GetArraySize() c.Int {
 	return 0
 }
 
+/* Retrieve item number "index" from array "array". Returns NULL if unsuccessful. */
 // llgo:link (*JSON).GetArrayItem C.cJSON_GetArrayItem
 func (recv_ *JSON) GetArrayItem(index c.Int) *JSON {
 	return nil
 }
 
+/* Get item "string" from object. Case insensitive. */
 // llgo:link (*JSON).GetObjectItem C.cJSON_GetObjectItem
 func (recv_ *JSON) GetObjectItem(string *int8) *JSON {
 	return nil
@@ -98,9 +115,11 @@ func (recv_ *JSON) HasObjectItem(string *int8) CustomBool {
 	return 0
 }
 
+/* For analysing failed parses. This returns a pointer to the parse error. You'll probably need to look a few chars back to make sense of it. Defined when cJSON_Parse() returns 0. 0 when cJSON_Parse() succeeds. */
 //go:linkname GetErrorPtr C.cJSON_GetErrorPtr
 func GetErrorPtr() *int8
 
+/* Check item type and return its value */
 // llgo:link (*JSON).GetStringValue C.cJSON_GetStringValue
 func (recv_ *JSON) GetStringValue() *int8 {
 	return nil
@@ -111,6 +130,7 @@ func (recv_ *JSON) GetNumberValue() float64 {
 	return 0
 }
 
+/* These functions check the type of an item */
 // llgo:link (*JSON).IsInvalid C.cJSON_IsInvalid
 func (recv_ *JSON) IsInvalid() CustomBool {
 	return 0
@@ -161,6 +181,7 @@ func (recv_ *JSON) IsRaw() CustomBool {
 	return 0
 }
 
+/* These calls create a cJSON item of the appropriate type. */
 //go:linkname CreateNull C.cJSON_CreateNull
 func CreateNull() *JSON
 
@@ -181,6 +202,7 @@ func CreateNumber(num float64) *JSON
 //go:linkname CreateString C.cJSON_CreateString
 func CreateString(string *int8) *JSON
 
+/* raw json */
 //go:linkname CreateRaw C.cJSON_CreateRaw
 func CreateRaw(raw *int8) *JSON
 
@@ -190,9 +212,13 @@ func CreateArray() *JSON
 //go:linkname CreateObject C.cJSON_CreateObject
 func CreateObject() *JSON
 
+/* Create a string where valuestring references a string so
+ * it will not be freed by cJSON_Delete */
 //go:linkname CreateStringReference C.cJSON_CreateStringReference
 func CreateStringReference(string *int8) *JSON
 
+/* Create an object/array that only references it's elements so
+ * they will not be freed by cJSON_Delete */
 // llgo:link (*JSON).CreateObjectReference C.cJSON_CreateObjectReference
 func (recv_ *JSON) CreateObjectReference() *JSON {
 	return nil
@@ -203,6 +229,8 @@ func (recv_ *JSON) CreateArrayReference() *JSON {
 	return nil
 }
 
+/* These utilities create an Array of count items.
+ * The parameter count cannot be greater than the number of elements in the number array, otherwise array access will be out of bounds.*/
 //go:linkname CreateIntArray C.cJSON_CreateIntArray
 func CreateIntArray(numbers *c.Int, count c.Int) *JSON
 
@@ -215,6 +243,7 @@ func CreateDoubleArray(numbers *float64, count c.Int) *JSON
 //go:linkname CreateStringArray C.cJSON_CreateStringArray
 func CreateStringArray(strings **int8, count c.Int) *JSON
 
+/* Append item to the specified array/object. */
 // llgo:link (*JSON).AddItemToArray C.cJSON_AddItemToArray
 func (recv_ *JSON) AddItemToArray(item *JSON) CustomBool {
 	return 0
@@ -225,11 +254,15 @@ func (recv_ *JSON) AddItemToObject(string *int8, item *JSON) CustomBool {
 	return 0
 }
 
+/* Use this when string is definitely const (i.e. a literal, or as good as), and will definitely survive the cJSON object.
+ * WARNING: When this function was used, make sure to always check that (item->type & cJSON_StringIsConst) is zero before
+ * writing to `item->string` */
 // llgo:link (*JSON).AddItemToObjectCS C.cJSON_AddItemToObjectCS
 func (recv_ *JSON) AddItemToObjectCS(string *int8, item *JSON) CustomBool {
 	return 0
 }
 
+/* Append reference to item to the specified array/object. Use this when you want to add an existing cJSON to a new cJSON, but don't want to corrupt your existing cJSON. */
 // llgo:link (*JSON).AddItemReferenceToArray C.cJSON_AddItemReferenceToArray
 func (recv_ *JSON) AddItemReferenceToArray(item *JSON) CustomBool {
 	return 0
@@ -240,6 +273,7 @@ func (recv_ *JSON) AddItemReferenceToObject(string *int8, item *JSON) CustomBool
 	return 0
 }
 
+/* Remove/Detach items from Arrays/Objects. */
 // llgo:link (*JSON).DetachItemViaPointer C.cJSON_DetachItemViaPointer
 func (recv_ *JSON) DetachItemViaPointer(item *JSON) *JSON {
 	return nil
@@ -272,6 +306,7 @@ func (recv_ *JSON) DeleteItemFromObject(string *int8) {
 func (recv_ *JSON) DeleteItemFromObjectCaseSensitive(string *int8) {
 }
 
+/* Update array items. */
 // llgo:link (*JSON).InsertItemInArray C.cJSON_InsertItemInArray
 func (recv_ *JSON) InsertItemInArray(which c.Int, newitem *JSON) CustomBool {
 	return 0
@@ -297,19 +332,30 @@ func (recv_ *JSON) ReplaceItemInObjectCaseSensitive(string *int8, newitem *JSON)
 	return 0
 }
 
+/* Duplicate a cJSON item */
 // llgo:link (*JSON).Duplicate C.cJSON_Duplicate
 func (recv_ *JSON) Duplicate(recurse CustomBool) *JSON {
 	return nil
 }
 
+/* Duplicate will create a new, identical cJSON item to the one you pass, in new memory that will
+ * need to be released. With recurse!=0, it will duplicate any children connected to the item.
+ * The item->next and ->prev pointers are always zero on return from Duplicate. */
+/* Recursively compare two cJSON items for equality. If either a or b is NULL or invalid, they will be considered unequal.
+ * case_sensitive determines if object keys are treated case sensitive (1) or case insensitive (0) */
 // llgo:link (*JSON).Compare C.cJSON_Compare
 func (recv_ *JSON) Compare(b *JSON, case_sensitive CustomBool) CustomBool {
 	return 0
 }
 
+/* Minify a strings, remove blank characters(such as ' ', '\t', '\r', '\n') from strings.
+ * The input pointer json cannot point to a read-only address area, such as a string constant,
+ * but should point to a readable and writable address area. */
 //go:linkname Minify C.cJSON_Minify
 func Minify(json *int8)
 
+/* Helper functions for creating and adding items to an object at the same time.
+ * They return the added item or NULL on failure. */
 // llgo:link (*JSON).AddNullToObject C.cJSON_AddNullToObject
 func (recv_ *JSON) AddNullToObject(name *int8) *JSON {
 	return nil
@@ -355,16 +401,19 @@ func (recv_ *JSON) AddArrayToObject(name *int8) *JSON {
 	return nil
 }
 
+/* helper for the cJSON_SetNumberValue macro */
 // llgo:link (*JSON).SetNumberHelper C.cJSON_SetNumberHelper
 func (recv_ *JSON) SetNumberHelper(number float64) float64 {
 	return 0
 }
 
+/* Change the valuestring of a cJSON_String object, only takes effect when type of object is cJSON_String */
 // llgo:link (*JSON).SetValuestring C.cJSON_SetValuestring
 func (recv_ *JSON) SetValuestring(valuestring *int8) *int8 {
 	return nil
 }
 
+/* malloc/free objects using the malloc/free functions that have been set with cJSON_InitHooks */
 //go:linkname Malloc C.cJSON_malloc
 func Malloc(size uintptr) unsafe.Pointer
 
@@ -379,6 +428,7 @@ import (
 	_ "unsafe"
 )
 
+/* Implement RFC6901 (https://tools.ietf.org/html/rfc6901) JSON Pointer spec. */
 // llgo:link (*JSON).GetPointer C.cJSONUtils_GetPointer
 func (recv_ *JSON) GetPointer(pointer *int8) *JSON {
 	return nil
@@ -389,6 +439,8 @@ func (recv_ *JSON) GetPointerCaseSensitive(pointer *int8) *JSON {
 	return nil
 }
 
+/* Implement RFC6902 (https://tools.ietf.org/html/rfc6902) JSON Patch spec. */
+/* NOTE: This modifies objects in 'from' and 'to' by sorting the elements by their key */
 // llgo:link (*JSON).GeneratePatches C.cJSONUtils_GeneratePatches
 func (recv_ *JSON) GeneratePatches(to *JSON) *JSON {
 	return nil
@@ -399,10 +451,12 @@ func (recv_ *JSON) GeneratePatchesCaseSensitive(to *JSON) *JSON {
 	return nil
 }
 
+/* Utility for generating patch array entries. */
 // llgo:link (*JSON).AddPatchToArray C.cJSONUtils_AddPatchToArray
 func (recv_ *JSON) AddPatchToArray(operation *int8, path *int8, value *JSON) {
 }
 
+/* Returns 0 for success. */
 // llgo:link (*JSON).ApplyPatches C.cJSONUtils_ApplyPatches
 func (recv_ *JSON) ApplyPatches(patches *JSON) c.Int {
 	return 0
@@ -413,6 +467,8 @@ func (recv_ *JSON) ApplyPatchesCaseSensitive(patches *JSON) c.Int {
 	return 0
 }
 
+/* Implement RFC7386 (https://tools.ietf.org/html/rfc7396) JSON Merge Patch spec. */
+/* target will be modified by patch. return value is new ptr for target. */
 // llgo:link (*JSON).MergePatch C.cJSONUtils_MergePatch
 func (recv_ *JSON) MergePatch(patch *JSON) *JSON {
 	return nil
@@ -423,6 +479,8 @@ func (recv_ *JSON) MergePatchCaseSensitive(patch *JSON) *JSON {
 	return nil
 }
 
+/* generates a patch to move from -> to */
+/* NOTE: This modifies objects in 'from' and 'to' by sorting the elements by their key */
 // llgo:link (*JSON).GenerateMergePatch C.cJSONUtils_GenerateMergePatch
 func (recv_ *JSON) GenerateMergePatch(to *JSON) *JSON {
 	return nil
@@ -433,11 +491,13 @@ func (recv_ *JSON) GenerateMergePatchCaseSensitive(to *JSON) *JSON {
 	return nil
 }
 
+/* Given a root object and a target object, construct a pointer from one to the other. */
 // llgo:link (*JSON).FindPointerFromObjectTo C.cJSONUtils_FindPointerFromObjectTo
 func (recv_ *JSON) FindPointerFromObjectTo(target *JSON) *int8 {
 	return nil
 }
 
+/* Sorts the members of the object into alphabetical order. */
 // llgo:link (*JSON).SortObject C.cJSONUtils_SortObject
 func (recv_ *JSON) SortObject() {
 }
