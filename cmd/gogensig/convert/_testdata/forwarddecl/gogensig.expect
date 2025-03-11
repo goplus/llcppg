@@ -15,7 +15,6 @@ type Foo struct {
 	A c.Long
 }
 
-// Forward declaration of sqlite3_file
 type File struct {
 	PMethods *IoMethods
 }

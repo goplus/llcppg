@@ -101,7 +101,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, "use stdin:", ags.UseStdin)
 			fmt.Fprintln(os.Stderr, "output to file:", out)
 		}
-		runFromConfig(ags.CfgFile, ags.UseStdin, out, ags.Verbose)
+		runFromConfig(ags.CfgFile, ags.UseStdin, out, ags.Verbose, ags.Test)
 	}
 
 }
@@ -134,7 +134,7 @@ func printUsage() {
 	fmt.Println("Note: The two usage modes are mutually exclusive. Use either [<config_file>] OR --extract, not both.")
 }
 
-func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose bool) {
+func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose bool, test bool) {
 	var data []byte
 	var err error
 	if useStdin {
@@ -159,10 +159,16 @@ func runFromConfig(cfgFile string, useStdin bool, outputToFile bool, verbose boo
 		fmt.Fprintln(os.Stderr, "Failed to parse config file:", cfgFile)
 		os.Exit(1)
 	}
-
-	converter, err := parse.Do(&parse.ParseConfig{
-		Conf: conf.Config,
-	})
+	var converter *parse.Converter
+	if test {
+		converter, err = parse.Test(&parse.ParseConfig{
+			Conf: conf.Config,
+		})
+	} else {
+		converter, err = parse.Do(&parse.ParseConfig{
+			Conf: conf.Config,
+		})
+	}
 	check(err)
 	info := converter.Output()
 	str := info.Print()

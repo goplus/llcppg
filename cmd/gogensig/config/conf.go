@@ -70,10 +70,12 @@ func SigfetchExtract(cfg *SigfetchExtractConfig) ([]byte, error) {
 
 func SigfetchConfigTest(configFile string, dir string, isCpp bool) ([]byte, error) {
 	args := []string{configFile}
+	args = append(args, "-test")
 	return executeSigfetch(args, dir, isCpp)
 }
 
 func executeSigfetch(args []string, dir string, isCpp bool) ([]byte, error) {
+	args = append(args, "-ClangResourceDir="+ClangResourceDir())
 	cmd := exec.Command("llcppsigfetch", append(args, "-ClangResourceDir="+ClangResourceDir())...)
 	if dir != "" {
 		cmd.Dir = dir
