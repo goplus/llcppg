@@ -46,7 +46,6 @@ func Do(cfg *ParseConfig) (*Converter, error) {
 	clangFlags := strings.Fields(cfg.Conf.CFlags)
 	clangFlags = append(clangFlags, "-C")  // keep comment
 	clangFlags = append(clangFlags, "-dD") // keep macro
-	clangFlags = append(clangFlags, "-fparse-all-comments")
 
 	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
 		File:    cfg.CombinedFile,
@@ -63,7 +62,7 @@ func Do(cfg *ParseConfig) (*Converter, error) {
 	// to ensure consistency between clang preprocessing and libclang-extracted header filelink cflags.
 	// Currently, directly calling exec.Command in the main flow of llcppsigfetch will cause hang and fail to execute correctly.
 	// As a solution, the resource directory is externally provided by llcppg.
-	libclangFlags := []string{"-fparse-all-comments"}
+	libclangFlags := []string{}
 	if ClangResourceDir != "" {
 		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
 	}

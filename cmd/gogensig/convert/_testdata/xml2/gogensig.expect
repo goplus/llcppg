@@ -176,9 +176,6 @@ import (
 	_ "unsafe"
 )
 
-/*
- * Originally declared in xmlversion.h which is generated
- */
 //go:linkname CheckVersion C.xmlCheckVersion
 func CheckVersion(version c.Int)
 
@@ -192,9 +189,6 @@ import (
 
 type Char int8
 
-/*
- * xmlChar handling
- */
 // llgo:link (*Char).Strdup C.xmlStrdup
 func (recv_ *Char) Strdup() *Char {
 	return nil
