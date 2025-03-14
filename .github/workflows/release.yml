@@ -1,0 +1,112 @@
+name: Release
+
+on:
+  release:
+    types: [created, published, prereleased]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            llvm: 18
+            platform: darwin
+            arch: arm64
+          - os: ubuntu-24.04
+            llvm: 18
+            platform: linux
+            arch: amd64
+    runs-on: ${{matrix.os}}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Install dependencies
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew update
+          brew install llvm@${{matrix.llvm}} bdw-gc openssl libffi libuv
+          brew link --force libffi
+          echo "$(brew --prefix llvm@${{matrix.llvm}})/bin" >> $GITHUB_PATH
+          # llcppg dependencies
+          brew install cjson
+      - name: Install dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{matrix.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get install -y llvm-${{matrix.llvm}}-dev clang-${{matrix.llvm}} libunwind-dev libclang-${{matrix.llvm}}-dev lld-${{matrix.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev libuv1-dev
+          echo "/usr/lib/llvm-${{matrix.llvm}}/bin" >> $GITHUB_PATH
+      - name: Install LLGO
+        run: |
+          git clone https://github.com/goplus/llgo.git
+          cd llgo/compiler
+          go install -v ./cmd/...
+          export LLGO_ROOT=$GITHUB_WORKSPACE/llgo
+          echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
+      - name: Build components
+        run: |
+          BINDIR="$GITHUB_WORKSPACE/build/${{matrix.platform}}-${{matrix.arch}}"
+          mkdir -p $BINDIR
+          cd $GITHUB_WORKSPACE
+          llgo build -o $BINDIR/llcppsymg ./_xtool/llcppsymg
+          llgo build -o $BINDIR/llcppsigfetch ./_xtool/llcppsigfetch
+          go build -o $BINDIR/gogensig ./cmd/gogensig
+          go build -o $BINDIR/llcppg .
+          go build -o $BINDIR/llcppcfg ./cmd/llcppcfg
+          cd build
+          zip -r llcppg-${{matrix.platform}}-${{matrix.arch}}.zip ${{matrix.platform}}-${{matrix.arch}}/
+
+      - name: Prepare llcppg binaries test
+        run: |
+          go install ./cmd/llcppgtest
+          echo "PATH=$GITHUB_WORKSPACE/build/${{matrix.platform}}-${{matrix.arch}}:$PATH" >> $GITHUB_ENV
+
+      - name: Test llcppg binaries with demo test
+        if: startsWith(matrix.os, 'macos')
+        run: bash .github/workflows/test_macos.sh
+
+      - name: Test llcppg binaries with demo test
+        if: startsWith(matrix.os, 'ubuntu')
+        run: bash .github/workflows/test_linux.sh
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: llcppg-${{matrix.platform}}-${{matrix.arch}}
+          path: build/llcppg-${{matrix.platform}}-${{matrix.arch}}.zip
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download darwin arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: llcppg-darwin-arm64
+          path: ./artifacts
+
+      - name: Download linux amd64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: llcppg-linux-amd64
+          path: ./artifacts
+
+      - name: List artifacts
+        run: ls -la ./artifacts
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./artifacts/llcppg-darwin-arm64.zip
+            ./artifacts/llcppg-linux-amd64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
