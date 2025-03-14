@@ -9,13 +9,7 @@ TestDoc Case 1:
 					"_Type":	"Location",
 					"File":	"./temp.h"
 				},
-				"Doc":	{
-					"_Type":	"CommentGroup",
-					"List":	[{
-							"_Type":	"Comment",
-							"Text":	"// not read doc 1\n"
-						}]
-				},
+				"Doc":	null,
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",
@@ -63,13 +57,7 @@ TestDoc Case 2:
 					"_Type":	"Location",
 					"File":	"./temp.h"
 				},
-				"Doc":	{
-					"_Type":	"CommentGroup",
-					"List":	[{
-							"_Type":	"Comment",
-							"Text":	"/* not read doc 2 */\n"
-						}]
-				},
+				"Doc":	null,
 				"Parent":	null,
 				"Name":	{
 					"_Type":	"Ident",

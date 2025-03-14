@@ -369,13 +369,7 @@
 									}
 								},
 								"Doc":	null,
-								"Comment":	{
-									"_Type":	"CommentGroup",
-									"List":	[{
-											"_Type":	"Comment",
-											"Text":	"/* Methods for an open file */\n"
-										}]
-								},
+								"Comment":	null,
 								"IsStatic":	false,
 								"Access":	1,
 								"Names":	[{
@@ -651,13 +645,7 @@
 									}
 								},
 								"Doc":	null,
-								"Comment":	{
-									"_Type":	"CommentGroup",
-									"List":	[{
-											"_Type":	"Comment",
-											"Text":	"/* active function */\n"
-										}]
-								},
+								"Comment":	null,
 								"IsStatic":	false,
 								"Access":	1,
 								"Names":	[{
