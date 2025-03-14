@@ -6,9 +6,11 @@ llcppg - LLGo autogen tool for C/C++ libraries
 [![Coverage Status](https://codecov.io/gh/goplus/llcppg/branch/main/graph/badge.svg)](https://codecov.io/gh/goplus/llcppg)
 [![Language](https://img.shields.io/badge/language-Go+-blue.svg)](https://github.com/goplus/gop)
 
+llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, enhancing the experience of integrating LLGo with C! It is worth mentioning that several core components of llcppg are built using LLGo, fully leveraging its core capability of "better integrating with the C ecosystem" for development. 
+
 ## How to install
 
-This project depends on LLGO's C ecosystem integration capability, and some components of this tool must be compiled with LLGO. For LLGO installation, please refer to:
+This project depends on LLGo's C ecosystem integration capability, and some components of this tool must be compiled with LLGo. For LLGo installation, please refer to:
 https://github.com/goplus/llgo?tab=readme-ov-file#how-to-install
 
 ```bash
@@ -31,7 +33,7 @@ llcppg [config-file]
 ```
 
 If `config-file` is not specified, a `llcppg.cfg` file is used in current directory. 
-Here's a demo configuration to generate LLGO bindings for cjson library:
+Here's a demo configuration to generate LLGo bindings for cjson library:
 
 ```json
 {
@@ -100,14 +102,14 @@ Run the demo with `llgo run .`, you will see the following output:
 
 ### Generated Bindings
 
-You can see that functions from the C header files have been automatically mapped and converted to corresponding LLGO binding functions. 
+You can see that functions from the C header files have been automatically mapped and converted to corresponding LLGo binding functions. 
 
 Original C function:
 ```c
 CJSON_PUBLIC(cJSON *) cJSON_CreateObject(void);
 ```
 
-Converted to LLGO binding function:
+Converted to LLGo binding function:
 ```go
 //go:linkname CreateObject C.cJSON_CreateObject
 func CreateObject() *CJSON 
@@ -193,7 +195,7 @@ When you run llcppg directly with the above configuration, it will generate func
 
 - `mangle` field contains the symbol name of function
 - `c++` field shows the function prototype from the header file
-- `go` field displays the function name that will be generated in LLGO binding. 
+- `go` field displays the function name that will be generated in LLGo binding. 
   
   You can customize this field to:
   1. Change function names (e.g. "CreateObject" to "Object" for simplicity)
@@ -333,7 +335,7 @@ You can specify dependent package paths in the `deps` field of `llcppg.cfg` . Fo
   "cflags": "$(pkg-config --cflags libxslt)",
   "libs": "$(pkg-config --libs libxslt)",
   "deps": ["c/os","github.com/luoliwoshang/llcppg-libxml"],
-  "includes":["libxslt/xsltutils.h","libxslt/templates.h",]
+  "includes":["libxslt/xsltutils.h","libxslt/templates.h"]
 }
 ```
 
