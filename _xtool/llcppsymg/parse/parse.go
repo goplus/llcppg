@@ -18,9 +18,37 @@ type SymbolInfo struct {
 	ProtoName string
 }
 
+type Config struct {
+	Files    []string
+	Prefixes []string
+	Cflags   []string
+	IsCpp    bool
+	SymMap   map[string]string
+}
+
+func NewConfig(files, prefixes, cflags []string,
+	isCpp bool,
+	symMap []string) *Config {
+	m := make(map[string]string)
+	for _, keyVal := range symMap {
+		strs := strings.Split(keyVal, ":")
+		if len(strs) == 2 {
+			key := strings.TrimSpace(strs[0])
+			val := strings.TrimSpace(strs[1])
+			m[key] = val
+		}
+	}
+	return &Config{Files: files, Prefixes: prefixes, Cflags: cflags, IsCpp: isCpp, SymMap: m}
+}
+
+func (p *Config) String() string {
+	return fmt.Sprintf(
+		"Files:%v\nPrefixes:%v\nCflags:%v\nSymMap:%v\nIsCpp:%v", p.Files, p.Prefixes, p.Cflags, p.SymMap, p.IsCpp,
+	)
+}
+
 type SymbolProcessor struct {
-	Files      []string
-	Prefixes   []string
+	*Config
 	SymbolMap  map[string]*SymbolInfo
 	NameCounts map[string]int
 	// for independent files,signal that the file has been processed
@@ -37,10 +65,9 @@ func panicSourceLocation(loc clang.SourceLocation, prefix string) {
 	panic(logString)
 }
 
-func NewSymbolProcessor(Files []string, Prefixes []string) *SymbolProcessor {
+func NewSymbolProcessor(conf *Config) *SymbolProcessor {
 	return &SymbolProcessor{
-		Files:           Files,
-		Prefixes:        Prefixes,
+		Config:          conf,
 		SymbolMap:       make(map[string]*SymbolInfo),
 		NameCounts:      make(map[string]int),
 		processedFiles:  make(map[string]struct{}),
@@ -175,7 +202,23 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 	return isInCurPkg, false, goName
 }
 
-func (p *SymbolProcessor) genGoName(cursor clang.Cursor) string {
+func (p *SymbolProcessor) userEditGoName(manglingName string) (goName string, isEditted, isMethod bool) {
+	goName, isEditted = p.SymMap[manglingName]
+	if isEditted {
+		goName, isMethod = strings.CutPrefix(goName, ".")
+	}
+	return goName, isEditted, isMethod
+}
+
+func (p *SymbolProcessor) genGoName(cursor clang.Cursor, mangleName string) string {
+
+	edittedGoName, isEdittedGoName, isEdittedMethodName := p.userEditGoName(mangleName)
+	if dbg.GetDebugEditSymMap() && isEdittedGoName {
+		fmt.Println("edittedGoName:", edittedGoName)
+		fmt.Println("isEdittedGoName", isEdittedGoName)
+		fmt.Println("isEdittedMethodName", isEdittedMethodName)
+	}
+
 	originName := clang.GoString(cursor.String())
 	isDestructor := cursor.Kind == clang.CursorDestructor
 	var convertedName string
@@ -191,10 +234,27 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor) string {
 	} else if cursor.Kind == clang.CursorFunctionDecl {
 		numArgs := cursor.NumArguments()
 		if numArgs > 0 {
+			// only method can be used with editted method name.
 			if ok, isPtr, typeName := p.isMethod(cursor.Argument(0), true); ok {
-				return p.AddSuffix(p.GenMethodName(typeName, convertedName, isDestructor, isPtr))
+				if isEdittedGoName {
+					if isEdittedMethodName {
+						genName := p.GenMethodName(typeName, edittedGoName, isDestructor, isPtr)
+						if dbg.GetDebugEditSymMap() {
+							fmt.Println("genMethodName:", genName)
+						}
+						return genName
+					}
+				} else {
+					return p.AddSuffix(p.GenMethodName(typeName, convertedName, isDestructor, isPtr))
+				}
 			}
 		}
+	}
+	if isEdittedGoName && edittedGoName != "" {
+		if dbg.GetDebugEditSymMap() {
+			fmt.Println("genFuncName:", edittedGoName)
+		}
+		return edittedGoName
 	}
 	return p.AddSuffix(convertedName)
 }
@@ -227,20 +287,22 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 	if dbg.GetDebugSymbol() {
 		fmt.Printf("collectFuncInfo: %s %s\n", clang.GoString(cursor.Mangling()), clang.GoString(cursor.String()))
 	}
-	symbolName := clang.GoString(cursor.Mangling())
+
+	manglingName := clang.GoString(cursor.Mangling())
 	if runtime.GOOS == "darwin" {
-		symbolName = strings.TrimPrefix(symbolName, "_")
+		manglingName = strings.TrimPrefix(manglingName, "_")
 	}
 
 	// In C, multiple declarations of the same function are allowed.
 	// Functions with identical signatures will have the same mangled name.
 	// We treat them as the same function rather than overloads, so we only
 	// process the first occurrence and skip subsequent declarations.
-	if _, exists := p.SymbolMap[symbolName]; exists {
+	if _, exists := p.SymbolMap[manglingName]; exists {
 		return
 	}
-	p.SymbolMap[symbolName] = &SymbolInfo{
-		GoName:    p.genGoName(cursor),
+
+	p.SymbolMap[manglingName] = &SymbolInfo{
+		GoName:    p.genGoName(cursor, manglingName),
 		ProtoName: p.genProtoName(cursor),
 	}
 }
@@ -303,19 +365,22 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
 	return nil
 }
 
-func ParseHeaderFile(files []string, prefixes []string, cflags []string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
+func ParseHeaderFile(conf *Config, isTemp bool) (map[string]*SymbolInfo, error) {
+	if dbg.GetDebugEditSymMap() {
+		fmt.Println(conf)
+	}
 	index := clang.CreateIndex(0, 0)
 	if isTemp {
-		files = append(files, clangutils.TEMP_FILE)
+		conf.Files = append(conf.Files, clangutils.TEMP_FILE)
 	}
-	processer := NewSymbolProcessor(files, prefixes)
-	for _, file := range files {
+	processer := NewSymbolProcessor(conf)
+	for _, file := range conf.Files {
 		processer.collect(&clangutils.Config{
 			File:  file,
 			Temp:  isTemp,
-			IsCpp: isCpp,
+			IsCpp: conf.IsCpp,
 			Index: index,
-			Args:  cflags,
+			Args:  conf.Cflags,
 		})
 	}
 	index.Dispose()

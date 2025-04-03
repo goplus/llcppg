@@ -33,6 +33,7 @@ func GetConf(data []byte) (Conf, error) {
 		TrimPrefixes: GetStringArrayItem(parsedConf, "trimPrefixes"),
 		Cplusplus:    GetBoolItem(parsedConf, "cplusplus"),
 		Mix:          GetBoolItem(parsedConf, "mix"),
+		SymMap:       GetStringArrayItem(parsedConf, "symMap"),
 	}
 
 	return Conf{
@@ -52,6 +53,30 @@ func GetStringItem(obj *cjson.JSON, key string, defval string) (value string) {
 		return defval
 	}
 	return GetString(item)
+}
+
+func GetItemValue(item *cjson.JSON) (any, bool) {
+	if item.IsArray() != 0 {
+		return item, false
+	} else if item.IsBool() != 0 {
+		if item.IsTrue() != 0 {
+			return true, true
+		}
+		return false, true
+	} else if item.IsNumber() != 0 {
+		return float64(item.GetNumberValue()), true
+	} else if item.IsObject() != 0 {
+		return item, false
+	} else if item.IsNull() != 0 {
+		return nil, true
+	} else if item.IsInvalid() != 0 {
+		return nil, false
+	} else if item.IsRaw() != 0 {
+		return item, false
+	} else if item.IsString() != 0 {
+		return GetString(item), true
+	}
+	return nil, false
 }
 
 func GetStringArrayItem(obj *cjson.JSON, key string) (value []string) {

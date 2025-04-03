@@ -14,8 +14,71 @@ import (
 )
 
 func main() {
-	TestParseHeaderFile()
+	//TestParseHeaderFile()
+	TestCJSON()
 }
+
+func TestCJSON() {
+	testCases := []struct {
+		name         string
+		path         string
+		dylibSymbols []string
+	}{{
+		name: "cjson",
+		path: "./cjson",
+		dylibSymbols: []string{
+			"cJSON_Print",
+			"cJSON_ParseWithLength",
+			"cJSON_Delete",
+			// mock multiple symbols
+			"cJSON_Delete",
+			"cJSON_AddArrayToObject",
+			"cJSON_AddBoolToObject",
+		},
+	}}
+	for _, tc := range testCases {
+		fmt.Printf("=== Test Case: %s ===\n", tc.name)
+		projPath, err := filepath.Abs(tc.path)
+		if err != nil {
+			fmt.Println("Get Abs Path Error:", err)
+		}
+		cfgdata, err := os.ReadFile(filepath.Join(projPath, llcppg.LLCPPG_CFG))
+		if err != nil {
+			fmt.Println("Read Cfg File Error:", err)
+		}
+		cfg, err := config.GetConf(cfgdata)
+		if err != nil {
+			fmt.Println("Get Conf Error:", err)
+		}
+		if err != nil {
+			fmt.Println("Read Symb File Error:", err)
+		}
+
+		cfg.CFlags = "-I" + projPath
+		pkgHfileInfo := config.PkgHfileInfo(cfg.Config, []string{})
+		config := parse.NewConfig(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, cfg.SymMap)
+		headerSymbolMap, err := parse.ParseHeaderFile(config, false)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		if err != nil {
+			fmt.Printf("Failed to create temp file: %v\n", err)
+			return
+		}
+
+		// trim to nm symbols
+		var dylibsymbs []*nm.Symbol
+		for _, symb := range tc.dylibSymbols {
+			dylibsymbs = append(dylibsymbs, &nm.Symbol{Name: symbol.AddSymbolPrefixUnder(symb, cfg.Cplusplus)})
+		}
+		symbolData, err := symbol.GenerateSymbolTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, llcppg.LLCPPG_SYMB))
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println(string(symbolData))
+	}
+}
+
 func TestParseHeaderFile() {
 	testCases := []struct {
 		name         string
@@ -92,7 +155,8 @@ func TestParseHeaderFile() {
 
 		cfg.CFlags = "-I" + projPath
 		pkgHfileInfo := config.PkgHfileInfo(cfg.Config, []string{})
-		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, false)
+		config := parse.NewConfig(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, nil)
+		headerSymbolMap, err := parse.ParseHeaderFile(config, false)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -106,7 +170,7 @@ func TestParseHeaderFile() {
 		for _, symb := range tc.dylibSymbols {
 			dylibsymbs = append(dylibsymbs, &nm.Symbol{Name: symbol.AddSymbolPrefixUnder(symb, cfg.Cplusplus)})
 		}
-		symbolData, err := symbol.GenerateAndUpdateSymbolTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, llcppg.LLCPPG_SYMB))
+		symbolData, err := symbol.GenerateSymbolTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, llcppg.LLCPPG_SYMB))
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
