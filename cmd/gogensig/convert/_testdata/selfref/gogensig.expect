@@ -1,6 +1,8 @@
 ===== selfref_autogen_link.go =====
 package selfref
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== temp.go =====

@@ -1,6 +1,8 @@
 ===== keepcomment_autogen_link.go =====
 package keepcomment
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== temp.go =====

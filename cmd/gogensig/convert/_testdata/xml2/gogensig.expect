@@ -166,6 +166,8 @@ type X_xmlDict struct {
 ===== xml2_autogen_link.go =====
 package xml2
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== xmlexports.go =====

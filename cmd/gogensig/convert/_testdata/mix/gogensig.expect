@@ -30,6 +30,8 @@ type X_mixType struct {
 ===== mix_autogen_link.go =====
 package mix
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== llcppg.pub =====

@@ -79,14 +79,14 @@ func (pm *PkgDepLoader) Import(pkgPath string) (*PkgInfo, error) {
 	if pm.module == nil {
 		return nil, errs.NewModNotFoundError()
 	}
-	if pkg, exist := pm.pkgCache[pkgPath]; exist {
-		return pkg, nil
-	}
 
 	// standard C library paths
 	pkgPath, isStd := IsDepStd(pkgPath)
-
 	pkgPath, _ = splitPkgPath(pkgPath)
+
+	if pkg, exist := pm.pkgCache[pkgPath]; exist {
+		return pkg, nil
+	}
 
 	pkg, err := pm.module.Lookup(pkgPath)
 	if err != nil {

@@ -11,6 +11,14 @@ type X_depcjsonType c.Int
 ===== _depcjson_autogen_link.go =====
 package _depcjson
 
+import (
+	_ "github.com/goplus/llcppg/cmd/gogensig/convert/testdata/cjson"
+	_ "github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep"
+	_ "github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep2"
+	_ "github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep3"
+	_ "github.com/goplus/llgo/c"
+)
+
 const LLGoPackage string = "link: $(pkg-config --libs libcjson);"
 
 ===== temp.go =====

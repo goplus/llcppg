@@ -23,5 +23,7 @@ const X_MACRO_UNDER = 0xFFF
 ===== macro_autogen_link.go =====
 package macro
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 

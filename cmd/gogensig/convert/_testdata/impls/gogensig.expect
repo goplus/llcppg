@@ -13,6 +13,8 @@ type X_foo struct {
 ===== impls_autogen_link.go =====
 package impls
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== inter.go =====

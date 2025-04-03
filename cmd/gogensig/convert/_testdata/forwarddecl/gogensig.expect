@@ -1,6 +1,8 @@
 ===== forwarddecl_autogen_link.go =====
 package forwarddecl
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== impl.go =====

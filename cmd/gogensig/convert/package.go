@@ -99,9 +99,22 @@ func NewPackage(config *PackageConfig) *Package {
 	if err != nil {
 		log.Panicf("failed to init deps: %s", err.Error())
 	}
-
+	p.markUseDeps(pkgManager)
 	p.cvt = NewConv(p)
 	return p
+}
+
+func (p *Package) markUseDeps(pkgMgr *PkgDepLoader) {
+	defer p.p.RestoreCurFile(p.p.CurFile())
+	p.p.SetCurFile(p.autoLinkFile(), true)
+	pkgs, err := pkgMgr.Imports(p.PkgInfo.CppgConf.Deps)
+	if err != nil {
+		log.Panicf("failed to import deps: %s", err.Error())
+	}
+	for _, pkg := range pkgs {
+		depPkg := p.p.Import(pkg.PkgPath)
+		depPkg.MarkForceUsed(p.p)
+	}
 }
 
 func (p *Package) LookupSymbol(mangleName config.MangleNameType) (*GoFuncSpec, error) {
@@ -670,8 +683,12 @@ func (p *Package) WriteAutogenFile() error {
 	return nil
 }
 
+func (p *Package) autoLinkFile() string {
+	return p.conf.Name + "_autogen_link.go"
+}
+
 func (p *Package) WriteLinkFile() (string, error) {
-	fileName := p.conf.Name + "_autogen_link.go"
+	fileName := p.autoLinkFile()
 	filePath := filepath.Join(p.GetOutputDir(), fileName)
 	_, err := p.p.SetCurFile(fileName, true)
 	if err != nil {

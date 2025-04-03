@@ -1,6 +1,8 @@
 ===== ignoresym_autogen_link.go =====
 package ignoresym
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== temp.go =====

@@ -1,6 +1,8 @@
 ===== nested_autogen_link.go =====
 package nested
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== temp.go =====

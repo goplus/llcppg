@@ -724,6 +724,8 @@ type LoadextEntry func(*Sqlite3, **int8, *ApiRoutines) c.Int
 ===== sqlite_autogen_link.go =====
 package sqlite
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs sqlite3);"
 
 ===== llcppg.pub =====

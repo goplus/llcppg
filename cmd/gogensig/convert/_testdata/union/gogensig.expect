@@ -14,6 +14,8 @@ type U X__u
 ===== union_autogen_link.go =====
 package union
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== llcppg.pub =====

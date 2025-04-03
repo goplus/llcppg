@@ -1,6 +1,8 @@
 ===== enum_autogen_link.go =====
 package enum
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 
 ===== temp.go =====

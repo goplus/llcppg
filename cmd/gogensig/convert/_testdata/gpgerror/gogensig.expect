@@ -80,6 +80,8 @@ func (recv_ *GpgrtLockT) LockDestroy() CodeT {
 ===== gpgerror_autogen_link.go =====
 package gpgerror
 
+import _ "github.com/goplus/llgo/c"
+
 const LLGoPackage string = "link: $(pkg-config --libs gpg-error);"
 
 ===== gpgrt.go =====
