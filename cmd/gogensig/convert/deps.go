@@ -42,7 +42,7 @@ type PkgInfo struct {
 }
 
 type PkgBase struct {
-	PkgPath  string            // package path, e.g. github.com/goplus/llgo/cjson
+	PkgPath  string            // package path, e.g. github.com/goplus/lib/cjson
 	CppgConf *llcppg.Config    // llcppg.cfg
 	Pubs     map[string]string // llcppg.pub
 }

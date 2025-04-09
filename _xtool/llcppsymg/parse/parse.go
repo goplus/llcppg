@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/goplus/lib/c/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
-	"github.com/goplus/llgo/c/clang"
 )
 
 type SymbolInfo struct {

@@ -3,7 +3,7 @@ package cjson
 import (
 	"unsafe"
 
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 )
 
 type CJSON struct {

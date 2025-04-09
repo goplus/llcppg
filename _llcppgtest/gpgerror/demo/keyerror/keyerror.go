@@ -3,7 +3,7 @@ package main
 import (
 	"gpgerror"
 
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 )
 
 var SOURCEMASK = gpgerror.SOURCEDIM - 1

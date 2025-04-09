@@ -2,7 +2,7 @@
 package cjson
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 
@@ -424,7 +424,7 @@ func Free(object unsafe.Pointer)
 package cjson
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 

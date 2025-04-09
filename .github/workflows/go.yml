@@ -25,14 +25,14 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.23'
+        go-version: '1.24'
 
     - name: Install dependencies
       if: startsWith(matrix.os, 'macos')
       run: |
         brew update
-        brew install llvm@${{matrix.llvm}} bdw-gc openssl libffi libuv
-        brew link --force libffi
+        brew install llvm@${{matrix.llvm}} lld bdw-gc openssl libffi libuv pkg-config
+        brew link --overwrite lld libffi
         echo "$(brew --prefix llvm@${{matrix.llvm}})/bin" >> $GITHUB_PATH
 
         # llcppg dependencies
@@ -50,10 +50,10 @@ jobs:
     - name: Install LLGO
       run: |
         git clone --branch v0.10.0 https://github.com/goplus/llgo.git
+        cd llgo
+        bash ./install.sh
         echo $PWD
-        cd llgo/compiler
-        go install -v ./cmd/...
-        export LLGO_ROOT=$GITHUB_WORKSPACE/llgo
+        export LLGO_ROOT=$PWD
         echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
 
     - name: Build
@@ -62,11 +62,17 @@ jobs:
     - name: Set up Go for testing
       uses: actions/setup-go@v5
       with:
-        go-version: '1.21'
+        go-version: '1.24'
 
     - name: Install llcppg modules
       run: |
         echo "Using LLGO_ROOT: $LLGO_ROOT"
+        echo $PWD
+        cd $PWD
+        go get github.com/goplus/lib/c
+        go get github.com/goplus/llpkg/cjson
+        go get github.com/goplus/llcppg/_xtool/llcppsymg/config
+        go mod tidy -e
         bash ./install.sh
 
     - name: Test llcppsymg & llcppsigfetch

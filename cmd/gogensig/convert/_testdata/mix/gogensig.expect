@@ -2,7 +2,7 @@
 package mix
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -19,7 +19,7 @@ type MixType X_mixType
 package mix
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 

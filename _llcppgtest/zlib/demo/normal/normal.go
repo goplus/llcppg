@@ -4,7 +4,7 @@ import (
 	"unsafe"
 	"zlib"
 
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 )
 
 func main() {

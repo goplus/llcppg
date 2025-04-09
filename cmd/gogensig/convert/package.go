@@ -75,7 +75,7 @@ func NewPackage(config *PackageConfig) *Package {
 	// default have load llgo/c
 	hasC := false
 	for _, dep := range config.CppgConf.Deps {
-		if dep == "c" || dep == "github.com/goplus/llgo/c" {
+		if dep == "c" || dep == "github.com/goplus/lib/c" {
 			hasC = true
 			break
 		}

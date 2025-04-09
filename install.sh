@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-
 # for test
 go install ./cmd/llcppcfg
 go install ./cmd/llcppgtest

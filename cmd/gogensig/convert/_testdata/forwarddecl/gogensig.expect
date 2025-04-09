@@ -7,7 +7,7 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 package forwarddecl
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 
@@ -28,7 +28,7 @@ type IoMethods struct {
 package forwarddecl
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 

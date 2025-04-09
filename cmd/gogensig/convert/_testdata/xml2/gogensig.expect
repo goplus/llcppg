@@ -2,7 +2,7 @@
 package xml2
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 
@@ -172,7 +172,7 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 package xml2
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -186,7 +186,7 @@ func CheckVersion(version c.Int)
 package xml2
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 

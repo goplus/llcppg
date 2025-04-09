@@ -28,9 +28,6 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llgo/xtool/env"
-
-	// import cjson to make it linked in go.mod
-	_ "github.com/goplus/llpkg/cjson"
 )
 
 type modeFlags int

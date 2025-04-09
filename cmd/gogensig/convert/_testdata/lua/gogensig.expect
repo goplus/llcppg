@@ -2,7 +2,7 @@
 package lua
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 
@@ -170,7 +170,7 @@ type Stream struct {
 package lua
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 
@@ -644,7 +644,7 @@ const IDSIZE = 60
 package lua
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 

@@ -7,7 +7,7 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 package selfref
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 

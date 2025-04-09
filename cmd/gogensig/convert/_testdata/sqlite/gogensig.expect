@@ -2,7 +2,7 @@
 package sqlite
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 
@@ -714,7 +714,7 @@ type Fts5Api struct {
 package sqlite
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
