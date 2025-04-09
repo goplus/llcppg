@@ -16,6 +16,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	"github.com/goplus/llcppg/llcppg"
+	goc "github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/xtool/nm"
 	"github.com/goplus/llpkg/cjson"
 )
@@ -146,7 +147,7 @@ func ReadExistingSymbolTable(fileName string) (map[string]llcppg.SymbolInfo, boo
 	arraySize := parsedJSON.GetArraySize()
 
 	for i := 0; i < int(arraySize); i++ {
-		item := parsedJSON.GetArrayItem(c.Int(i))
+		item := parsedJSON.GetArrayItem(goc.Int(i))
 		symbol := llcppg.SymbolInfo{
 			Mangle: config.GetStringItem(item, "mangle", ""),
 			CPP:    config.GetStringItem(item, "c++", ""),
