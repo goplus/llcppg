@@ -6,10 +6,7 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 ===== temp.go =====
 package nested
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 type Struct1 struct {
 	B    *int8
@@ -24,7 +21,7 @@ type Struct2 struct {
 	Size uintptr
 	N    uintptr
 	Init struct {
-		L   c.Long
+		L   int64
 		B   [60]int8
 		Rec Struct1
 	}
@@ -32,7 +29,7 @@ type Struct2 struct {
 
 type Union1 struct {
 	Init struct {
-		L   c.Long
+		L   int64
 		B   [60]int8
 		Rec Struct2
 	}

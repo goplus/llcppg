@@ -2,7 +2,7 @@
 package depcjson
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -22,7 +22,7 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep2"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep3"
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 

@@ -6,11 +6,8 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 ===== temp.go =====
 package ignoresym
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 //go:linkname Bar C.bar
-func Bar(b c.Int)
+func Bar(b int32)
 

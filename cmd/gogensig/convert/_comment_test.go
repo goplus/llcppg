@@ -31,7 +31,7 @@ int ExecuteFoo(int a,Foo b);
 	`, `
 package typeref
 
-import "github.com/goplus/llgo/c"
+import "github.com/goplus/lib/c"
 /**
 Foo comment
 */
@@ -69,7 +69,7 @@ int ExecuteFoo(int a,Foo b);
 	`, `
 package typeref
 
-import "github.com/goplus/llgo/c"
+import "github.com/goplus/lib/c"
 /*
 Foo comment
 */
@@ -104,7 +104,7 @@ int ExecuteFoo(int a,Foo b);
 	`, `
 package typeref
 
-import "github.com/goplus/llgo/c"
+import "github.com/goplus/lib/c"
 
 // Foo comment
 type Foo struct {

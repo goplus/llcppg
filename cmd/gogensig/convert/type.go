@@ -37,7 +37,7 @@ type TypeConv struct {
 }
 
 func NewConv(p *Package) *TypeConv {
-	clib := p.p.Import("github.com/goplus/llgo/c")
+	clib := p.p.Import("github.com/goplus/lib/c")
 	math := p.p.Import("math")
 	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, p.p.Unsafe())
 	typeConv := &TypeConv{

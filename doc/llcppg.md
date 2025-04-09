@@ -144,8 +144,8 @@ xmlNodePtr not found in `/path/to/libxml/dict.h`.
 ### Type Mapping Examples
 
 Standard Library Type Mapping
-NOTE: "c" is an alias for "github.com/goplus/llgo/c"
-`github.com/goplus/llgo/c/llcppg.pub`
+NOTE: "c" is an alias for "github.com/goplus/lib/c"
+`github.com/goplus/lib/c/llcppg.pub`
 ```
 size_t SizeT
 intptr_t IntptrT

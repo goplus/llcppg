@@ -32,7 +32,7 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 		}
 	}
 
-	loadDeps := []string{"github.com/goplus/llgo@v0.10.0"}
+	loadDeps := []string{"github.com/goplus/lib@v0.2.0"}
 
 	for _, dep := range deps {
 		_, std := IsDepStd(dep)

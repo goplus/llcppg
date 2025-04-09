@@ -1,12 +1,9 @@
 ===== gpg-error.go =====
 package gpgerror
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
-type ErrorT c.Uint
+type ErrorT uint32
 
 /* Return a pointer to a string containing a description of the error
  * code in the error value ERR.  This function is not thread-safe.  */
@@ -23,7 +20,7 @@ func (recv_ ErrorT) Strerror() *int8 {
  * large enough, ERANGE is returned and BUF contains as much of the
  * beginning of the error string as fits into the buffer.  */
 // llgo:link ErrorT.StrerrorR C.gpg_strerror_r
-func (recv_ ErrorT) StrerrorR(buf *int8, buflen uintptr) c.Int {
+func (recv_ ErrorT) StrerrorR(buf *int8, buflen uintptr) int32 {
 	return 0
 }
 
@@ -34,7 +31,7 @@ func (recv_ ErrorT) Strsource() *int8 {
 	return nil
 }
 
-type CodeT c.Int
+type CodeT int32
 
 const (
 	NOERROR       CodeT = 0
@@ -44,7 +41,7 @@ const (
 )
 
 type GpgrtLockT struct {
-	X_vers c.Long
+	X_vers int64
 	U      struct {
 		X_priv [64]int8
 	}

@@ -6,18 +6,15 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 ===== temp.go =====
 package selfref
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 type CJSON struct {
 	Next        *CJSON
 	Prev        *CJSON
 	Child       *CJSON
-	Type        c.Int
+	Type        int32
 	Valuestring *int8
-	Valueint    c.Int
+	Valueint    int32
 	Valuedouble float64
 	String      *int8
 }

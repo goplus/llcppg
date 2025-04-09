@@ -7,8 +7,8 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 package systopkg
 
 import (
-	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/time"
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/time"
 	_ "unsafe"
 )
 

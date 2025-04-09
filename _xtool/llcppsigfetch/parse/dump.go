@@ -1,9 +1,9 @@
 package parse
 
 import (
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/llcppg"
-	"github.com/goplus/llgo/c"
 	"github.com/goplus/llpkg/cjson"
 )
 

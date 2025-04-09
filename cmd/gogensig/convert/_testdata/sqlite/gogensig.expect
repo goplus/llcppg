@@ -1,10 +1,7 @@
 ===== sqlite3.go =====
 package sqlite
 
-import (
-	"github.com/goplus/llgo/c"
-	"unsafe"
-)
+import "unsafe"
 
 const VERSION = "3.47.0"
 const VERSION_NUMBER = 3047000
@@ -140,7 +137,7 @@ func Libversion() *int8
 func Sourceid() *int8
 
 //go:linkname LibversionNumber C.sqlite3_libversion_number
-func LibversionNumber() c.Int
+func LibversionNumber() int32
 
 /*
 ** CAPI3REF: Run-Time Library Compilation Options Diagnostics
@@ -165,10 +162,10 @@ func LibversionNumber() c.Int
 ** [sqlite_compileoption_get()] and the [compile_options pragma].
  */
 //go:linkname CompileoptionUsed C.sqlite3_compileoption_used
-func CompileoptionUsed(zOptName *int8) c.Int
+func CompileoptionUsed(zOptName *int8) int32
 
 //go:linkname CompileoptionGet C.sqlite3_compileoption_get
-func CompileoptionGet(N c.Int) *int8
+func CompileoptionGet(N int32) *int8
 
 /*
 ** CAPI3REF: Test To See If The Library Is Threadsafe
@@ -207,13 +204,13 @@ func CompileoptionGet(N c.Int) *int8
 ** See the [threading mode] documentation for additional information.
  */
 //go:linkname Threadsafe C.sqlite3_threadsafe
-func Threadsafe() c.Int
+func Threadsafe() int32
 
 type Sqlite3 struct {
 	Unused [8]uint8
 }
-type SqliteInt64 c.LongLong
-type SqliteUint64 c.UlongLong
+type SqliteInt64 int64
+type SqliteUint64 uint64
 type Int64 SqliteInt64
 type Uint64 SqliteUint64
 
@@ -256,17 +253,17 @@ type Uint64 SqliteUint64
 ** argument is a harmless no-op.
  */
 // llgo:link (*Sqlite3).Close C.sqlite3_close
-func (recv_ *Sqlite3) Close() c.Int {
+func (recv_ *Sqlite3) Close() int32 {
 	return 0
 }
 
 // llgo:link (*Sqlite3).CloseV2 C.sqlite3_close_v2
-func (recv_ *Sqlite3) CloseV2() c.Int {
+func (recv_ *Sqlite3) CloseV2() int32 {
 	return 0
 }
 
 // llgo:type C
-type Callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int
+type Callback func(unsafe.Pointer, int32, **int8, **int8) int32
 
 /*
 ** CAPI3REF: One-Step Query Execution Interface
@@ -333,7 +330,7 @@ type Callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int
 ** </ul>
  */
 // llgo:link (*Sqlite3).Exec C.sqlite3_exec
-func (recv_ *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, c.Int, **int8, **int8) c.Int, __llgo_arg_2 unsafe.Pointer, errmsg **int8) c.Int {
+func (recv_ *Sqlite3) Exec(sql *int8, callback func(unsafe.Pointer, int32, **int8, **int8) int32, __llgo_arg_2 unsafe.Pointer, errmsg **int8) int32 {
 	return 0
 }
 
@@ -342,7 +339,7 @@ type File struct {
 }
 
 type IoMethods struct {
-	IVersion               c.Int
+	IVersion               int32
 	XClose                 unsafe.Pointer
 	XRead                  unsafe.Pointer
 	XWrite                 unsafe.Pointer
@@ -646,7 +643,7 @@ type Context struct {
 }
 
 type Fts5ExtensionApi struct {
-	IVersion           c.Int
+	IVersion           int32
 	XUserData          unsafe.Pointer
 	XColumnCount       unsafe.Pointer
 	XRowCount          unsafe.Pointer
@@ -682,14 +679,14 @@ type Fts5PhraseIter struct {
 }
 
 // llgo:type C
-type Fts5ExtensionFunction func(*Fts5ExtensionApi, *Fts5Context, *Context, c.Int, **Value)
+type Fts5ExtensionFunction func(*Fts5ExtensionApi, *Fts5Context, *Context, int32, **Value)
 
 type Fts5Tokenizer struct {
 	Unused [8]uint8
 }
 
 type Fts5TokenizerV2 struct {
-	IVersion  c.Int
+	IVersion  int32
 	XCreate   unsafe.Pointer
 	XDelete   unsafe.Pointer
 	XTokenize unsafe.Pointer
@@ -702,7 +699,7 @@ type Fts5Tokenizer__1 struct {
 }
 
 type Fts5Api struct {
-	IVersion           c.Int
+	IVersion           int32
 	XCreateTokenizer   unsafe.Pointer
 	XFindTokenizer     unsafe.Pointer
 	XCreateFunction    unsafe.Pointer
@@ -713,13 +710,10 @@ type Fts5Api struct {
 ===== sqlite3ext.go =====
 package sqlite
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 // llgo:type C
-type LoadextEntry func(*Sqlite3, **int8, *ApiRoutines) c.Int
+type LoadextEntry func(*Sqlite3, **int8, *ApiRoutines) int32
 
 ===== sqlite_autogen_link.go =====
 package sqlite

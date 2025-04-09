@@ -7,7 +7,7 @@ import (
 
 	"libxslt"
 
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llpkg/libxml2"
 )
 

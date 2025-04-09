@@ -7,10 +7,10 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/llcppg"
-	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/clang"
 	"github.com/goplus/llpkg/cjson"
 )
 

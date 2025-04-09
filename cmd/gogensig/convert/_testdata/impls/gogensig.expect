@@ -1,13 +1,10 @@
 ===== impls_autogen.go =====
 package impls
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 type X_foo struct {
-	A c.Long
+	A int64
 }
 
 ===== impls_autogen_link.go =====

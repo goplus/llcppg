@@ -1,10 +1,7 @@
 ===== cJSON.go =====
 package cjson
 
-import (
-	"github.com/goplus/llgo/c"
-	"unsafe"
-)
+import "unsafe"
 
 const VERSION_MAJOR = 1
 const VERSION_MINOR = 7
@@ -19,9 +16,9 @@ type JSON struct {
 	Next        *JSON
 	Prev        *JSON
 	Child       *JSON
-	Type        c.Int
+	Type        int32
 	Valuestring *int8
-	Valueint    c.Int
+	Valueint    int32
 	Valuedouble float64
 	String      *int8
 }
@@ -30,7 +27,7 @@ type Hooks struct {
 	MallocFn unsafe.Pointer
 	FreeFn   unsafe.Pointer
 }
-type CustomBool c.Int
+type CustomBool int32
 
 /* returns the version of cJSON as a string */
 //go:linkname Version C.cJSON_Version
@@ -71,14 +68,14 @@ func (recv_ *JSON) PrintUnformatted() *int8 {
 
 /* Render a cJSON entity to text using a buffered strategy. prebuffer is a guess at the final size. guessing well reduces reallocation. fmt=0 gives unformatted, =1 gives formatted */
 // llgo:link (*JSON).PrintBuffered C.cJSON_PrintBuffered
-func (recv_ *JSON) PrintBuffered(prebuffer c.Int, fmt CustomBool) *int8 {
+func (recv_ *JSON) PrintBuffered(prebuffer int32, fmt CustomBool) *int8 {
 	return nil
 }
 
 /* Render a cJSON entity to text using a buffer already allocated in memory with given length. Returns 1 on success and 0 on failure. */
 /* NOTE: cJSON is not always 100% accurate in estimating how much memory it will use, so to be safe allocate 5 bytes more than you actually need */
 // llgo:link (*JSON).PrintPreallocated C.cJSON_PrintPreallocated
-func (recv_ *JSON) PrintPreallocated(buffer *int8, length c.Int, format CustomBool) CustomBool {
+func (recv_ *JSON) PrintPreallocated(buffer *int8, length int32, format CustomBool) CustomBool {
 	return 0
 }
 
@@ -89,13 +86,13 @@ func (recv_ *JSON) Delete() {
 
 /* Returns the number of items in an array (or object). */
 // llgo:link (*JSON).GetArraySize C.cJSON_GetArraySize
-func (recv_ *JSON) GetArraySize() c.Int {
+func (recv_ *JSON) GetArraySize() int32 {
 	return 0
 }
 
 /* Retrieve item number "index" from array "array". Returns NULL if unsuccessful. */
 // llgo:link (*JSON).GetArrayItem C.cJSON_GetArrayItem
-func (recv_ *JSON) GetArrayItem(index c.Int) *JSON {
+func (recv_ *JSON) GetArrayItem(index int32) *JSON {
 	return nil
 }
 
@@ -232,16 +229,16 @@ func (recv_ *JSON) CreateArrayReference() *JSON {
 /* These utilities create an Array of count items.
  * The parameter count cannot be greater than the number of elements in the number array, otherwise array access will be out of bounds.*/
 //go:linkname CreateIntArray C.cJSON_CreateIntArray
-func CreateIntArray(numbers *c.Int, count c.Int) *JSON
+func CreateIntArray(numbers *int32, count int32) *JSON
 
 //go:linkname CreateFloatArray C.cJSON_CreateFloatArray
-func CreateFloatArray(numbers *float32, count c.Int) *JSON
+func CreateFloatArray(numbers *float32, count int32) *JSON
 
 //go:linkname CreateDoubleArray C.cJSON_CreateDoubleArray
-func CreateDoubleArray(numbers *float64, count c.Int) *JSON
+func CreateDoubleArray(numbers *float64, count int32) *JSON
 
 //go:linkname CreateStringArray C.cJSON_CreateStringArray
-func CreateStringArray(strings **int8, count c.Int) *JSON
+func CreateStringArray(strings **int8, count int32) *JSON
 
 /* Append item to the specified array/object. */
 // llgo:link (*JSON).AddItemToArray C.cJSON_AddItemToArray
@@ -280,12 +277,12 @@ func (recv_ *JSON) DetachItemViaPointer(item *JSON) *JSON {
 }
 
 // llgo:link (*JSON).DetachItemFromArray C.cJSON_DetachItemFromArray
-func (recv_ *JSON) DetachItemFromArray(which c.Int) *JSON {
+func (recv_ *JSON) DetachItemFromArray(which int32) *JSON {
 	return nil
 }
 
 // llgo:link (*JSON).DeleteItemFromArray C.cJSON_DeleteItemFromArray
-func (recv_ *JSON) DeleteItemFromArray(which c.Int) {
+func (recv_ *JSON) DeleteItemFromArray(which int32) {
 }
 
 // llgo:link (*JSON).DetachItemFromObject C.cJSON_DetachItemFromObject
@@ -308,7 +305,7 @@ func (recv_ *JSON) DeleteItemFromObjectCaseSensitive(string *int8) {
 
 /* Update array items. */
 // llgo:link (*JSON).InsertItemInArray C.cJSON_InsertItemInArray
-func (recv_ *JSON) InsertItemInArray(which c.Int, newitem *JSON) CustomBool {
+func (recv_ *JSON) InsertItemInArray(which int32, newitem *JSON) CustomBool {
 	return 0
 }
 
@@ -318,7 +315,7 @@ func (recv_ *JSON) ReplaceItemViaPointer(item *JSON, replacement *JSON) CustomBo
 }
 
 // llgo:link (*JSON).ReplaceItemInArray C.cJSON_ReplaceItemInArray
-func (recv_ *JSON) ReplaceItemInArray(which c.Int, newitem *JSON) CustomBool {
+func (recv_ *JSON) ReplaceItemInArray(which int32, newitem *JSON) CustomBool {
 	return 0
 }
 
@@ -423,10 +420,7 @@ func Free(object unsafe.Pointer)
 ===== cJSON_Utils.go =====
 package cjson
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 /* Implement RFC6901 (https://tools.ietf.org/html/rfc6901) JSON Pointer spec. */
 // llgo:link (*JSON).GetPointer C.cJSONUtils_GetPointer
@@ -458,12 +452,12 @@ func (recv_ *JSON) AddPatchToArray(operation *int8, path *int8, value *JSON) {
 
 /* Returns 0 for success. */
 // llgo:link (*JSON).ApplyPatches C.cJSONUtils_ApplyPatches
-func (recv_ *JSON) ApplyPatches(patches *JSON) c.Int {
+func (recv_ *JSON) ApplyPatches(patches *JSON) int32 {
 	return 0
 }
 
 // llgo:link (*JSON).ApplyPatchesCaseSensitive C.cJSONUtils_ApplyPatchesCaseSensitive
-func (recv_ *JSON) ApplyPatchesCaseSensitive(patches *JSON) c.Int {
+func (recv_ *JSON) ApplyPatchesCaseSensitive(patches *JSON) int32 {
 	return 0
 }
 

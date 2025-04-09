@@ -6,13 +6,10 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 ===== impl.go =====
 package forwarddecl
 
-import (
-	"github.com/goplus/llgo/c"
-	"unsafe"
-)
+import "unsafe"
 
 type Foo struct {
-	A c.Long
+	A int64
 }
 
 // Forward declaration of sqlite3_file
@@ -27,10 +24,7 @@ type IoMethods struct {
 ===== temp.go =====
 package forwarddecl
 
-import (
-	"github.com/goplus/llgo/c"
-	"unsafe"
-)
+import "unsafe"
 
 const IDSIZE = 60
 
@@ -48,7 +42,7 @@ type Pcache struct {
 }
 
 type PcacheMethods2 struct {
-	IVersion   c.Int
+	IVersion   int32
 	PArg       unsafe.Pointer
 	XInit      unsafe.Pointer
 	XShutdown  unsafe.Pointer
@@ -68,14 +62,14 @@ type State struct {
 }
 
 type Debug struct {
-	Event           c.Int
+	Event           int32
 	Name            *int8
 	Namewhat        *int8
 	What            *int8
 	Source          *int8
-	Currentline     c.Int
-	Linedefined     c.Int
-	Lastlinedefined c.Int
+	Currentline     int32
+	Linedefined     int32
+	Lastlinedefined int32
 	Nups            int8
 	Nparams         int8
 	Isvararg        int8
@@ -87,7 +81,7 @@ type Debug struct {
 }
 
 //go:linkname Getstack C.lua_getstack
-func Getstack(L *State, level c.Int, ar *Debug) c.Int
+func Getstack(L *State, level int32, ar *Debug) int32
 
 type CallInfo struct {
 	Unused [8]uint8
@@ -119,7 +113,7 @@ type Context struct {
 }
 
 // llgo:type C
-type Fts5ExtensionFunction func(*Fts5ExtensionApi, *Fts5Context, *Context, c.Int, **Value)
+type Fts5ExtensionFunction func(*Fts5ExtensionApi, *Fts5Context, *Context, int32, **Value)
 
 type X_xmlParserCtxt struct {
 	Unused [8]uint8

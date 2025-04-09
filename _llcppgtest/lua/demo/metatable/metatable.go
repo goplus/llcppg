@@ -3,7 +3,7 @@ package main
 import (
 	"lua"
 
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 )
 
 func toString(L *lua.State) c.Int {
