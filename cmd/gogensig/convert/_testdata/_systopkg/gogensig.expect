@@ -17,13 +17,13 @@ type Stdint struct {
 	T2  int16
 	T3  int32
 	T4  int64
-	T13 c.LongLong
+	T13 int64
 	T14 uintptr
 	T15 uint8
 	T16 uint16
 	T17 uint32
 	T18 uint64
-	T27 c.UlongLong
+	T27 uint64
 	T28 uintptr
 }
 

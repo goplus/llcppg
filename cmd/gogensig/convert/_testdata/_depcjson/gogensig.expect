@@ -1,12 +1,9 @@
 ===== depcjson_autogen.go =====
 package depcjson
 
-import (
-	"github.com/goplus/lib/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
-type X_depcjsonType c.Int
+type X_depcjsonType int32
 
 ===== depcjson_autogen_link.go =====
 package depcjson
@@ -22,7 +19,6 @@ import (
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep2"
 	"github.com/goplus/llcppg/cmd/gogensig/convert/testdata/thirddep3"
-	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 
@@ -32,13 +28,13 @@ import (
 //	"cflags" :"$(pkg-config --cflags libcjson)"
 //
 //go:linkname CreateResponse C.create_response
-func CreateResponse(status_code c.Int, message *int8) *cjson.CJSON
+func CreateResponse(status_code int32, message *int8) *cjson.CJSON
 
 //go:linkname ParseClientRequest C.parse_client_request
 func ParseClientRequest(json_string *int8, error_buffer *int8, buffer_size uintptr) cjson.CJSONBool
 
 //go:linkname SerializeResponse C.serialize_response
-func SerializeResponse(response *cjson.CJSON, buffer *int8, length c.Int, pretty_print cjson.CJSONBool) cjson.CJSONBool
+func SerializeResponse(response *cjson.CJSON, buffer *int8, length int32, pretty_print cjson.CJSONBool) cjson.CJSONBool
 
 //go:linkname ThirdDepfn C.third_depfn
 func ThirdDepfn(a *thirddep.ThirdDep, b *thirddep2.ThirdDep2, c X_depcjsonType, d basicdep.BasicDep) thirddep.ThirdDep
