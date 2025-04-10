@@ -18,18 +18,18 @@ import (
 )
 
 type Stdint struct {
-	T1  int8
-	T2  int16
-	T3  int32
-	T4  int64
-	T13 c.LongLong
-	T14 uintptr
-	T15 uint8
-	T16 uint16
-	T17 uint32
-	T18 uint64
-	T27 c.UlongLong
-	T28 uintptr
+	T1  c.Int8T
+	T2  c.Int16T
+	T3  c.Int32T
+	T4  c.Int64T
+	T13 c.IntmaxT
+	T14 c.IntptrT
+	T15 c.Uint8T
+	T16 c.Uint16T
+	T17 c.Uint32T
+	T18 c.Uint64T
+	T27 c.UintmaxT
+	T28 c.UintptrT
 }
 
 type Stdio struct {

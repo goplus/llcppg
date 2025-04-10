@@ -10,7 +10,7 @@ package forwarddecl
 
 import (
 	"github.com/goplus/llgo/c"
-	"unsafe"
+	_ "unsafe"
 )
 
 type Foo struct {
@@ -23,7 +23,7 @@ type File struct {
 }
 
 type IoMethods struct {
-	XUnfetch unsafe.Pointer
+	XUnfetch c.Pointer
 }
 
 ===== temp.go =====
@@ -31,7 +31,7 @@ package forwarddecl
 
 import (
 	"github.com/goplus/llgo/c"
-	"unsafe"
+	_ "unsafe"
 )
 
 const IDSIZE = 60
@@ -41,8 +41,8 @@ type Bar struct {
 }
 
 type PcachePage struct {
-	PBuf   unsafe.Pointer
-	PExtra unsafe.Pointer
+	PBuf   c.Pointer
+	PExtra c.Pointer
 }
 
 type Pcache struct {
@@ -51,18 +51,18 @@ type Pcache struct {
 
 type PcacheMethods2 struct {
 	IVersion   c.Int
-	PArg       unsafe.Pointer
-	XInit      unsafe.Pointer
-	XShutdown  unsafe.Pointer
-	XCreate    unsafe.Pointer
-	XCachesize unsafe.Pointer
-	XPagecount unsafe.Pointer
-	XFetch     unsafe.Pointer
-	XUnpin     unsafe.Pointer
-	XRekey     unsafe.Pointer
-	XTruncate  unsafe.Pointer
-	XDestroy   unsafe.Pointer
-	XShrink    unsafe.Pointer
+	PArg       c.Pointer
+	XInit      c.Pointer
+	XShutdown  c.Pointer
+	XCreate    c.Pointer
+	XCachesize c.Pointer
+	XPagecount c.Pointer
+	XFetch     c.Pointer
+	XUnpin     c.Pointer
+	XRekey     c.Pointer
+	XTruncate  c.Pointer
+	XDestroy   c.Pointer
+	XShrink    c.Pointer
 }
 
 type State struct {
@@ -71,20 +71,20 @@ type State struct {
 
 type Debug struct {
 	Event           c.Int
-	Name            *int8
-	Namewhat        *int8
-	What            *int8
-	Source          *int8
+	Name            *c.Char
+	Namewhat        *c.Char
+	What            *c.Char
+	Source          *c.Char
 	Currentline     c.Int
 	Linedefined     c.Int
 	Lastlinedefined c.Int
-	Nups            int8
-	Nparams         int8
-	Isvararg        int8
-	Istailcall      int8
+	Nups            c.Char
+	Nparams         c.Char
+	Isvararg        c.Char
+	Istailcall      c.Char
 	Ftransfer       uint16
 	Ntransfer       uint16
-	ShortSrc        [60]int8
+	ShortSrc        [60]c.Char
 	ICi             *CallInfo
 }
 
@@ -108,8 +108,8 @@ type Fts5Context struct {
 }
 
 type Fts5PhraseIter struct {
-	A *int8
-	B *int8
+	A *c.Char
+	B *c.Char
 }
 
 type Value struct {

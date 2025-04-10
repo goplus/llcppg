@@ -29,7 +29,7 @@ type Capital struct {
 }
 
 type CustomData struct {
-	Str [20]int8
+	Str [20]c.Char
 }
 type UintT c.Uint
 type Color c.Int

@@ -16,7 +16,7 @@ import (
 // / Foo comment
 type Foo struct {
 	A c.Int
-	B float64
+	B c.Double
 	C c.Int
 }
 

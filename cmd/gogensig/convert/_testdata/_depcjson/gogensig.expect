@@ -40,13 +40,13 @@ import (
 //	"cflags" :"$(pkg-config --cflags libcjson)"
 //
 //go:linkname CreateResponse C.create_response
-func CreateResponse(status_code c.Int, message *int8) *cjson.CJSON
+func CreateResponse(status_code c.Int, message *c.Char) *cjson.CJSON
 
 //go:linkname ParseClientRequest C.parse_client_request
-func ParseClientRequest(json_string *int8, error_buffer *int8, buffer_size uintptr) cjson.CJSONBool
+func ParseClientRequest(json_string *c.Char, error_buffer *c.Char, buffer_size c.SizeT) cjson.CJSONBool
 
 //go:linkname SerializeResponse C.serialize_response
-func SerializeResponse(response *cjson.CJSON, buffer *int8, length c.Int, pretty_print cjson.CJSONBool) cjson.CJSONBool
+func SerializeResponse(response *cjson.CJSON, buffer *c.Char, length c.Int, pretty_print cjson.CJSONBool) cjson.CJSONBool
 
 //go:linkname ThirdDepfn C.third_depfn
 func ThirdDepfn(a *thirddep.ThirdDep, b *thirddep2.ThirdDep2, c X_depcjsonType, d basicdep.BasicDep) thirddep.ThirdDep
