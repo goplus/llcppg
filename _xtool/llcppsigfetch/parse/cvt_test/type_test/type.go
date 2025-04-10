@@ -5,11 +5,11 @@ import (
 	"os"
 	"unsafe"
 
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	test "github.com/goplus/llcppg/_xtool/llcppsigfetch/parse/cvt_test"
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/clang"
 	"github.com/goplus/llpkg/cjson"
 )
 

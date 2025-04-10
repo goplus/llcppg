@@ -8,33 +8,30 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 ===== temp.go =====
 package pubfile
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 type Point struct {
-	X c.Int
-	Y c.Int
+	X int32
+	Y int32
 }
 
 type Capital struct {
-	X c.Int
-	Y c.Int
+	X int32
+	Y int32
 }
 
 type CustomData struct {
 	Str [20]int8
 }
-type UintT c.Uint
-type Color c.Int
+type UintT uint32
+type Color int32
 
 const RED Color = 0
 
 //go:linkname Func C.func
-func Func(a c.Int, b c.Int)
+func Func(a int32, b int32)
 
-type X_privateTyp c.Long
+type X_privateTyp int64
 
 ===== llcppg.pub =====
 Capital

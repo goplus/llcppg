@@ -178,7 +178,7 @@ func (pm *PkgDepLoader) RegisterDep(dep *PkgInfo) {
 
 func IsDepStd(pkgPath string) (string, bool) {
 	if pkgPath == "c" || strings.HasPrefix(pkgPath, "c/") {
-		return path.Join("github.com/goplus/llgo/", pkgPath), true
+		return path.Join("github.com/goplus/lib/", pkgPath), true
 	}
 	return pkgPath, false
 }

@@ -90,7 +90,7 @@ package main
 
 import (
     "github.com/author/cjson"
-    "github.com/goplus/llgo/c"
+    "github.com/goplus/lib/c"
 )
 
 func main() {
@@ -328,9 +328,9 @@ When a header file in the current project references types from third-party pack
 In llcppg, there is a consistent pattern for naming aliases related to the standard library. Any alias that starts with `c/` corresponds to a remote repository in the github.com/goplus/llgo.
 
 For example:
-* The alias `c` → `github.com/goplus/llgo/c`
-* The alias `c/os` → `github.com/goplus/llgo/c/os`
-* The alias `c/time` → `github.com/goplus/llgo/c/time`
+* The alias `c` → `github.com/goplus/lib/c`
+* The alias `c/os` → `github.com/goplus/lib/c/os`
+* The alias `c/time` → `github.com/goplus/lib/c/time`
 
 > Note: Standard library type conversion in llgo is not comprehensive. For standard library types that cannot be found in llgo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
 
@@ -367,7 +367,7 @@ You can see this in the generated code, where libxslt correctly references libxm
 package libxslt
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llpkg/libxml2"
 	"unsafe"
 )

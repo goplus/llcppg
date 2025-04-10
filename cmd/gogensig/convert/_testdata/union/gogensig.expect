@@ -1,13 +1,10 @@
 ===== temp.go =====
 package union
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 type X__u struct {
-	B c.Long
+	B int64
 }
 type U X__u
 

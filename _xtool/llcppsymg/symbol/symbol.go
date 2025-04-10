@@ -9,13 +9,14 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	"github.com/goplus/llcppg/llcppg"
-	"github.com/goplus/llgo/c"
+	llgoc "github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/xtool/nm"
 	"github.com/goplus/llpkg/cjson"
 )
@@ -146,7 +147,7 @@ func ReadExistingSymbolTable(fileName string) (map[string]llcppg.SymbolInfo, boo
 	arraySize := parsedJSON.GetArraySize()
 
 	for i := 0; i < int(arraySize); i++ {
-		item := parsedJSON.GetArrayItem(c.Int(i))
+		item := parsedJSON.GetArrayItem(llgoc.Int(i))
 		symbol := llcppg.SymbolInfo{
 			Mangle: config.GetStringItem(item, "mangle", ""),
 			CPP:    config.GetStringItem(item, "c++", ""),

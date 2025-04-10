@@ -8,22 +8,19 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 ===== temp.go =====
 package keepcomment
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 // / Foo comment
 type Foo struct {
-	A c.Int
+	A int32
 	B float64
-	C c.Int
+	C int32
 }
 
 // / ExecuteFoo comment
 //
 //go:linkname CustomExecuteFoo C.ExecuteFoo
-func CustomExecuteFoo(a c.Int, b Foo) c.Int
+func CustomExecuteFoo(a int32, b Foo) int32
 
 ===== llcppg.pub =====
 Foo

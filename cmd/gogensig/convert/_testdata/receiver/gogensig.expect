@@ -8,13 +8,10 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 ===== temp.go =====
 package receiver
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
 type InAddr1 struct {
-	SAddr c.Uint
+	SAddr uint32
 }
 
 type AresIn6Addr struct {
@@ -24,7 +21,7 @@ type AresIn6Addr struct {
 }
 
 type AresAddr struct {
-	Family c.Int
+	Family int32
 	Addr   struct {
 		Addr6 AresIn6Addr
 	}

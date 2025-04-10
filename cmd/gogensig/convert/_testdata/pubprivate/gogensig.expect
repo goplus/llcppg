@@ -8,13 +8,10 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 ===== temp.go =====
 package pubprivate
 
-import (
-	"github.com/goplus/llgo/c"
-	_ "unsafe"
-)
+import _ "unsafe"
 
-type PublicType c.Long
-type X_privateTyp c.Long
+type PublicType int64
+type X_privateTyp int64
 
 ===== llcppg.pub =====
 _private_typ X_privateTyp

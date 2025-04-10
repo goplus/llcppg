@@ -4,7 +4,7 @@ import (
 	"gettext"
 	"unsafe"
 
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 )
 
 func handle(severity c.Int, message gettext.MessageT, filename *int8, lineno c.Ulong, column c.Ulong, multiline_p c.Int, message_text *int8) {

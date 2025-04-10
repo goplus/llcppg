@@ -7,10 +7,11 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/llcppg"
-	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/clang"
+	llgoc "github.com/goplus/llgo/c"
 	"github.com/goplus/llpkg/cjson"
 )
 
@@ -61,7 +62,7 @@ func GetStringArrayItem(obj *cjson.JSON, key string) (value []string) {
 	}
 	value = make([]string, item.GetArraySize())
 	for i := range value {
-		value[i] = GetString(item.GetArrayItem(c.Int(i)))
+		value[i] = GetString(item.GetArrayItem(llgoc.Int(i)))
 	}
 	return
 }

@@ -7,14 +7,14 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/llcppg"
 	"github.com/goplus/llcppg/token"
-	"github.com/goplus/llgo/c"
-	"github.com/goplus/llgo/c/clang"
 	"github.com/goplus/llpkg/cjson"
 )
 

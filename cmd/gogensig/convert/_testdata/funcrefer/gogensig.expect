@@ -9,12 +9,12 @@ const LLGoPackage string = "link: $(pkg-config --libs xxx);"
 package funcrefer
 
 import (
-	"github.com/goplus/llgo/c"
+	"github.com/goplus/lib/c"
 	"unsafe"
 )
 
 // llgo:type C
-type CallBack func(unsafe.Pointer) c.Int
+type CallBack func(unsafe.Pointer) int32
 
 //go:linkname Exec C.exec
 func Exec(L unsafe.Pointer, cb CallBack)
@@ -47,10 +47,10 @@ type OSSLDISPATCH struct {
 }
 
 // llgo:type C
-type OSSLProviderInitFn2 func(*OSSLCOREHANDLE, *OSSLDISPATCH, **OSSLDISPATCH, *unsafe.Pointer) c.Int
+type OSSLProviderInitFn2 func(*OSSLCOREHANDLE, *OSSLDISPATCH, **OSSLDISPATCH, *unsafe.Pointer) int32
 
 //go:linkname ProviderInit C.OSSL_provider_init
-func ProviderInit(*OSSLCOREHANDLE, *OSSLDISPATCH, **OSSLDISPATCH, *unsafe.Pointer) c.Int
+func ProviderInit(*OSSLCOREHANDLE, *OSSLDISPATCH, **OSSLDISPATCH, *unsafe.Pointer) int32
 
 type OsslLibCtxSt struct {
 	Unused [8]uint8
@@ -58,7 +58,7 @@ type OsslLibCtxSt struct {
 type OSSLLIBCTX OsslLibCtxSt
 
 //go:linkname ProviderAddBuiltin C.OSSL_PROVIDER_add_builtin
-func ProviderAddBuiltin(__llgo_arg_0 *OSSLLIBCTX, name *int8, init_fn OSSLProviderInitFn2) c.Int
+func ProviderAddBuiltin(__llgo_arg_0 *OSSLLIBCTX, name *int8, init_fn OSSLProviderInitFn2) int32
 
 ===== llcppg.pub =====
 CallBack
