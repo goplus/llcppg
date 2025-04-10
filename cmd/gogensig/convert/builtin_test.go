@@ -16,10 +16,10 @@ func TestBuiltinType(t *testing.T) {
 		expected string
 		wantErr  bool
 	}{
-		{"Void", &ast.BuiltinType{Kind: ast.Void}, "[0]byte", false},
+		{"Void", &ast.BuiltinType{Kind: ast.Void}, "github.com/goplus/llgo/c.Void", false},
 		{"Bool", &ast.BuiltinType{Kind: ast.Bool}, "bool", false},
-		{"Char_S", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Signed}, "int8", false},
-		{"Char_U", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Unsigned}, "int8", false},
+		{"Char_S", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Signed}, "github.com/goplus/llgo/c.Char", false},
+		{"Char_U", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Unsigned}, "github.com/goplus/llgo/c.Char", false},
 		{"WChar", &ast.BuiltinType{Kind: ast.WChar}, "int16", false},
 		{"Char16", &ast.BuiltinType{Kind: ast.Char16}, "int16", false},
 		{"Char32", &ast.BuiltinType{Kind: ast.Char32}, "int32", false},
@@ -31,8 +31,8 @@ func TestBuiltinType(t *testing.T) {
 		{"ULong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned}, "github.com/goplus/llgo/c.Ulong", false},
 		{"LongLong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.LongLong}, "github.com/goplus/llgo/c.LongLong", false},
 		{"ULongLong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.LongLong | ast.Unsigned}, "github.com/goplus/llgo/c.UlongLong", false},
-		{"Float", &ast.BuiltinType{Kind: ast.Float}, "float32", false},
-		{"Double", &ast.BuiltinType{Kind: ast.Float, Flags: ast.Double}, "float64", false},
+		{"Float", &ast.BuiltinType{Kind: ast.Float}, "github.com/goplus/llgo/c.Float", false},
+		{"Double", &ast.BuiltinType{Kind: ast.Float, Flags: ast.Double}, "github.com/goplus/llgo/c.Double", false},
 		{"ComplexFloat", &ast.BuiltinType{Kind: ast.Complex}, "complex64", false},
 		{"ComplexDouble", &ast.BuiltinType{Kind: ast.Complex, Flags: ast.Double}, "complex128", false},
 

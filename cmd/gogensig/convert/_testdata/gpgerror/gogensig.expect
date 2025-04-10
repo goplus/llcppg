@@ -11,7 +11,7 @@ type ErrorT c.Uint
 /* Return a pointer to a string containing a description of the error
  * code in the error value ERR.  This function is not thread-safe.  */
 // llgo:link ErrorT.Strerror C.gpg_strerror
-func (recv_ ErrorT) Strerror() *int8 {
+func (recv_ ErrorT) Strerror() *c.Char {
 	return nil
 }
 
@@ -23,14 +23,14 @@ func (recv_ ErrorT) Strerror() *int8 {
  * large enough, ERANGE is returned and BUF contains as much of the
  * beginning of the error string as fits into the buffer.  */
 // llgo:link ErrorT.StrerrorR C.gpg_strerror_r
-func (recv_ ErrorT) StrerrorR(buf *int8, buflen uintptr) c.Int {
+func (recv_ ErrorT) StrerrorR(buf *c.Char, buflen c.SizeT) c.Int {
 	return 0
 }
 
 /* Return a pointer to a string containing a description of the error
  * source in the error value ERR.  */
 // llgo:link ErrorT.Strsource C.gpg_strsource
-func (recv_ ErrorT) Strsource() *int8 {
+func (recv_ ErrorT) Strsource() *c.Char {
 	return nil
 }
 
@@ -46,7 +46,7 @@ const (
 type GpgrtLockT struct {
 	X_vers c.Long
 	U      struct {
-		X_priv [64]int8
+		X_priv [64]c.Char
 	}
 }
 

@@ -19,7 +19,7 @@ type InAddr1 struct {
 
 type AresIn6Addr struct {
 	X_S6Un struct {
-		X_S6U8 [16]int8
+		X_S6U8 [16]c.Char
 	}
 }
 
@@ -33,15 +33,18 @@ type AresAddr struct {
 ===== use.go =====
 package receiver
 
-import "unsafe"
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
 
 // todo(zzy): ares_addr need generate in the temp.go
 //
 //go:linkname AresDnsPton C.ares_dns_pton
-func AresDnsPton(ipaddr *int8, addr *AresAddr) unsafe.Pointer
+func AresDnsPton(ipaddr *c.Char, addr *AresAddr) c.Pointer
 
 // llgo:link (*AresAddr).AresDnsAddrToPtr C.ares_dns_addr_to_ptr
-func (recv_ *AresAddr) AresDnsAddrToPtr() *int8 {
+func (recv_ *AresAddr) AresDnsAddrToPtr() *c.Char {
 	return nil
 }
 

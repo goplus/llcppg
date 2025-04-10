@@ -18,10 +18,10 @@ type CJSON struct {
 	Prev        *CJSON
 	Child       *CJSON
 	Type        c.Int
-	Valuestring *int8
+	Valuestring *c.Char
 	Valueint    c.Int
-	Valuedouble float64
-	String      *int8
+	Valuedouble c.Double
+	String      *c.Char
 }
 
 ===== llcppg.pub =====

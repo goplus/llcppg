@@ -3,7 +3,7 @@ package lua
 
 import (
 	"github.com/goplus/llgo/c"
-	"unsafe"
+	_ "unsafe"
 )
 
 const GNAME = "_G"
@@ -12,43 +12,43 @@ const PRELOAD_TABLE = "_PRELOAD"
 const FILEHANDLE = "FILE*"
 
 type Buffer struct {
-	B    *int8
-	Size uintptr
-	N    uintptr
+	B    *c.Char
+	Size c.SizeT
+	N    c.SizeT
 	L    *State
 	Init struct {
-		B [1024]int8
+		B [1024]c.Char
 	}
 }
 
 type Reg struct {
-	Name *int8
-	Func unsafe.Pointer
+	Name *c.Char
+	Func c.Pointer
 }
 
 //go:linkname Checkversion C.luaL_checkversion_
-func Checkversion(L *State, ver Number, sz uintptr)
+func Checkversion(L *State, ver Number, sz c.SizeT)
 
 //go:linkname Getmetafield C.luaL_getmetafield
-func Getmetafield(L *State, obj c.Int, e *int8) c.Int
+func Getmetafield(L *State, obj c.Int, e *c.Char) c.Int
 
 //go:linkname Callmeta C.luaL_callmeta
-func Callmeta(L *State, obj c.Int, e *int8) c.Int
+func Callmeta(L *State, obj c.Int, e *c.Char) c.Int
 
 //go:linkname Tolstring__1 C.luaL_tolstring
-func Tolstring__1(L *State, idx c.Int, len *uintptr) *int8
+func Tolstring__1(L *State, idx c.Int, len *c.SizeT) *c.Char
 
 //go:linkname Argerror C.luaL_argerror
-func Argerror(L *State, arg c.Int, extramsg *int8) c.Int
+func Argerror(L *State, arg c.Int, extramsg *c.Char) c.Int
 
 //go:linkname Typeerror C.luaL_typeerror
-func Typeerror(L *State, arg c.Int, tname *int8) c.Int
+func Typeerror(L *State, arg c.Int, tname *c.Char) c.Int
 
 //go:linkname Checklstring C.luaL_checklstring
-func Checklstring(L *State, arg c.Int, l *uintptr) *int8
+func Checklstring(L *State, arg c.Int, l *c.SizeT) *c.Char
 
 //go:linkname Optlstring C.luaL_optlstring
-func Optlstring(L *State, arg c.Int, def *int8, l *uintptr) *int8
+func Optlstring(L *State, arg c.Int, def *c.Char, l *c.SizeT) *c.Char
 
 //go:linkname Checknumber C.luaL_checknumber
 func Checknumber(L *State, arg c.Int) Number
@@ -63,7 +63,7 @@ func Checkinteger(L *State, arg c.Int) Integer
 func Optinteger(L *State, arg c.Int, def Integer) Integer
 
 //go:linkname Checkstack__1 C.luaL_checkstack
-func Checkstack__1(L *State, sz c.Int, msg *int8)
+func Checkstack__1(L *State, sz c.Int, msg *c.Char)
 
 //go:linkname Checktype C.luaL_checktype
 func Checktype(L *State, arg c.Int, t c.Int)
@@ -72,28 +72,28 @@ func Checktype(L *State, arg c.Int, t c.Int)
 func Checkany(L *State, arg c.Int)
 
 //go:linkname Newmetatable C.luaL_newmetatable
-func Newmetatable(L *State, tname *int8) c.Int
+func Newmetatable(L *State, tname *c.Char) c.Int
 
 //go:linkname Setmetatable__1 C.luaL_setmetatable
-func Setmetatable__1(L *State, tname *int8)
+func Setmetatable__1(L *State, tname *c.Char)
 
 //go:linkname Testudata C.luaL_testudata
-func Testudata(L *State, ud c.Int, tname *int8) unsafe.Pointer
+func Testudata(L *State, ud c.Int, tname *c.Char) c.Pointer
 
 //go:linkname Checkudata C.luaL_checkudata
-func Checkudata(L *State, ud c.Int, tname *int8) unsafe.Pointer
+func Checkudata(L *State, ud c.Int, tname *c.Char) c.Pointer
 
 //go:linkname Where C.luaL_where
 func Where(L *State, lvl c.Int)
 
 //go:linkname Error__1 C.luaL_error
-func Error__1(L *State, fmt *int8, __llgo_va_list ...interface{}) c.Int
+func Error__1(L *State, fmt *c.Char, __llgo_va_list ...interface{}) c.Int
 
 //go:linkname Checkoption C.luaL_checkoption
-func Checkoption(L *State, arg c.Int, def *int8, lst **int8) c.Int
+func Checkoption(L *State, arg c.Int, def *c.Char, lst **c.Char) c.Int
 
 //go:linkname Fileresult C.luaL_fileresult
-func Fileresult(L *State, stat c.Int, fname *int8) c.Int
+func Fileresult(L *State, stat c.Int, fname *c.Char) c.Int
 
 //go:linkname Execresult C.luaL_execresult
 func Execresult(L *State, stat c.Int) c.Int
@@ -105,13 +105,13 @@ func Ref(L *State, t c.Int) c.Int
 func Unref(L *State, t c.Int, ref c.Int)
 
 //go:linkname Loadfilex C.luaL_loadfilex
-func Loadfilex(L *State, filename *int8, mode *int8) c.Int
+func Loadfilex(L *State, filename *c.Char, mode *c.Char) c.Int
 
 //go:linkname Loadbufferx C.luaL_loadbufferx
-func Loadbufferx(L *State, buff *int8, sz uintptr, name *int8, mode *int8) c.Int
+func Loadbufferx(L *State, buff *c.Char, sz c.SizeT, name *c.Char, mode *c.Char) c.Int
 
 //go:linkname Loadstring C.luaL_loadstring
-func Loadstring(L *State, s *int8) c.Int
+func Loadstring(L *State, s *c.Char) c.Int
 
 //go:linkname Newstate__1 C.luaL_newstate
 func Newstate__1() *State
@@ -120,34 +120,34 @@ func Newstate__1() *State
 func Len__1(L *State, idx c.Int) Integer
 
 //go:linkname Addgsub C.luaL_addgsub
-func Addgsub(b *Buffer, s *int8, p *int8, r *int8)
+func Addgsub(b *Buffer, s *c.Char, p *c.Char, r *c.Char)
 
 //go:linkname Gsub C.luaL_gsub
-func Gsub(L *State, s *int8, p *int8, r *int8) *int8
+func Gsub(L *State, s *c.Char, p *c.Char, r *c.Char) *c.Char
 
 //go:linkname Setfuncs C.luaL_setfuncs
 func Setfuncs(L *State, l *Reg, nup c.Int)
 
 //go:linkname Getsubtable C.luaL_getsubtable
-func Getsubtable(L *State, idx c.Int, fname *int8) c.Int
+func Getsubtable(L *State, idx c.Int, fname *c.Char) c.Int
 
 //go:linkname Traceback C.luaL_traceback
-func Traceback(L *State, L1 *State, msg *int8, level c.Int)
+func Traceback(L *State, L1 *State, msg *c.Char, level c.Int)
 
 //go:linkname Requiref C.luaL_requiref
-func Requiref(L *State, modname *int8, openf CFunction, glb c.Int)
+func Requiref(L *State, modname *c.Char, openf CFunction, glb c.Int)
 
 //go:linkname Buffinit C.luaL_buffinit
 func Buffinit(L *State, B *Buffer)
 
 //go:linkname Prepbuffsize C.luaL_prepbuffsize
-func Prepbuffsize(B *Buffer, sz uintptr) *int8
+func Prepbuffsize(B *Buffer, sz c.SizeT) *c.Char
 
 //go:linkname Addlstring C.luaL_addlstring
-func Addlstring(B *Buffer, s *int8, l uintptr)
+func Addlstring(B *Buffer, s *c.Char, l c.SizeT)
 
 //go:linkname Addstring C.luaL_addstring
-func Addstring(B *Buffer, s *int8)
+func Addstring(B *Buffer, s *c.Char)
 
 //go:linkname Addvalue C.luaL_addvalue
 func Addvalue(B *Buffer)
@@ -156,14 +156,14 @@ func Addvalue(B *Buffer)
 func Pushresult(B *Buffer)
 
 //go:linkname Pushresultsize C.luaL_pushresultsize
-func Pushresultsize(B *Buffer, sz uintptr)
+func Pushresultsize(B *Buffer, sz c.SizeT)
 
 //go:linkname Buffinitsize C.luaL_buffinitsize
-func Buffinitsize(L *State, B *Buffer, sz uintptr) *int8
+func Buffinitsize(L *State, B *Buffer, sz c.SizeT) *c.Char
 
 type Stream struct {
 	F      *c.FILE
-	Closef unsafe.Pointer
+	Closef c.Pointer
 }
 
 ===== lua.go =====
@@ -171,7 +171,7 @@ package lua
 
 import (
 	"github.com/goplus/llgo/c"
-	"unsafe"
+	_ "unsafe"
 )
 
 const VERSION_MAJOR = "5"
@@ -236,10 +236,10 @@ const HOOKTAILCALL = 4
 type State struct {
 	Unused [8]uint8
 }
-type Number float64
+type Number c.Double
 type Integer c.LongLong
 type Unsigned c.UlongLong
-type KContext uintptr
+type KContext c.IntptrT
 
 // llgo:type C
 type CFunction func(*State) c.Int
@@ -248,34 +248,34 @@ type CFunction func(*State) c.Int
 type KFunction func(*State, c.Int, KContext) c.Int
 
 // llgo:type C
-type Reader func(*State, unsafe.Pointer, *uintptr) *int8
+type Reader func(*State, c.Pointer, *c.SizeT) *c.Char
 
 // llgo:type C
-type Writer func(*State, unsafe.Pointer, uintptr, unsafe.Pointer) c.Int
+type Writer func(*State, c.Pointer, c.SizeT, c.Pointer) c.Int
 
 // llgo:type C
-type Alloc func(unsafe.Pointer, unsafe.Pointer, uintptr, uintptr) unsafe.Pointer
+type Alloc func(c.Pointer, c.Pointer, c.SizeT, c.SizeT) c.Pointer
 
 // llgo:type C
-type WarnFunction func(unsafe.Pointer, *int8, c.Int)
+type WarnFunction func(c.Pointer, *c.Char, c.Int)
 
 type Debug struct {
 	Event           c.Int
-	Name            *int8
-	Namewhat        *int8
-	What            *int8
-	Source          *int8
-	Srclen          uintptr
+	Name            *c.Char
+	Namewhat        *c.Char
+	What            *c.Char
+	Source          *c.Char
+	Srclen          c.SizeT
 	Currentline     c.Int
 	Linedefined     c.Int
 	Lastlinedefined c.Int
-	Nups            int8
-	Nparams         int8
-	Isvararg        int8
-	Istailcall      int8
+	Nups            c.Char
+	Nparams         c.Char
+	Isvararg        c.Char
+	Istailcall      c.Char
 	Ftransfer       uint16
 	Ntransfer       uint16
-	ShortSrc        [60]int8
+	ShortSrc        [60]c.Char
 	ICi             *CallInfo
 }
 
@@ -286,7 +286,7 @@ type Hook func(*State, *Debug)
 ** state manipulation
  */
 //go:linkname Newstate C.lua_newstate
-func Newstate(f Alloc, ud unsafe.Pointer) *State
+func Newstate(f Alloc, ud c.Pointer) *State
 
 //go:linkname Close C.lua_close
 func Close(L *State)
@@ -355,7 +355,7 @@ func Isuserdata(L *State, idx c.Int) c.Int
 func Type(L *State, idx c.Int) c.Int
 
 //go:linkname Typename C.lua_typename
-func Typename(L *State, tp c.Int) *int8
+func Typename(L *State, tp c.Int) *c.Char
 
 //go:linkname Tonumberx C.lua_tonumberx
 func Tonumberx(L *State, idx c.Int, isnum *c.Int) Number
@@ -367,7 +367,7 @@ func Tointegerx(L *State, idx c.Int, isnum *c.Int) Integer
 func Toboolean(L *State, idx c.Int) c.Int
 
 //go:linkname Tolstring C.lua_tolstring
-func Tolstring(L *State, idx c.Int, len *uintptr) *int8
+func Tolstring(L *State, idx c.Int, len *c.SizeT) *c.Char
 
 //go:linkname Rawlen C.lua_rawlen
 func Rawlen(L *State, idx c.Int) Unsigned
@@ -376,13 +376,13 @@ func Rawlen(L *State, idx c.Int) Unsigned
 func Tocfunction(L *State, idx c.Int) CFunction
 
 //go:linkname Touserdata C.lua_touserdata
-func Touserdata(L *State, idx c.Int) unsafe.Pointer
+func Touserdata(L *State, idx c.Int) c.Pointer
 
 //go:linkname Tothread C.lua_tothread
 func Tothread(L *State, idx c.Int) *State
 
 //go:linkname Topointer C.lua_topointer
-func Topointer(L *State, idx c.Int) unsafe.Pointer
+func Topointer(L *State, idx c.Int) c.Pointer
 
 //go:linkname Arith C.lua_arith
 func Arith(L *State, op c.Int)
@@ -406,16 +406,16 @@ func Pushnumber(L *State, n Number)
 func Pushinteger(L *State, n Integer)
 
 //go:linkname Pushlstring C.lua_pushlstring
-func Pushlstring(L *State, s *int8, len uintptr) *int8
+func Pushlstring(L *State, s *c.Char, len c.SizeT) *c.Char
 
 //go:linkname Pushstring C.lua_pushstring
-func Pushstring(L *State, s *int8) *int8
+func Pushstring(L *State, s *c.Char) *c.Char
 
 // todo(zzy):on macos undef va_list will be a int,it is mistake
 // LUA_API const char *(lua_pushvfstring)(lua_State *L, const char *fmt, va_list argp);
 //
 //go:linkname Pushfstring C.lua_pushfstring
-func Pushfstring(L *State, fmt *int8, __llgo_va_list ...interface{}) *int8
+func Pushfstring(L *State, fmt *c.Char, __llgo_va_list ...interface{}) *c.Char
 
 //go:linkname Pushcclosure C.lua_pushcclosure
 func Pushcclosure(L *State, fn CFunction, n c.Int)
@@ -424,7 +424,7 @@ func Pushcclosure(L *State, fn CFunction, n c.Int)
 func Pushboolean(L *State, b c.Int)
 
 //go:linkname Pushlightuserdata C.lua_pushlightuserdata
-func Pushlightuserdata(L *State, p unsafe.Pointer)
+func Pushlightuserdata(L *State, p c.Pointer)
 
 //go:linkname Pushthread C.lua_pushthread
 func Pushthread(L *State) c.Int
@@ -433,13 +433,13 @@ func Pushthread(L *State) c.Int
 ** get functions (Lua -> stack)
  */
 //go:linkname Getglobal C.lua_getglobal
-func Getglobal(L *State, name *int8) c.Int
+func Getglobal(L *State, name *c.Char) c.Int
 
 //go:linkname Gettable C.lua_gettable
 func Gettable(L *State, idx c.Int) c.Int
 
 //go:linkname Getfield C.lua_getfield
-func Getfield(L *State, idx c.Int, k *int8) c.Int
+func Getfield(L *State, idx c.Int, k *c.Char) c.Int
 
 //go:linkname Geti C.lua_geti
 func Geti(L *State, idx c.Int, n Integer) c.Int
@@ -451,13 +451,13 @@ func Rawget(L *State, idx c.Int) c.Int
 func Rawgeti(L *State, idx c.Int, n Integer) c.Int
 
 //go:linkname Rawgetp C.lua_rawgetp
-func Rawgetp(L *State, idx c.Int, p unsafe.Pointer) c.Int
+func Rawgetp(L *State, idx c.Int, p c.Pointer) c.Int
 
 //go:linkname Createtable C.lua_createtable
 func Createtable(L *State, narr c.Int, nrec c.Int)
 
 //go:linkname Newuserdatauv C.lua_newuserdatauv
-func Newuserdatauv(L *State, sz uintptr, nuvalue c.Int) unsafe.Pointer
+func Newuserdatauv(L *State, sz c.SizeT, nuvalue c.Int) c.Pointer
 
 //go:linkname Getmetatable C.lua_getmetatable
 func Getmetatable(L *State, objindex c.Int) c.Int
@@ -469,13 +469,13 @@ func Getiuservalue(L *State, idx c.Int, n c.Int) c.Int
 ** set functions (stack -> Lua)
  */
 //go:linkname Setglobal C.lua_setglobal
-func Setglobal(L *State, name *int8)
+func Setglobal(L *State, name *c.Char)
 
 //go:linkname Settable C.lua_settable
 func Settable(L *State, idx c.Int)
 
 //go:linkname Setfield C.lua_setfield
-func Setfield(L *State, idx c.Int, k *int8)
+func Setfield(L *State, idx c.Int, k *c.Char)
 
 //go:linkname Seti C.lua_seti
 func Seti(L *State, idx c.Int, n Integer)
@@ -487,7 +487,7 @@ func Rawset(L *State, idx c.Int)
 func Rawseti(L *State, idx c.Int, n Integer)
 
 //go:linkname Rawsetp C.lua_rawsetp
-func Rawsetp(L *State, idx c.Int, p unsafe.Pointer)
+func Rawsetp(L *State, idx c.Int, p c.Pointer)
 
 //go:linkname Setmetatable C.lua_setmetatable
 func Setmetatable(L *State, objindex c.Int) c.Int
@@ -505,10 +505,10 @@ func Callk(L *State, nargs c.Int, nresults c.Int, ctx KContext, k KFunction)
 func Pcallk(L *State, nargs c.Int, nresults c.Int, errfunc c.Int, ctx KContext, k KFunction) c.Int
 
 //go:linkname Load C.lua_load
-func Load(L *State, reader Reader, dt unsafe.Pointer, chunkname *int8, mode *int8) c.Int
+func Load(L *State, reader Reader, dt c.Pointer, chunkname *c.Char, mode *c.Char) c.Int
 
 //go:linkname Dump C.lua_dump
-func Dump(L *State, writer Writer, data unsafe.Pointer, strip c.Int) c.Int
+func Dump(L *State, writer Writer, data c.Pointer, strip c.Int) c.Int
 
 /*
 ** coroutine functions
@@ -529,10 +529,10 @@ func Isyieldable(L *State) c.Int
 ** Warning-related functions
  */
 //go:linkname Setwarnf C.lua_setwarnf
-func Setwarnf(L *State, f WarnFunction, ud unsafe.Pointer)
+func Setwarnf(L *State, f WarnFunction, ud c.Pointer)
 
 //go:linkname Warning C.lua_warning
-func Warning(L *State, msg *int8, tocont c.Int)
+func Warning(L *State, msg *c.Char, tocont c.Int)
 
 //go:linkname Gc C.lua_gc
 func Gc(L *State, what c.Int, __llgo_va_list ...interface{}) c.Int
@@ -553,13 +553,13 @@ func Concat(L *State, n c.Int)
 func Len(L *State, idx c.Int)
 
 //go:linkname Stringtonumber C.lua_stringtonumber
-func Stringtonumber(L *State, s *int8) uintptr
+func Stringtonumber(L *State, s *c.Char) c.SizeT
 
 //go:linkname Getallocf C.lua_getallocf
-func Getallocf(L *State, ud *unsafe.Pointer) Alloc
+func Getallocf(L *State, ud *c.Pointer) Alloc
 
 //go:linkname Setallocf C.lua_setallocf
-func Setallocf(L *State, f Alloc, ud unsafe.Pointer)
+func Setallocf(L *State, f Alloc, ud c.Pointer)
 
 //go:linkname Toclose C.lua_toclose
 func Toclose(L *State, idx c.Int)
@@ -571,22 +571,22 @@ func Closeslot(L *State, idx c.Int)
 func Getstack(L *State, level c.Int, ar *Debug) c.Int
 
 //go:linkname Getinfo C.lua_getinfo
-func Getinfo(L *State, what *int8, ar *Debug) c.Int
+func Getinfo(L *State, what *c.Char, ar *Debug) c.Int
 
 //go:linkname Getlocal C.lua_getlocal
-func Getlocal(L *State, ar *Debug, n c.Int) *int8
+func Getlocal(L *State, ar *Debug, n c.Int) *c.Char
 
 //go:linkname Setlocal C.lua_setlocal
-func Setlocal(L *State, ar *Debug, n c.Int) *int8
+func Setlocal(L *State, ar *Debug, n c.Int) *c.Char
 
 //go:linkname Getupvalue C.lua_getupvalue
-func Getupvalue(L *State, funcindex c.Int, n c.Int) *int8
+func Getupvalue(L *State, funcindex c.Int, n c.Int) *c.Char
 
 //go:linkname Setupvalue C.lua_setupvalue
-func Setupvalue(L *State, funcindex c.Int, n c.Int) *int8
+func Setupvalue(L *State, funcindex c.Int, n c.Int) *c.Char
 
 //go:linkname Upvalueid C.lua_upvalueid
-func Upvalueid(L *State, fidx c.Int, n c.Int) unsafe.Pointer
+func Upvalueid(L *State, fidx c.Int, n c.Int) c.Pointer
 
 //go:linkname Upvaluejoin C.lua_upvaluejoin
 func Upvaluejoin(L *State, fidx1 c.Int, n1 c.Int, fidx2 c.Int, n2 c.Int)
