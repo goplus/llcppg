@@ -183,10 +183,10 @@ func TestToType(t *testing.T) {
 		input    *ast.BuiltinType
 		expected string
 	}{
-		{"Void", &ast.BuiltinType{Kind: ast.Void}, "[0]byte"},
+		{"Void", &ast.BuiltinType{Kind: ast.Void}, "github.com/goplus/llgo/c.Void"},
 		{"Bool", &ast.BuiltinType{Kind: ast.Bool}, "bool"},
-		{"Char_S", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Signed}, "int8"},
-		{"Char_U", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Unsigned}, "int8"},
+		{"Char_S", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Signed}, "github.com/goplus/llgo/c.Char"},
+		{"Char_U", &ast.BuiltinType{Kind: ast.Char, Flags: ast.Unsigned}, "github.com/goplus/llgo/c.Char"},
 		{"WChar", &ast.BuiltinType{Kind: ast.WChar}, "int16"},
 		{"Char16", &ast.BuiltinType{Kind: ast.Char16}, "int16"},
 		{"Char32", &ast.BuiltinType{Kind: ast.Char32}, "int32"},
@@ -198,8 +198,8 @@ func TestToType(t *testing.T) {
 		{"ULong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned}, "github.com/goplus/llgo/c.Ulong"},
 		{"LongLong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.LongLong}, "github.com/goplus/llgo/c.LongLong"},
 		{"ULongLong", &ast.BuiltinType{Kind: ast.Int, Flags: ast.LongLong | ast.Unsigned}, "github.com/goplus/llgo/c.UlongLong"},
-		{"Float", &ast.BuiltinType{Kind: ast.Float}, "float32"},
-		{"Double", &ast.BuiltinType{Kind: ast.Float, Flags: ast.Double}, "float64"},
+		{"Float", &ast.BuiltinType{Kind: ast.Float}, "github.com/goplus/llgo/c.Float"},
+		{"Double", &ast.BuiltinType{Kind: ast.Float, Flags: ast.Double}, "github.com/goplus/llgo/c.Double"},
 		{"ComplexFloat", &ast.BuiltinType{Kind: ast.Complex}, "complex64"},
 		{"ComplexDouble", &ast.BuiltinType{Kind: ast.Complex, Flags: ast.Double}, "complex128"},
 	}
@@ -485,9 +485,12 @@ func Foo()`,
 			},
 			expected: `
 package testpkg
-import _ "unsafe"
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
 //go:linkname Foo C.foo
-func Foo(a uint16, b bool) float64`,
+func Foo(a uint16, b bool) c.Double`,
 		},
 		{
 			name: "c builtin type",
@@ -615,7 +618,7 @@ _ "unsafe"
 )
 
 //go:linkname Foo C.foo
-func Foo(a *c.Uint, b *c.Long) *float64
+func Foo(a *c.Uint, b *c.Long) *c.Double
 `,
 		},
 		{
@@ -649,10 +652,13 @@ func Foo(a *c.Uint, b *c.Long) *float64
 			expected: `
 package testpkg
 
-import "unsafe"
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
 
 //go:linkname Foo C.foo
-func Foo(a unsafe.Pointer) unsafe.Pointer
+func Foo(a c.Pointer) c.Pointer
 			`,
 		},
 		{
@@ -712,7 +718,7 @@ _ "unsafe"
 )
 
 //go:linkname Foo C.foo
-func Foo(a *c.Uint, b *float64) **int8
+func Foo(a *c.Uint, b *c.Double) **c.Char
 			`,
 		},
 		{
@@ -873,7 +879,7 @@ _ "unsafe"
 
 type Foo struct {
 	A c.Int
-	B float64
+	B c.Double
 	C bool
 }`,
 		},
@@ -927,14 +933,14 @@ package testpkg
 
 import (
 	"github.com/goplus/llgo/c"
-	"unsafe"
+	_ "unsafe"
 )
 
 type Foo struct {
 	A *c.Int
-	B *float64
+	B *c.Double
 	C *bool
-	D unsafe.Pointer
+	D c.Pointer
 }`},
 		// struct Foo { char a[4]; int b[3][4]; }
 		{
@@ -983,7 +989,7 @@ _ "unsafe"
 )
 
 type Foo struct {
-	A [4]int8
+	A [4]c.Char
 	B [3][4]c.Int
 }`},
 		{
@@ -1032,7 +1038,7 @@ _ "unsafe"
 )
 
 type Foo struct {
-	A [4]int8
+	A [4]c.Char
 	B [3][4]c.Int
 }`},
 		{
@@ -1278,9 +1284,12 @@ func TestTypedef(t *testing.T) {
 			expected: `
 package testpkg
 
-import _ "unsafe"
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
 
-type DOUBLE float64`,
+type DOUBLE c.Double`,
 		},
 		// invalid typedef
 		{
@@ -1329,9 +1338,12 @@ type INT c.Int
 			expected: `
 package testpkg
 
-import _ "unsafe"
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
 
-type Name [5]int8`,
+type Name [5]c.Char`,
 		},
 		// typedef void* ctx;
 		{
@@ -1347,9 +1359,12 @@ type Name [5]int8`,
 			expected: `
 package testpkg
 
-import "unsafe"
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
 
-type Ctx unsafe.Pointer`,
+type Ctx c.Pointer`,
 		},
 
 		// typedef char* name;
@@ -1366,8 +1381,11 @@ type Ctx unsafe.Pointer`,
 			},
 			expected: `
 package testpkg
-import _ "unsafe"
-type Name *int8`,
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+type Name *c.Char`,
 		},
 		{
 			name: "typedef invalid pointer",
@@ -1564,8 +1582,11 @@ func TestIdentRefer(t *testing.T) {
 		}
 		comparePackageOutput(t, pkg, `
 		package testpkg
-		import _ "unsafe"
-		type TypInt8T int8
+		import (
+			"github.com/goplus/llgo/c"
+			_ "unsafe"
+		)
+		type TypInt8T c.Char
 		type Foo struct {
 			A TypInt8T
 		}

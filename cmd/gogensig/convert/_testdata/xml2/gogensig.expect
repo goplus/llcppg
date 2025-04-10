@@ -3,7 +3,7 @@ package xml2
 
 import (
 	"github.com/goplus/llgo/c"
-	"unsafe"
+	_ "unsafe"
 )
 
 type ElementType c.Int
@@ -53,16 +53,16 @@ type X_xmlNs struct {
 	Type      NsType
 	Href      *Char
 	Prefix    *Char
-	X_private unsafe.Pointer
+	X_private c.Pointer
 	Context   *X_xmlDoc
 }
 type Ns X_xmlNs
 type NsPtr *Ns
 
 type X_xmlDoc struct {
-	X_private   unsafe.Pointer
+	X_private   c.Pointer
 	Type        ElementType
-	Name        *int8
+	Name        *c.Char
 	Children    *X_xmlNode
 	Last        *X_xmlNode
 	Parent      *X_xmlNode
@@ -76,18 +76,18 @@ type X_xmlDoc struct {
 	OldNs       *X_xmlNs
 	Version     *Char
 	Encoding    *Char
-	Ids         unsafe.Pointer
-	Refs        unsafe.Pointer
+	Ids         c.Pointer
+	Refs        c.Pointer
 	URL         *Char
 	Charset     c.Int
 	Dict        *X_xmlDict
-	Psvi        unsafe.Pointer
+	Psvi        c.Pointer
 	ParseFlags  c.Int
 	Properties  c.Int
 }
 
 type X_xmlDtd struct {
-	X_private  unsafe.Pointer
+	X_private  c.Pointer
 	Type       ElementType
 	Name       *Char
 	Children   *X_xmlNode
@@ -96,19 +96,19 @@ type X_xmlDtd struct {
 	Next       *X_xmlNode
 	Prev       *X_xmlNode
 	Doc        *X_xmlDoc
-	Notations  unsafe.Pointer
-	Elements   unsafe.Pointer
-	Attributes unsafe.Pointer
-	Entities   unsafe.Pointer
+	Notations  c.Pointer
+	Elements   c.Pointer
+	Attributes c.Pointer
+	Entities   c.Pointer
 	ExternalID *Char
 	SystemID   *Char
-	Pentities  unsafe.Pointer
+	Pentities  c.Pointer
 }
 type Dtd X_xmlDtd
 type DtdPtr *Dtd
 
 type X_xmlNode struct {
-	X_private  unsafe.Pointer
+	X_private  c.Pointer
 	Type       ElementType
 	Name       *Char
 	Children   *X_xmlNode
@@ -121,13 +121,13 @@ type X_xmlNode struct {
 	Content    *Char
 	Properties *X_xmlAttr
 	NsDef      *Ns
-	Psvi       unsafe.Pointer
+	Psvi       c.Pointer
 	Line       uint16
 	Extra      uint16
 }
 
 type X_xmlAttr struct {
-	X_private unsafe.Pointer
+	X_private c.Pointer
 	Type      ElementType
 	Name      *Char
 	Children  *X_xmlNode
@@ -138,7 +138,7 @@ type X_xmlAttr struct {
 	Doc       *X_xmlDoc
 	Ns        *Ns
 	Atype     AttributeType
-	Psvi      unsafe.Pointer
+	Psvi      c.Pointer
 	Id        *X_xmlID
 }
 type Attr X_xmlAttr
@@ -189,10 +189,10 @@ package xml2
 
 import (
 	"github.com/goplus/llgo/c"
-	"unsafe"
+	_ "unsafe"
 )
 
-type Char int8
+type Char c.Char
 
 /*
  * xmlChar handling
@@ -208,10 +208,10 @@ func (recv_ *Char) Strndup(len c.Int) *Char {
 }
 
 //go:linkname CharStrndup C.xmlCharStrndup
-func CharStrndup(cur *int8, len c.Int) *Char
+func CharStrndup(cur *c.Char, len c.Int) *Char
 
 //go:linkname CharStrdup C.xmlCharStrdup
-func CharStrdup(cur *int8) *Char
+func CharStrdup(cur *c.Char) *Char
 
 // llgo:link (*Char).Strsub C.xmlStrsub
 func (recv_ *Char) Strsub(start c.Int, len c.Int) *Char {
@@ -284,20 +284,20 @@ func (recv_ *Char) StrncatNew(str2 *Char, len c.Int) *Char {
 }
 
 // llgo:link (*Char).StrPrintf C.xmlStrPrintf
-func (recv_ *Char) StrPrintf(len c.Int, msg *int8, __llgo_va_list ...interface{}) c.Int {
+func (recv_ *Char) StrPrintf(len c.Int, msg *c.Char, __llgo_va_list ...interface{}) c.Int {
 	return 0
 }
 
 // llgo:link (*Char).StrVPrintf C.xmlStrVPrintf
-func (recv_ *Char) StrVPrintf(len c.Int, msg *int8, ap unsafe.Pointer) c.Int {
+func (recv_ *Char) StrVPrintf(len c.Int, msg *c.Char, ap c.VaList) c.Int {
 	return 0
 }
 
 //go:linkname GetUTF8Char C.xmlGetUTF8Char
-func GetUTF8Char(utf *int8, len *c.Int) c.Int
+func GetUTF8Char(utf *c.Char, len *c.Int) c.Int
 
 //go:linkname CheckUTF8 C.xmlCheckUTF8
-func CheckUTF8(utf *int8) c.Int
+func CheckUTF8(utf *c.Char) c.Int
 
 // llgo:link (*Char).UTF8Strsize C.xmlUTF8Strsize
 func (recv_ *Char) UTF8Strsize(len c.Int) c.Int {
