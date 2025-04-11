@@ -15,7 +15,7 @@
 	}, {
 		"mangle":	"_ZNK9INIReader10ParseErrorEv",
 		"c++":	"INIReader::ParseError()",
-		"go":	"(*Reader).ModifyedParseError"
+		"go":	"(*Reader).ParseError"
 	}, {
 		"mangle":	"_ZNK9INIReader3GetEPKcS1_S1_",
 		"c++":	"INIReader::Get(const char *, const char *, const char *)",
@@ -41,6 +41,14 @@
 	}]
 === Test Case: cjson ===
 [{
+		"mangle":	"cJSON_AddArrayToObject",
+		"c++":	"cJSON_AddArrayToObject(cJSON *const, const char *const)",
+		"go":	"(*CJSON).AddArrayToObj"
+	}, {
+		"mangle":	"cJSON_AddBoolToObject",
+		"c++":	"cJSON_AddBoolToObject(cJSON *const, const char *const, const int)",
+		"go":	"AddBoolToObj"
+	}, {
 		"mangle":	"cJSON_Delete",
 		"c++":	"cJSON_Delete(cJSON *)",
 		"go":	"(*CJSON).Delete"
@@ -72,6 +80,12 @@
 		"mangle":	"gpg_strsource",
 		"c++":	"gpg_strsource(gpg_error_t)",
 		"go":	"ErrorT.Strsource"
+	}]
+=== Test Case: sqlite ===
+[{
+		"mangle":	"sqlite3_finalize",
+		"c++":	"sqlite3_finalize(sqlite3_stmt *)",
+		"go":	"(*Stmt).Close"
 	}]
 
 #stderr

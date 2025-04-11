@@ -16,6 +16,7 @@ import (
 func main() {
 	TestParseHeaderFile()
 }
+
 func TestParseHeaderFile() {
 	testCases := []struct {
 		name         string
@@ -52,6 +53,9 @@ func TestParseHeaderFile() {
 				"cJSON_Delete",
 				// mock multiple symbols
 				"cJSON_Delete",
+				"cJSON_AddArrayToObject",
+				"cJSON_AddBoolToObject",
+				"cJSON_AddNumberToObject",
 			},
 		},
 		{
@@ -68,6 +72,13 @@ func TestParseHeaderFile() {
 				"gpg_strsource",
 				"gpg_strerror_r",
 				"gpg_strerror",
+			},
+		},
+		{
+			name: "sqlite",
+			path: "./sqlite3",
+			dylibSymbols: []string{
+				"sqlite3_finalize",
 			},
 		},
 	}
@@ -92,7 +103,8 @@ func TestParseHeaderFile() {
 
 		cfg.CFlags = "-I" + projPath
 		pkgHfileInfo := config.PkgHfileInfo(cfg.Config, []string{})
-		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, false)
+		config := parse.NewConfig(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, cfg.SymMap)
+		headerSymbolMap, err := parse.ParseHeaderFile(config, false)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -106,7 +118,7 @@ func TestParseHeaderFile() {
 		for _, symb := range tc.dylibSymbols {
 			dylibsymbs = append(dylibsymbs, &nm.Symbol{Name: symbol.AddSymbolPrefixUnder(symb, cfg.Cplusplus)})
 		}
-		symbolData, err := symbol.GenerateAndUpdateSymbolTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, llcppg.LLCPPG_SYMB))
+		symbolData, err := symbol.GenerateSymbolTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, llcppg.LLCPPG_SYMB))
 		if err != nil {
 			fmt.Println("Error:", err)
 		}

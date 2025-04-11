@@ -1,6 +1,11 @@
 package llcppg
 
-import "github.com/goplus/llcppg/ast"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/goplus/llcppg/ast"
+)
 
 const LLCPPG_CFG = "llcppg.cfg"
 const LLCPPG_SYMB = "llcppg.symb.json"
@@ -33,12 +38,25 @@ type Config struct {
 	KeepUnderScore bool              `json:"keepUnderScore"`
 	Impl           []ImplFiles       `json:"impl"`
 	Mix            bool              `json:"mix"`
-	SymMap         map[string]string `json:"symMap,omitempty"`
-	TypeMap        map[string]string `json:"typeMap,omitempty"`
+	SymMap         map[string]string `json:"symMap"`
+	TypeMap        map[string]string `json:"typeMap"`
 }
 
 func NewDefaultConfig() *Config {
-	return &Config{Impl: []ImplFiles{*NewImplFiles()}}
+	cfg := &Config{SymMap: make(map[string]string), TypeMap: make(map[string]string), Impl: []ImplFiles{*NewImplFiles()}}
+	return cfg
+}
+
+func (p *Config) String() string {
+	strBuilder := strings.Builder{}
+	strBuilder.WriteString("Name:" + p.Name + "\n")
+	strBuilder.WriteString("CFlags:" + p.CFlags + "\n")
+	strBuilder.WriteString("Libs:" + p.Libs + "\n")
+	strBuilder.WriteString("Include:" + fmt.Sprintln(p.Include))
+	strBuilder.WriteString("TrimPrefixes:" + fmt.Sprintln(p.TrimPrefixes))
+	strBuilder.WriteString("Cplusplus:" + fmt.Sprintln(p.Cplusplus))
+	strBuilder.WriteString("SymMap:" + fmt.Sprintln(p.SymMap))
+	return strBuilder.String()
 }
 
 type SymbolInfo struct {

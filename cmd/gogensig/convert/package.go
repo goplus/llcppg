@@ -146,7 +146,7 @@ func (p *Package) SetCurFile(hfile *HeaderFile) {
 	// for third hfile not register to gogen.Package
 	if curFile.FileType != llcppg.Third {
 		fileName := curFile.ToGoFileName(p.conf.Name)
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugSetCurFile() {
 			log.Printf("SetCurFile: %s File in Current Package: %v\n", fileName, curFile.FileType)
 		}
 		p.p.SetCurFile(fileName, true)
@@ -263,12 +263,12 @@ func pubMethodName(recv types.Type, fnSpec *GoFuncSpec) string {
 func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 	isThird, anony := p.handleType(funcDecl.Name, funcDecl.Loc)
 	if isThird {
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugNew() {
 			log.Printf("NewFuncDecl: %v is a function of third header file\n", funcDecl.Name)
 		}
 		return nil
 	}
-	if dbg.GetDebugLog() {
+	if dbg.GetDebugNew() {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
 	}
 	if anony {
@@ -281,7 +281,9 @@ func (p *Package) NewFuncDecl(funcDecl *ast.FuncDecl) error {
 		return err
 	}
 	if fnSpec.IsIgnore() {
-		log.Printf("NewFuncDecl: %v is ignored\n", funcDecl.Name)
+		if dbg.GetDebugNew() {
+			log.Printf("NewFuncDecl: %v is ignored\n", funcDecl.Name)
+		}
 		return nil
 	}
 
@@ -324,12 +326,12 @@ func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (rec
 func (p *Package) NewTypeDecl(typeDecl *ast.TypeDecl) error {
 	skip, anony := p.handleType(typeDecl.Name, typeDecl.Loc)
 	if skip {
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugNew() {
 			log.Printf("NewTypeDecl: %s type of third header\n", typeDecl.Name)
 		}
 		return nil
 	}
-	if dbg.GetDebugLog() {
+	if dbg.GetDebugNew() {
 		log.Printf("NewTypeDecl: %v\n", typeDecl.Name)
 	}
 	if anony {
@@ -429,12 +431,12 @@ func (p *Package) emptyTypeDecl(name string, doc *ast.CommentGroup) *gogen.TypeD
 func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 	skip, _ := p.handleType(typedefDecl.Name, typedefDecl.Loc)
 	if skip {
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugNew() {
 			log.Printf("NewTypedefDecl: %v is a typedef of third header file\n", typedefDecl.Name)
 		}
 		return nil
 	}
-	if dbg.GetDebugLog() {
+	if dbg.GetDebugNew() {
 		log.Printf("NewTypedefDecl: %v\n", typedefDecl.Name)
 	}
 	name, changed, err := p.DeclName(typedefDecl.Name.Name, true)
@@ -452,7 +454,7 @@ func (p *Package) NewTypedefDecl(typedefDecl *ast.TypedefDecl) error {
 
 	deferInit := p.handleTyperefIncomplete(typedefDecl.Type, typeSpecdecl, typedefDecl.Name.Name)
 	if deferInit {
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugNew() {
 			log.Printf("NewTypedefDecl: %s defer init\n", name)
 		}
 		return nil
@@ -520,12 +522,12 @@ func (p *Package) NewTypedefs(name string, typ types.Type) *gogen.TypeDecl {
 func (p *Package) NewEnumTypeDecl(enumTypeDecl *ast.EnumTypeDecl) error {
 	skip, _ := p.handleType(enumTypeDecl.Name, enumTypeDecl.Loc)
 	if skip {
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugNew() {
 			log.Printf("NewEnumTypeDecl: %v is a enum type of system header file\n", enumTypeDecl.Name)
 		}
 		return nil
 	}
-	if dbg.GetDebugLog() {
+	if dbg.GetDebugNew() {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
 	}
 	enumType, err := p.createEnumType(enumTypeDecl.Name)
@@ -598,7 +600,7 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 		if err != nil {
 			return err
 		}
-		if dbg.GetDebugLog() {
+		if dbg.GetDebugNew() {
 			log.Printf("NewMacro: %s = %s\n", name, value)
 		}
 		if str, err := litToString(value); err == nil {
@@ -668,7 +670,7 @@ func (p *Package) WritePkgFiles() error {
 func (p *Package) Write(headerFile string) error {
 	fileName := names.HeaderFileToGo(headerFile)
 	filePath := filepath.Join(p.GetOutputDir(), fileName)
-	if dbg.GetDebugLog() {
+	if dbg.GetDebugWrite() {
 		log.Printf("Write HeaderFile [%s] from  gogen:[%s] to [%s]\n", headerFile, fileName, filePath)
 	}
 	return p.writeToFile(fileName, filePath)

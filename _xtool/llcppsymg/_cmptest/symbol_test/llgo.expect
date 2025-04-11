@@ -14,13 +14,6 @@ Mangle: _ZNK9INIReader10ParseErrorEv, CPP: INIReader::ParseError(), Go: (*Reader
 Mangle: _ZNK9INIReader12GetInteger64ERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_x, CPP: INIReader::GetInteger64(const std::string &, const std::string &, int64_t), Go: (*Reader).GetInteger64
 Mangle: _ZNK9INIReader7GetRealERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_d, CPP: INIReader::GetReal(const std::string &, const std::string &, double), Go: (*Reader).GetReal
 
-=== Test ReadExistingSymbolTable ===
-Symbols read from the file:
-Symbol Map GoName: (*Reader).Init__1, ProtoName In HeaderFile: INIReader::INIReader(const char *, size_t), MangledName: _ZN9INIReaderC1EPKcm
-Symbol Map GoName: (*Reader).GetBoolean, ProtoName In HeaderFile: INIReader::GetBoolean(const std::string &, const std::string &, bool), MangledName: _ZNK9INIReader10GetBooleanERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_b
-Symbol Map GoName: (*Reader).ParseError, ProtoName In HeaderFile: INIReader::ParseError(), MangledName: _ZNK9INIReader10ParseErrorEv
-Havent existed symb file
-
 === Test GenSymbolTableData ===
 [{
 		"mangle":	"lua_absindex",
@@ -37,7 +30,7 @@ Havent existed symb file
 	}, {
 		"mangle":	"lua_callk",
 		"c++":	"lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)",
-		"go":	"ModifiedCallk"
+		"go":	"Callk"
 	}]
 
 

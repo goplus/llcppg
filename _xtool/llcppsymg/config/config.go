@@ -33,7 +33,12 @@ func GetConf(data []byte) (Conf, error) {
 		TrimPrefixes: GetStringArrayItem(parsedConf, "trimPrefixes"),
 		Cplusplus:    GetBoolItem(parsedConf, "cplusplus"),
 		Mix:          GetBoolItem(parsedConf, "mix"),
+		SymMap:       GetMapItem[string](parsedConf, "symMap"),
 	}
+
+	//cannot use GetMapItem[string](parsedConf, "symMap")
+	// (value of type MapType[string]) as []string value
+	// in struct literal (compile)
 
 	return Conf{
 		JSON:   parsedConf,
@@ -52,6 +57,50 @@ func GetStringItem(obj *cjson.JSON, key string, defval string) (value string) {
 		return defval
 	}
 	return GetString(item)
+}
+
+func GetItemValue(item *cjson.JSON) (any, bool) {
+	if item.IsArray() != 0 {
+		return item, false
+	} else if item.IsBool() != 0 {
+		if item.IsTrue() != 0 {
+			return true, true
+		}
+		return false, true
+	} else if item.IsNumber() != 0 {
+		return float64(item.GetNumberValue()), true
+	} else if item.IsObject() != 0 {
+		return item, false
+	} else if item.IsNull() != 0 {
+		return nil, false
+	} else if item.IsInvalid() != 0 {
+		return nil, false
+	} else if item.IsRaw() != 0 {
+		return item, false
+	} else if item.IsString() != 0 {
+		return GetString(item), true
+	}
+	return nil, false
+}
+
+func GetMapItem[ValueType any](obj *cjson.JSON, mapItemKey string) map[string]ValueType {
+	cStrOfMapItemKey := c.AllocaCStr(mapItemKey)
+	mapObj := obj.GetObjectItem(cStrOfMapItemKey)
+	if mapObj == nil {
+		return nil
+	}
+	m := make(map[string]ValueType)
+	for child := mapObj.Child; child != nil; child = child.Next {
+		key := c.GoString(child.String)
+		value, ok := GetItemValue(child)
+		if ok {
+			tValue, ok := value.(ValueType)
+			if ok {
+				m[key] = tValue
+			}
+		}
+	}
+	return m
 }
 
 func GetStringArrayItem(obj *cjson.JSON, key string) (value []string) {
