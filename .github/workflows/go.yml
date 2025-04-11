@@ -18,9 +18,16 @@ jobs:
           - macos-latest
           - ubuntu-24.04
         llvm: [18]
+        llgo: [v0.10.0]
     runs-on: ${{matrix.os}}
     steps:
     - uses: actions/checkout@v4
+    - name: Checkout LLGo
+      uses: actions/checkout@v4
+      with:
+        repository: 'goplus/llgo'
+        path: '.llgo'
+        ref: ${{matrix.llgo}}
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -47,22 +54,16 @@ jobs:
         sudo apt-get install -y llvm-${{matrix.llvm}}-dev clang-${{matrix.llvm}} libunwind-dev libclang-${{matrix.llvm}}-dev lld-${{matrix.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev libuv1-dev
         echo "/usr/lib/llvm-${{matrix.llvm}}/bin" >> $GITHUB_PATH
 
-    - name: Install LLGO
+    - name: Install LLGo
+      working-directory: .llgo
       run: |
-        git clone --branch v0.10.0 https://github.com/goplus/llgo.git
-        echo $PWD
-        cd llgo/compiler
+        cd compiler
         go install -v ./cmd/...
         export LLGO_ROOT=$GITHUB_WORKSPACE/llgo
         echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
 
     - name: Build
       run: go build -v ./...
-
-    - name: Set up Go for testing
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.23'
 
     - name: Install llcppg modules
       run: |
