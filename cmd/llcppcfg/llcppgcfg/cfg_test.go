@@ -669,6 +669,9 @@ func TestGenCfg(t *testing.T) {
 				return
 			}
 			if tt.args.flag&WithTab != 0 && !reflect.DeepEqual(got, tt.want) {
+				if tt.name == "libxslt" {
+					os.WriteFile(tt.name, got.Bytes(), 0644)
+				}
 				t.Errorf("GenCfg() = %v, want %v", got, tt.want)
 			}
 		})
