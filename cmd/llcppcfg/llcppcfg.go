@@ -16,6 +16,7 @@ usage: llcppcfg [-cpp|-tab|-excludes|-exts|-help] libname`)
 }
 
 func main() {
+	var dependencies string
 	var cpp, help, tab bool
 	flag.BoolVar(&cpp, "cpp", false, "if it is c++ lib")
 	flag.BoolVar(&help, "help", false, "print help message")
@@ -24,6 +25,7 @@ func main() {
 	flag.StringVar(&extsString, "exts", ".h", "extra include file extensions for example -exts=\".h .hpp .hh\"")
 	excludes := ""
 	flag.StringVar(&excludes, "excludes", "", "exclude all header files in subdir of include expamle -excludes=\"internal impl\"")
+	flag.StringVar(&dependencies, "deps", "", "deps for autofilling dependencies")
 	flag.Usage = printHelp
 	flag.Parse()
 	if help || len(os.Args) <= 1 {
@@ -36,6 +38,8 @@ func main() {
 	}
 
 	exts := strings.Fields(extsString)
+	deps := strings.Fields(dependencies)
+
 	excludeSubdirs := []string{}
 	if len(excludes) > 0 {
 		excludeSubdirs = strings.Fields(excludes)
@@ -47,7 +51,7 @@ func main() {
 	if tab {
 		flag |= llcppgcfg.WithTab
 	}
-	buf, err := llcppgcfg.GenCfg(llcppgcfg.NewGenConfig(name, flag, exts, excludeSubdirs))
+	buf, err := llcppgcfg.GenCfg(llcppgcfg.NewGenConfig(name, flag, exts, deps, excludeSubdirs))
 	if err != nil {
 		log.Fatal(err)
 	}

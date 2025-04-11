@@ -20,11 +20,12 @@ type GenConfig struct {
 	name           string
 	flag           FlagMode
 	exts           []string
+	deps           []string
 	excludeSubdirs []string
 }
 
-func NewGenConfig(name string, flag FlagMode, exts, excludeSubdirs []string) *GenConfig {
-	return &GenConfig{name: name, flag: flag, exts: exts, excludeSubdirs: excludeSubdirs}
+func NewGenConfig(name string, flag FlagMode, exts, deps, excludeSubdirs []string) *GenConfig {
+	return &GenConfig{name: name, flag: flag, exts: exts, deps: deps, excludeSubdirs: excludeSubdirs}
 }
 
 type llcppCfgKey string
@@ -231,6 +232,8 @@ func GenCfg(genCfg *GenConfig) (*bytes.Buffer, error) {
 	expandCFlags := ExpandName(genCfg.name, "", cfgCflagsKey)
 	sortIncludes(expandCFlags, cfg, genCfg.exts, genCfg.excludeSubdirs)
 	cfg.Name = NormalizePackageName(cfg.Name)
+	cfg.Deps = genCfg.deps
+
 	buf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(buf)
 	if genCfg.flag&WithTab != 0 {

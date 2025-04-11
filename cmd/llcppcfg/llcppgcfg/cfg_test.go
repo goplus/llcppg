@@ -573,11 +573,13 @@ func TestGenCfg(t *testing.T) {
 	_, cjsonCfgFilePath := newCflags("cfg_test_data/cjson/llcppg.cfg")
 	_, bdwgcCfgFilePath := newCflags("cfg_test_data/bdw-gc/llcppg.cfg")
 	_, libffiCfgFilePath := newCflags("cfg_test_data/libffi/llcppg.cfg")
+	_, libxsltCfgFilePath := newCflags("cfg_test_data/libxslt/llcppg.cfg")
 
 	type args struct {
 		name           string
 		flag           FlagMode
 		exts           []string
+		deps           []string
 		excludeSubdirs []string
 	}
 	tests := []struct {
@@ -593,6 +595,7 @@ func TestGenCfg(t *testing.T) {
 				WithTab,
 				[]string{".h"},
 				[]string{},
+				[]string{},
 			},
 			readFile(cjsonCfgFilePath),
 			false,
@@ -604,8 +607,21 @@ func TestGenCfg(t *testing.T) {
 				WithTab,
 				[]string{".h"},
 				[]string{},
+				[]string{},
 			},
 			readFile(bdwgcCfgFilePath),
+			false,
+		},
+		{
+			"libxslt",
+			args{
+				"libxslt",
+				WithTab,
+				[]string{".h"},
+				[]string{"c/os", "github.com/goplus/llpkg/libxml2@v1.0.0"},
+				[]string{},
+			},
+			readFile(libxsltCfgFilePath),
 			false,
 		},
 		{
@@ -614,6 +630,7 @@ func TestGenCfg(t *testing.T) {
 				"libffi",
 				WithTab,
 				[]string{".h"},
+				[]string{},
 				[]string{},
 			},
 			readFile(libffiCfgFilePath),
@@ -626,6 +643,7 @@ func TestGenCfg(t *testing.T) {
 				WithTab,
 				[]string{".h"},
 				[]string{},
+				[]string{},
 			},
 			nil,
 			true,
@@ -637,6 +655,7 @@ func TestGenCfg(t *testing.T) {
 				0,
 				[]string{".h"},
 				[]string{},
+				[]string{},
 			},
 			nil,
 			false,
@@ -644,7 +663,7 @@ func TestGenCfg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenCfg(NewGenConfig(tt.args.name, tt.args.flag, tt.args.exts, tt.args.excludeSubdirs))
+			got, err := GenCfg(NewGenConfig(tt.args.name, tt.args.flag, tt.args.exts, tt.args.deps, tt.args.excludeSubdirs))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenCfg() error = %v, wantErr %v", err, tt.wantErr)
 				return
