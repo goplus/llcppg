@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cmd/gogensig/dbg"
 	"github.com/goplus/llcppg/llcppg"
 )
 
@@ -667,7 +668,9 @@ func File(data []byte) (ast.Node, error) {
 	for i, declData := range fileData.Decls {
 		declNode, err := Node(declData)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error unmarshalling %d Decl in File: %v\n%s\n", i, err, string(declData))
+			if dbg.GetDebugUnmarshalling() {
+				fmt.Fprintf(os.Stderr, "error unmarshalling %d Decl in File: %v\n%s\n", i, err, string(declData))
+			}
 			continue
 		}
 		decl, ok := declNode.(ast.Decl)

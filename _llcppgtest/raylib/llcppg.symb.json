@@ -1,7 +1,0 @@
-[
-  {
-    "mangle": "ClearBackground",
-    "c++": "ClearBackground(Color)",
-    "go": "ClearBackground"
-  }
-]

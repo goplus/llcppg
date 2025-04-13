@@ -1,7 +1,0 @@
-[
-  {
-    "mangle": "sqlite3_finalize",
-    "c++": "sqlite3_finalize(sqlite3_stmt *)",
-    "go": "(*Stmt).Close"
-  }
-]

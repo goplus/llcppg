@@ -116,15 +116,14 @@ func TestGenDylibPaths() {
 	fmt.Println("=== Test GenDylibPaths ===")
 
 	tempDir := os.TempDir()
-	tempDefaultPath := filepath.Join(tempDir, "symblib")
+	tempDefaultPath, err := os.MkdirTemp(tempDir, "symblib")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	affix := ".dylib"
 	if runtime.GOOS == "linux" {
 		affix = ".so"
-	}
-	err := os.MkdirAll(tempDefaultPath, 0755)
-	if err != nil {
-		fmt.Printf("Failed to create temp default path: %v\n", err)
-		return
 	}
 
 	dylib1 := filepath.Join(tempDir, "libsymb1"+affix)
@@ -264,11 +263,14 @@ func TestGenHeaderFilePath() {
 	fmt.Println("=== Test GenHeaderFilePath ===")
 
 	tempDir := os.TempDir()
-	temDir2 := filepath.Join(tempDir, "include")
+	temDir2, err := os.MkdirTemp(tempDir, "include")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	tempFile1 := filepath.Join(tempDir, "test1.h")
 	tempFile2 := filepath.Join(tempDir, "test2.h")
 	tempFile3 := filepath.Join(temDir2, "test3.h")
-	os.MkdirAll(temDir2, 0755)
 	os.Create(tempFile1)
 	os.Create(tempFile2)
 	os.Create(tempFile3)
