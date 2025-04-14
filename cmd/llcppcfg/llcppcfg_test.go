@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -132,6 +133,8 @@ func TestLLCppcfg(t *testing.T) {
 				"-tab", tt.args.tab,
 				"-cpp", "false",
 			}
+			// reset flag
+			flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 			ret := recoverFn(main)
 
 			if ret != nil {
