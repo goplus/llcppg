@@ -3,12 +3,19 @@ package main
 import (
 	"bytes"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
 )
+
+func recoverFn(fn func()) (ret any) {
+	defer func() {
+		ret = recover()
+	}()
+	fn()
+	return
+}
 
 func readFile(filepath string) *bytes.Buffer {
 	buf, err := os.ReadFile(filepath)
@@ -120,23 +127,24 @@ func TestLLCppcfg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			args := []string{"run", "."}
+			os.Args = []string{
+				"llcppcfg",
+			}
 			if len(tt.args.deps) > 0 {
-				args = append(args, "-deps", strings.Join(tt.args.deps, " "))
+				os.Args = append(os.Args, "-deps", strings.Join(tt.args.deps, " "))
 			}
 			if len(tt.args.excludeSubdirs) > 0 {
-				args = append(args, "-excludes", strings.Join(tt.args.excludeSubdirs, " "))
+				os.Args = append(os.Args, "-excludes", strings.Join(tt.args.excludeSubdirs, " "))
 			}
 			if len(tt.args.exts) > 0 {
-				args = append(args, "-exts", strings.Join(tt.args.exts, " "))
+				os.Args = append(os.Args, "-exts", strings.Join(tt.args.exts, " "))
 			}
-			args = append(args, tt.args.name)
+			os.Args = append(os.Args, tt.args.name)
 
-			cmd := exec.Command("go", args...)
-			ret, err := cmd.CombinedOutput()
-			if err != nil {
+			ret := recoverFn(main)
+			if ret != nil {
 				if !tt.wantErr {
-					t.Error(string(ret))
+					t.Errorf("%v", ret)
 				}
 				return
 			}

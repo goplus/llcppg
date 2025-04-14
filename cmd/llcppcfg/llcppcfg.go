@@ -53,11 +53,11 @@ func main() {
 	}
 	buf, err := llcppgcfg.GenCfg(llcppgcfg.NewGenConfig(name, flag, exts, deps, excludeSubdirs))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	outFile := "./llcppg.cfg"
 	err = os.WriteFile(outFile, buf.Bytes(), 0600)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
