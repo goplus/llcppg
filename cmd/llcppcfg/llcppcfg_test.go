@@ -1,0 +1,150 @@
+package main
+
+import (
+	"bytes"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func recoverFn(fn func()) (ret any) {
+	defer func() {
+		ret = recover()
+	}()
+	fn()
+	return
+}
+
+func readFile(filepath string) *bytes.Buffer {
+	buf, err := os.ReadFile(filepath)
+	if err != nil {
+		return bytes.NewBufferString("")
+	}
+	return bytes.NewBuffer(buf)
+}
+
+func TestLLCppcfg(t *testing.T) {
+	cjsonCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "cjson", "llcppg.cfg")
+	bdwgcCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "bdw-gc", "llcppg.cfg")
+	libffiCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libffi", "llcppg.cfg")
+	libxsltCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libxslt", "llcppg.cfg")
+
+	type args struct {
+		name           string
+		tab            string
+		exts           []string
+		deps           []string
+		excludeSubdirs []string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *bytes.Buffer
+		wantErr bool
+	}{
+		{
+			"libcjson",
+			args{
+				"libcjson",
+				"true",
+				[]string{".h"},
+				[]string{},
+				[]string{},
+			},
+			readFile(cjsonCfgFilePath),
+			false,
+		},
+		{
+			"bdw-gc",
+			args{
+				"bdw-gc",
+				"true",
+				[]string{".h"},
+				[]string{},
+				[]string{},
+			},
+			readFile(bdwgcCfgFilePath),
+			false,
+		},
+		{
+			"libxslt",
+			args{
+				"libxslt",
+				"true",
+				[]string{".h"},
+				[]string{"c/os", "github.com/goplus/llpkg/libxml2@v1.0.0"},
+				[]string{},
+			},
+			readFile(libxsltCfgFilePath),
+			false,
+		},
+		{
+			"libffi",
+			args{
+				"libffi",
+				"true",
+				[]string{".h"},
+				[]string{},
+				[]string{},
+			},
+			readFile(libffiCfgFilePath),
+			false,
+		},
+		{
+			"empty_name",
+			args{
+				"",
+				"true",
+				[]string{".h"},
+				[]string{},
+				[]string{},
+			},
+			nil,
+			true,
+		},
+		{
+			"normal_not_sort",
+			args{
+				"libcjson",
+				"false",
+				[]string{".h"},
+				[]string{},
+				[]string{},
+			},
+			nil,
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func(old []string) {
+				os.Args = old
+			}(os.Args)
+			os.Args = []string{
+				"llcppcfg",
+				tt.args.name,
+				"-exts", strings.Join(tt.args.exts, " "),
+				"-deps", strings.Join(tt.args.deps, " "),
+				"-excludes", strings.Join(tt.args.excludeSubdirs, " "),
+				"-tab", tt.args.tab,
+				"-cpp", "false",
+			}
+			ret := recoverFn(main)
+
+			if ret != nil {
+				t.Errorf("%v", ret)
+				return
+			}
+			defer os.Remove("llcppg.cfg")
+			b, err := os.ReadFile("llcppg.cfg")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if !bytes.Equal(b, tt.want.Bytes()) {
+				t.Errorf("unexpected content: want %s got %s", tt.want.String(), string(b))
+			}
+		})
+	}
+}
