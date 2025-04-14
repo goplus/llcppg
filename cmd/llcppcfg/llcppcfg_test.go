@@ -21,6 +21,8 @@ func readFile(filepath string) *bytes.Buffer {
 func TestLLCppcfg(t *testing.T) {
 	llcppgFileName := "llcppg.cfg"
 	if runtime.GOOS == "linux" {
+		// cuurently, due to llcppcfg recognizing system path fail, all includes are empty for temporary tests.
+		// TODO(ghl): fix it
 		llcppgFileName = "llcppg_linux.cfg"
 	}
 	cjsonCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "cjson", llcppgFileName)
