@@ -19,16 +19,18 @@ func readFile(filepath string) *bytes.Buffer {
 }
 
 func TestLLCppcfg(t *testing.T) {
-	llcppgFileName := "llcppg.cfg"
+
+	llcppgFileName := filepath.Join("macos", "llcppg.cfg")
 	if runtime.GOOS == "linux" {
 		// cuurently, due to llcppcfg recognizing system path fail, all includes are empty for temporary tests.
 		// TODO(ghl): fix it
-		llcppgFileName = "llcppg_linux.cfg"
+		llcppgFileName = filepath.Join("linux", "llcppg.cfg")
 	}
-	cjsonCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "cjson", llcppgFileName)
-	bdwgcCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "bdw-gc", llcppgFileName)
-	libffiCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libffi", llcppgFileName)
-	libxsltCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libxslt", llcppgFileName)
+
+	cjsonCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "cjson", "conf", llcppgFileName)
+	bdwgcCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "bdw-gc", "conf", llcppgFileName)
+	libffiCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libffi", "conf", llcppgFileName)
+	libxsltCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libxslt", "conf", llcppgFileName)
 
 	type args struct {
 		name           string
