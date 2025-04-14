@@ -44,7 +44,8 @@ Here's a demo configuration to generate LLGo bindings for cjson library:
   "trimPrefixes": ["cJSONUtils_","cJSON_"],
   "cplusplus": false,
   "deps": ["c"],
-  "mix": false
+  "mix": false,
+  "typeMap":{}
 }
 ```
 
@@ -58,6 +59,7 @@ The configuration file supports the following options:
 - `cplusplus`: Set to true for C++ libraries(not support)
 - `deps`: Dependencies (other packages & standard libraries)
 - `mix`: Set to true when package header files are mixed with other header files in the same directory. In this mode, only files explicitly listed in `include` are processed as package files.
+- `typeMap`: Custom name mapping from C types to Go types.
 
 After creating the configuration file, run:
 
@@ -242,10 +244,15 @@ If you only want to generate Go code using an already generated symbol table, ex
 llcppg -codegen
 ```
 #### Type Customization
-The `llcppg.pub` file maintains type mapping relationships between C and Go. You can customize these mappings to better suit your needs.
-For instance, if you prefer to use `JSON` instead of `cJSON` as the Go type name, simply modify the `llcppg.pub` file as follows:
-```
-cJSON JSON
+You can customize type name mappings to better suit your needs.
+
+For instance, if you prefer to use `JSON` instead of `cJSON` as the Go type name, simply config the `typeMap` field of `llcppg.cfg` as follows:
+```json
+{
+  "typeMap": {
+    "cJSON": "JSON"
+  }
+}
 ```
 After running llcppg again, all generated code will use the new type name. The struct definition and its methods will be automatically updated:
 ```go
