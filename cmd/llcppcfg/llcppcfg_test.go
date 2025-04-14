@@ -123,9 +123,6 @@ func TestLLCppcfg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func(old []string) {
-				os.Args = old
-			}(os.Args)
 			os.Args = []string{
 				"llcppcfg",
 				tt.args.name,
