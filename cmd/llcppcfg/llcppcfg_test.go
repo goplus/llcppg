@@ -2,22 +2,13 @@ package main
 
 import (
 	"bytes"
-	"flag"
-	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
 )
-
-func recoverFn(fn func()) (ret any) {
-	defer func() {
-		ret = recover()
-	}()
-	fn()
-	return
-}
 
 func readFile(filepath string) *bytes.Buffer {
 	buf, err := os.ReadFile(filepath)
@@ -125,24 +116,30 @@ func TestLLCppcfg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Args = []string{
-				"llcppcfg",
-				"-exts", fmt.Sprintf(`"%s"`, strings.Join(tt.args.exts, " ")),
-				"-deps", fmt.Sprintf(`"%s"`, strings.Join(tt.args.deps, " ")),
-				"-excludes", fmt.Sprintf(`"%s"`, strings.Join(tt.args.excludeSubdirs, " ")),
-				"-tab", tt.args.tab,
-				"-cpp", "false",
-				tt.args.name,
+			args := []string{"run", "."}
+			if len(tt.args.deps) > 0 {
+				args = append(args, "-deps", strings.Join(tt.args.deps, " "))
 			}
-			// reset flag
-			flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-			ret := recoverFn(main)
+			if len(tt.args.excludeSubdirs) > 0 {
+				args = append(args, "-excludes", strings.Join(tt.args.excludeSubdirs, " "))
+			}
+			if len(tt.args.exts) > 0 {
+				args = append(args, "-exts", strings.Join(tt.args.exts, " "))
+			}
+			args = append(args, tt.args.name)
 
-			if ret != nil {
-				t.Errorf("%v", ret)
+			cmd := exec.Command("go", args...)
+			ret, err := cmd.CombinedOutput()
+			if err != nil {
+				if !tt.wantErr {
+					t.Error(string(ret))
+				}
 				return
 			}
 			defer os.Remove("llcppg.cfg")
+			if tt.want == nil {
+				return
+			}
 			b, err := os.ReadFile("llcppg.cfg")
 			if err != nil {
 				t.Error(err)
