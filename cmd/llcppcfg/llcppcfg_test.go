@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -126,9 +127,9 @@ func TestLLCppcfg(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Args = []string{
 				"llcppcfg",
-				"-exts", strings.Join(tt.args.exts, " "),
-				"-deps", strings.Join(tt.args.deps, " "),
-				"-excludes", strings.Join(tt.args.excludeSubdirs, " "),
+				"-exts", fmt.Sprintf(`"%s"`, strings.Join(tt.args.exts, " ")),
+				"-deps", fmt.Sprintf(`"%s"`, strings.Join(tt.args.deps, " ")),
+				"-excludes", fmt.Sprintf(`"%s"`, strings.Join(tt.args.excludeSubdirs, " ")),
 				"-tab", tt.args.tab,
 				"-cpp", "false",
 				tt.args.name,
