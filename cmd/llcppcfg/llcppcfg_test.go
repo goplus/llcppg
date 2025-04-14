@@ -126,12 +126,12 @@ func TestLLCppcfg(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Args = []string{
 				"llcppcfg",
-				tt.args.name,
 				"-exts", strings.Join(tt.args.exts, " "),
 				"-deps", strings.Join(tt.args.deps, " "),
 				"-excludes", strings.Join(tt.args.excludeSubdirs, " "),
 				"-tab", tt.args.tab,
 				"-cpp", "false",
+				tt.args.name,
 			}
 			// reset flag
 			flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
