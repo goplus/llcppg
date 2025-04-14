@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -25,10 +26,14 @@ func readFile(filepath string) *bytes.Buffer {
 }
 
 func TestLLCppcfg(t *testing.T) {
-	cjsonCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "cjson", "llcppg.cfg")
-	bdwgcCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "bdw-gc", "llcppg.cfg")
-	libffiCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libffi", "llcppg.cfg")
-	libxsltCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libxslt", "llcppg.cfg")
+	llcppgFileName := "llcppg.cfg"
+	if runtime.GOOS == "linux" {
+		llcppgFileName = "llcppg_linux.cfg"
+	}
+	cjsonCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "cjson", llcppgFileName)
+	bdwgcCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "bdw-gc", llcppgFileName)
+	libffiCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libffi", llcppgFileName)
+	libxsltCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libxslt", llcppgFileName)
 
 	type args struct {
 		name           string
