@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -140,6 +141,9 @@ func TestLLCppcfg(t *testing.T) {
 				os.Args = append(os.Args, "-exts", strings.Join(tt.args.exts, " "))
 			}
 			os.Args = append(os.Args, tt.args.name)
+
+			// reset flags for the next test
+			flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 			ret := recoverFn(main)
 			if ret != nil {
