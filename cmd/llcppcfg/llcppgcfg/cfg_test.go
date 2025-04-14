@@ -573,15 +573,10 @@ func TestGenCfg(t *testing.T) {
 		// TODO(ghl): fix it
 		llcppgFileName = filepath.Join("linux", "llcppg.cfg")
 	}
-	cjsonCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "cjson", "conf", llcppgFileName)
-	bdwgcCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "bdw-gc", "conf", llcppgFileName)
-	libffiCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libffi", "conf", llcppgFileName)
-	libxsltCfgFilePath := filepath.Join("llcppgcfg", "cfg_test_data", "libxslt", "conf", llcppgFileName)
-
-	_, cjsonCfgFilePath = newCflags(cjsonCfgFilePath)
-	_, bdwgcCfgFilePath = newCflags(bdwgcCfgFilePath)
-	_, libffiCfgFilePath = newCflags(libffiCfgFilePath)
-	_, libxsltCfgFilePath = newCflags(libxsltCfgFilePath)
+	cjsonCfgFilePath := filepath.Join("cfg_test_data", "cjson", "conf", llcppgFileName)
+	bdwgcCfgFilePath := filepath.Join("cfg_test_data", "bdw-gc", "conf", llcppgFileName)
+	libffiCfgFilePath := filepath.Join("cfg_test_data", "libffi", "conf", llcppgFileName)
+	libxsltCfgFilePath := filepath.Join("cfg_test_data", "libxslt", "conf", llcppgFileName)
 
 	type args struct {
 		name           string
