@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"sort"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symbol"
@@ -13,7 +11,6 @@ import (
 
 func main() {
 	TestGetCommonSymbols()
-	TestReadExistingSymbolTable()
 	TestGenSymbolTableData()
 }
 
@@ -68,64 +65,7 @@ func TestGetCommonSymbols() {
 	}
 	fmt.Println()
 }
-func TestReadExistingSymbolTable() {
-	fmt.Println("=== Test ReadExistingSymbolTable ===")
 
-	tmpFile, err := os.CreateTemp("", llcppg.LLCPPG_SYMB)
-	if err != nil {
-		fmt.Printf("Failed to create temp file: %v\n", err)
-		return
-	}
-	defer os.Remove(tmpFile.Name())
-
-	testData := `[
-		{
-			"mangle": "_ZN9INIReaderC1EPKcm",
-			"c++": "INIReader::INIReader(const char *, size_t)",
-			"go": "(*Reader).Init__1"
-		},
-		{
-			"mangle": "_ZNK9INIReader10GetBooleanERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_b",
-			"c++": "INIReader::GetBoolean(const std::string &, const std::string &, bool)",
-			"go": "(*Reader).GetBoolean"
-		},
-		{
-			"mangle": "_ZNK9INIReader10ParseErrorEv",
-			"c++": "INIReader::ParseError()",
-			"go": "(*Reader).ParseError"
-		}
-	]`
-	if _, err := tmpFile.Write([]byte(testData)); err != nil {
-		fmt.Printf("Failed to write test data: %v\n", err)
-		return
-	}
-	tmpFile.Close()
-
-	symbols, exist := symbol.ReadExistingSymbolTable(tmpFile.Name())
-	if !exist {
-		fmt.Printf("ReadExistingSymbolTable failed")
-		return
-	}
-
-	fmt.Println("Symbols read from the file:")
-	var keys []string
-	for key := range symbols {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-
-	for _, key := range keys {
-		info := symbols[key]
-		fmt.Printf("Symbol Map GoName: %s, ProtoName In HeaderFile: %s, MangledName: %s\n",
-			info.Go, info.CPP, key)
-	}
-
-	_, exist = symbol.ReadExistingSymbolTable("other.json")
-	if !exist {
-		fmt.Println("Havent existed symb file")
-	}
-	fmt.Println()
-}
 func TestGenSymbolTableData() {
 	fmt.Println("=== Test GenSymbolTableData ===")
 
@@ -136,13 +76,13 @@ func TestGenSymbolTableData() {
 		{Mangle: "lua_callk", CPP: "lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)", Go: "Callk"},
 	}
 
-	existingSymbols := map[string]llcppg.SymbolInfo{
-		"lua_absindex": {Mangle: "lua_absindex", CPP: "lua_absindex(lua_State *, int)", Go: "Absindex"},
-		"lua_arith":    {Mangle: "lua_arith", CPP: "lua_arith(lua_State *, int)", Go: "Arith"},
-		"lua_callk":    {Mangle: "lua_callk", CPP: "lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)", Go: "ModifiedCallk"},
-	}
+	// existingSymbols := map[string]llcppg.SymbolInfo{
+	// 	"lua_absindex": {Mangle: "lua_absindex", CPP: "lua_absindex(lua_State *, int)", Go: "Absindex"},
+	// 	"lua_arith":    {Mangle: "lua_arith", CPP: "lua_arith(lua_State *, int)", Go: "Arith"},
+	// 	"lua_callk":    {Mangle: "lua_callk", CPP: "lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)", Go: "ModifiedCallk"},
+	// }
 
-	data, err := symbol.GenSymbolTableData(commonSymbols, existingSymbols)
+	data, err := symbol.GenSymbolTableData(commonSymbols)
 	if err != nil {
 		fmt.Printf("Error generating symbol table data: %v\n", err)
 		return

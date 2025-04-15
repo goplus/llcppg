@@ -15,7 +15,7 @@
 	}, {
 		"mangle":	"_ZNK9INIReader10ParseErrorEv",
 		"c++":	"INIReader::ParseError()",
-		"go":	"(*Reader).ModifyedParseError"
+		"go":	"(*Reader).ParseError"
 	}, {
 		"mangle":	"_ZNK9INIReader3GetEPKcS1_S1_",
 		"c++":	"INIReader::Get(const char *, const char *, const char *)",

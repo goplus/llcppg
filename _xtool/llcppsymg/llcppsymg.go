@@ -85,7 +85,7 @@ func main() {
 	headerInfos, err := parse.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, false)
 	check(err)
 
-	symbolData, err := symbol.GenerateAndUpdateSymbolTable(symbols, headerInfos, llcppg.LLCPPG_SYMB)
+	symbolData, err := symbol.GenerateAndUpdateSymbolTable(symbols, headerInfos)
 	check(err)
 
 	err = os.WriteFile(llcppg.LLCPPG_SYMB, symbolData, 0644)
