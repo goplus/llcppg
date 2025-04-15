@@ -154,10 +154,10 @@ func GenSymbolTableData(commonSymbols []*llcppg.SymbolInfo) ([]byte, error) {
 	return result, nil
 }
 
-func GenerateAndUpdateSymbolTable(symbols []*nm.Symbol, headerInfos map[string]*parse.SymbolInfo) ([]byte, error) {
+func GenerateSymTable(symbols []*nm.Symbol, headerInfos map[string]*parse.SymbolInfo) ([]byte, error) {
 	commonSymbols := GetCommonSymbols(symbols, headerInfos)
 	if dbg.GetDebugSymbol() {
-		fmt.Println("GenerateAndUpdateSymbolTable:", len(commonSymbols), "common symbols")
+		fmt.Println("GenerateSymTable:", len(commonSymbols), "common symbols")
 	}
 
 	symbolData, err := GenSymbolTableData(commonSymbols)
