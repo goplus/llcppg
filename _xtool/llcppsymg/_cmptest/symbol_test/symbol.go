@@ -76,12 +76,6 @@ func TestGenSymbolTableData() {
 		{Mangle: "lua_callk", CPP: "lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)", Go: "Callk"},
 	}
 
-	// existingSymbols := map[string]llcppg.SymbolInfo{
-	// 	"lua_absindex": {Mangle: "lua_absindex", CPP: "lua_absindex(lua_State *, int)", Go: "Absindex"},
-	// 	"lua_arith":    {Mangle: "lua_arith", CPP: "lua_arith(lua_State *, int)", Go: "Arith"},
-	// 	"lua_callk":    {Mangle: "lua_callk", CPP: "lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)", Go: "ModifiedCallk"},
-	// }
-
 	data, err := symbol.GenSymbolTableData(commonSymbols)
 	if err != nil {
 		fmt.Printf("Error generating symbol table data: %v\n", err)

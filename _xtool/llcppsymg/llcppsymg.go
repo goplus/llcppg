@@ -83,7 +83,7 @@ func main() {
 		fmt.Println("implements", pkgHfiles.Impls)
 		fmt.Println("thirdhfile", pkgHfiles.Thirds)
 	}
-	headerInfos, err := parse.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, false)
+	headerInfos, err := parse.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.SymMap, conf.Cplusplus, false)
 	check(err)
 
 	symbolData, err := symbol.GenerateSymTable(symbols, headerInfos)

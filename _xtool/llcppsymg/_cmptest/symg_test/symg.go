@@ -92,7 +92,7 @@ func TestParseHeaderFile() {
 
 		cfg.CFlags = "-I" + projPath
 		pkgHfileInfo := config.PkgHfileInfo(cfg.Config, []string{})
-		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, false)
+		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.SymMap, cfg.Cplusplus, false)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
