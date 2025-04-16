@@ -1,0 +1,21 @@
+===== temp.go =====
+package typedef
+
+import (
+	"github.com/goplus/llgo/c"
+	_ "unsafe"
+)
+
+type FooSizeT c.SizeT
+type FooSsizeT c.SsizeT
+
+===== typedef_autogen_link.go =====
+package typedef
+
+import _ "github.com/goplus/llgo/c"
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+
+===== llcppg.pub =====
+foo_size_t FooSizeT
+foo_ssize_t FooSsizeT
