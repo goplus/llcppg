@@ -34,7 +34,10 @@ func TestGetConf() {
   "include": ["sqlite3.h"],
   "libs": "-L/opt/homebrew/opt/sqlite/lib -lsqlite3",
   "trimPrefixes": ["sqlite3_"],
-  "cplusplus": false
+  "cplusplus": false,
+  "symMap": {
+    "sqlite3_finalize":".Close"
+  }
 }`,
 		},
 		{
@@ -67,6 +70,7 @@ func TestGetConf() {
 			fmt.Println("Include:", strings.Join(result.Config.Include, ", "))
 			fmt.Println("TrimPrefixes:", strings.Join(result.Config.TrimPrefixes, ", "))
 			fmt.Println("Cplusplus:", result.Config.Cplusplus)
+			fmt.Println("SymMap:", result.Config.SymMap)
 		}
 		fmt.Println()
 	}

@@ -68,6 +68,7 @@ func main() {
 		fmt.Println("Include:", conf.Include)
 		fmt.Println("TrimPrefixes:", conf.TrimPrefixes)
 		fmt.Println("Cplusplus:", conf.Cplusplus)
+		fmt.Println("SymMap:", conf.SymMap)
 	}
 
 	if err != nil {
@@ -82,10 +83,10 @@ func main() {
 		fmt.Println("implements", pkgHfiles.Impls)
 		fmt.Println("thirdhfile", pkgHfiles.Thirds)
 	}
-	headerInfos, err := parse.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.Cplusplus, false)
+	headerInfos, err := parse.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.SymMap, conf.Cplusplus, false)
 	check(err)
 
-	symbolData, err := symbol.GenerateAndUpdateSymbolTable(symbols, headerInfos, llcppg.LLCPPG_SYMB)
+	symbolData, err := symbol.GenerateSymTable(symbols, headerInfos)
 	check(err)
 
 	err = os.WriteFile(llcppg.LLCPPG_SYMB, symbolData, 0644)

@@ -92,7 +92,7 @@ func TestParseHeaderFile() {
 
 		cfg.CFlags = "-I" + projPath
 		pkgHfileInfo := config.PkgHfileInfo(cfg.Config, []string{})
-		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, false)
+		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.SymMap, cfg.Cplusplus, false)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -106,7 +106,8 @@ func TestParseHeaderFile() {
 		for _, symb := range tc.dylibSymbols {
 			dylibsymbs = append(dylibsymbs, &nm.Symbol{Name: symbol.AddSymbolPrefixUnder(symb, cfg.Cplusplus)})
 		}
-		symbolData, err := symbol.GenerateAndUpdateSymbolTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, llcppg.LLCPPG_SYMB))
+		// symbolData, err := symbol.GenerateSymTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, llcppg.LLCPPG_SYMB))
+		symbolData, err := symbol.GenerateSymTable(dylibsymbs, headerSymbolMap)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}

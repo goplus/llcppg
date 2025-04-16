@@ -19,20 +19,25 @@ type SymbolInfo struct {
 }
 
 type SymbolProcessor struct {
-	Files      []string
-	Prefixes   []string
-	SymbolMap  map[string]*SymbolInfo
-	NameCounts map[string]int
+	Files    []string
+	Prefixes []string
+	// custom symbol map like:
+	// "sqlite3_finalize":".Close" -> method
+	// "sqlite3_open":"Open" -> function
+	CustomSymMap map[string]string
+	SymbolMap    map[string]*SymbolInfo
+	NameCounts   map[string]int
 	// for independent files,signal that the file has been processed
 	// will clean in a translation unit process end
 	processingFiles map[string]struct{}
 	processedFiles  map[string]struct{}
 }
 
-func NewSymbolProcessor(Files []string, Prefixes []string) *SymbolProcessor {
+func NewSymbolProcessor(Files []string, Prefixes []string, SymMap map[string]string) *SymbolProcessor {
 	return &SymbolProcessor{
 		Files:           Files,
 		Prefixes:        Prefixes,
+		CustomSymMap:    SymMap,
 		SymbolMap:       make(map[string]*SymbolInfo),
 		NameCounts:      make(map[string]int),
 		processedFiles:  make(map[string]struct{}),
@@ -167,7 +172,16 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 	return isInCurPkg, false, goName
 }
 
-func (p *SymbolProcessor) genGoName(cursor clang.Cursor) string {
+// sqlite3_finalize -> .Close -> method
+// sqlite3_open -> Open -> function
+func (p *SymbolProcessor) customGoName(mangled string) (goName string, isMethod bool) {
+	if goName, ok := p.CustomSymMap[mangled]; ok {
+		return strings.CutPrefix(goName, ".")
+	}
+	return "", false
+}
+
+func (p *SymbolProcessor) genGoName(cursor clang.Cursor, symbolName string) string {
 	originName := clang.GoString(cursor.String())
 	isDestructor := cursor.Kind == clang.CursorDestructor
 	var convertedName string
@@ -177,16 +191,36 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor) string {
 		convertedName = names.GoName(originName, p.Prefixes, p.inCurPkg(cursor, false))
 	}
 
+	// expect gen method name,if can't gen method,use the origin function type
+	customGoName, isMethod := p.customGoName(symbolName)
+
+	// for class method,gen method name
 	if parent := cursor.SemanticParent(); parent.Kind == clang.CursorClassDecl {
 		class := names.GoName(clang.GoString(parent.String()), p.Prefixes, p.inCurPkg(cursor, false))
-		return p.AddSuffix(p.GenMethodName(class, convertedName, isDestructor, true))
-	} else if cursor.Kind == clang.CursorFunctionDecl {
-		numArgs := cursor.NumArguments()
-		if numArgs > 0 {
-			if ok, isPtr, typeName := p.isMethod(cursor.Argument(0), true); ok {
-				return p.AddSuffix(p.GenMethodName(typeName, convertedName, isDestructor, isPtr))
-			}
+		if customGoName != "" {
+			convertedName = customGoName
 		}
+		return p.AddSuffix(p.GenMethodName(class, convertedName, isDestructor, true))
+	}
+
+	// for function,gen function name
+	numArgs := cursor.NumArguments()
+	if numArgs > 0 {
+		if customGoName != "" && !isMethod {
+			return p.AddSuffix(customGoName)
+		}
+		// check if the function can be gen method name
+		if ok, isPtr, typeName := p.isMethod(cursor.Argument(0), true); ok {
+			// for method,if can't gen method name,use the origin function type
+			if customGoName != "" {
+				convertedName = customGoName
+			}
+			return p.AddSuffix(p.GenMethodName(typeName, convertedName, isDestructor, isPtr))
+		}
+	}
+
+	if customGoName != "" {
+		return p.AddSuffix(customGoName)
 	}
 	return p.AddSuffix(convertedName)
 }
@@ -232,7 +266,7 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 		return
 	}
 	p.SymbolMap[symbolName] = &SymbolInfo{
-		GoName:    p.genGoName(cursor),
+		GoName:    p.genGoName(cursor, symbolName),
 		ProtoName: p.genProtoName(cursor),
 	}
 }
@@ -295,12 +329,12 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
 	return nil
 }
 
-func ParseHeaderFile(files []string, prefixes []string, cflags []string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
+func ParseHeaderFile(files []string, prefixes []string, cflags []string, symMap map[string]string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
 	index := clang.CreateIndex(0, 0)
 	if isTemp {
 		files = append(files, clangutils.TEMP_FILE)
 	}
-	processer := NewSymbolProcessor(files, prefixes)
+	processer := NewSymbolProcessor(files, prefixes, symMap)
 	for _, file := range files {
 		processer.collect(&clangutils.Config{
 			File:  file,

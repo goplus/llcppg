@@ -17,9 +17,9 @@ func main() {
 
 func TestToGoName() {
 	fmt.Println("=== Test ToGoName ===")
-	process1 := parse.NewSymbolProcessor([]string{}, []string{"lua_", "luaL_"})
-	process2 := parse.NewSymbolProcessor([]string{}, []string{"sqlite3_", "sqlite3_"})
-	process3 := parse.NewSymbolProcessor([]string{}, []string{"INI"})
+	process1 := parse.NewSymbolProcessor([]string{}, []string{"lua_", "luaL_"}, nil)
+	process2 := parse.NewSymbolProcessor([]string{}, []string{"sqlite3_", "sqlite3_"}, nil)
+	process3 := parse.NewSymbolProcessor([]string{}, []string{"INI"}, nil)
 
 	testCases := []struct {
 		processor *parse.SymbolProcessor
