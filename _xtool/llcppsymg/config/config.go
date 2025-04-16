@@ -33,6 +33,7 @@ func GetConf(data []byte) (Conf, error) {
 		TrimPrefixes: GetStringArrayItem(parsedConf, "trimPrefixes"),
 		Cplusplus:    GetBoolItem(parsedConf, "cplusplus"),
 		Mix:          GetBoolItem(parsedConf, "mix"),
+		SymMap:       GetStringMapItem(parsedConf, "symMap"),
 	}
 
 	return Conf{
@@ -75,6 +76,21 @@ func GetBoolItem(obj *cjson.JSON, key string) bool {
 		return item.IsTrue() != 0
 	}
 	return false
+}
+
+func GetStringMapItem(obj *cjson.JSON, key string) map[string]string {
+	item := obj.GetObjectItemCaseSensitive(c.AllocaCStr(key))
+	result := make(map[string]string)
+	if item == nil {
+		return result
+	}
+	for child := item.Child; child != nil; child = child.Next {
+		k := c.GoString(child.String)
+		if child.IsString() != 0 {
+			result[k] = GetString(child)
+		}
+	}
+	return result
 }
 
 type PkgHfilesInfo struct {
