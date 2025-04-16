@@ -1,0 +1,7 @@
+[
+  {
+    "mangle": "Vector3Barycenter",
+    "c++": "Vector3Barycenter(Vector3, Vector3, Vector3, Vector3)",
+    "go": "Vector3.Vector3Barycenter"
+  }
+]

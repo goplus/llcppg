@@ -14,20 +14,20 @@ import (
 )
 
 type Struct1 struct {
-	B    *int8
-	N    uintptr
+	B    *c.Char
+	N    c.SizeT
 	Init struct {
-		B [60]int8
+		B [60]c.Char
 	}
 }
 
 type Struct2 struct {
-	B    *int8
-	Size uintptr
-	N    uintptr
+	B    *c.Char
+	Size c.SizeT
+	N    c.SizeT
 	Init struct {
 		L   c.Long
-		B   [60]int8
+		B   [60]c.Char
 		Rec Struct1
 	}
 }
@@ -35,7 +35,7 @@ type Struct2 struct {
 type Union1 struct {
 	Init struct {
 		L   c.Long
-		B   [60]int8
+		B   [60]c.Char
 		Rec Struct2
 	}
 }

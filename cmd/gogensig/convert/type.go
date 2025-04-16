@@ -361,6 +361,18 @@ func avoidKeyword(name string) string {
 	return name
 }
 
+func asStruct(typ types.Type) bool {
+	switch t := typ.(type) {
+	case *types.Named:
+		return asStruct(t.Underlying())
+	case *types.Alias:
+		return asStruct(types.Unalias(t))
+	case *types.Struct:
+		return true
+	}
+	return false
+}
+
 func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
 	old := scope.Insert(gogen.NewSubst(token.NoPos, pkg, origName, real))
 	if old != nil {
