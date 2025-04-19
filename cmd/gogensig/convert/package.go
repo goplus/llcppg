@@ -197,6 +197,21 @@ func (p *Package) bodyStart(decl *gogen.Func, ret ast.Expr) error {
 		if err != nil {
 			return err
 		}
+
+		if asStruct(retType) {
+			// use empty named struct type to return,without this solution,we will get a anonymous struct type
+			// and it will cause a compile error,like following:
+			// func (recv *Vector3) Vector3Barycenter(p Vector3, a Vector3, b Vector3, c Vector3) Vector3 {
+			// 	return struct {
+			// 		x c.Int
+			// 		y c.Int
+			// 		z c.Int
+			// 	}{}
+			// }
+			// this result will cause the `c` in the return type is use the `c` in the parameter,which is not have the `Int`
+			decl.BodyStart(p.p).StructLit(retType, 0, true).Return(1).End()
+			return nil
+		}
 		decl.BodyStart(p.p).ZeroLit(retType).Return(1).End()
 	} else {
 		decl.BodyStart(p.p).End()
