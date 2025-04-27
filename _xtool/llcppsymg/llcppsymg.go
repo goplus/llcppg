@@ -51,12 +51,8 @@ func main() {
 	check(err)
 	defer conf.Delete()
 
-	if ags.VerboseParseIsMethod {
-		dbg.SetDebugParseIsMethod()
-	}
-
 	if ags.Verbose {
-		dbg.SetDebugSymbol()
+		dbg.SetDebugAll()
 		if ags.UseStdin {
 			fmt.Println("Config From Stdin")
 		} else {

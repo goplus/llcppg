@@ -667,7 +667,7 @@ func File(data []byte) (ast.Node, error) {
 	for i, declData := range fileData.Decls {
 		declNode, err := Node(declData)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error unmarshalling %d Decl in File: %v\n%s\n", i, err, string(declData))
+			fmt.Fprintf(os.Stderr, "error unmarshalling %d Decl err: %v\n", i, err)
 			continue
 		}
 		decl, ok := declNode.(ast.Decl)
