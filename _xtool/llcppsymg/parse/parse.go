@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -18,26 +19,39 @@ type SymbolInfo struct {
 	ProtoName string
 }
 
+type Collect struct {
+	SymName    string             // symbol name
+	GetSymInfo func() *SymbolInfo // get symbol info
+}
+
 type SymbolProcessor struct {
 	Files      []string
 	Prefixes   []string
 	SymbolMap  map[string]*SymbolInfo
 	NameCounts map[string]int
+	// custom symbol map like:
+	// "sqlite3_finalize":".Close" -> method
+	// "sqlite3_open":"Open" -> function
+	CustomSymMap map[string]string
+	// register queue
+	collectQueue []*Collect
 	// for independent files,signal that the file has been processed
 	// will clean in a translation unit process end
 	processingFiles map[string]struct{}
 	processedFiles  map[string]struct{}
 }
 
-func NewSymbolProcessor(Files []string, Prefixes []string) *SymbolProcessor {
-	return &SymbolProcessor{
+func NewSymbolProcessor(Files []string, Prefixes []string, SymMap map[string]string) *SymbolProcessor {
+	p := &SymbolProcessor{
 		Files:           Files,
 		Prefixes:        Prefixes,
+		CustomSymMap:    SymMap,
 		SymbolMap:       make(map[string]*SymbolInfo),
 		NameCounts:      make(map[string]int),
 		processedFiles:  make(map[string]struct{}),
 		processingFiles: make(map[string]struct{}),
 	}
+	return p
 }
 
 func (p *SymbolProcessor) isSelfFile(filename string) bool {
@@ -167,7 +181,17 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 	return isInCurPkg, false, goName
 }
 
-func (p *SymbolProcessor) genGoName(cursor clang.Cursor) string {
+// sqlite3_finalize -> .Close -> method
+// sqlite3_open -> Open -> function
+func (p *SymbolProcessor) customGoName(mangled string) (goName string, isMethod bool, ok bool) {
+	if customName, ok := p.CustomSymMap[mangled]; ok {
+		name, found := strings.CutPrefix(customName, ".")
+		return name, found, true
+	}
+	return "", false, false
+}
+
+func (p *SymbolProcessor) genGoName(cursor clang.Cursor, symbolName string) string {
 	originName := clang.GoString(cursor.String())
 	isDestructor := cursor.Kind == clang.CursorDestructor
 	var convertedName string
@@ -177,16 +201,37 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor) string {
 		convertedName = names.GoName(originName, p.Prefixes, p.inCurPkg(cursor, false))
 	}
 
+	customGoName, toMethod, isCustom := p.customGoName(symbolName)
+
+	// 1. for class method,gen method name
 	if parent := cursor.SemanticParent(); parent.Kind == clang.CursorClassDecl {
 		class := names.GoName(clang.GoString(parent.String()), p.Prefixes, p.inCurPkg(cursor, false))
-		return p.AddSuffix(p.GenMethodName(class, convertedName, isDestructor, true))
-	} else if cursor.Kind == clang.CursorFunctionDecl {
-		numArgs := cursor.NumArguments()
-		if numArgs > 0 {
-			if ok, isPtr, typeName := p.isMethod(cursor.Argument(0), true); ok {
-				return p.AddSuffix(p.GenMethodName(typeName, convertedName, isDestructor, isPtr))
-			}
+		// concat method name
+		if isCustom {
+			convertedName = customGoName
 		}
+		return p.AddSuffix(p.GenMethodName(class, convertedName, isDestructor, true))
+	}
+
+	// 2. check if can gen method name
+	numArgs := cursor.NumArguments()
+	// also config to gen method name,if can't gen method,use the origin function type
+	if numArgs > 0 {
+		// also can gen method name,but not want to be method,output func not method
+		if isCustom && !toMethod {
+			return p.AddSuffix(customGoName)
+		}
+		if ok, isPtr, typeName := p.isMethod(cursor.Argument(0), true); ok {
+			if isCustom {
+				convertedName = customGoName
+			}
+			return p.AddSuffix(p.GenMethodName(typeName, convertedName, isDestructor, isPtr))
+		}
+	}
+
+	// 3. normal function name
+	if isCustom {
+		return p.AddSuffix(customGoName)
 	}
 	return p.AddSuffix(convertedName)
 }
@@ -231,10 +276,16 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 	if _, exists := p.SymbolMap[symbolName]; exists {
 		return
 	}
-	p.SymbolMap[symbolName] = &SymbolInfo{
-		GoName:    p.genGoName(cursor),
-		ProtoName: p.genProtoName(cursor),
-	}
+	p.SymbolMap[symbolName] = &SymbolInfo{}
+	p.collectQueue = append(p.collectQueue, &Collect{
+		SymName: symbolName,
+		GetSymInfo: func() *SymbolInfo {
+			return &SymbolInfo{
+				GoName:    p.genGoName(cursor, symbolName),
+				ProtoName: p.genProtoName(cursor),
+			}
+		},
+	})
 }
 
 func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResult {
@@ -264,7 +315,7 @@ func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisit
 	return clang.ChildVisit_Continue
 }
 
-func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
+func (p *SymbolProcessor) collect(cfg *clangutils.Config) (*clang.TranslationUnit, error) {
 	filename := cfg.File
 	if cfg.Temp {
 		filename = clangutils.TEMP_FILE
@@ -273,14 +324,14 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
 		if dbg.GetDebugSymbol() {
 			fmt.Printf("%s has been processed: \n", filename)
 		}
-		return nil
+		return nil, nil
 	}
 	if dbg.GetDebugSymbol() {
 		fmt.Printf("create translation unit: \nfile:%s\nIsCpp:%v\nTemp:%v\nArgs:%v\n", filename, cfg.IsCpp, cfg.Temp, cfg.Args)
 	}
 	_, unit, err := clangutils.CreateTranslationUnit(cfg)
 	if err != nil {
-		return errors.New("Unable to parse translation unit for file " + filename)
+		return nil, errors.New("Unable to parse translation unit for file " + filename)
 	}
 	cursor := unit.Cursor()
 	if dbg.GetDebugSymbol() {
@@ -291,25 +342,47 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) error {
 		p.processedFiles[filename] = struct{}{}
 	}
 	p.processingFiles = make(map[string]struct{})
-	unit.Dispose()
-	return nil
+	return unit, nil
 }
 
-func ParseHeaderFile(files []string, prefixes []string, cflags []string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
+// processCollect processes the symbol collection queue and prioritizes custom go names.
+// Custom symbols (defined in llcppg.cfg/symMap) are processed before regular symbols
+// to ensure user-defined mappings take precedence.
+func (p *SymbolProcessor) processCollect() {
+	sort.SliceStable(p.collectQueue, func(i, j int) bool {
+		_, customI := p.CustomSymMap[p.collectQueue[i].SymName]
+		_, customJ := p.CustomSymMap[p.collectQueue[j].SymName]
+		return customI && !customJ
+	})
+	for _, collect := range p.collectQueue {
+		p.SymbolMap[collect.SymName] = collect.GetSymInfo()
+	}
+}
+
+func ParseHeaderFile(files []string, prefixes []string, cflags []string, symMap map[string]string, isCpp bool, isTemp bool) (map[string]*SymbolInfo, error) {
 	index := clang.CreateIndex(0, 0)
+	var units []*clang.TranslationUnit
 	if isTemp {
 		files = append(files, clangutils.TEMP_FILE)
 	}
-	processer := NewSymbolProcessor(files, prefixes)
+	processer := NewSymbolProcessor(files, prefixes, symMap)
 	for _, file := range files {
-		processer.collect(&clangutils.Config{
+		unit, err := processer.collect(&clangutils.Config{
 			File:  file,
 			Temp:  isTemp,
 			IsCpp: isCpp,
 			Index: index,
 			Args:  cflags,
 		})
+		if err != nil {
+			return nil, err
+		}
+		units = append(units, unit)
 	}
+	processer.processCollect()
 	index.Dispose()
+	for _, unit := range units {
+		unit.Dispose()
+	}
 	return processer.SymbolMap, nil
 }

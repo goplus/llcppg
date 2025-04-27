@@ -23,6 +23,40 @@ func TestParseHeaderFile() {
 		dylibSymbols []string
 	}{
 		{
+			name: "c",
+			path: "./c",
+			dylibSymbols: []string{
+				"Foo_Print",
+				"Foo_ParseWithLength",
+				"Foo_Delete",
+				"Foo_ParseWithSize",
+				"Foo_ignoreFunc",
+				"Foo_Bar",
+				"Foo_ForBar",
+				"Foo_Bar2",
+				"Foo_ForBar2",
+				"Foo_Prefix_BarMethod",
+				"Foo_BarMethod",
+				"Foo_ForBarMethod",
+				"Foo_ReceiverParse",
+				"Foo_FunctionParse",
+				"Foo_ReceiverParse2",
+				"Foo_Receiver2Parse2",
+			},
+		},
+		{
+			name: "cpp",
+			path: "./cpp",
+			dylibSymbols: []string{
+				"ZN3FooC1EPKc",
+				"ZN3FooC1EPKcl",
+				"ZN3FooD1Ev",
+				"ZNK3Foo8ParseBarEv",
+				"ZNK3Foo3GetEPKcS1_S1_",
+				"ZN3Foo6HasBarEv",
+			},
+		},
+		{
 			name: "inireader",
 			path: "./inireader",
 			dylibSymbols: []string{
@@ -92,7 +126,7 @@ func TestParseHeaderFile() {
 
 		cfg.CFlags = "-I" + projPath
 		pkgHfileInfo := config.PkgHfileInfo(cfg.Config, []string{})
-		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.Cplusplus, false)
+		headerSymbolMap, err := parse.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.SymMap, cfg.Cplusplus, false)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -106,7 +140,7 @@ func TestParseHeaderFile() {
 		for _, symb := range tc.dylibSymbols {
 			dylibsymbs = append(dylibsymbs, &nm.Symbol{Name: symbol.AddSymbolPrefixUnder(symb, cfg.Cplusplus)})
 		}
-		symbolData, err := symbol.GenerateAndUpdateSymbolTable(dylibsymbs, headerSymbolMap, filepath.Join(projPath, llcppg.LLCPPG_SYMB))
+		symbolData, err := symbol.GenerateSymTable(dylibsymbs, headerSymbolMap)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}

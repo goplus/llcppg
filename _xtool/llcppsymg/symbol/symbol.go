@@ -10,13 +10,11 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
 	"github.com/goplus/llcppg/llcppg"
-	llgoc "github.com/goplus/llgo/c"
 	"github.com/goplus/llgo/xtool/nm"
 	"github.com/goplus/llpkg/cjson"
 )
@@ -128,60 +126,11 @@ func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*parse
 	return commonSymbols
 }
 
-func ReadExistingSymbolTable(fileName string) (map[string]llcppg.SymbolInfo, bool) {
-	if _, err := os.Stat(fileName); err != nil {
-		return nil, false
-	}
-
-	data, err := os.ReadFile(fileName)
-	if err != nil {
-		return nil, false
-	}
-
-	parsedJSON := config.ParseBytes(data)
-	if parsedJSON == nil {
-		return nil, false
-	}
-
-	existingSymbols := make(map[string]llcppg.SymbolInfo)
-	arraySize := parsedJSON.GetArraySize()
-
-	for i := 0; i < int(arraySize); i++ {
-		item := parsedJSON.GetArrayItem(llgoc.Int(i))
-		symbol := llcppg.SymbolInfo{
-			Mangle: config.GetStringItem(item, "mangle", ""),
-			CPP:    config.GetStringItem(item, "c++", ""),
-			Go:     config.GetStringItem(item, "go", ""),
-		}
-		existingSymbols[symbol.Mangle] = symbol
-	}
-
-	return existingSymbols, true
-}
-
-func GenSymbolTableData(commonSymbols []*llcppg.SymbolInfo, existingSymbols map[string]llcppg.SymbolInfo) ([]byte, error) {
-	if len(existingSymbols) > 0 {
-		if dbg.GetDebugSymbol() {
-			fmt.Println("GenSymbolTableData:generate symbol table with exist symbol table")
-		}
-		for i := range commonSymbols {
-			if existingSymbol, exists := existingSymbols[commonSymbols[i].Mangle]; exists && commonSymbols[i].Go != existingSymbol.Go {
-				if dbg.GetDebugSymbol() {
-					fmt.Println("symbol", commonSymbols[i].Mangle, "already exist, use exist symbol", existingSymbol.Go)
-				}
-				commonSymbols[i].Go = existingSymbol.Go
-			} else {
-				if dbg.GetDebugSymbol() {
-					fmt.Println("new symbol", commonSymbols[i].Mangle, "-", commonSymbols[i].CPP, "-", commonSymbols[i].Go)
-				}
-			}
-		}
-	} else {
-		if dbg.GetDebugSymbol() {
-			fmt.Println("GenSymbolTableData:generate symbol table without symbol table")
-			for _, symbol := range commonSymbols {
-				fmt.Println("new symbol", symbol.Mangle, "-", symbol.CPP, "-", symbol.Go)
-			}
+func GenSymbolTableData(commonSymbols []*llcppg.SymbolInfo) ([]byte, error) {
+	if dbg.GetDebugSymbol() {
+		fmt.Println("GenSymbolTableData:generate symbol table")
+		for _, symbol := range commonSymbols {
+			fmt.Println("new symbol", symbol.Mangle, "-", symbol.CPP, "-", symbol.Go)
 		}
 	}
 
@@ -205,18 +154,13 @@ func GenSymbolTableData(commonSymbols []*llcppg.SymbolInfo, existingSymbols map[
 	return result, nil
 }
 
-func GenerateAndUpdateSymbolTable(symbols []*nm.Symbol, headerInfos map[string]*parse.SymbolInfo, symbFile string) ([]byte, error) {
+func GenerateSymTable(symbols []*nm.Symbol, headerInfos map[string]*parse.SymbolInfo) ([]byte, error) {
 	commonSymbols := GetCommonSymbols(symbols, headerInfos)
 	if dbg.GetDebugSymbol() {
-		fmt.Println("GenerateAndUpdateSymbolTable:", len(commonSymbols), "common symbols")
+		fmt.Println("GenerateSymTable:", len(commonSymbols), "common symbols")
 	}
 
-	existSymbols, exist := ReadExistingSymbolTable(symbFile)
-	if exist && dbg.GetDebugSymbol() {
-		fmt.Println("GenerateAndUpdateSymbolTable:current path have exist symbol table", symbFile)
-	}
-
-	symbolData, err := GenSymbolTableData(commonSymbols, existSymbols)
+	symbolData, err := GenSymbolTableData(commonSymbols)
 	if err != nil {
 		return nil, err
 	}
