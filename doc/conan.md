@@ -16,7 +16,7 @@ Use the [rxsync](https://github.com/goplus/rxsync) tool to convert 1,800 librari
 
 ### 1. All `cflags` Included by Default
 
-The automatically generated `llcpp.cfg` includes all header files from dependencies listed under `cflags`. For example, `libxml2` includes header files from `zlib`, and `libxslt` includes headers from both `libxml2` and `zlib` as part of its include paths. This behavior is unintended — for example, in certain cases, headers from `libxml2` and `zlib` need to be removed.
+The automatically generated `llcppg.cfg` includes all header files from dependencies listed under `cflags`. For example, `libxml2` includes header files from `zlib`, and `libxslt` includes headers from both `libxml2` and `zlib` as part of its include paths. This behavior is unintended — for example, in certain cases, headers from `libxml2` and `zlib` need to be removed.
 
 **Preliminary solution:** Automatically remove them during dependency population.
 
