@@ -26,9 +26,15 @@ How should dependencies be populated for `deps` in `llcppg.cfg`? All batch proce
 
 **Needs verification.**
 
-### 3. Package Dependency Order
+### 3. Package Order
 
-Ordering issues may arise during batch conversion.
+Sorted by popularity of repository and dependency.
+
+Rule:
+1. Score(Stars/Forks/Watchers/Contributors)
+2. The number of dependency(Less dependency is higher)
+
+Tools: [Rank Tool](https://github.com/MeteorsLiu/reporank)
 
 ### 4. Naming Conflicts in Custom Names
 
