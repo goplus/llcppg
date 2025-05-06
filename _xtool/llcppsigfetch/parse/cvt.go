@@ -9,14 +9,26 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
-	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/token"
 	"github.com/goplus/llpkg/cjson"
 )
+
+type dbgFlags = int
+
+var debugParse bool
+
+const (
+	DbgParse   dbgFlags = 1 << iota
+	DbgFlagAll          = DbgParse
+)
+
+func SetDebug(dbgFlags dbgFlags) {
+	debugParse = (dbgFlags & DbgParse) != 0
+}
 
 type Converter struct {
 	Pkg   *llcppg.Pkg
@@ -39,7 +51,7 @@ type Config struct {
 }
 
 func NewConverter(config *Config) (*Converter, error) {
-	if dbg.GetDebugParse() {
+	if debugParse {
 		fmt.Fprintln(os.Stderr, "NewConverter: config")
 		fmt.Fprintln(os.Stderr, "config.File", config.Cfg.File)
 		fmt.Fprintln(os.Stderr, "config.Args", config.Cfg.Args)
@@ -135,12 +147,12 @@ func (ct *Converter) decIndent() {
 }
 
 func (ct *Converter) logf(format string, args ...interface{}) {
-	if dbg.GetDebugParse() {
+	if debugParse {
 		fmt.Fprintf(os.Stderr, ct.logBase()+format, args...)
 	}
 }
 func (ct *Converter) logln(args ...interface{}) {
-	if dbg.GetDebugParse() {
+	if debugParse {
 		if len(args) > 0 {
 			firstArg := fmt.Sprintf("%s%v", ct.logBase(), args[0])
 			fmt.Fprintln(os.Stderr, append([]interface{}{firstArg}, args[1:]...)...)
@@ -437,9 +449,10 @@ func (ct *Converter) ProcessUnderlyingType(cursor clang.Cursor) ast.Expr {
 		return ct.ProcessType(underlyingTyp)
 	}
 
-	referTypeCursor := underlyingTyp.TypeDeclaration()
 	defName := toStr(cursor.String())
-	underName := toStr(referTypeCursor.String())
+	// Using getActualTypeCursor to recursively find the actual declaration of the underlying type,
+	// handles cases with multi-level typedef chains
+	underName := toStr(ct.getActualTypeCursor(underlyingTyp.TypeDeclaration()).String())
 	ct.logln("ProcessUnderlyingType: defName:", defName, "underName:", underName)
 
 	// For a typedef like "typedef struct xxx xxx;", the underlying type declaration
@@ -449,6 +462,9 @@ func (ct *Converter) ProcessUnderlyingType(cursor clang.Cursor) ast.Expr {
 	// in the source file
 	// Therefore, we shouldn't use declaration location to determine whether to remove
 	// extra typedef nodes
+	//
+	// Note: This handles both direct self-references (e.g., typedef struct Foo Foo;) and
+	// multi-level typedef chains that refer back to the original declaration (e.g., typedef enum algorithm {...} algorithm_t; typedef algorithm_t algorithm;)
 	if defName == underName {
 		ct.logln("ProcessUnderlyingType: is self reference")
 		return nil
@@ -486,6 +502,25 @@ func (ct *Converter) getActualType(t clang.Type) clang.Type {
 		return ct.getActualType(t.TypeDeclaration().TypedefDeclUnderlyingType())
 	default:
 		return t
+	}
+}
+
+// getActualTypeCursor recursively gets the actual underlying cursor of a type declaration.
+// For multi-level nested typedef chains, it continues recursion until finding the original non-typedef type.
+// Example:
+// - typedef enum Foo {...} Foo_t;
+// - typedef Foo_t Foo;
+// When processing Foo, it recursively finds the declaration cursor of enum Foo
+func (ct *Converter) getActualTypeCursor(cursor clang.Cursor) clang.Cursor {
+	ct.incIndent()
+	defer ct.decIndent()
+	typName, typKind := getCursorDesc(cursor)
+	ct.logln("getActualTypeCursor: TypeName:", typName, "TypeKind:", typKind)
+	switch cursor.Kind {
+	case clang.CursorTypedefDecl:
+		return ct.getActualTypeCursor(cursor.TypedefDeclUnderlyingType().TypeDeclaration())
+	default:
+		return cursor
 	}
 }
 

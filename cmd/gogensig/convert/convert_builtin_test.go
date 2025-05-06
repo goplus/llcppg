@@ -8,19 +8,19 @@ import (
 	"testing"
 
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/llcppg"
+	"github.com/goplus/llcppg/cmd/gogensig/config"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
-func TestPkgFail(t *testing.T) {
+func emptyConverter() *Converter {
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Fatal("Getwd failed:", err)
+		panic(err)
 	}
 	tempDir, err := os.MkdirTemp(dir, "test_package_write_unwritable")
 	if err != nil {
-		t.Fatalf("Failed to create temporary directory: %v", err)
+		panic(err)
 	}
-	defer os.RemoveAll(tempDir)
 	converter, err := NewConverter(&Config{
 		PkgName:   "test",
 		SymbFile:  "",
@@ -33,6 +33,15 @@ func TestPkgFail(t *testing.T) {
 			FileMap: map[string]*llcppg.FileInfo{},
 		},
 	})
+	if err != nil {
+		panic(err)
+	}
+	return converter
+}
+
+func TestPkgFail(t *testing.T) {
+	converter := emptyConverter()
+	defer os.RemoveAll(converter.GenPkg.conf.OutputDir)
 	t.Run("FmtFail", func(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "go fmt:")
@@ -55,6 +64,7 @@ func TestPkgFail(t *testing.T) {
 		}
 		converter.Process()
 	})
+
 	t.Run("WriteLinkFileFail", func(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "WriteLinkFile:")
@@ -79,11 +89,54 @@ func TestPkgFail(t *testing.T) {
 		}, getType: func() (types.Type, error) {
 			return nil, errors.New("Mock Err")
 		}})
-		if err != nil {
-			t.Fatal("NewAstConvert Fail")
-		}
 		converter.Write()
 	})
+}
+
+func TestProcessWithError(t *testing.T) {
+	converter := emptyConverter()
+	converter.GenPkg.conf.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{
+		{
+			CppName:    "Foo",
+			MangleName: "Foo",
+			GoName:     "Foo",
+		},
+	})
+	declBase := ast.DeclBase{
+		Loc: &ast.Location{
+			File: "exist.h",
+		},
+	}
+	converter.Pkg.File.Decls = []ast.Decl{
+		&ast.FuncDecl{
+			DeclBase:    declBase,
+			MangledName: "Foo",
+			Name: &ast.Ident{
+				Name: "Foo",
+			},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{Type: &ast.Ident{Name: "int"}},
+					},
+				},
+				Ret: &ast.Ident{Name: "int"},
+			},
+		},
+		&ast.TypedefDecl{
+			DeclBase: declBase,
+			Name: &ast.Ident{
+				Name: "Foo",
+			},
+			Type: &ast.Ident{
+				Name: "Foo",
+			},
+		},
+	}
+	converter.Pkg.FileMap["exist.h"] = &llcppg.FileInfo{
+		FileType: llcppg.Inter,
+	}
+	converter.Process()
 }
 
 func checkPanic(t *testing.T, r interface{}, expectedPrefix string) {

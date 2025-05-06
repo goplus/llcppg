@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	test "github.com/goplus/llcppg/_xtool/llcppsigfetch/parse/cvt_test"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func main() {

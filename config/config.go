@@ -1,6 +1,8 @@
-package llcppg
+package config
 
-import "github.com/goplus/llcppg/ast"
+import (
+	"github.com/goplus/llcppg/ast"
+)
 
 const LLCPPG_CFG = "llcppg.cfg"
 const LLCPPG_SYMB = "llcppg.symb.json"
@@ -37,7 +39,7 @@ type Config struct {
 	TypeMap        map[string]string `json:"typeMap,omitempty"`
 }
 
-func NewDefaultConfig() *Config {
+func NewDefault() *Config {
 	return &Config{Impl: []ImplFiles{*NewImplFiles()}}
 }
 

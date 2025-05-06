@@ -26,7 +26,7 @@ import (
 	"os/exec"
 
 	"github.com/goplus/llcppg/cmd/gogensig/config"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/env"
 
 	// import to make it linked in go.mod

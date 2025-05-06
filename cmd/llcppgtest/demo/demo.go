@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 // runSingleDemo tests a single LLCPPG conversion case in the given demo directory.

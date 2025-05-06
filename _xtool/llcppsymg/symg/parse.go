@@ -1,4 +1,4 @@
-package parse
+package symg
 
 import (
 	"errors"
@@ -10,7 +10,6 @@ import (
 
 	"github.com/goplus/lib/c/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 )
 
@@ -111,7 +110,7 @@ func (p *SymbolProcessor) GenMethodName(class, name string, isDestructor bool, i
 }
 
 func (p *SymbolProcessor) printTypeInfo(typ clang.Type, isArg bool, prefix string) {
-	if dbg.GetDebugParseIsMethod() {
+	if dbgParseIsMethod {
 		definitionType := clang.GoString(typ.TypeDeclaration().Definition().Type().String())
 		canonicalType := clang.GoString(typ.CanonicalType().String())
 		fmt.Println("**********", prefix, "**********")
@@ -130,7 +129,7 @@ func (p *SymbolProcessor) printTypeInfo(typ clang.Type, isArg bool, prefix strin
 }
 
 func printResult(isInCurPkg, isPointer bool, goName, prefix string) {
-	if dbg.GetDebugParseIsMethod() {
+	if dbgParseIsMethod {
 		fmt.Println("===========", prefix, "===========")
 		fmt.Println("isInCurPkg:", isInCurPkg, "isPointer:", isPointer, "goName", goName)
 	}
@@ -261,7 +260,7 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 	// On Linux, C++ symbols typically have one leading underscore
 	// On macOS, C++ symbols may have two leading underscores
 	// For consistency, we remove the first leading underscore on macOS
-	if dbg.GetDebugSymbol() {
+	if dbgSymbol {
 		fmt.Printf("collectFuncInfo: %s %s\n", clang.GoString(cursor.Mangling()), clang.GoString(cursor.String()))
 	}
 	symbolName := clang.GoString(cursor.Mangling())
@@ -291,7 +290,7 @@ func (p *SymbolProcessor) collectFuncInfo(cursor clang.Cursor) {
 func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResult {
 	filename := clang.GoString(cursor.Location().File().FileName())
 	if _, ok := p.processedFiles[filename]; ok {
-		if dbg.GetDebugSymbol() {
+		if dbgSymbol {
 			fmt.Printf("visitTop: %s has been processed: \n", filename)
 		}
 		return clang.ChildVisit_Continue
@@ -300,7 +299,7 @@ func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisit
 		return clang.ChildVisit_Continue
 	}
 	p.processingFiles[filename] = struct{}{}
-	if dbg.GetDebugSymbol() && filename != "" {
+	if dbgSymbol && filename != "" {
 		fmt.Printf("visitTop: %s\n", filename)
 	}
 	switch cursor.Kind {
@@ -321,12 +320,12 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) (*clang.TranslationUni
 		filename = clangutils.TEMP_FILE
 	}
 	if _, ok := p.processedFiles[filename]; ok {
-		if dbg.GetDebugSymbol() {
+		if dbgSymbol {
 			fmt.Printf("%s has been processed: \n", filename)
 		}
 		return nil, nil
 	}
-	if dbg.GetDebugSymbol() {
+	if dbgSymbol {
 		fmt.Printf("create translation unit: \nfile:%s\nIsCpp:%v\nTemp:%v\nArgs:%v\n", filename, cfg.IsCpp, cfg.Temp, cfg.Args)
 	}
 	_, unit, err := clangutils.CreateTranslationUnit(cfg)
@@ -334,7 +333,7 @@ func (p *SymbolProcessor) collect(cfg *clangutils.Config) (*clang.TranslationUni
 		return nil, errors.New("Unable to parse translation unit for file " + filename)
 	}
 	cursor := unit.Cursor()
-	if dbg.GetDebugSymbol() {
+	if dbgSymbol {
 		fmt.Printf("%s start collect \n", filename)
 	}
 	clangutils.VisitChildren(cursor, p.visitTop)

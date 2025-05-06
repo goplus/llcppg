@@ -2,14 +2,17 @@ package convert
 
 import (
 	goast "go/ast"
+	"go/token"
 	"strings"
+
+	"github.com/goplus/llcppg/ast"
 )
 
 const (
 	TYPEC = "// llgo:type C"
 )
 
-func NewFuncDocComments(funcName string, goFuncName string) *goast.CommentGroup {
+func NewFuncDocComment(funcName string, goFuncName string) *goast.Comment {
 	fields := strings.FieldsFunc(goFuncName, func(r rune) bool {
 		return r == '.'
 	})
@@ -17,14 +20,27 @@ func NewFuncDocComments(funcName string, goFuncName string) *goast.CommentGroup 
 	if len(fields) > 1 {
 		txt = "// llgo:link " + goFuncName + " " + "C." + funcName
 	}
-	comment := goast.Comment{Text: txt}
-	commentGroup := goast.CommentGroup{List: []*goast.Comment{&comment}}
-	return &commentGroup
+	return &goast.Comment{Text: txt}
 }
 
-func NewTypecDocComments() *goast.CommentGroup {
-	return &goast.CommentGroup{
-		List: []*goast.Comment{
-			{Text: TYPEC},
-		}}
+func NewTypecDocComment() *goast.Comment {
+	return &goast.Comment{Text: TYPEC}
+}
+
+func NewCommentGroup(comments ...*goast.Comment) *goast.CommentGroup {
+	return &goast.CommentGroup{List: comments}
+}
+
+func NewCommentGroupFromC(doc *ast.CommentGroup) *goast.CommentGroup {
+	goDoc := &goast.CommentGroup{}
+	if doc != nil && doc.List != nil {
+		for _, comment := range doc.List {
+			goDoc.List = append(goDoc.List,
+				&goast.Comment{
+					Slash: token.NoPos, Text: comment.Text,
+				},
+			)
+		}
+	}
+	return goDoc
 }

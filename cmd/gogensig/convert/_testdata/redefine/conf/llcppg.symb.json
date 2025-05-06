@@ -1,0 +1,7 @@
+[
+  {
+    "mangle": "Prefix5_tokenizer",
+    "c++": "Prefix5_tokenizer",
+    "go": "TokenizerFn"
+  }
+]

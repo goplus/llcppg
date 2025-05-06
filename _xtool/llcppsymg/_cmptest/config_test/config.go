@@ -9,7 +9,7 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func main() {

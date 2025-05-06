@@ -1,0 +1,7 @@
+[
+  {
+    "mangle": "po_message_iterator",
+    "c++": "po_message_iterator(po_file_t, const char *)",
+    "go": "MessageIterator"
+  }
+]

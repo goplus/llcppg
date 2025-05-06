@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func main() {

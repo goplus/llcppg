@@ -45,7 +45,6 @@ jobs:
         llgo cmptest ./clangutils_test
         llgo cmptest ./config_test
         llgo cmptest ./names_test
-        llgo cmptest ./parse_test
         llgo cmptest ./symbol_test
         llgo cmptest ./symg_test
 

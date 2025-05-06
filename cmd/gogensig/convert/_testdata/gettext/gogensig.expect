@@ -1,0 +1,35 @@
+===== gettext-po.go =====
+package gettext
+
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
+
+type File struct {
+	Unused [8]uint8
+}
+type FileT *File
+
+type MessageIteratorType struct {
+	Unused [8]uint8
+}
+type MessageIteratorT *MessageIteratorType
+
+/* Create an iterator for traversing a domain of a PO file in memory.
+   The domain NULL denotes the default domain.  */
+//go:linkname MessageIterator C.po_message_iterator
+func MessageIterator(file FileT, domain *c.Char) MessageIteratorT
+
+===== gettext_autogen_link.go =====
+package gettext
+
+import _ "github.com/goplus/lib/c"
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+
+===== llcppg.pub =====
+po_file File
+po_file_t FileT
+po_message_iterator MessageIteratorType
+po_message_iterator_t MessageIteratorT

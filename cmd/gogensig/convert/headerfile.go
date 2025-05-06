@@ -2,7 +2,7 @@ package convert
 
 import (
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 type HeaderFile struct {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func TestUnmarshalNode(t *testing.T) {

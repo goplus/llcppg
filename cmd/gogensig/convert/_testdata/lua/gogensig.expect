@@ -259,7 +259,7 @@ type Alloc func(c.Pointer, c.Pointer, c.SizeT, c.SizeT) c.Pointer
 // llgo:type C
 type WarnFunction func(c.Pointer, *c.Char, c.Int)
 
-type Debug struct {
+type DebugT struct {
 	Event           c.Int
 	Name            *c.Char
 	Namewhat        *c.Char
@@ -280,7 +280,7 @@ type Debug struct {
 }
 
 // llgo:type C
-type Hook func(*State, *Debug)
+type Hook func(*State, *DebugT)
 
 /*
 ** state manipulation
@@ -568,16 +568,16 @@ func Toclose(L *State, idx c.Int)
 func Closeslot(L *State, idx c.Int)
 
 //go:linkname Getstack C.lua_getstack
-func Getstack(L *State, level c.Int, ar *Debug) c.Int
+func Getstack(L *State, level c.Int, ar *DebugT) c.Int
 
 //go:linkname Getinfo C.lua_getinfo
-func Getinfo(L *State, what *c.Char, ar *Debug) c.Int
+func Getinfo(L *State, what *c.Char, ar *DebugT) c.Int
 
 //go:linkname Getlocal C.lua_getlocal
-func Getlocal(L *State, ar *Debug, n c.Int) *c.Char
+func Getlocal(L *State, ar *DebugT, n c.Int) *c.Char
 
 //go:linkname Setlocal C.lua_setlocal
-func Setlocal(L *State, ar *Debug, n c.Int) *c.Char
+func Setlocal(L *State, ar *DebugT, n c.Int) *c.Char
 
 //go:linkname Getupvalue C.lua_getupvalue
 func Getupvalue(L *State, funcindex c.Int, n c.Int) *c.Char
@@ -684,6 +684,9 @@ func Utf8(L *State) c.Int
 //go:linkname Math C.luaopen_math
 func Math(L *State) c.Int
 
+//go:linkname Debug C.luaopen_debug
+func Debug(L *State) c.Int
+
 //go:linkname Package C.luaopen_package
 func Package(L *State) c.Int
 
@@ -697,7 +700,7 @@ luaL_Reg Reg
 luaL_Stream Stream
 lua_Alloc Alloc
 lua_CFunction CFunction
-lua_Debug Debug
+lua_Debug DebugT
 lua_Hook Hook
 lua_Integer Integer
 lua_KContext KContext

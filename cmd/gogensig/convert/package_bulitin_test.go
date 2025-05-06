@@ -8,7 +8,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func TestTypeRefIncompleteFail(t *testing.T) {

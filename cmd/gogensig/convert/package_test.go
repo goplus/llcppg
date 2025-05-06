@@ -10,18 +10,17 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/cmp"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/dbg"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
+	"github.com/goplus/llcppg/token"
 	"github.com/goplus/mod/gopmod"
 )
 
 var dir string
 
 func init() {
-	dbg.SetDebugAll()
+	convert.SetDebug(convert.DbgFlagAll)
 	var err error
 	dir, err = os.Getwd()
 	if err != nil {
@@ -85,7 +84,9 @@ func TestUnionDecl(t *testing.T) {
 					},
 				},
 			},
-			expected: `package testpkg
+			expected: `
+package testpkg
+
 import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
@@ -93,7 +94,8 @@ import (
 
 type U struct {
 	B c.Long
-}`,
+}
+`,
 		},
 	}
 	for _, tc := range testCases {
@@ -233,8 +235,9 @@ func TestNewPackage(t *testing.T) {
 	pkg := createTestPkg(t, &convert.PackageConfig{})
 	pkg.SetCurFile(tempFile)
 	comparePackageOutput(t, pkg, `
-	package testpkg
-	import _ "unsafe"
+package testpkg
+
+import _ "unsafe"
 	`)
 }
 
@@ -352,9 +355,11 @@ func TestFuncDecl(t *testing.T) {
 			},
 			expected: `
 package testpkg
+
 import _ "unsafe"
 //go:linkname Foo C.foo
-func Foo()`,
+func Foo()
+`,
 		},
 		{
 			name: "variadic func",
@@ -379,9 +384,11 @@ func Foo()`,
 			},
 			expected: `
 package testpkg
+
 import _ "unsafe"
 //go:linkname Foo C.foo
-func Foo(__llgo_va_list ...interface{})`,
+func Foo(__llgo_va_list ...interface{})
+`,
 		},
 		{
 			name: "func not in symbol table",
@@ -419,7 +426,7 @@ func Foo(__llgo_va_list ...interface{})`,
 					GoName:     "InvalidFunc",
 				},
 			},
-			expectedPanic: "NewFuncDecl: fail convert signature : not found in type map",
+			expectedPanic: "NewFuncDecl: fail convert signature invalidFunc : not found in type map",
 		},
 		{
 			name: "explict void return",
@@ -440,9 +447,11 @@ func Foo(__llgo_va_list ...interface{})`,
 			},
 			expected: `
 package testpkg
+
 import _ "unsafe"
 //go:linkname Foo C.foo
-func Foo()`,
+func Foo()
+`,
 		},
 		{
 			name: "builtin type",
@@ -486,12 +495,14 @@ func Foo()`,
 			},
 			expected: `
 package testpkg
+
 import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
 //go:linkname Foo C.foo
-func Foo(a uint16, b bool) c.Double`,
+func Foo(a uint16, b bool) c.Double
+`,
 		},
 		{
 			name: "c builtin type",
@@ -528,7 +539,6 @@ import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
-
 //go:linkname Foo C.foo
 func Foo(a c.Uint, b c.Long) c.Ulong
 `,
@@ -568,7 +578,6 @@ import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
-
 //go:linkname Foo C.foo
 func Foo(a c.Uint, b c.Long) c.Ulong
 `,
@@ -617,7 +626,6 @@ import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
-
 //go:linkname Foo C.foo
 func Foo(a *c.Uint, b *c.Long) *c.Double
 `,
@@ -657,10 +665,9 @@ import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
-
 //go:linkname Foo C.foo
 func Foo(a c.Pointer) c.Pointer
-			`,
+`,
 		},
 		{
 			name: "array",
@@ -717,10 +724,9 @@ import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
-
 //go:linkname Foo C.foo
 func Foo(a *c.Uint, b *c.Double) **c.Char
-			`,
+`,
 		},
 		{
 			name: "error array param",
@@ -747,7 +753,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					GoName:     "Foo",
 				},
 			},
-			expectedPanic: "NewFuncDecl: fail convert signature : error convert elem type: not found in type map",
+			expectedPanic: "NewFuncDecl: fail convert signature foo : error convert elem type: not found in type map",
 		},
 		{
 			name: "error return type",
@@ -766,7 +772,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					GoName:     "Foo",
 				},
 			},
-			expectedPanic: "NewFuncDecl: fail convert signature : error convert return type: not found in type map",
+			expectedPanic: "NewFuncDecl: fail convert signature foo : error convert return type: not found in type map",
 		},
 		{
 			name: "error nil param",
@@ -789,7 +795,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					GoName:     "Foo",
 				},
 			},
-			expectedPanic: "NewFuncDecl: fail convert signature : error convert type: unexpected nil field",
+			expectedPanic: "NewFuncDecl: fail convert signature foo : error convert type: unexpected nil field",
 		},
 		{
 			name: "error receiver",
@@ -882,7 +888,7 @@ type Foo struct {
 					},
 				},
 			},
-			expectedPanic: "NewTypeDecl: fail to complete type : not found in type map",
+			expectedPanic: "NewTypeDecl: fail to complete type InvalidStruct : not found in type map",
 		},
 		// struct Foo { int a; double b; bool c; }
 		{
@@ -1120,7 +1126,7 @@ type Foo struct {
 					},
 				},
 			},
-			expectedPanic: "NewTypeDecl: fail to complete type : unsupport field with array without length",
+			expectedPanic: "NewTypeDecl: fail to complete type Foo : unsupport field with array without length",
 		},
 		{
 			name: "struct array field without len",
@@ -1144,7 +1150,7 @@ type Foo struct {
 					},
 				},
 			},
-			expectedPanic: "NewTypeDecl: fail to complete type : can't determine the array length",
+			expectedPanic: "NewTypeDecl: fail to complete type Foo : can't determine the array length",
 		},
 	}
 
@@ -1193,9 +1199,9 @@ import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
-
 // llgo:type C
-type Foo func(a c.Int, b c.Int) c.Int`,
+type Foo func(a c.Int, b c.Int) c.Int
+`,
 		},
 	}
 	for _, tc := range testCases {
@@ -1239,14 +1245,9 @@ func TestRedef(t *testing.T) {
 			Fields: flds,
 		},
 	})
-	if err == nil {
-		t.Fatal("Expect a redefine err")
+	if err != nil {
+		t.Fatal("unexpect redefine err")
 	}
-
-	pkg.NewTypedefDecl(&ast.TypedefDecl{
-		Name: &ast.Ident{Name: "Foo"},
-		Type: &ast.Ident{Name: "Foo"},
-	})
 
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
 		Name:        &ast.Ident{Name: "Bar"},
@@ -1261,13 +1262,21 @@ func TestRedef(t *testing.T) {
 		t.Fatal("NewFuncDecl failed", err)
 	}
 
+	err = pkg.NewTypedefDecl(&ast.TypedefDecl{
+		Name: &ast.Ident{Name: "Bar"},
+		Type: &ast.Ident{Name: "Bar"},
+	})
+	if err == nil {
+		t.Fatal("expect a redefine err")
+	}
+
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
 		Name:        &ast.Ident{Name: "Bar"},
 		MangledName: "Bar",
 		Type:        &ast.FuncType{},
 	})
-	if err == nil {
-		t.Fatal("Expect a redefine err")
+	if err != nil {
+		t.Fatal("unexpect redefine err")
 	}
 
 	err = pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
@@ -1292,6 +1301,35 @@ func TestRedef(t *testing.T) {
 		t.Fatal("Expect a redefine err")
 	}
 
+	err = pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
+		Name: &ast.Ident{Name: "EnumFoo"},
+		Type: &ast.EnumType{
+			Items: []*ast.EnumItem{
+				{Name: &ast.Ident{Name: "ItemBar"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
+				{Name: &ast.Ident{Name: "ItemBar"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "1"}},
+			},
+		},
+	})
+
+	if err != nil {
+		t.Fatal("unexpect err")
+	}
+
+	macro := &ast.Macro{
+		Loc:    &ast.Location{File: tempFile.File},
+		Name:   "MACRO_FOO",
+		Tokens: []*ast.Token{{Token: token.IDENT, Lit: "MACRO_FOO"}, {Token: token.LITERAL, Lit: "1"}},
+	}
+	err = pkg.NewMacro(macro)
+	if err != nil {
+		t.Fatal("unexpect redefine err")
+	}
+
+	err = pkg.NewMacro(macro)
+	if err != nil {
+		t.Fatal("unexpect redefine err")
+	}
+
 	var buf bytes.Buffer
 	err = pkg.GetGenPackage().WriteTo(&buf)
 	if err != nil {
@@ -1307,12 +1345,49 @@ import (
 )
 
 type Foo struct {
-	c.Int
+	 c.Int
 }
 //go:linkname Bar C.Bar
 func Bar()
+
+type EnumFoo c.Int
+
+const ItemBar EnumFoo = 0
+const MACRO_FOO = 1
 `
 	comparePackageOutput(t, pkg, expect)
+}
+
+func TestRedefineFunc(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatalf("expected Panic")
+		}
+	}()
+	pkg := createTestPkg(t, &convert.PackageConfig{
+		SymbolTable: config.CreateSymbolTable(
+			[]config.SymbolEntry{
+				{CppName: "Foo", MangleName: "Foo", GoName: "Foo"},
+			},
+		),
+	})
+	pkg.SetCurFile(tempFile)
+
+	err := pkg.NewTypeDecl(&ast.TypeDecl{
+		Name: &ast.Ident{Name: "Foo"},
+		Type: &ast.RecordType{
+			Tag:    ast.Struct,
+			Fields: &ast.FieldList{},
+		},
+	})
+	if err != nil {
+		t.Fatal("NewTypeDecl failed", err)
+	}
+	pkg.NewFuncDecl(&ast.FuncDecl{
+		Name:        &ast.Ident{Name: "Foo"},
+		MangledName: "Foo",
+		Type:        &ast.FuncType{},
+	})
 }
 
 func TestTypedef(t *testing.T) {
@@ -1347,7 +1422,7 @@ type DOUBLE c.Double`,
 					Flags: ast.Double,
 				},
 			},
-			expectedPanic: "NewTypedefDecl:fail to convert type : not found in type map",
+			expectedPanic: "NewTypedefDecl:fail to convert type INVALID : not found in type map",
 		},
 		// typedef int INT;
 		{
@@ -1427,11 +1502,14 @@ type Ctx c.Pointer`,
 			},
 			expected: `
 package testpkg
+
 import (
 	"github.com/goplus/lib/c"
 	_ "unsafe"
 )
-type Name *c.Char`,
+
+type Name *c.Char
+`,
 		},
 		{
 			name: "typedef invalid pointer",
@@ -1444,7 +1522,7 @@ type Name *c.Char`,
 					},
 				},
 			},
-			expectedPanic: "NewTypedefDecl:fail to convert type : error convert baseType: not found in type map",
+			expectedPanic: "NewTypedefDecl:fail to convert type name : error convert baseType: not found in type map",
 		},
 	}
 
@@ -1478,11 +1556,13 @@ import (
 )
 
 type Color c.Int
+
 const (
 	Red   Color = 0
 	Green Color = 1
 	Blue  Color = 2
-)`,
+)
+`,
 		},
 		{
 			name: "anonymous enum",
@@ -1638,17 +1718,21 @@ func TestIdentRefer(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		comparePackageOutput(t, pkg, `
-		package testpkg
-		import (
-			"github.com/goplus/lib/c"
-			_ "unsafe"
-		)
-		type TypInt8T c.Char
-		type Foo struct {
-			A TypInt8T
-		}
-		`)
+		expect := `
+package testpkg
+
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
+
+type TypInt8T c.Char
+
+type Foo struct {
+	A TypInt8T
+}
+`
+		comparePackageOutput(t, pkg, expect)
 	})
 }
 
@@ -1824,9 +1908,10 @@ func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 	if err != nil {
 		t.Fatalf("WriteTo failed: %v", err)
 	}
-	eq, diff := cmp.EqualStringIgnoreSpace(buf.String(), expect)
-	if !eq {
-		t.Error(diff)
+	expectedStr := strings.TrimSpace(expect)
+	actualStr := strings.TrimSpace(buf.String())
+	if expectedStr != actualStr {
+		t.Errorf("does not match expected.\nExpected:\n%s\nGot:\n%s", expectedStr, actualStr)
 	}
 }
 

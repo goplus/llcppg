@@ -8,9 +8,21 @@ import (
 	"github.com/goplus/llcppg/ast"
 
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
-	"github.com/goplus/llcppg/cmd/gogensig/dbg"
-	"github.com/goplus/llcppg/llcppg"
+	llconfig "github.com/goplus/llcppg/config"
 )
+
+type dbgFlags = int
+
+var debugLog bool
+
+const (
+	DbgLog     dbgFlags = 1 << iota
+	DbgFlagAll          = DbgLog
+)
+
+func SetDebug(dbgFlags dbgFlags) {
+	debugLog = (dbgFlags & DbgLog) != 0
+}
 
 type Config struct {
 	PkgName   string
@@ -19,7 +31,7 @@ type Config struct {
 	PubFile   string // llcppg.pub
 	OutputDir string
 
-	Pkg *llcppg.Pkg
+	Pkg *llconfig.Pkg
 }
 
 // if modulePath is not empty, init the module by modulePath
@@ -50,7 +62,7 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 }
 
 type Converter struct {
-	Pkg    *llcppg.Pkg
+	Pkg    *llconfig.Pkg
 	GenPkg *Package
 	Conf   *Config
 }
@@ -61,7 +73,7 @@ func NewConverter(config *Config) (*Converter, error) {
 	}
 	symbTable, err := cfg.NewSymbolTable(config.SymbFile)
 	if err != nil {
-		if dbg.GetDebugError() {
+		if debugLog {
 			log.Printf("Can't get llcppg.symb.json from %s Use empty table\n", config.SymbFile)
 		}
 		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
@@ -69,10 +81,10 @@ func NewConverter(config *Config) (*Converter, error) {
 
 	conf, err := cfg.GetCppgCfgFromPath(config.CfgFile)
 	if err != nil {
-		if dbg.GetDebugError() {
+		if debugLog {
 			log.Printf("Cant get llcppg.cfg from %s Use empty config\n", config.CfgFile)
 		}
-		conf = llcppg.NewDefaultConfig()
+		conf = llconfig.NewDefault()
 	}
 
 	pkg := NewPackage(&PackageConfig{

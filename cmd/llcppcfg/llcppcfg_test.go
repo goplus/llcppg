@@ -18,12 +18,9 @@ func recoverFn(fn func()) (ret any) {
 	return
 }
 
-func readFile(filepath string) *bytes.Buffer {
-	buf, err := os.ReadFile(filepath)
-	if err != nil {
-		return bytes.NewBufferString("")
-	}
-	return bytes.NewBuffer(buf)
+func readFile(filepath string) []byte {
+	buf, _ := os.ReadFile(filepath)
+	return buf
 }
 
 func TestLLCppcfg(t *testing.T) {
@@ -50,7 +47,7 @@ func TestLLCppcfg(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *bytes.Buffer
+		want    []byte
 		wantErr bool
 	}{
 		{
@@ -161,8 +158,8 @@ func TestLLCppcfg(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if !bytes.Equal(b, tt.want.Bytes()) {
-				t.Errorf("unexpected content: want %s got %s", tt.want.String(), string(b))
+			if !bytes.Equal(b, tt.want) {
+				t.Errorf("unexpected content: want %s got %s", string(tt.want), string(b))
 			}
 		})
 	}

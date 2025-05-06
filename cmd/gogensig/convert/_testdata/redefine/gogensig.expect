@@ -1,0 +1,39 @@
+===== redefine_autogen_link.go =====
+package redefine
+
+import _ "github.com/goplus/lib/c"
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+
+===== temp.go =====
+package redefine
+
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
+
+const Tokenizer = "tokenizer"
+
+type Tokenizer__1 struct {
+	Unused [8]uint8
+}
+
+type Tokenizer__2 struct {
+	Unused [8]uint8
+}
+type Tokenizer__3 c.Int
+
+const (
+	Red    Tokenizer__3 = 0
+	Orange Tokenizer__3 = 1
+	Yellow Tokenizer__3 = 2
+)
+
+//go:linkname TokenizerFn C.Prefix5_tokenizer
+func TokenizerFn(a c.Long)
+
+===== llcppg.pub =====
+Prefix2_Tokenizer Tokenizer__1
+Prefix3_tokenizer Tokenizer__2
+Prefix4_tokenizer Tokenizer__3

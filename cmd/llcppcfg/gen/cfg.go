@@ -1,4 +1,4 @@
-package llcppgcfg
+package gen
 
 import (
 	"bytes"
@@ -12,10 +12,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
-type GenConfig struct {
+type Config struct {
 	name           string
 	flag           FlagMode
 	exts           []string
@@ -23,8 +23,8 @@ type GenConfig struct {
 	excludeSubdirs []string
 }
 
-func NewGenConfig(name string, flag FlagMode, exts, deps, excludeSubdirs []string) *GenConfig {
-	return &GenConfig{name: name, flag: flag, exts: exts, deps: deps, excludeSubdirs: excludeSubdirs}
+func NewConfig(name string, flag FlagMode, exts, deps, excludeSubdirs []string) *Config {
+	return &Config{name: name, flag: flag, exts: exts, deps: deps, excludeSubdirs: excludeSubdirs}
 }
 
 type llcppCfgKey string
@@ -199,8 +199,8 @@ func sortIncludes(expandCflags string, cfg *llcppg.Config, exts []string, exclud
 	cfg.Include = includeList.include
 }
 
-func NewLLCppgConfig(name string, flag FlagMode) *llcppg.Config {
-	cfg := llcppg.NewDefaultConfig()
+func newLLCppgConfig(name string, flag FlagMode) *llcppg.Config {
+	cfg := llcppg.NewDefault()
 	cfg.Name = name
 	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
@@ -223,11 +223,11 @@ func NormalizePackageName(name string) string {
 	return strings.Join(fields, "_")
 }
 
-func GenCfg(genCfg *GenConfig) (*bytes.Buffer, error) {
+func Do(genCfg *Config) ([]byte, error) {
 	if len(genCfg.name) == 0 {
 		return nil, newEmptyStringError("name")
 	}
-	cfg := NewLLCppgConfig(genCfg.name, genCfg.flag)
+	cfg := newLLCppgConfig(genCfg.name, genCfg.flag)
 	expandCFlags := ExpandName(genCfg.name, "", cfgCflagsKey)
 	sortIncludes(expandCFlags, cfg, genCfg.exts, genCfg.excludeSubdirs)
 	cfg.Name = NormalizePackageName(cfg.Name)
@@ -242,5 +242,5 @@ func GenCfg(genCfg *GenConfig) (*bytes.Buffer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return buf, nil
+	return buf.Bytes(), nil
 }

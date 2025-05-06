@@ -54,6 +54,12 @@ func TestTypeDefDecl() {
 				} MyStruct,MyStruct2,*StructPtr, StructArr[];
 			}
 		}`,
+
+		`typedef enum algorithm {
+			A,
+			B
+		} algorithm_t;
+		typedef algorithm_t algorithm;`,
 	}
 	test.RunTest("TestTypeDefDecl", testCases)
 }

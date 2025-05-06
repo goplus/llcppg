@@ -1,4 +1,4 @@
-package llcppgcfg
+package gen
 
 import (
 	"bytes"
@@ -8,11 +8,8 @@ import (
 )
 
 func GetOut(cmd *exec.Cmd, dir string) (string, error) {
-	if cmd == nil {
-		return "", newNilError()
-	}
-	outBuf := bytes.NewBufferString("")
-	errBuff := bytes.NewBufferString("")
+	outBuf := new(bytes.Buffer)
+	errBuff := new(bytes.Buffer)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = outBuf
 	cmd.Stderr = errBuff
@@ -47,15 +44,4 @@ func ExpandString(str string, dir string) string {
 		return outString
 	})
 	return strings.TrimSpace(expandStr)
-}
-
-type nilError struct {
-}
-
-func (p *nilError) Error() string {
-	return "nil error"
-}
-
-func newNilError() *nilError {
-	return &nilError{}
 }

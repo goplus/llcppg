@@ -1,7 +1,6 @@
-package llcppgcfg
+package gen
 
 import (
-	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
@@ -10,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func Test_emptyStringError_Error(t *testing.T) {
@@ -504,7 +503,7 @@ func TestNewLLCppConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewLLCppgConfig(tt.args.name, tt.args.flag); !reflect.DeepEqual(got, tt.want) {
+			if got := newLLCppgConfig(tt.args.name, tt.args.flag); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewLLCppgConfig() = %v, want %v", got, tt.want)
 			}
 		})
@@ -582,14 +581,6 @@ func joinPath(dir, rel string) string {
 		path += string(filepath.Separator)
 	}
 	return path
-}
-
-func readFile(filepath string) *bytes.Buffer {
-	buf, err := os.ReadFile(filepath)
-	if err != nil {
-		return bytes.NewBufferString("")
-	}
-	return bytes.NewBuffer(buf)
 }
 
 func Test_getDir(t *testing.T) {

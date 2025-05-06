@@ -1,4 +1,4 @@
-package symbol
+package symg
 
 import (
 	"errors"
@@ -11,13 +11,28 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/dbg"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/parse"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/syspath"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/nm"
 	"github.com/goplus/llpkg/cjson"
 )
+
+type dbgFlags = int
+
+var (
+	dbgSymbol        bool
+	dbgParseIsMethod bool
+)
+
+const (
+	DbgSymbol        dbgFlags = 1 << iota
+	DbgParseIsMethod          //print parse.go isMethod debug log info
+	DbgFlagAll       = DbgSymbol | DbgParseIsMethod
+)
+
+func SetDebug(flags dbgFlags) {
+	dbgSymbol = (flags & DbgSymbol) != 0
+	dbgParseIsMethod = (flags & DbgParseIsMethod) != 0
+}
 
 // ParseDylibSymbols parses symbols from dynamic libraries specified in the lib string.
 // It handles multiple libraries (e.g., -L/opt/homebrew/lib -llua -lm) and returns
@@ -26,16 +41,16 @@ import (
 //
 // Returns symbols and nil error if any symbols are found, or nil and error if none found.
 func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
-	if dbg.GetDebugSymbol() {
+	if dbgSymbol {
 		fmt.Println("ParseDylibSymbols:from", lib)
 	}
-	sysPaths := syspath.GetLibPaths()
-	if dbg.GetDebugSymbol() {
+	sysPaths := GetLibPaths()
+	if dbgSymbol {
 		fmt.Println("ParseDylibSymbols:sysPaths", sysPaths)
 	}
 
 	lbs := cfgparse.ParseLibs(lib)
-	if dbg.GetDebugSymbol() {
+	if dbgSymbol {
 		fmt.Println("ParseDylibSymbols:LibConfig Parse To")
 		fmt.Println("libs.Names: ", lbs.Names)
 		fmt.Println("libs.Paths: ", lbs.Paths)
@@ -45,7 +60,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 		return nil, fmt.Errorf("failed to generate some dylib paths: %v", err)
 	}
 
-	if dbg.GetDebugSymbol() {
+	if dbgSymbol {
 		fmt.Println("ParseDylibSymbols:dylibPaths", dylibPaths)
 		if len(notFounds) > 0 {
 			fmt.Println("ParseDylibSymbols:not found libname", notFounds)
@@ -59,7 +74,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 
 	for _, dylibPath := range dylibPaths {
 		if _, err := os.Stat(dylibPath); err != nil {
-			if dbg.GetDebugSymbol() {
+			if dbgSymbol {
 				fmt.Printf("ParseDylibSymbols:Failed to access dylib %s: %v\n", dylibPath, err)
 			}
 			continue
@@ -82,7 +97,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 	}
 
 	if len(symbols) > 0 {
-		if dbg.GetDebugSymbol() {
+		if dbgSymbol {
 			if len(parseErrors) > 0 {
 				fmt.Printf("ParseDylibSymbols:Some libraries could not be parsed: %v\n", parseErrors)
 			}
@@ -96,7 +111,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 
 // finds the intersection of symbols from the dynamic library's symbol table and the symbols parsed from header files.
 // It returns a list of symbols that can be externally linked.
-func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*parse.SymbolInfo) []*llcppg.SymbolInfo {
+func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*SymbolInfo) []*llcppg.SymbolInfo {
 	var commonSymbols []*llcppg.SymbolInfo
 	processedSymbols := make(map[string]bool)
 
@@ -127,7 +142,7 @@ func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*parse
 }
 
 func GenSymbolTableData(commonSymbols []*llcppg.SymbolInfo) ([]byte, error) {
-	if dbg.GetDebugSymbol() {
+	if dbgSymbol {
 		fmt.Println("GenSymbolTableData:generate symbol table")
 		for _, symbol := range commonSymbols {
 			fmt.Println("new symbol", symbol.Mangle, "-", symbol.CPP, "-", symbol.Go)
@@ -154,9 +169,9 @@ func GenSymbolTableData(commonSymbols []*llcppg.SymbolInfo) ([]byte, error) {
 	return result, nil
 }
 
-func GenerateSymTable(symbols []*nm.Symbol, headerInfos map[string]*parse.SymbolInfo) ([]byte, error) {
+func GenerateSymTable(symbols []*nm.Symbol, headerInfos map[string]*SymbolInfo) ([]byte, error) {
 	commonSymbols := GetCommonSymbols(symbols, headerInfos)
-	if dbg.GetDebugSymbol() {
+	if dbgSymbol {
 		fmt.Println("GenerateSymTable:", len(commonSymbols), "common symbols")
 	}
 

@@ -1,4 +1,4 @@
-package syspath
+package symg
 
 import (
 	"os/exec"

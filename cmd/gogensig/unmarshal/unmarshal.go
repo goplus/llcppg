@@ -7,7 +7,7 @@ import (
 	"reflect"
 
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 type NodeUnmarshaler func(data []byte) (ast.Node, error)

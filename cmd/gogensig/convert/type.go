@@ -9,12 +9,12 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"runtime"
 	"unsafe"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/convert/sizes"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
 )
 
@@ -22,6 +22,7 @@ type TypeContext int
 
 var (
 	ErrTypeConv = errors.New("error convert type")
+	std         types.Sizes
 )
 
 const (
@@ -29,6 +30,18 @@ const (
 	Param              // In function parameter context
 	Record             // In record field context
 )
+
+func init() {
+	if runtime.Compiler == "gopherjs" {
+		std = &types.StdSizes{WordSize: 4, MaxAlign: 4}
+	} else {
+		std = types.SizesFor(runtime.Compiler, runtime.GOARCH)
+	}
+}
+
+func Sizeof(T types.Type) int64 {
+	return std.Sizeof(T)
+}
 
 type TypeConv struct {
 	pkg     *Package
@@ -123,11 +136,6 @@ func (p *TypeConv) handlePointerType(t *ast.PointerType) (types.Type, error) {
 	return types.NewPointer(baseType), nil
 }
 
-func (p *TypeConv) lookup(name string) types.Object {
-	obj := gogen.Lookup(p.pkg.p.Types.Scope(), name)
-	return obj
-}
-
 func (p *TypeConv) types() *types.Package {
 	return p.pkg.p.Types
 }
@@ -139,7 +147,7 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		// for aliases like int8_t might be a built-in type (e.g., int8),
 
 		var typ types.Type
-		obj := p.lookup(name)
+		obj := p.pkg.Lookup(name)
 		if obj == nil {
 			// in third hfile but not have converted go type
 			if path, ok := p.pkg.locMap.Lookup(name); ok {
@@ -323,7 +331,7 @@ func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (types.Type, e
 		for i := len(flds) - 1; i >= 0; i-- {
 			fld := flds[i]
 			t := fld.Type()
-			size := sizes.Sizeof(t)
+			size := Sizeof(t)
 			if size >= maxSize {
 				maxSize = size
 				maxFld = fld

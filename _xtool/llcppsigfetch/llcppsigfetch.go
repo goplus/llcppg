@@ -25,12 +25,11 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/_xtool/llcppsigfetch/dbg"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )
 
@@ -43,11 +42,8 @@ func main() {
 		printUsage()
 		return
 	}
-	if ags.VerboseSigfetchParse {
-		dbg.SetDebugParse()
-	}
 	if ags.Verbose {
-		dbg.SetDebugAll()
+		parse.SetDebug(parse.DbgFlagAll)
 	}
 	extract := false
 	out := false

@@ -20,37 +20,32 @@ func NewNameMapper() *NameMapper {
 	}
 }
 
+type NameMethod func(name string) string
+
 // returns a unique Go name for an original name
 // For every go name, it will be unique.
-func (m *NameMapper) GetUniqueGoName(name string, trimPrefixes []string, toCamel bool) (string, bool) {
-	pubName, exist := m.genGoName(name, trimPrefixes, toCamel)
+func (m *NameMapper) GetUniqueGoName(name string, nameMethod NameMethod) (pubName string, changed bool) {
+	pubName, exist := m.genGoName(name, nameMethod)
 	if exist {
 		return pubName, pubName != name
 	}
 
-	count := m.count[pubName]
 	m.count[pubName]++
-	if count > 0 {
-		pubName = fmt.Sprintf("%s__%d", pubName, count)
-	}
+	count := m.count[pubName]
+	pubName = SuffixCount(pubName, count)
 
 	return pubName, pubName != name
 }
 
 // returns the Go name for an original name,if the name is already mapped,return the mapped name
-func (m *NameMapper) genGoName(name string, trimPrefixes []string, toCamel bool) (string, bool) {
+func (m *NameMapper) genGoName(name string, nameMethod NameMethod) (string, bool) {
 	if goName, exists := m.mapping[name]; exists {
 		if goName == "" {
 			return name, true
 		}
 		return goName, true
 	}
-	name = removePrefixedName(name, trimPrefixes)
-	if toCamel {
-		return PubName(name), false
-	} else {
-		return ExportName(name), false
-	}
+	return nameMethod(name), false
 }
 
 func (m *NameMapper) SetMapping(originName, newName string) {
@@ -63,12 +58,12 @@ func (m *NameMapper) SetMapping(originName, newName string) {
 
 func GoName(name string, trimPrefixes []string, inCurPkg bool) string {
 	if inCurPkg {
-		name = removePrefixedName(name, trimPrefixes)
+		name = RemovePrefixedName(name, trimPrefixes)
 	}
 	return PubName(name)
 }
 
-func removePrefixedName(name string, trimPrefixes []string) string {
+func RemovePrefixedName(name string, trimPrefixes []string) string {
 	if len(trimPrefixes) == 0 {
 		return name
 	}
@@ -145,4 +140,11 @@ func HeaderFileToGo(incPath string) string {
 		fileName = "X" + fileName
 	}
 	return fileName + ".go"
+}
+
+func SuffixCount(name string, count int) string {
+	if count > 1 {
+		return fmt.Sprintf("%s__%d", name, count-1)
+	}
+	return name
 }

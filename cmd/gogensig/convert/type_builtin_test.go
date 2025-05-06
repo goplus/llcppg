@@ -8,7 +8,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func TestIdentRef(t *testing.T) {

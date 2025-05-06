@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 // llcppg.cfg
@@ -20,7 +20,7 @@ func GetCppgCfgFromPath(filePath string) (*llcppg.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	conf := llcppg.NewDefaultConfig()
+	conf := llcppg.NewDefault()
 	err = json.Unmarshal(bytes, &conf)
 	if err != nil {
 		return nil, err

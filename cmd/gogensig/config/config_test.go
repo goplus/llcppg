@@ -8,10 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	"github.com/goplus/llcppg/llcppg"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 func TestLookupSymbolOK(t *testing.T) {
@@ -25,9 +24,12 @@ func TestLookupSymbolOK(t *testing.T) {
 	}
 	const expectCppName = "INIReader::GetBoolean(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const&, bool) const"
 	const expectGoName = "(*Reader).GetBoolean"
-	if !cmp.Equal(string(entry.CppName), expectCppName) ||
-		!cmp.Equal(string(entry.GoName), expectGoName) {
-		t.Fatalf("%s\n%s", cmp.Diff(entry.CppName, expectCppName), cmp.Diff(entry.GoName, expectGoName))
+
+	if entry.CppName != expectCppName {
+		t.Fatalf("expect %s, got %s", expectCppName, entry.CppName)
+	}
+	if entry.GoName != expectGoName {
+		t.Fatalf("expect %s, got %s", expectGoName, entry.GoName)
 	}
 }
 
@@ -207,7 +209,7 @@ func TestGetCppgCfgFromPath(t *testing.T) {
 			t.Fatal("Expected non-nil config")
 		}
 
-		expectedConfig := llcppg.NewDefaultConfig()
+		expectedConfig := llcppg.NewDefault()
 		expectedConfig.Name = "lua"
 		expectedConfig.CFlags = "$(pkg-config --cflags lua5.4)"
 		expectedConfig.Include = []string{"litelua.h"}

@@ -1,4 +1,4 @@
-package llcppgcfg
+package gen
 
 import (
 	"fmt"

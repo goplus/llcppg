@@ -38,8 +38,6 @@ import (
 	_ "unsafe"
 )
 
-// todo(zzy): ares_addr need generate in the temp.go
-//
 //go:linkname AresDnsPton C.ares_dns_pton
 func AresDnsPton(ipaddr *c.Char, addr *AresAddr) c.Pointer
 
