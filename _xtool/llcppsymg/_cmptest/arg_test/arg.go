@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
 	llcppg "github.com/goplus/llcppg/config"
 )
 
@@ -52,7 +52,7 @@ func TestParseArgs() {
 		fmt.Printf("Test case: %s\n", tc.name)
 		fmt.Printf("Input: %v\n", tc.input)
 
-		result, filteredArgs := args.ParseArgs(tc.input, llcppg.LLCPPG_CFG, swflags)
+		result, filteredArgs := arg.ParseArgs(tc.input, llcppg.LLCPPG_CFG, swflags)
 
 		fmt.Printf("Help: %v\n", result.Help)
 		fmt.Printf("Verbose: %v\n", result.Verbose)

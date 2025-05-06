@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config/cfgparse"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config/cfgparse"
 	llcppg "github.com/goplus/llcppg/config"
 )
 

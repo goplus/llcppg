@@ -8,7 +8,7 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
+	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
 )
 
 func main() {

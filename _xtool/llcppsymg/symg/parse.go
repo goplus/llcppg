@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/goplus/lib/c/clang"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
+	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 )
 
 type SymbolInfo struct {
@@ -143,7 +143,7 @@ func (p *SymbolProcessor) pointerLevel(typ clang.Type) int {
 func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, string) {
 	typ := cur.Type()
 	if p.pointerLevel(typ) > 1 {
-		return false, false, names.GoName(clang.GoString(typ.String()), p.Prefixes, false)
+		return false, false, name.GoName(clang.GoString(typ.String()), p.Prefixes, false)
 	}
 	isInCurPkg := p.inCurPkg(cur, isArg)
 	p.printTypeInfo(typ, isArg, "typ")
@@ -154,7 +154,7 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 		namedTypeGoString := clang.GoString(pointeeTypeNamedType.String())
 		p.printTypeInfo(pointeeTypeNamedType, isArg, "typ.PointeeType().NamedType()")
 		if len(namedTypeGoString) > 0 {
-			goName := names.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
+			goName := name.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
 			printResult(isInCurPkg, true, goName, "typ.pointeeType().NamedType()")
 			return isInCurPkg, true, goName
 		}
@@ -170,12 +170,12 @@ func (p *SymbolProcessor) isMethod(cur clang.Cursor, isArg bool) (bool, bool, st
 	namedType := typ.NamedType()
 	namedTypeGoString := clang.GoString(namedType.String())
 	if len(namedTypeGoString) > 0 {
-		goName := names.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
+		goName := name.GoName(namedTypeGoString, p.Prefixes, isInCurPkg)
 		printResult(isInCurPkg, false, goName, "typ.NamedType()")
 		return isInCurPkg, false, goName
 	}
 	typeGoString := clang.GoString(typ.String())
-	goName := names.GoName(typeGoString, p.Prefixes, isInCurPkg)
+	goName := name.GoName(typeGoString, p.Prefixes, isInCurPkg)
 	printResult(isInCurPkg, false, goName, "typ")
 	return isInCurPkg, false, goName
 }
@@ -195,16 +195,16 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor, symbolName string) stri
 	isDestructor := cursor.Kind == clang.CursorDestructor
 	var convertedName string
 	if isDestructor {
-		convertedName = names.GoName(originName[1:], p.Prefixes, p.inCurPkg(cursor, false))
+		convertedName = name.GoName(originName[1:], p.Prefixes, p.inCurPkg(cursor, false))
 	} else {
-		convertedName = names.GoName(originName, p.Prefixes, p.inCurPkg(cursor, false))
+		convertedName = name.GoName(originName, p.Prefixes, p.inCurPkg(cursor, false))
 	}
 
 	customGoName, toMethod, isCustom := p.customGoName(symbolName)
 
 	// 1. for class method,gen method name
 	if parent := cursor.SemanticParent(); parent.Kind == clang.CursorClassDecl {
-		class := names.GoName(clang.GoString(parent.String()), p.Prefixes, p.inCurPkg(cursor, false))
+		class := name.GoName(clang.GoString(parent.String()), p.Prefixes, p.inCurPkg(cursor, false))
 		// concat method name
 		if isCustom {
 			convertedName = customGoName

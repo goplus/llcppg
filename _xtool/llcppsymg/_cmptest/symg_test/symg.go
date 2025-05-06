@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symg"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/nm"
 )
@@ -144,8 +144,8 @@ func TestAddSuffix() {
 		"HasValue",
 	}
 	for _, method := range methods {
-		goName := names.GoName(method, process.Prefixes, true)
-		className := names.GoName("INIReader", process.Prefixes, true)
+		goName := name.GoName(method, process.Prefixes, true)
+		className := name.GoName("INIReader", process.Prefixes, true)
 		methodName := process.GenMethodName(className, goName, false, true)
 		finalName := process.AddSuffix(methodName)
 		input := fmt.Sprintf("Class: INIReader, Method: %s", method)

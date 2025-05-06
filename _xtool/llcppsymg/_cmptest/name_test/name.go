@@ -3,13 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symg"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 )
 
 func main() {
 	TestToGoName()
-	TestNameMapper()
 	TestPubName()
 	TestExportName()
 	TestHeaderFileToGo()
@@ -35,53 +34,10 @@ func TestToGoName() {
 	}
 
 	for _, tc := range testCases {
-		result := names.GoName(tc.input, tc.processor.Prefixes, true)
+		result := name.GoName(tc.input, tc.processor.Prefixes, true)
 		fmt.Printf("Before: %s After: %s\n", tc.input, result)
 	}
 	fmt.Println()
-}
-
-func TestNameMapper() {
-	fmt.Println("=== Test NameMapper ===")
-
-	toCamel := func(trimprefix []string) names.NameMethod {
-		return func(name string) string {
-			return names.PubName(names.RemovePrefixedName(name, trimprefix))
-		}
-	}
-	toExport := func(trimprefix []string) names.NameMethod {
-		return func(name string) string {
-			return names.ExportName(names.RemovePrefixedName(name, trimprefix))
-		}
-	}
-
-	mapper := names.NewNameMapper()
-	testCases := []struct {
-		name         string
-		trimPrefixes []string
-		nameMethod   func(trimprefix []string) names.NameMethod
-		expected     string
-		expectChange bool
-	}{
-		{"lua_closethread", []string{"lua_", "luaL_"}, toCamel, "Closethread", true},
-		{"luaL_checknumber", []string{"lua_", "luaL_"}, toCamel, "Checknumber", true},
-		{"_gmp_err", []string{}, toCamel, "X_gmpErr", true},
-		{"fn_123illegal", []string{"fn_"}, toCamel, "X123illegal", true},
-		{"fts5_tokenizer", []string{}, toCamel, "Fts5Tokenizer", true},
-		{"Fts5Tokenizer", []string{}, toCamel, "Fts5Tokenizer__1", true},
-		{"normal_var", []string{}, toExport, "Normal_var", true},
-		{"Cameled", []string{}, toExport, "Cameled", false},
-	}
-
-	fmt.Println("\nTesting GetUniqueGoName:")
-	for _, tc := range testCases {
-		result, changed := mapper.GetUniqueGoName(tc.name, tc.nameMethod(tc.trimPrefixes))
-		if result != tc.expected || changed != tc.expectChange {
-			fmt.Printf("Input: %s, Expected: %s %t, Got: %s %t\n", tc.name, tc.expected, tc.expectChange, result, changed)
-		} else {
-			fmt.Printf("Input: %s, Output: %s %t\n", tc.name, result, changed)
-		}
-	}
 }
 
 func TestPubName() {
@@ -108,7 +64,7 @@ func TestPubName() {
 	}
 
 	for _, tc := range testCases {
-		result := names.PubName(tc.input)
+		result := name.PubName(tc.input)
 		if result != tc.expected {
 			fmt.Printf("Input: %s, Expected: %s, Got: %s\n", tc.input, tc.expected, result)
 		} else {
@@ -141,7 +97,7 @@ func TestExportName() {
 	}
 
 	for _, tc := range testCases {
-		result := names.ExportName(tc.input)
+		result := name.ExportName(tc.input)
 		if result != tc.expected {
 			fmt.Printf("Input: %s, Expected: %s, Got: %s\n", tc.input, tc.expected, result)
 		} else {
@@ -163,7 +119,7 @@ func TestHeaderFileToGo() {
 	}
 
 	for _, tc := range testCases {
-		result := names.HeaderFileToGo(tc.input)
+		result := name.HeaderFileToGo(tc.input)
 		if result != tc.expected {
 			fmt.Printf("Input: %s, Expected: %s, Got: %s\n", tc.input, tc.expected, result)
 		} else {

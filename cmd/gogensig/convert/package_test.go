@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
@@ -261,7 +261,7 @@ func TestPackageWrite(t *testing.T) {
 
 	incPath := "mock_header.h"
 	filePath := filepath.Join("/path", "to", incPath)
-	genPath := names.HeaderFileToGo(filePath)
+	genPath := name.HeaderFileToGo(filePath)
 
 	headerFile := convert.NewHeaderFile(filePath, llcppg.Inter)
 
@@ -1976,7 +1976,7 @@ func TestTypeClean(t *testing.T) {
 		})
 		tc.addType()
 
-		goFileName := names.HeaderFileToGo(tc.headerFile)
+		goFileName := name.HeaderFileToGo(tc.headerFile)
 		buf, err := pkg.WriteToBuffer(goFileName)
 		if err != nil {
 			t.Fatal(err)
@@ -2020,7 +2020,7 @@ func TestHeaderFileToGo(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := names.HeaderFileToGo(tc.input)
+			result := name.HeaderFileToGo(tc.input)
 			if result != tc.expected {
 				t.Errorf("Expected %s, but got %s", tc.expected, result)
 			}

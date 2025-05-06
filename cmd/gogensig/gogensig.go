@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
+	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"

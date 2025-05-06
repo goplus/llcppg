@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
@@ -164,4 +165,44 @@ func TestMarkUseFail(t *testing.T) {
 		},
 	})
 	pkg.markUseDeps(&PkgDepLoader{})
+}
+
+func TestProcessSymbol(t *testing.T) {
+	toCamel := func(trimprefix []string) NameMethod {
+		return func(cname string) string {
+			return name.PubName(name.RemovePrefixedName(cname, trimprefix))
+		}
+	}
+	toExport := func(trimprefix []string) NameMethod {
+		return func(cname string) string {
+			return name.ExportName(name.RemovePrefixedName(cname, trimprefix))
+		}
+	}
+	sym := NewProcessSymbol()
+
+	testCases := []struct {
+		name         string
+		trimPrefixes []string
+		nameMethod   func(trimprefix []string) NameMethod
+		expected     string
+		expectChange bool
+	}{
+		{"lua_closethread", []string{"lua_", "luaL_"}, toCamel, "Closethread", true},
+		{"luaL_checknumber", []string{"lua_", "luaL_"}, toCamel, "Checknumber", true},
+		{"_gmp_err", []string{}, toCamel, "X_gmpErr", true},
+		{"fn_123illegal", []string{"fn_"}, toCamel, "X123illegal", true},
+		{"fts5_tokenizer", []string{}, toCamel, "Fts5Tokenizer", true},
+		{"Fts5Tokenizer", []string{}, toCamel, "Fts5Tokenizer__1", true},
+		{"normal_var", []string{}, toExport, "Normal_var", true},
+		{"Cameled", []string{}, toExport, "Cameled", false},
+	}
+	for _, tc := range testCases {
+		pubName := sym.Register(Node{name: tc.name, kind: TypeDecl}, tc.expected)
+		if pubName != tc.expected {
+			t.Errorf("Expected %s, but got %s", tc.expected, pubName)
+		}
+		if tc.expectChange && pubName == tc.name {
+			t.Errorf("Expected Change, but got same name")
+		}
+	}
 }

@@ -13,7 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cmd/gogensig/errs"
 )
@@ -357,8 +357,8 @@ func (p *TypeConv) inComplete(recordType *ast.RecordType) bool {
 }
 
 // The field name should be public if it's a record field
-func getFieldName(name string) string {
-	return names.PubName(name)
+func getFieldName(n string) string {
+	return name.PubName(n)
 }
 
 func avoidKeyword(name string) string {

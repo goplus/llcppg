@@ -1,7 +1,7 @@
 package convert
 
 import (
-	"github.com/goplus/llcppg/_xtool/llcppsymg/names"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	llcppg "github.com/goplus/llcppg/config"
 )
 
@@ -14,7 +14,7 @@ type HeaderFile struct {
 func (p *HeaderFile) ToGoFileName(pkgName string) string {
 	switch p.FileType {
 	case llcppg.Inter:
-		return names.HeaderFileToGo(p.File)
+		return name.HeaderFileToGo(p.File)
 	case llcppg.Impl, llcppg.Third:
 		return pkgName + "_autogen.go"
 	default:

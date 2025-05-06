@@ -20,11 +20,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/symg"
+	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	llcppg "github.com/goplus/llcppg/config"
 )
 
@@ -72,22 +71,10 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to parse config file:", ags.CfgFile)
 	}
-	symbols, err := symg.ParseDylibSymbols(conf.Libs)
-	check(err)
 
-	pkgHfiles := config.PkgHfileInfo(conf.Config, []string{})
-	if ags.Verbose {
-		fmt.Println("interfaces", pkgHfiles.Inters)
-		fmt.Println("implements", pkgHfiles.Impls)
-		fmt.Println("thirdhfile", pkgHfiles.Thirds)
-	}
-	headerInfos, err := symg.ParseHeaderFile(pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.SymMap, conf.Cplusplus, false)
-	check(err)
-
-	symbolData, err := symg.GenerateSymTable(symbols, headerInfos)
-	check(err)
-
-	err = os.WriteFile(llcppg.LLCPPG_SYMB, symbolData, 0644)
+	err = symg.Do(&symg.Config{
+		Conf: conf.Config,
+	})
 	check(err)
 }
 

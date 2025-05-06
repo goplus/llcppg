@@ -8,17 +8,6 @@ Before: GetReal After: GetReal
 Before: GetBoolean After: GetBoolean
 Before: INIReader After: Reader
 
-=== Test NameMapper ===
-
-Testing GetUniqueGoName:
-Input: lua_closethread, Output: Closethread true
-Input: luaL_checknumber, Output: Checknumber true
-Input: _gmp_err, Output: X_gmpErr true
-Input: fn_123illegal, Output: X123illegal true
-Input: fts5_tokenizer, Output: Fts5Tokenizer true
-Input: Fts5Tokenizer, Output: Fts5Tokenizer__1 true
-Input: normal_var, Output: Normal_var true
-Input: Cameled, Output: Cameled false
 
 === Test PubName ===
 Input: sqlite_file, Output: SqliteFile

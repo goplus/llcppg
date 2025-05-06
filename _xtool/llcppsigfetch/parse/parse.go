@@ -6,8 +6,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
+	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	llcppg "github.com/goplus/llcppg/config"
 )
 

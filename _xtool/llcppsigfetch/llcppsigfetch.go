@@ -26,9 +26,9 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/args"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/clangutils"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/config"
+	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
+	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )

@@ -41,10 +41,10 @@ jobs:
         # llgo cmptest ./... cause  lld: error: undefined symbol: sort.init
         # https://github.com/goplus/llgo/issues/944
 
-        llgo cmptest ./args_test
-        llgo cmptest ./clangutils_test
+        llgo cmptest ./arg_test
+        llgo cmptest ./clang_test
         llgo cmptest ./config_test
-        llgo cmptest ./names_test
+        llgo cmptest ./name_test
         llgo cmptest ./symbol_test
         llgo cmptest ./symg_test
 
