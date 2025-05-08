@@ -11,6 +11,7 @@ import (
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config/cfgparse"
 	llcppg "github.com/goplus/llcppg/config"
 	llgoc "github.com/goplus/llgo/c"
 	"github.com/goplus/llpkg/cjson"
@@ -21,7 +22,7 @@ type Conf struct {
 	*llcppg.Config
 }
 
-func GetConf(useStdin bool, cfgFile string) (conf Conf, err error) {
+func GetConf(useStdin bool, cfgFile string) (conf *llcppg.Config, err error) {
 	var data []byte
 	if useStdin {
 		data, err = io.ReadAll(os.Stdin)
@@ -31,7 +32,7 @@ func GetConf(useStdin bool, cfgFile string) (conf Conf, err error) {
 	if err != nil {
 		return
 	}
-	conf, err = GetConfByByte(data)
+	conf, err = cfgparse.NewConfigFromByte(data)
 	if err != nil {
 		return
 	}
