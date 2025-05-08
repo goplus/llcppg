@@ -812,17 +812,17 @@ func (p *Package) writeToFile(genFName string, filePath string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filePath, buf.Bytes(), 0644)
+	return os.WriteFile(filePath, buf, 0644)
 }
 
 // Write the corresponding files in gogen package to the buffer
-func (p *Package) WriteToBuffer(genFName string) (*bytes.Buffer, error) {
+func (p *Package) WriteToBuffer(genFName string) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := p.p.WriteTo(buf, genFName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write to buffer: %w", err)
 	}
-	return buf, nil
+	return buf.Bytes(), nil
 }
 
 func (p *Package) deferTypeBuild() error {

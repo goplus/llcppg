@@ -1970,7 +1970,7 @@ func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 		t.Fatalf("WriteTo failed: %v", err)
 	}
 	expectedStr := strings.TrimSpace(expect)
-	actualStr := strings.TrimSpace(buf.String())
+	actualStr := strings.TrimSpace(string(buf))
 	if expectedStr != actualStr {
 		t.Errorf("does not match expected.\nExpected:\n%s\nGot:\n%s", expectedStr, actualStr)
 	}
@@ -2044,7 +2044,7 @@ func TestTypeClean(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		result := buf.String()
+		result := string(buf)
 
 		if !strings.Contains(result, tc.newType) {
 			t.Errorf("Case %d: Generated type does not contain %s", i, tc.newType)
