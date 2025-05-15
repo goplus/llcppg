@@ -91,8 +91,7 @@ func main() {
 	} else {
 		conf, err := config.GetConf(ags.UseStdin, ags.CfgFile)
 		check(err)
-		defer conf.Delete()
-		parseConfig.Conf = conf.Config
+		parseConfig.Conf = conf
 	}
 
 	err := parse.Do(parseConfig)
