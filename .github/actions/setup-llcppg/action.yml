@@ -32,6 +32,7 @@ runs:
       brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv lld@${{inputs.llvm}}
       brew link --force libffi
       echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
+      echo "$(brew --prefix lld@${{inputs.llvm}})/bin" >> $GITHUB_PATH
       # llcppg dependencies
       brew install cjson
   - name: Install dependencies
