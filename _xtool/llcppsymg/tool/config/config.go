@@ -80,7 +80,7 @@ func GetStringArrayItem(obj *cjson.JSON, key string) (value []string) {
 	}
 	value = make([]string, item.GetArraySize())
 	for i := range value {
-		value[i] = GetString(item.GetArrayItem(llgoc.Int(i)))
+		value[i] = GetString(item.GetArrayItem(c.Int(i)))
 	}
 	return
 }
