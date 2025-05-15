@@ -14,8 +14,8 @@ jobs:
         os:
           - macos-latest
           - ubuntu-24.04
-        llvm: [18]
-        llgo: [v0.10.0]
+        llvm: [19]
+        llgo: [v0.11.3]
         go: [1.23]
     runs-on: ${{matrix.os}}
     steps:

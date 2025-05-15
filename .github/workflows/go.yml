@@ -17,8 +17,8 @@ jobs:
         os:
           - macos-latest
           - ubuntu-24.04
-        llvm: [18]
-        llgo: [v0.10.0]
+        llvm: [19]
+        llgo: [v0.11.3]
         go: [1.23]
     runs-on: ${{matrix.os}}
     steps:
@@ -34,10 +34,10 @@ jobs:
       run: |
         llgo cmptest ./_xtool/llcppsigfetch/parse/cvt_test/...
 
-        # llgo cmptest ./_xtool/llcppsymg/_cmptest/... causes 
+        # llgo cmptest ./_xtool/llcppsymg/_cmptest/... causes
         # panic: runtime error: index out of range [0] with length 0
         cd _xtool/llcppsymg/_cmptest
-          
+
         # llgo cmptest ./... cause  lld: error: undefined symbol: sort.init
         # https://github.com/goplus/llgo/issues/944
 
