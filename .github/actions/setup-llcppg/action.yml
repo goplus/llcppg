@@ -29,7 +29,7 @@ runs:
     shell: bash
     run: |
       brew update
-      brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv   brew install lld@${{inputs.llvm}}
+      brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv lld@${{inputs.llvm}}
       brew link --force libffi
       echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
       # llcppg dependencies
