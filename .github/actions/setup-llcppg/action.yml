@@ -29,10 +29,9 @@ runs:
     shell: bash
     run: |
       brew update
-      brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv
+      brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv   brew install lld@${{inputs.llvm}}
       brew link --force libffi
       echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
-      export PATH="$(brew --prefix llvm@${{inputs.llvm}})/bin:$PATH"
       # llcppg dependencies
       brew install cjson
   - name: Install dependencies
@@ -44,7 +43,6 @@ runs:
       sudo apt-get update
       sudo apt-get install -y llvm-${{inputs.llvm}}-dev clang-${{inputs.llvm}} libunwind-dev libclang-${{inputs.llvm}}-dev lld-${{inputs.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev libuv1-dev
       echo "/usr/lib/llvm-${{inputs.llvm}}/bin" >> $GITHUB_PATH
-      export PATH="/usr/lib/llvm-${{inputs.llvm}}/bin:$PATH"
   - name: Install LLGo
     shell: bash
     working-directory: .llgo
