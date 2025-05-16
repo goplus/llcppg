@@ -18,7 +18,6 @@ package parser
 
 import (
 	"go/token"
-	"os"
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llgo/xtool/clang/preprocessor"
@@ -59,6 +58,5 @@ func ParseFile(fset *token.FileSet, srcFile, interFile string, conf *Config) (f 
 	if err != nil {
 		return
 	}
-	defer os.Remove(interFile)
 	return ParseIntermediateFile(fset, interFile, mode)
 }

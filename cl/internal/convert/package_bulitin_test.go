@@ -17,9 +17,8 @@ import (
 func emptyPkg() *Package {
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
-			PkgPath:  ".",
-			CppgConf: &llcppg.Config{},
-			Pubs:     make(map[string]string),
+			PkgPath: ".",
+			Pubs:    make(map[string]string),
 		},
 		Name:        "testpkg",
 		GenConf:     &gogen.Config{},
@@ -169,15 +168,13 @@ func TestTrimPrefixes(t *testing.T) {
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
-			CppgConf: &llcppg.Config{
-				TrimPrefixes: []string{"prefix1", "prefix2"},
-			},
-			Pubs: make(map[string]string),
+			Pubs:    make(map[string]string),
 		},
-		Name:        "testpkg",
-		GenConf:     &gogen.Config{},
-		OutputDir:   "",
-		SymbolTable: &cfg.SymbolTable{},
+		Name:         "testpkg",
+		GenConf:      &gogen.Config{},
+		OutputDir:    "",
+		SymbolTable:  &cfg.SymbolTable{},
+		TrimPrefixes: []string{"prefix1", "prefix2"},
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
@@ -208,9 +205,8 @@ func TestMarkUseFail(t *testing.T) {
 	}()
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
-			PkgPath:  ".",
-			CppgConf: &llcppg.Config{},
-			Pubs:     make(map[string]string),
+			PkgPath: ".",
+			Pubs:    make(map[string]string),
 		},
 	})
 	if err != nil {

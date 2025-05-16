@@ -27,7 +27,6 @@ type Config struct {
 	PkgName   string
 	SymbFile  string // llcppg.symb.json
 	CfgFile   string // llcppg.cfg
-	PubFile   string // llcppg.pub
 	OutputDir string
 
 	Pkg *llconfig.Pkg
@@ -75,6 +74,7 @@ func NewConverter(config *Config) (*Converter, error) {
 		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
 	}
 
+	// todo: remove this
 	conf, err := cfg.GetCppgCfgFromPath(config.CfgFile)
 	if err != nil {
 		if debugLog {
@@ -85,13 +85,16 @@ func NewConverter(config *Config) (*Converter, error) {
 
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
-			PkgPath:  ".",
-			CppgConf: conf,
-			Pubs:     conf.TypeMap,
+			PkgPath: ".",
+			Deps:    conf.Deps,
+			Pubs:    conf.TypeMap,
 		},
-		Name:        config.PkgName,
-		OutputDir:   config.OutputDir,
-		SymbolTable: symbTable,
+		Name:           config.PkgName,
+		OutputDir:      config.OutputDir,
+		SymbolTable:    symbTable,
+		LibCommand:     conf.Libs,
+		TrimPrefixes:   conf.TrimPrefixes,
+		KeepUnderScore: conf.KeepUnderScore,
 	})
 	if err != nil {
 		return nil, err

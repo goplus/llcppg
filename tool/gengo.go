@@ -20,8 +20,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/parser"
+	"github.com/qiniu/x/errors"
 )
 
 // Config is the configuration for generating Go code from C++ header files.
@@ -53,8 +55,15 @@ func GenGo(outDir, buildDir string, conf *Config) (err error) {
 	if err != nil {
 		return
 	}
-	_ = pkg
-	panic("todo")
+	var errs errors.List
+	pkg.ForEachFile(func(fname string, _ *gogen.File) {
+		outFile := filepath.Join(outDir, fname)
+		e := pkg.WriteFile(outFile, fname)
+		if e != nil {
+			errs.Add(e)
+		}
+	})
+	return errs.ToError()
 }
 
 // composeIncludes create a include list file

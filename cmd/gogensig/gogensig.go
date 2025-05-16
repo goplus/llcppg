@@ -75,7 +75,6 @@ func main() {
 		PkgName:  conf.Name,
 		SymbFile: filepath.Join(wd, llcppg.LLCPPG_SYMB),
 		CfgFile:  filepath.Join(wd, cfgFile),
-		PubFile:  filepath.Join(wd, llcppg.LLCPPG_PUB),
 		Pkg:      convertPkg,
 	})
 	if err != nil {

@@ -19,7 +19,6 @@ type ConvConfig struct {
 	PkgName   string
 	SymbFile  string // llcppg.symb.json
 	CfgFile   string // llcppg.cfg
-	PubFile   string // llcppg.pub
 	OutputDir string
 
 	Pkg *llconfig.Pkg
@@ -30,7 +29,6 @@ func Convert(config *ConvConfig) (err error) {
 		PkgName:  config.PkgName,
 		SymbFile: config.SymbFile,
 		CfgFile:  config.CfgFile,
-		PubFile:  config.PubFile,
 		Pkg:      config.Pkg,
 	})
 	if err != nil {

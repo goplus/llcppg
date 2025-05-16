@@ -162,7 +162,6 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 	confPath := filepath.Join(dir, "conf")
 	cfgPath := filepath.Join(confPath, llcppg.LLCPPG_CFG)
 	symbPath := filepath.Join(confPath, llcppg.LLCPPG_SYMB)
-	pubPath := filepath.Join(confPath, llcppg.LLCPPG_PUB)
 	expect := filepath.Join(dir, "gogensig.expect")
 	var expectContent []byte
 	if !gen {
@@ -224,7 +223,6 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		SymbFile:  symbPath,
 		CfgFile:   flagedCfgPath,
 		OutputDir: outputDir,
-		PubFile:   pubPath,
 		Pkg:       convertPkg,
 	})
 

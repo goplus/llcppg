@@ -41,17 +41,17 @@ type PkgInfo struct {
 }
 
 type PkgBase struct {
-	PkgPath  string            // package path, e.g. github.com/goplus/llgo/cjson
-	CppgConf *llcppg.Config    // llcppg.cfg
-	Pubs     map[string]string // llcppg.pub
+	PkgPath string            // package path, e.g. github.com/goplus/llgo/cjson
+	Deps    []string          // dependent packages
+	Pubs    map[string]string // llcppg.pub
 }
 
-func NewPkgInfo(pkgPath string, pkgDir string, conf *llcppg.Config, pubs map[string]string) *PkgInfo {
+func NewPkgInfo(pkgPath string, pkgDir string, deps []string, pubs map[string]string) *PkgInfo {
 	if pubs == nil {
 		pubs = make(map[string]string)
 	}
 	return &PkgInfo{
-		PkgBase: PkgBase{PkgPath: pkgPath, Pubs: pubs, CppgConf: conf},
+		PkgBase: PkgBase{PkgPath: pkgPath, Deps: deps, Pubs: pubs},
 		Dir:     pkgDir,
 	}
 }
@@ -59,7 +59,7 @@ func NewPkgInfo(pkgPath string, pkgDir string, conf *llcppg.Config, pubs map[str
 // LoadDeps loads direct dependencies of the current package and recursively loads their
 // dependencies, to get the complete dependency.
 func (pm *PkgDepLoader) LoadDeps(p *PkgInfo) ([]*PkgInfo, error) {
-	deps, err := pm.Imports(p.CppgConf.Deps)
+	deps, err := pm.Imports(p.PkgBase.Deps)
 	if err != nil {
 		return nil, err
 	}
@@ -102,14 +102,16 @@ func (pm *PkgDepLoader) Import(pkgPath string) (*PkgInfo, error) {
 	}
 
 	var conf *llcppg.Config
+	var deps []string
 	if !isStd {
 		conf, err = cfg.GetCppgCfgFromPath(filepath.Join(pkgDir, llcppg.LLCPPG_CFG))
 		if err != nil {
 			return nil, err
 		}
+		deps = conf.Deps
 	}
 
-	newPkg := NewPkgInfo(pkgPath, pkgDir, conf, pubs)
+	newPkg := NewPkgInfo(pkgPath, pkgDir, deps, pubs)
 	pm.pkgCache[pkgPath] = newPkg
 
 	if conf != nil && len(conf.Deps) > 0 {

@@ -112,12 +112,8 @@ func TestLinkFileOK(t *testing.T) {
 	}
 	defer os.RemoveAll(tempDir)
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir: tempDir,
-		PkgBase: convert.PkgBase{
-			CppgConf: &llcppg.Config{
-				Libs: "pkg-config --libs libcjson",
-			},
-		},
+		OutputDir:  tempDir,
+		LibCommand: "${pkg-config --libs libcjson}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
@@ -138,9 +134,6 @@ func TestLinkFileFail(t *testing.T) {
 		defer os.RemoveAll(tempDir)
 		pkg, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: tempDir,
-			PkgBase: convert.PkgBase{
-				CppgConf: &llcppg.Config{},
-			},
 		})
 		if err != nil {
 			t.Fatal("NewPackage failed:", err)
@@ -157,12 +150,8 @@ func TestLinkFileFail(t *testing.T) {
 		}
 		defer os.RemoveAll(tempDir)
 		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: tempDir,
-			PkgBase: convert.PkgBase{
-				CppgConf: &llcppg.Config{
-					Libs: "${pkg-config --libs libcjson}",
-				},
-			},
+			OutputDir:  tempDir,
+			LibCommand: "${pkg-config --libs libcjson}",
 		})
 		if err != nil {
 			t.Fatal("NewPackage failed:", err)
@@ -1748,11 +1737,7 @@ func TestIdentRefer(t *testing.T) {
 		}
 	})
 	t.Run("type alias", func(t *testing.T) {
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			PkgBase: convert.PkgBase{
-				CppgConf: &llcppg.Config{},
-			},
-		})
+		pkg, err := createTestPkg(&convert.PackageConfig{})
 		if err != nil {
 			t.Fatal("NewPackage failed:", err)
 		}
@@ -1888,10 +1873,17 @@ func testGenDecl(t *testing.T, tc genDeclTestCase) {
 			t.Fatal("unexpect panic", r)
 		}
 	}()
+	var libCommand string
+	var deps []string
+	if tc.cppgconf != nil {
+		libCommand = tc.cppgconf.Libs
+		deps = tc.cppgconf.Deps
+	}
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		SymbolTable: config.CreateSymbolTable(tc.symbs),
+		LibCommand:  libCommand,
 		PkgBase: convert.PkgBase{
-			CppgConf: tc.cppgconf,
+			Deps: deps,
 		},
 	})
 	if err != nil {
@@ -1936,28 +1928,22 @@ func compareError(t *testing.T, err error, expectErr string) {
 }
 
 func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
-	if cfg.CppgConf == nil {
-		cfg.CppgConf = &llcppg.Config{}
-	}
-	if cfg.SymbolTable == nil {
-		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
-	}
-	if cfg.CppgConf == nil {
-		cfg.CppgConf = &llcppg.Config{}
-	}
 	if cfg.SymbolTable == nil {
 		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
 	}
 	return convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{
-			PkgPath:  ".",
-			CppgConf: cfg.CppgConf,
-			Pubs:     make(map[string]string),
+			PkgPath: ".",
+			Deps:    cfg.Deps,
+			Pubs:    make(map[string]string),
 		},
-		Name:        "testpkg",
-		GenConf:     &gogen.Config{},
-		OutputDir:   cfg.OutputDir,
-		SymbolTable: cfg.SymbolTable,
+		Name:           "testpkg",
+		GenConf:        &gogen.Config{},
+		OutputDir:      cfg.OutputDir,
+		SymbolTable:    cfg.SymbolTable,
+		LibCommand:     cfg.LibCommand,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		KeepUnderScore: cfg.KeepUnderScore,
 	})
 }
 
@@ -2099,15 +2085,14 @@ func TestImport(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		p.PkgInfo = convert.NewPkgInfo(".", ".", &llcppg.Config{
-			Deps: []string{
-				"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpath",
-				"github.com/goplus/llcppg/cl/internal/convert/testdata/partfinddep",
-			},
-		}, nil)
+		deps := []string{
+			"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpath",
+			"github.com/goplus/llcppg/cl/internal/convert/testdata/partfinddep",
+		}
+		p.PkgInfo = convert.NewPkgInfo(".", ".", deps, nil)
 		loader := convert.NewPkgDepLoader(mod, genPkg)
-		deps, err := loader.LoadDeps(p.PkgInfo)
-		p.PkgInfo.Deps = deps
+		depPkgs, err := loader.LoadDeps(p.PkgInfo)
+		p.PkgInfo.Deps = depPkgs
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2120,10 +2105,8 @@ func TestImport(t *testing.T) {
 		_, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
-				CppgConf: &llcppg.Config{
-					Deps: []string{
-						"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpub",
-					},
+				Deps: []string{
+					"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpub",
 				},
 			},
 		})
@@ -2135,10 +2118,8 @@ func TestImport(t *testing.T) {
 		_, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
-				CppgConf: &llcppg.Config{
-					Deps: []string{
-						"github.com/goplus/llcppg/cl/internal/convert/testdata/invaliddep",
-					},
+				Deps: []string{
+					"github.com/goplus/llcppg/cl/internal/convert/testdata/invaliddep",
 				},
 			},
 		})
@@ -2150,11 +2131,9 @@ func TestImport(t *testing.T) {
 		_, err := createTestPkg(&convert.PackageConfig{
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
-				CppgConf: &llcppg.Config{
-					Deps: []string{
-						"github.com/goplus/llcppg/cl/internal/convert/testdata/cjson",
-						"github.com/goplus/llcppg/cl/internal/convert/testdata/cjsonbool",
-					},
+				Deps: []string{
+					"github.com/goplus/llcppg/cl/internal/convert/testdata/cjson",
+					"github.com/goplus/llcppg/cl/internal/convert/testdata/cjsonbool",
 				},
 			},
 		})
