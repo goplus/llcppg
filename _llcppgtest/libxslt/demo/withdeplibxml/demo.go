@@ -8,6 +8,7 @@ import (
 	"libxslt"
 
 	"github.com/goplus/lib/c"
+	llgoc "github.com/goplus/llgo/c"
 	"github.com/goplus/llpkg/libxml2"
 )
 
@@ -35,8 +36,8 @@ func main() {
 			</xsl:template>
 		</xsl:stylesheet>
 	`
-	xmlDoc := libxml2.ReadMemory((*int8)(unsafe.Pointer(unsafe.StringData(xml))), c.Int(len(xml)), nil, nil, 0)
-	xsltDoc := libxml2.ReadMemory((*int8)(unsafe.Pointer(unsafe.StringData(xslt))), c.Int(len(xslt)), nil, nil, 0)
+	xmlDoc := libxml2.ReadMemory((*int8)(unsafe.Pointer(unsafe.StringData(xml))), llgoc.Int(len(xml)), nil, nil, 0)
+	xsltDoc := libxml2.ReadMemory((*int8)(unsafe.Pointer(unsafe.StringData(xslt))), llgoc.Int(len(xslt)), nil, nil, 0)
 
 	if xmlDoc == nil || xsltDoc == nil {
 		panic("cant read xml or xslt")

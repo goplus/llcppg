@@ -3,7 +3,7 @@ package thirddep
 import (
 	_ "unsafe"
 
-	"github.com/goplus/lib/c"
+	"github.com/goplus/llgo/c"
 )
 
 type ThirdDep struct {
