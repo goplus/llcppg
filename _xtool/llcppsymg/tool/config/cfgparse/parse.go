@@ -3,6 +3,7 @@ package cfgparse
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -54,9 +55,15 @@ func (l *Libs) GenDylibPaths(defaultPaths []string) ([]string, []string, error) 
 		var foundPath string
 		for _, path := range searchPaths {
 			dylibPath := filepath.Join(path, "lib"+name+affix)
+			fmt.Println(dylibPath)
 			if _, err := os.Stat(dylibPath); err == nil {
 				foundPath = dylibPath
 				break
+			} else {
+				fmt.Println(err)
+				ret, _ := exec.Command("ls", filepath.Join(path, "lib")).CombinedOutput()
+				fmt.Println(string(ret))
+
 			}
 		}
 		if foundPath != "" {
