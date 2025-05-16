@@ -12,7 +12,6 @@ import (
 	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
 	llcppg "github.com/goplus/llcppg/config"
-	llgoc "github.com/goplus/llgo/c"
 	"github.com/goplus/llpkg/cjson"
 )
 
@@ -81,7 +80,7 @@ func GetStringArrayItem(obj *cjson.JSON, key string) (value []string) {
 	}
 	value = make([]string, item.GetArraySize())
 	for i := range value {
-		value[i] = GetString(item.GetArrayItem(llgoc.Int(i)))
+		value[i] = GetString(item.GetArrayItem(c.Int(i)))
 	}
 	return
 }
