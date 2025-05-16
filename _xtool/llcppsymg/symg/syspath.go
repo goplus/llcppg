@@ -1,6 +1,7 @@
 package symg
 
 import (
+	"fmt"
 	"os/exec"
 	"regexp"
 	"runtime"
@@ -16,6 +17,7 @@ func GetLibPaths() []string {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println(string(output))
 		return ParseLdOutput(string(output))
 	}
 	return paths
