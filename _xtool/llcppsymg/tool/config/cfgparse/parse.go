@@ -51,6 +51,8 @@ func (l *Libs) GenDylibPaths(defaultPaths []string) ([]string, []string, error) 
 		affix = ".so"
 	}
 	searchPaths := append(l.Paths, defaultPaths...)
+
+	fmt.Println(searchPaths)
 	for _, name := range l.Names {
 		var foundPath string
 		for _, path := range searchPaths {
