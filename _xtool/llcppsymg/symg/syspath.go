@@ -1,6 +1,7 @@
 package symg
 
 import (
+	"fmt"
 	"os/exec"
 	"regexp"
 	"runtime"
@@ -9,6 +10,7 @@ import (
 
 func GetLibPaths() []string {
 	var paths []string
+	fmt.Println("platform", runtime.GOOS)
 	if runtime.GOOS == "linux" {
 		//resolution from https://github.com/goplus/llcppg/commit/02307485db9269481297a4dc5e8449fffaa4f562
 		cmd := exec.Command("ld", "--verbose")
@@ -16,6 +18,7 @@ func GetLibPaths() []string {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println(string(output))
 		return ParseLdOutput(string(output))
 	}
 	return paths
