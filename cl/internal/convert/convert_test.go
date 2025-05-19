@@ -13,6 +13,7 @@ import (
 	"github.com/goplus/llcppg/cl/internal/cltest"
 	"github.com/goplus/llcppg/cl/internal/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cmd/gogensig/node"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/env"
@@ -227,7 +228,15 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		OutputDir: outputDir,
 		Pkg:       convertPkg.File,
 		FileMap:   convertPkg.FileMap,
-
+		NodeConv: node.NewNodeConverter(
+			&node.NodeConverterConfig{
+				PkgName: cfg.Name,
+				// symbol table
+				FileMap:      convertPkg.FileMap,
+				TypeMap:      cfg.TypeMap,
+				TrimPrefixes: cfg.TrimPrefixes,
+			},
+		),
 		TypeMap:        cfg.TypeMap,
 		Deps:           cfg.Deps,
 		TrimPrefixes:   cfg.TrimPrefixes,

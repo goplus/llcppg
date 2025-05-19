@@ -123,9 +123,25 @@ func (p *Converter) Process() {
 		}
 	}
 
+	processNode := func(goFile string, process func() error) {
+		p.GenPkg.SetGoFile(goFile)
+		if err := process(); err != nil {
+			log.Panicln(err)
+		}
+	}
+
 	for _, macro := range p.Pkg.Macros {
-		processDecl(macro.Loc.File, func() error {
-			return p.GenPkg.NewMacro(macro)
+		goName, goFile, err := p.Conf.NodeConv.ConvMacro(macro)
+		// todo(zzy):goName to New Macro
+		if err != nil {
+			if errors.Is(err, ErrSkip) {
+				continue
+			}
+			// todo(zzy):refine error handing
+			log.Panicln(err)
+		}
+		processNode(goFile, func() error {
+			return p.GenPkg.NewMacro(macro, goName)
 		})
 	}
 

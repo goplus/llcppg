@@ -1165,12 +1165,12 @@ func TestRedef(t *testing.T) {
 		Name:   "MACRO_FOO",
 		Tokens: []*ast.Token{{Token: token.IDENT, Lit: "MACRO_FOO"}, {Token: token.LITERAL, Lit: "1"}},
 	}
-	err = pkg.NewMacro(macro)
+	err = pkg.NewMacro(macro, macro.Name)
 	if err != nil {
 		t.Fatal("unexpect redefine err")
 	}
 
-	err = pkg.NewMacro(macro)
+	err = pkg.NewMacro(macro, macro.Name)
 	if err != nil {
 		t.Fatal("unexpect redefine err")
 	}
