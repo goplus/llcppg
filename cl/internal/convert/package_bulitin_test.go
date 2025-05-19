@@ -11,17 +11,22 @@ import (
 	"github.com/goplus/llcppg/cl/internal/cltest"
 	llcppg "github.com/goplus/llcppg/config"
 	ctoken "github.com/goplus/llcppg/token"
+	"github.com/goplus/mod/gopmod"
 )
 
 func emptyPkg() *Package {
+	mod, err := gopmod.Load(".")
+	if err != nil {
+		panic(err)
+	}
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
 			Pubs:    make(map[string]string),
 		},
 		Name:       "testpkg",
+		Mod:        mod,
 		GenConf:    &gogen.Config{},
-		OutputDir:  "",
 		ConvSym:    cltest.NewConvSym(),
 		LibCommand: "${pkg-config --libs xxx}",
 	})
@@ -156,6 +161,10 @@ func TestGetNameType(t *testing.T) {
 }
 
 func TestTrimPrefixes(t *testing.T) {
+	mod, err := gopmod.Load(".")
+	if err != nil {
+		panic(err)
+	}
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
@@ -163,10 +172,10 @@ func TestTrimPrefixes(t *testing.T) {
 		},
 		Name:         "testpkg",
 		GenConf:      &gogen.Config{},
-		OutputDir:    "",
 		ConvSym:      cltest.NewConvSym(),
 		TrimPrefixes: []string{"prefix1", "prefix2"},
 		LibCommand:   "${pkg-config --libs xxx}",
+		Mod:          mod,
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)

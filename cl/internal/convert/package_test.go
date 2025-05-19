@@ -2,6 +2,7 @@ package convert_test
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -108,7 +109,6 @@ type U struct {
 
 func TestToType(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir:  "",
 		LibCommand: "${pkg-config --libs libcjson}",
 	})
 	if err != nil {
@@ -151,9 +151,7 @@ func TestToType(t *testing.T) {
 }
 
 func TestToTypeFail(t *testing.T) {
-	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir: "",
-	})
+	pkg, err := createTestPkg(&convert.PackageConfig{})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
 	}
@@ -1081,7 +1079,6 @@ type Foo func(a c.Int, b c.Int) c.Int
 // Test Redefine error
 func TestRedef(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir: "",
 		ConvSym: cltest.NewConvSym(
 			cltest.SymbolEntry{
 				CppName: "Bar", MangleName: "Bar", GoName: "Bar",
@@ -1710,7 +1707,6 @@ type Foo struct {
 
 func TestForwardDecl(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir: "",
 		ConvSym: cltest.NewConvSym(
 			cltest.SymbolEntry{
 				CppName: "Bar", MangleName: "Bar", GoName: "Bar",
@@ -1857,6 +1853,13 @@ func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 	if cfg.LibCommand == "" {
 		cfg.LibCommand = "${pkg-config --libs xxx}"
 	}
+	if cfg.Mod == nil {
+		mod, err := gopmod.Load(".")
+		if err != nil {
+			return nil, fmt.Errorf("failed to load mod: %w", err)
+		}
+		cfg.Mod = mod
+	}
 	return convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{
 			PkgPath: ".",
@@ -1865,11 +1868,11 @@ func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 		},
 		Name:           "testpkg",
 		GenConf:        &gogen.Config{},
-		OutputDir:      cfg.OutputDir,
 		ConvSym:        cfg.ConvSym,
 		LibCommand:     cfg.LibCommand,
 		TrimPrefixes:   cfg.TrimPrefixes,
 		KeepUnderScore: cfg.KeepUnderScore,
+		Mod:            cfg.Mod,
 	})
 }
 
@@ -1893,7 +1896,6 @@ func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 
 func TestTypeClean(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir: "",
 		ConvSym: cltest.NewConvSym(
 			cltest.SymbolEntry{CppName: "Func1", MangleName: "Func1", GoName: "Func1"},
 			cltest.SymbolEntry{CppName: "Func2", MangleName: "Func2", GoName: "Func2"},
@@ -2036,7 +2038,6 @@ func TestImport(t *testing.T) {
 	})
 	t.Run("invalid pub file", func(t *testing.T) {
 		_, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				Deps: []string{
 					"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpub",
@@ -2049,7 +2050,6 @@ func TestImport(t *testing.T) {
 	})
 	t.Run("invalid dep", func(t *testing.T) {
 		_, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				Deps: []string{
 					"github.com/goplus/llcppg/cl/internal/convert/testdata/invaliddep",
@@ -2062,7 +2062,6 @@ func TestImport(t *testing.T) {
 	})
 	t.Run("same type register", func(t *testing.T) {
 		_, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				Deps: []string{
 					"github.com/goplus/llcppg/cl/internal/convert/testdata/cjson",
@@ -2086,11 +2085,16 @@ func TestUnkownHfile(t *testing.T) {
 }
 
 func TestNewPackageLinkFail(t *testing.T) {
-	_, err := convert.NewPackage(&convert.PackageConfig{
+	mod, err := gopmod.Load(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{
 			PkgPath: ".",
 		},
 		Name:    "testpkg",
+		Mod:     mod,
 		GenConf: &gogen.Config{},
 	})
 	if err == nil {

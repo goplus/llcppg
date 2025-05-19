@@ -1,12 +1,14 @@
 package convert
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llconfig "github.com/goplus/llcppg/config"
+	"github.com/goplus/mod/gopmod"
 )
 
 type dbgFlags = int
@@ -73,6 +75,10 @@ type Converter struct {
 }
 
 func NewConverter(config *Config) (*Converter, error) {
+	mod, err := gopmod.Load(config.OutputDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load mod: %w", err)
+	}
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: config.PkgPath,
@@ -80,11 +86,11 @@ func NewConverter(config *Config) (*Converter, error) {
 			Pubs:    config.TypeMap,
 		},
 		Name:           config.PkgName,
-		OutputDir:      config.OutputDir,
 		ConvSym:        config.ConvSym,
 		LibCommand:     config.Libs,
 		TrimPrefixes:   config.TrimPrefixes,
 		KeepUnderScore: config.KeepUnderScore,
+		Mod:            mod,
 	})
 	if err != nil {
 		return nil, err

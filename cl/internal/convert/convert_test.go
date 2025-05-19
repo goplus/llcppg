@@ -310,7 +310,6 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 }
 
 func TestNewConvert(t *testing.T) {
-	// todo: remove this,convert will not read llcppg.cfg directly
 	cfg := &llcppg.Config{
 		Libs: "${pkg-config --libs xxx}",
 	}
@@ -328,6 +327,15 @@ func TestNewConvert(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("NewAstConvert Fail")
+	}
+}
+
+func TestNewConverterFail(t *testing.T) {
+	_, err := convert.NewConverter(&convert.Config{
+		OutputDir: "/invalid/path",
+	})
+	if err == nil {
+		t.Fatal("Expected error, but got nil")
 	}
 }
 

@@ -50,7 +50,7 @@ type Package struct {
 type PackageConfig struct {
 	PkgBase
 	Name           string // current package name
-	OutputDir      string
+	Mod            *gopmod.Module
 	ConvSym        func(name *ast.Object, mangleName string) (goName string, err error)
 	GenConf        *gogen.Config
 	TrimPrefixes   []string
@@ -87,15 +87,10 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 		config.Deps = append([]string{"c"}, config.Deps...)
 	}
 
-	mod, err := gopmod.Load(config.OutputDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load mod: %w", err)
-	}
-
 	p.PkgInfo = NewPkgInfo(config.PkgPath, config.Deps, config.Pubs)
 
-	pkgManager := NewPkgDepLoader(mod, p.p)
-	err = pkgManager.InitDeps(p.PkgInfo)
+	pkgManager := NewPkgDepLoader(config.Mod, p.p)
+	err := pkgManager.InitDeps(p.PkgInfo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to init deps: %w", err)
 	}

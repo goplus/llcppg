@@ -8,6 +8,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/cltest"
+	"github.com/goplus/mod/gopmod"
 )
 
 func TestIdentRef(t *testing.T) {
@@ -19,15 +20,19 @@ func TestIdentRef(t *testing.T) {
 }
 
 func TestSubstObj(t *testing.T) {
+	mod, err := gopmod.Load(".")
+	if err != nil {
+		panic(err)
+	}
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
 		},
 		Name:       "testpkg",
 		GenConf:    &gogen.Config{},
-		OutputDir:  "",
 		ConvSym:    cltest.NewConvSym(),
 		LibCommand: "${pkg-config --libs xxx}",
+		Mod:        mod,
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed")
