@@ -88,6 +88,7 @@ func main() {
 			}
 			return item.GoName, nil
 		},
+		NodeConv:       &NodeConverter{},
 		Pkg:            convertPkg.File,
 		FileMap:        convertPkg.FileMap,
 		TypeMap:        conf.TypeMap,
@@ -109,6 +110,21 @@ func main() {
 
 	err = config.RunCommand(outputDir, "go", "mod", "tidy")
 	check(err)
+}
+
+type NodeConverter struct {
+}
+
+func (c *NodeConverter) ConvDecl(decl ast.Decl) (goName, goFile string, err error) {
+	return "", "", nil
+}
+
+func (c *NodeConverter) ConvEnumItem(decl *ast.EnumTypeDecl, item *ast.EnumItem) (goName, goFile string, err error) {
+	return "", "", nil
+}
+
+func (c *NodeConverter) ConvMacro(macro *ast.Macro) (goName, goFile string, err error) {
+	return "", "", nil
 }
 
 // Write all files in the package to the output directory
