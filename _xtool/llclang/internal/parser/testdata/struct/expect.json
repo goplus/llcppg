@@ -1,0 +1,326 @@
+{
+	"_Type":	"File",
+	"decls":	[{
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/struct/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	null,
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"a"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/struct/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"Foo1"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"a"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"b"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/struct/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"Foo2"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"a"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"b"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/struct/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"Foo3"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"a"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"FuncType",
+									"Params":	{
+										"_Type":	"FieldList",
+										"List":	[{
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"BuiltinType",
+													"Kind":	6,
+													"Flags":	0
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}, {
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"BuiltinType",
+													"Kind":	6,
+													"Flags":	0
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}]
+									},
+									"Ret":	{
+										"_Type":	"BuiltinType",
+										"Kind":	6,
+										"Flags":	0
+									}
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"Foo"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/struct/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"Person"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"age"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"RecordType",
+								"Tag":	0,
+								"Fields":	{
+									"_Type":	"FieldList",
+									"List":	[{
+											"_Type":	"Field",
+											"Type":	{
+												"_Type":	"BuiltinType",
+												"Kind":	6,
+												"Flags":	0
+											},
+											"Doc":	null,
+											"Comment":	null,
+											"IsStatic":	false,
+											"Access":	1,
+											"Names":	[{
+													"_Type":	"Ident",
+													"Name":	"year"
+												}]
+										}, {
+											"_Type":	"Field",
+											"Type":	{
+												"_Type":	"BuiltinType",
+												"Kind":	6,
+												"Flags":	0
+											},
+											"Doc":	null,
+											"Comment":	null,
+											"IsStatic":	false,
+											"Access":	1,
+											"Names":	[{
+													"_Type":	"Ident",
+													"Name":	"day"
+												}]
+										}, {
+											"_Type":	"Field",
+											"Type":	{
+												"_Type":	"BuiltinType",
+												"Kind":	6,
+												"Flags":	0
+											},
+											"Doc":	null,
+											"Comment":	null,
+											"IsStatic":	false,
+											"Access":	1,
+											"Names":	[{
+													"_Type":	"Ident",
+													"Name":	"month"
+												}]
+										}]
+								},
+								"Methods":	[]
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"birthday"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}],
+	"includes":	[],
+	"macros":	[]
+}

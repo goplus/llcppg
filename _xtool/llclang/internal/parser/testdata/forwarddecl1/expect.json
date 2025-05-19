@@ -1,0 +1,688 @@
+{
+	"_Type":	"File",
+	"decls":	[{
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"Foo"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"TagExpr",
+									"Name":	{
+										"_Type":	"Ident",
+										"Name":	"bar"
+									},
+									"Tag":	0
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"b"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"bar"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"a"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"sqlite3_pcache_page"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"sqlite3_pcache_page"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"BuiltinType",
+									"Kind":	0,
+									"Flags":	0
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"pExtra"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"sqlite3_pcache"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"sqlite3_pcache_methods2"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"sqlite3_pcache_methods2"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"iVersion"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"FuncType",
+									"Params":	{
+										"_Type":	"FieldList",
+										"List":	[{
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"PointerType",
+													"X":	{
+														"_Type":	"BuiltinType",
+														"Kind":	0,
+														"Flags":	0
+													}
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}]
+									},
+									"Ret":	{
+										"_Type":	"BuiltinType",
+										"Kind":	0,
+										"Flags":	0
+									}
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"xShutdown"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"FuncType",
+									"Params":	{
+										"_Type":	"FieldList",
+										"List":	[{
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"BuiltinType",
+													"Kind":	6,
+													"Flags":	0
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}, {
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"BuiltinType",
+													"Kind":	6,
+													"Flags":	0
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}, {
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"BuiltinType",
+													"Kind":	6,
+													"Flags":	0
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}]
+									},
+									"Ret":	{
+										"_Type":	"PointerType",
+										"X":	{
+											"_Type":	"Ident",
+											"Name":	"sqlite3_pcache"
+										}
+									}
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"xCreate"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"sqlite3_file"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"sqlite3_file"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"Ident",
+									"Name":	"sqlite3_io_methods"
+								}
+							},
+							"Doc":	null,
+							"Comment":	{
+								"_Type":	"CommentGroup",
+								"List":	[{
+										"_Type":	"Comment",
+										"Text":	"/* Methods for an open file */\n"
+									}]
+							},
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"pMethods"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"sqlite3_io_methods"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"FuncType",
+									"Params":	{
+										"_Type":	"FieldList",
+										"List":	[{
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"PointerType",
+													"X":	{
+														"_Type":	"Ident",
+														"Name":	"sqlite3_file"
+													}
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}, {
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"BuiltinType",
+													"Kind":	6,
+													"Flags":	0
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}, {
+												"_Type":	"Field",
+												"Type":	{
+													"_Type":	"PointerType",
+													"X":	{
+														"_Type":	"BuiltinType",
+														"Kind":	0,
+														"Flags":	0
+													}
+												},
+												"Doc":	null,
+												"Comment":	null,
+												"IsStatic":	false,
+												"Access":	0,
+												"Names":	null
+											}]
+									},
+									"Ret":	{
+										"_Type":	"BuiltinType",
+										"Kind":	6,
+										"Flags":	0
+									}
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"xUnfetch"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"lua_State"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"lua_Debug"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"FuncDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"lua_getstack"
+			},
+			"MangledName":	"__Z12lua_getstackP9lua_StateiP9lua_Debug",
+			"Type":	{
+				"_Type":	"FuncType",
+				"Params":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"Ident",
+									"Name":	"lua_State"
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	0,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"L"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	0,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"level"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"Ident",
+									"Name":	"lua_Debug"
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	0,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"ar"
+								}]
+						}]
+				},
+				"Ret":	{
+					"_Type":	"BuiltinType",
+					"Kind":	6,
+					"Flags":	0
+				}
+			},
+			"IsInline":	false,
+			"IsStatic":	false,
+			"IsConst":	false,
+			"IsExplicit":	false,
+			"IsConstructor":	false,
+			"IsDestructor":	false,
+			"IsVirtual":	false,
+			"IsOverride":	false
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"lua_Debug"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"ArrayType",
+								"Elt":	{
+									"_Type":	"BuiltinType",
+									"Kind":	2,
+									"Flags":	1
+								},
+								"Len":	{
+									"_Type":	"BasicLit",
+									"Kind":	0,
+									"Value":	"60"
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"short_src"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"TagExpr",
+									"Name":	{
+										"_Type":	"Ident",
+										"Name":	"CallInfo"
+									},
+									"Tag":	0
+								}
+							},
+							"Doc":	null,
+							"Comment":	{
+								"_Type":	"CommentGroup",
+								"List":	[{
+										"_Type":	"Comment",
+										"Text":	"/* active function */\n"
+									}]
+							},
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"i_ci"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}],
+	"includes":	[],
+	"macros":	[{
+			"_Type":	"Macro",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl1/temp.h"
+			},
+			"Name":	"LUA_IDSIZE",
+			"Tokens":	[{
+					"_Type":	"Token",
+					"Token":	3,
+					"Lit":	"LUA_IDSIZE"
+				}, {
+					"_Type":	"Token",
+					"Token":	4,
+					"Lit":	"60"
+				}]
+		}]
+}

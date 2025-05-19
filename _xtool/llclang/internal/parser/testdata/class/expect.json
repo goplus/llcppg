@@ -1,0 +1,682 @@
+{
+	"_Type":	"File",
+	"decls":	[{
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/class/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"A"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	3,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"a"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"b"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/class/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"B"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	3,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	true,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"a"
+								}]
+						}, {
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"b"
+								}]
+						}]
+				},
+				"Methods":	[{
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"B"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"foo"
+						},
+						"MangledName":	"__ZN1B3fooEid",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	[{
+										"_Type":	"Field",
+										"Type":	{
+											"_Type":	"BuiltinType",
+											"Kind":	6,
+											"Flags":	0
+										},
+										"Doc":	null,
+										"Comment":	null,
+										"IsStatic":	false,
+										"Access":	0,
+										"Names":	[{
+												"_Type":	"Ident",
+												"Name":	"a"
+											}]
+									}, {
+										"_Type":	"Field",
+										"Type":	{
+											"_Type":	"BuiltinType",
+											"Kind":	8,
+											"Flags":	16
+										},
+										"Doc":	null,
+										"Comment":	null,
+										"IsStatic":	false,
+										"Access":	0,
+										"Names":	[{
+												"_Type":	"Ident",
+												"Name":	"b"
+											}]
+									}]
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	8,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	false,
+						"IsDestructor":	false,
+						"IsVirtual":	false,
+						"IsOverride":	false
+					}, {
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"B"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"vafoo"
+						},
+						"MangledName":	"__ZN1B5vafooEiz",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	[{
+										"_Type":	"Field",
+										"Type":	{
+											"_Type":	"BuiltinType",
+											"Kind":	6,
+											"Flags":	0
+										},
+										"Doc":	null,
+										"Comment":	null,
+										"IsStatic":	false,
+										"Access":	0,
+										"Names":	[{
+												"_Type":	"Ident",
+												"Name":	"a"
+											}]
+									}, {
+										"_Type":	"Field",
+										"Type":	{
+											"_Type":	"Variadic"
+										},
+										"Doc":	null,
+										"Comment":	null,
+										"IsStatic":	false,
+										"Access":	0,
+										"Names":	null
+									}]
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	false,
+						"IsDestructor":	false,
+						"IsVirtual":	false,
+						"IsOverride":	false
+					}]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/class/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"C"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	3,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[{
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"C"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"C"
+						},
+						"MangledName":	"__ZN1CC1Ev",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	true,
+						"IsDestructor":	false,
+						"IsVirtual":	false,
+						"IsOverride":	false
+					}, {
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"C"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"C"
+						},
+						"MangledName":	"__ZN1CC1Ev",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	true,
+						"IsConstructor":	true,
+						"IsDestructor":	false,
+						"IsVirtual":	false,
+						"IsOverride":	false
+					}, {
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"C"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"~C"
+						},
+						"MangledName":	"__ZN1CD1Ev",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	false,
+						"IsDestructor":	true,
+						"IsVirtual":	false,
+						"IsOverride":	false
+					}, {
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"C"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"foo"
+						},
+						"MangledName":	"__ZN1C3fooEv",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	true,
+						"IsStatic":	true,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	false,
+						"IsDestructor":	false,
+						"IsVirtual":	false,
+						"IsOverride":	false
+					}]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/class/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"Base"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	3,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[{
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"Base"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"Base"
+						},
+						"MangledName":	"__ZN4BaseC1Ev",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	true,
+						"IsDestructor":	false,
+						"IsVirtual":	false,
+						"IsOverride":	false
+					}, {
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"Base"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"~Base"
+						},
+						"MangledName":	"__ZN4BaseD1Ev",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	false,
+						"IsDestructor":	true,
+						"IsVirtual":	true,
+						"IsOverride":	false
+					}, {
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"Base"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"foo"
+						},
+						"MangledName":	"__ZN4Base3fooEv",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	false,
+						"IsDestructor":	false,
+						"IsVirtual":	true,
+						"IsOverride":	false
+					}]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/class/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"Derived"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	3,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[{
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"Derived"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"Derived"
+						},
+						"MangledName":	"__ZN7DerivedC1Ev",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	true,
+						"IsDestructor":	false,
+						"IsVirtual":	false,
+						"IsOverride":	false
+					}, {
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"Derived"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"~Derived"
+						},
+						"MangledName":	"__ZN7DerivedD1Ev",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	false,
+						"IsDestructor":	true,
+						"IsVirtual":	true,
+						"IsOverride":	true
+					}, {
+						"_Type":	"FuncDecl",
+						"Loc":	{
+							"_Type":	"Location",
+							"File":	"testdata/class/temp.h"
+						},
+						"Doc":	null,
+						"Parent":	{
+							"_Type":	"Ident",
+							"Name":	"Derived"
+						},
+						"Name":	{
+							"_Type":	"Ident",
+							"Name":	"foo"
+						},
+						"MangledName":	"__ZN7Derived3fooEv",
+						"Type":	{
+							"_Type":	"FuncType",
+							"Params":	{
+								"_Type":	"FieldList",
+								"List":	null
+							},
+							"Ret":	{
+								"_Type":	"BuiltinType",
+								"Kind":	0,
+								"Flags":	0
+							}
+						},
+						"IsInline":	false,
+						"IsStatic":	false,
+						"IsConst":	false,
+						"IsExplicit":	false,
+						"IsConstructor":	false,
+						"IsDestructor":	false,
+						"IsVirtual":	true,
+						"IsOverride":	true
+					}]
+			}
+		}, {
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/class/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	{
+				"_Type":	"Ident",
+				"Name":	"NSA"
+			},
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"Foo"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	3,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	null
+				},
+				"Methods":	[]
+			}
+		}],
+	"includes":	[],
+	"macros":	[]
+}

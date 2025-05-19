@@ -39,7 +39,7 @@ type Config struct {
 
 // GenGo generates Go code from C++ header files.
 func GenGo(outDir, buildDir string, conf *Config) (err error) {
-	allFile := filepath.Join(buildDir, "llcppg_all.h")
+	allFile := filepath.Join(buildDir, "llcppg_all.hpp")
 	err = composeIncludes(allFile, conf.HeaderFiles)
 	if err != nil {
 		return

@@ -496,15 +496,15 @@ func TestUnmarshalNode(t *testing.T) {
 				"IsOverride":	false
 			}`,
 			expected: &ast.FuncDecl{
-				DeclBase: ast.DeclBase{
+				Object: ast.Object{
 					Loc: &ast.Location{
 						File: "temp.h",
 					},
 					Doc: &ast.CommentGroup{
 						List: []*ast.Comment{},
 					},
+					Name: &ast.Ident{Name: "foo"},
 				},
-				Name: &ast.Ident{Name: "foo"},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
@@ -710,16 +710,16 @@ func TestUnmarshalNode(t *testing.T) {
 				},
 				Methods: []*ast.FuncDecl{
 					{
-						DeclBase: ast.DeclBase{
+						Object: ast.Object{
 							Loc: &ast.Location{
 								File: "temp.h",
 							},
 							Doc: &ast.CommentGroup{
 								List: []*ast.Comment{},
 							},
+							Name:   &ast.Ident{Name: "foo"},
 							Parent: &ast.Ident{Name: "A"},
 						},
-						Name: &ast.Ident{Name: "foo"},
 						Type: &ast.FuncType{
 							Params: &ast.FieldList{
 								List: []*ast.Field{
@@ -800,17 +800,17 @@ func TestUnmarshalNode(t *testing.T) {
 				}
 			}`,
 			expected: &ast.TypedefDecl{
-				DeclBase: ast.DeclBase{
+				Object: ast.Object{
 					Loc: &ast.Location{
 						File: "temp.h",
 					},
 					Doc: &ast.CommentGroup{
 						List: []*ast.Comment{},
 					},
+					Name: &ast.Ident{
+						Name: "INT",
+					},
 					Parent: nil,
-				},
-				Name: &ast.Ident{
-					Name: "INT",
 				},
 				Type: &ast.BuiltinType{
 					Kind:  6,
@@ -898,16 +898,16 @@ func TestUnmarshalNode(t *testing.T) {
 				}
 			}`,
 			expected: &ast.EnumTypeDecl{
-				DeclBase: ast.DeclBase{
+				Object: ast.Object{
 					Loc: &ast.Location{
 						File: "temp.h",
 					},
 					Doc: &ast.CommentGroup{
 						List: []*ast.Comment{},
 					},
+					Name:   &ast.Ident{Name: "Foo"},
 					Parent: nil,
 				},
-				Name: &ast.Ident{Name: "Foo"},
 				Type: &ast.EnumType{
 					Items: []*ast.EnumItem{
 						{
@@ -1064,15 +1064,15 @@ func TestUnmarshalNode(t *testing.T) {
 			expected: &ast.File{
 				Decls: []ast.Decl{
 					&ast.FuncDecl{
-						DeclBase: ast.DeclBase{
+						Object: ast.Object{
 							Loc: &ast.Location{
 								File: "temp.h",
 							},
 							Doc: &ast.CommentGroup{
 								List: []*ast.Comment{},
 							},
+							Name: &ast.Ident{Name: "foo"},
 						},
-						Name: &ast.Ident{Name: "foo"},
 						Type: &ast.FuncType{
 							Params: &ast.FieldList{
 								List: []*ast.Field{
@@ -1213,12 +1213,12 @@ func TestUnmarshalPkg(t *testing.T) {
 		File: &ast.File{
 			Decls: []ast.Decl{
 				&ast.TypeDecl{
-					DeclBase: ast.DeclBase{
+					Object: ast.Object{
 						Loc: &ast.Location{
 							File: "/opt/homebrew/include/lua/lua.h",
 						},
+						Name: &ast.Ident{Name: "lua_State"},
 					},
-					Name: &ast.Ident{Name: "lua_State"},
 					Type: &ast.RecordType{
 						Tag:     0,
 						Fields:  &ast.FieldList{},
@@ -1226,12 +1226,12 @@ func TestUnmarshalPkg(t *testing.T) {
 					},
 				},
 				&ast.TypedefDecl{
-					DeclBase: ast.DeclBase{
+					Object: ast.Object{
 						Loc: &ast.Location{
 							File: "/opt/homebrew/include/lua/lua.h",
 						},
+						Name: &ast.Ident{Name: "lua_Number"},
 					},
-					Name: &ast.Ident{Name: "lua_Number"},
 					Type: &ast.BuiltinType{
 						Kind:  8,
 						Flags: 16,
@@ -1499,7 +1499,7 @@ func TestUnmarshalErrors(t *testing.T) {
 			name:        "unmarshalScopingExpr - Unexpected X",
 			fn:          unmarshal.ScopingExpr,
 			input:       `{"Parent": {"_Type": "Ident", "Name": "test"}, "X": {"_Type": "Token", "Token": 1, "Lit": "test"}}`,
-			expectedErr: "unmarshal error in ScopingExpr: got *ast.Token, want ast.Expr",
+			expectedErr: "unmarshal error in ScopingExpr: got *ast.Token, want ast.Ident",
 		},
 
 		// unmarshalEnumItem errors

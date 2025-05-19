@@ -341,9 +341,9 @@ func ScopingExpr(data []byte) (ast.Node, error) {
 	if err != nil {
 		return nil, newUnmarshalFieldError("ScopingExpr", scopingExprData, "X", data, err)
 	}
-	x, ok := xNode.(ast.Expr)
+	x, ok := xNode.(*ast.Ident)
 	if !ok {
-		return nil, newUnexpectType("ScopingExpr", xNode, "ast.Expr")
+		return nil, newUnexpectType("ScopingExpr", xNode, "ast.Ident")
 	}
 	scopingExpr.X = x
 
@@ -481,7 +481,6 @@ func FuncType(data []byte) (ast.Node, error) {
 
 func FuncDecl(data []byte) (ast.Node, error) {
 	type funcDeclTemp struct {
-		Name          *ast.Ident
 		MangledName   string
 		Type          json.RawMessage
 		IsInline      bool
@@ -513,9 +512,8 @@ func FuncDecl(data []byte) (ast.Node, error) {
 	}
 
 	return &ast.FuncDecl{
-		DeclBase:      declBase,
+		Object:        declBase,
 		Type:          typ,
-		Name:          funcDeclData.Name,
 		MangledName:   funcDeclData.MangledName,
 		IsInline:      funcDeclData.IsInline,
 		IsStatic:      funcDeclData.IsStatic,
@@ -530,7 +528,6 @@ func FuncDecl(data []byte) (ast.Node, error) {
 
 func TypeDecl(data []byte) (ast.Node, error) {
 	type typeDeclTemp struct {
-		Name *ast.Ident
 		Type json.RawMessage
 	}
 	var typeDeclData typeDeclTemp
@@ -553,15 +550,13 @@ func TypeDecl(data []byte) (ast.Node, error) {
 	}
 
 	return &ast.TypeDecl{
-		DeclBase: declBase,
-		Name:     typeDeclData.Name,
-		Type:     typ,
+		Object: declBase,
+		Type:   typ,
 	}, nil
 }
 
 func TypeDefDecl(data []byte) (ast.Node, error) {
 	type typeDefDeclTemp struct {
-		Name *ast.Ident
 		Type json.RawMessage
 	}
 	var typeDefDeclData typeDefDeclTemp
@@ -584,15 +579,13 @@ func TypeDefDecl(data []byte) (ast.Node, error) {
 	}
 
 	return &ast.TypedefDecl{
-		DeclBase: declBase,
-		Name:     typeDefDeclData.Name,
-		Type:     typ,
+		Object: declBase,
+		Type:   typ,
 	}, nil
 }
 
 func EnumTypeDecl(data []byte) (ast.Node, error) {
 	type enumTypeDeclTemp struct {
-		Name *ast.Ident
 		Type json.RawMessage
 	}
 	var enumTypeDeclData enumTypeDeclTemp
@@ -615,36 +608,37 @@ func EnumTypeDecl(data []byte) (ast.Node, error) {
 	}
 
 	return &ast.EnumTypeDecl{
-		DeclBase: declBase,
-		Name:     enumTypeDeclData.Name,
-		Type:     typ,
+		Object: declBase,
+		Type:   typ,
 	}, nil
 }
 
-func declBase(data []byte) (ast.DeclBase, error) {
+func declBase(data []byte) (ast.Object, error) {
 	type declBaseTemp struct {
 		Loc    *ast.Location
 		Doc    *ast.CommentGroup
+		Name   *ast.Ident
 		Parent json.RawMessage
 	}
 	var declBaseData declBaseTemp
 	if err := json.Unmarshal(data, &declBaseData); err != nil {
-		return ast.DeclBase{}, newDeserializeError("declBase", declBaseData, data, err)
+		return ast.Object{}, newDeserializeError("declBase", declBaseData, data, err)
 	}
 
-	declBase := ast.DeclBase{
-		Loc: declBaseData.Loc,
-		Doc: declBaseData.Doc,
+	declBase := ast.Object{
+		Loc:  declBaseData.Loc,
+		Doc:  declBaseData.Doc,
+		Name: declBaseData.Name,
 	}
 
 	if !isJSONNull(declBaseData.Parent) {
 		parentNode, err := Node(declBaseData.Parent)
 		if err != nil {
-			return ast.DeclBase{}, newUnmarshalFieldError("declBase", declBaseData, "Parent", data, err)
+			return ast.Object{}, newUnmarshalFieldError("declBase", declBaseData, "Parent", data, err)
 		}
 		parent, ok := parentNode.(ast.Expr)
 		if !ok {
-			return ast.DeclBase{}, newUnexpectType("declBase", parentNode, "ast.Expr")
+			return ast.Object{}, newUnexpectType("declBase", parentNode, "ast.Expr")
 		}
 		declBase.Parent = parent
 	}

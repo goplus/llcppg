@@ -175,10 +175,11 @@ func (ct *Converter) InFile(cursor clang.Cursor) bool {
 	return true
 }
 
-func (ct *Converter) CreateDeclBase(cursor clang.Cursor) ast.DeclBase {
-	base := ast.DeclBase{
+func (ct *Converter) CreateObject(cursor clang.Cursor, name *ast.Ident) ast.Object {
+	base := ast.Object{
 		Loc:    createLoc(cursor),
 		Parent: ct.BuildScopingExpr(cursor.SemanticParent()),
+		Name:   name,
 	}
 	commentGroup, isDoc := ct.ParseCommentGroup(cursor)
 	if isDoc {
@@ -433,9 +434,8 @@ func (ct *Converter) ProcessTypeDefDecl(cursor clang.Cursor) *ast.TypedefDecl {
 	}
 
 	decl := &ast.TypedefDecl{
-		DeclBase: ct.CreateDeclBase(cursor),
-		Name:     &ast.Ident{Name: name},
-		Type:     typ,
+		Object: ct.CreateObject(cursor, &ast.Ident{Name: name}),
+		Type:   typ,
 	}
 	return decl
 }
@@ -571,8 +571,7 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	}
 
 	funcDecl := &ast.FuncDecl{
-		DeclBase:    ct.CreateDeclBase(cursor),
-		Name:        &ast.Ident{Name: name},
+		Object:      ct.CreateObject(cursor, &ast.Ident{Name: name}),
 		Type:        funcType,
 		MangledName: mangledName,
 	}
@@ -596,7 +595,7 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 // get Methods Attributes
 func (ct *Converter) ProcessMethodAttributes(cursor clang.Cursor, fn *ast.FuncDecl) {
 	if parent := cursor.SemanticParent(); parent.Equal(cursor.LexicalParent()) != 1 {
-		fn.DeclBase.Parent = ct.BuildScopingExpr(cursor.SemanticParent())
+		fn.Parent = ct.BuildScopingExpr(cursor.SemanticParent())
 	}
 
 	switch cursor.Kind {
@@ -662,8 +661,8 @@ func (ct *Converter) ProcessEnumDecl(cursor clang.Cursor) *ast.EnumTypeDecl {
 	ct.logln("ProcessEnumDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
 
 	decl := &ast.EnumTypeDecl{
-		DeclBase: ct.CreateDeclBase(cursor),
-		Type:     ct.ProcessEnumType(cursor),
+		Object: ct.CreateObject(cursor, nil),
+		Type:   ct.ProcessEnumType(cursor),
 	}
 
 	anony := cursor.IsAnonymous()
@@ -782,8 +781,8 @@ func (ct *Converter) ProcessRecordDecl(cursor clang.Cursor) *ast.TypeDecl {
 	ct.logln("ProcessRecordDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
 
 	decl := &ast.TypeDecl{
-		DeclBase: ct.CreateDeclBase(cursor),
-		Type:     ct.ProcessRecordType(cursor),
+		Object: ct.CreateObject(cursor, nil),
+		Type:   ct.ProcessRecordType(cursor),
 	}
 
 	anony := cursor.IsAnonymousRecordDecl()
@@ -810,13 +809,12 @@ func (ct *Converter) ProcessClassDecl(cursor clang.Cursor) *ast.TypeDecl {
 	ct.logln("ProcessClassDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
 
 	// Pushing class scope before processing its type and popping after
-	base := ct.CreateDeclBase(cursor)
+	base := ct.CreateObject(cursor, &ast.Ident{Name: cursorName})
 	typ := ct.ProcessRecordType(cursor)
 
 	decl := &ast.TypeDecl{
-		DeclBase: base,
-		Name:     &ast.Ident{Name: cursorName},
-		Type:     typ,
+		Object: base,
+		Type:   typ,
 	}
 
 	return decl

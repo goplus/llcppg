@@ -1,6 +1,7 @@
 package cl
 
 import (
+	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/convert"
 	llconfig "github.com/goplus/llcppg/config"
 )
@@ -16,24 +17,40 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 }
 
 type ConvConfig struct {
-	PkgName   string
-	SymbFile  string // llcppg.symb.json
-	CfgFile   string // llcppg.cfg
 	OutputDir string
+	PkgPath   string
+	PkgName   string
+	Pkg       *ast.File
+	FileMap   map[string]*llconfig.FileInfo
+	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 
-	Pkg *llconfig.Pkg
+	// CfgFile   string // llcppg.cfg
+	TypeMap        map[string]string // llcppg.pub
+	Deps           []string          // dependent packages
+	TrimPrefixes   []string
+	Libs           string
+	KeepUnderScore bool
 }
 
-func Convert(config *ConvConfig) (err error) {
+func Convert(config *ConvConfig) (pkg Package, err error) {
 	cvt, err := convert.NewConverter(&convert.Config{
-		PkgName:  config.PkgName,
-		SymbFile: config.SymbFile,
-		CfgFile:  config.CfgFile,
-		Pkg:      config.Pkg,
+		OutputDir: config.OutputDir,
+		PkgPath:   config.PkgPath,
+		PkgName:   config.PkgName,
+		Pkg:       config.Pkg,
+		FileMap:   config.FileMap,
+		ConvSym:   config.ConvSym,
+
+		TypeMap:        config.TypeMap,
+		Deps:           config.Deps,
+		TrimPrefixes:   config.TrimPrefixes,
+		Libs:           config.Libs,
+		KeepUnderScore: config.KeepUnderScore,
 	})
 	if err != nil {
 		return
 	}
 	cvt.Convert()
-	return nil
+	gp := cvt.GenPkg
+	return Package{gp.Pkg(), gp.PkgInfo}, nil
 }

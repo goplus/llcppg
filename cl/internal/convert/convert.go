@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/ast"
-
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llconfig "github.com/goplus/llcppg/config"
 )
@@ -24,12 +23,19 @@ func SetDebug(dbgFlags dbgFlags) {
 }
 
 type Config struct {
-	PkgName   string
-	SymbFile  string // llcppg.symb.json
-	CfgFile   string // llcppg.cfg
 	OutputDir string
+	PkgPath   string
+	PkgName   string
+	Pkg       *ast.File
+	FileMap   map[string]*llconfig.FileInfo
+	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 
-	Pkg *llconfig.Pkg
+	// CfgFile   string // llcppg.cfg
+	TypeMap        map[string]string // llcppg.pub
+	Deps           []string          // dependent packages
+	TrimPrefixes   []string
+	Libs           string
+	KeepUnderScore bool
 }
 
 // if modulePath is not empty, init the module by modulePath
@@ -60,57 +66,41 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 }
 
 type Converter struct {
-	Pkg    *llconfig.Pkg
-	GenPkg *Package
-	Conf   *Config
+	Pkg     *ast.File
+	FileMap map[string]*llconfig.FileInfo
+	GenPkg  *Package
+	Conf    *Config
 }
 
 func NewConverter(config *Config) (*Converter, error) {
-	symbTable, err := cfg.NewSymbolTable(config.SymbFile)
-	if err != nil {
-		if debugLog {
-			log.Printf("Can't get llcppg.symb.json from %s Use empty table\n", config.SymbFile)
-		}
-		symbTable = cfg.CreateSymbolTable([]cfg.SymbolEntry{})
-	}
-
-	// todo: remove this
-	conf, err := cfg.GetCppgCfgFromPath(config.CfgFile)
-	if err != nil {
-		if debugLog {
-			log.Printf("Cant get llcppg.cfg from %s Use empty config\n", config.CfgFile)
-		}
-		conf = llconfig.NewDefault()
-	}
-
 	pkg, err := NewPackage(&PackageConfig{
 		PkgBase: PkgBase{
-			PkgPath: ".",
-			Deps:    conf.Deps,
-			Pubs:    conf.TypeMap,
+			PkgPath: config.PkgPath,
+			Deps:    config.Deps,
+			Pubs:    config.TypeMap,
 		},
 		Name:           config.PkgName,
 		OutputDir:      config.OutputDir,
-		SymbolTable:    symbTable,
-		LibCommand:     conf.Libs,
-		TrimPrefixes:   conf.TrimPrefixes,
-		KeepUnderScore: conf.KeepUnderScore,
+		ConvSym:        config.ConvSym,
+		LibCommand:     config.Libs,
+		TrimPrefixes:   config.TrimPrefixes,
+		KeepUnderScore: config.KeepUnderScore,
 	})
 	if err != nil {
 		return nil, err
 	}
 	return &Converter{
-		GenPkg: pkg,
-		Pkg:    config.Pkg,
-		Conf:   config,
+		Pkg:     config.Pkg,
+		FileMap: config.FileMap,
+		GenPkg:  pkg,
+		Conf:    config,
 	}, nil
 }
 
+// todo(zzy):throw error
 func (p *Converter) Convert() {
 	p.Process()
-	p.Write()
-	p.Fmt()
-	p.Tidy()
+	p.Complete()
 }
 
 func (p *Converter) Process() {
@@ -121,68 +111,46 @@ func (p *Converter) Process() {
 		}
 	}
 
-	for _, macro := range p.Pkg.File.Macros {
+	for _, macro := range p.Pkg.Macros {
 		processDecl(macro.Loc.File, func() error {
 			return p.GenPkg.NewMacro(macro)
 		})
 	}
 
-	for _, decl := range p.Pkg.File.Decls {
+	for _, decl := range p.Pkg.Decls {
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
-			processDecl(decl.DeclBase.Loc.File, func() error {
+			processDecl(decl.Object.Loc.File, func() error {
 				return p.GenPkg.NewTypeDecl(decl)
 			})
 		case *ast.EnumTypeDecl:
-			processDecl(decl.DeclBase.Loc.File, func() error {
+			processDecl(decl.Object.Loc.File, func() error {
 				return p.GenPkg.NewEnumTypeDecl(decl)
 			})
 		case *ast.TypedefDecl:
-			processDecl(decl.DeclBase.Loc.File, func() error {
+			processDecl(decl.Object.Loc.File, func() error {
 				return p.GenPkg.NewTypedefDecl(decl)
 			})
 		case *ast.FuncDecl:
-			processDecl(decl.DeclBase.Loc.File, func() error {
+			processDecl(decl.Object.Loc.File, func() error {
 				return p.GenPkg.NewFuncDecl(decl)
 			})
 		}
 	}
 }
 
-func (p *Converter) Write() {
-	err := p.GenPkg.WritePkgFiles()
+func (p *Converter) Complete() {
+	err := p.GenPkg.Complete()
 	if err != nil {
-		log.Panicf("WritePkgFiles: %v\n", err)
-	}
-	err = p.GenPkg.WritePubFile()
-	if err != nil {
-		log.Panicf("WritePubFile: %v\n", err)
-	}
-	_, err = p.GenPkg.WriteLinkFile()
-	if err != nil {
-		log.Panicf("WriteLinkFile: %v\n", err)
-	}
-}
-
-func (p *Converter) Fmt() {
-	err := cfg.RunCommand(p.Conf.OutputDir, "go", "fmt", ".")
-	if err != nil {
-		log.Panicf("go fmt: %v\n", err)
-	}
-}
-
-func (p *Converter) Tidy() {
-	err := cfg.RunCommand(p.Conf.OutputDir, "go", "mod", "tidy")
-	if err != nil {
-		log.Panicf("go mod tidy: %v\n", err)
+		log.Panicf("Complete Fail: %v\n", err)
 	}
 }
 
 func (p *Converter) setCurFile(file string) {
-	info, exist := p.Pkg.FileMap[file]
+	info, exist := p.FileMap[file]
 	if !exist {
 		var availableFiles []string
-		for f := range p.Pkg.FileMap {
+		for f := range p.FileMap {
 			availableFiles = append(availableFiles, f)
 		}
 		log.Panicf("File %q not found in FileMap. Available files:\n%s",

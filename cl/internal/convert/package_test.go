@@ -3,15 +3,14 @@ package convert_test
 import (
 	"bytes"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/internal/cltest"
 	"github.com/goplus/llcppg/cl/internal/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/token"
 	"github.com/goplus/mod/gopmod"
@@ -42,7 +41,9 @@ func TestUnionDecl(t *testing.T) {
 		{
 			name: "union u{int a; long b; long c; bool f;};",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "u"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "u"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Union,
 					Fields: &ast.FieldList{
@@ -105,77 +106,10 @@ type U struct {
 	}
 }
 
-func TestLinkFileOK(t *testing.T) {
-	tempDir, err := os.MkdirTemp(dir, "test_package_link")
-	if err != nil {
-		t.Fatalf("Failed to create temporary directory: %v", err)
-	}
-	defer os.RemoveAll(tempDir)
-	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir:  tempDir,
-		LibCommand: "${pkg-config --libs libcjson}",
-	})
-	if err != nil {
-		t.Fatal("NewPackage failed:", err)
-	}
-	filePath, _ := pkg.WriteLinkFile()
-	_, err = os.Stat(filePath)
-	if os.IsNotExist(err) {
-		t.FailNow()
-	}
-}
-
-func TestLinkFileFail(t *testing.T) {
-	t.Run("not link lib", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_link")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: tempDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		_, err = pkg.WriteLinkFile()
-		if err == nil {
-			t.FailNow()
-		}
-	})
-	t.Run("no permission", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_link")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir:  tempDir,
-			LibCommand: "${pkg-config --libs libcjson}",
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		err = os.Chmod(tempDir, 0555)
-		if err != nil {
-			t.Fatalf("Failed to change directory permissions: %v", err)
-		}
-		defer func() {
-			if err := os.Chmod(tempDir, 0755); err != nil {
-				t.Fatalf("Failed to change directory permissions: %v", err)
-			}
-		}()
-		_, err = pkg.WriteLinkFile()
-		if err == nil {
-			t.FailNow()
-		}
-	})
-
-}
-
 func TestToType(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		OutputDir: "",
+		OutputDir:  "",
+		LibCommand: "${pkg-config --libs libcjson}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
@@ -247,127 +181,21 @@ import _ "unsafe"
 	`)
 }
 
-func TestPackageWrite(t *testing.T) {
-	verifyGeneratedFile := func(t *testing.T, expectedFilePath string) {
-		t.Helper()
-		if _, err := os.Stat(expectedFilePath); os.IsNotExist(err) {
-			t.Fatalf("Expected output file does not exist: %s", expectedFilePath)
-		}
-
-		content, err := os.ReadFile(expectedFilePath)
-		if err != nil {
-			t.Fatalf("Unable to read generated file: %v", err)
-		}
-
-		expectedContent := "package testpkg"
-		if !strings.Contains(string(content), expectedContent) {
-			t.Errorf("Generated file content does not match expected.\nExpected:\n%s\nActual:\n%s", expectedContent, string(content))
-		}
-	}
-
-	incPath := "mock_header.h"
-	filePath := filepath.Join("/path", "to", incPath)
-	genPath := name.HeaderFileToGo(filePath)
-
-	headerFile := convert.NewHeaderFile(filePath, llcppg.Inter)
-
-	t.Run("OutputToTempDir", func(t *testing.T) {
-		tempDir, err := os.MkdirTemp(dir, "test_package_write")
-		if err != nil {
-			t.Fatalf("Failed to create temporary directory: %v", err)
-		}
-		defer os.RemoveAll(tempDir)
-
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: tempDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-
-		pkg.SetCurFile(headerFile)
-		err = pkg.Write(filePath)
-		if err != nil {
-			t.Fatalf("Write method failed: %v", err)
-		}
-
-		expectedFilePath := filepath.Join(tempDir, genPath)
-		verifyGeneratedFile(t, expectedFilePath)
-	})
-
-	t.Run("OutputToCurrentDir", func(t *testing.T) {
-		testpkgDir := filepath.Join(dir, "testpkg")
-		if err := os.MkdirAll(testpkgDir, 0755); err != nil {
-			t.Fatalf("Failed to create testpkg directory: %v", err)
-		}
-
-		defer func() {
-			// Clean up generated files and directory
-			os.RemoveAll(testpkgDir)
-		}()
-
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: testpkgDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		pkg.SetCurFile(headerFile)
-		err = pkg.Write(filePath)
-		if err != nil {
-			t.Fatalf("Write method failed: %v", err)
-		}
-
-		expectedFilePath := filepath.Join(testpkgDir, genPath)
-		verifyGeneratedFile(t, expectedFilePath)
-	})
-
-	t.Run("InvalidOutputDir", func(t *testing.T) {
-		testpkgDir := filepath.Join(dir, "testpkg")
-		if err := os.MkdirAll(testpkgDir, 0755); err != nil {
-			t.Fatalf("Failed to create testpkg directory: %v", err)
-		}
-		defer func() {
-			os.RemoveAll(testpkgDir)
-		}()
-		pkg, err := createTestPkg(&convert.PackageConfig{
-			OutputDir: testpkgDir,
-		})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		pkg.Config().OutputDir = "/nonexistent/directory"
-		err = pkg.Write(incPath)
-		if err == nil {
-			t.Fatal("Expected an error for invalid output directory, but got nil")
-		}
-	})
-
-	t.Run("WriteUnexistFile", func(t *testing.T) {
-		pkg, err := createTestPkg(&convert.PackageConfig{})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		err = pkg.Write("test1.h")
-		if err == nil {
-			t.Fatal("Expected an error for invalid output directory, but got nil")
-		}
-	})
-}
-
 func TestFuncDecl(t *testing.T) {
 	testCases := []genDeclTestCase{
 		{
 			name: "empty func",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: nil,
 					Ret:    &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -385,7 +213,9 @@ func Foo()
 		{
 			name: "variadic func",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -396,7 +226,7 @@ func Foo()
 					Ret: &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -414,7 +244,9 @@ func Foo(__llgo_va_list ...interface{})
 		{
 			name: "func not in symbol table",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: nil,
@@ -430,7 +262,9 @@ import _ "unsafe"
 		{
 			name: "invalid function type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "invalidFunc"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "invalidFunc"},
+				},
 				MangledName: "invalidFunc",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -444,7 +278,7 @@ import _ "unsafe"
 					Ret: nil,
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "invalidFunc",
 					MangleName: "invalidFunc",
@@ -456,14 +290,16 @@ import _ "unsafe"
 		{
 			name: "explict void return",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: nil,
 					Ret:    &ast.BuiltinType{Kind: ast.Void},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -481,7 +317,9 @@ func Foo()
 		{
 			name: "builtin type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -511,7 +349,7 @@ func Foo()
 				},
 			},
 
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -532,7 +370,9 @@ func Foo(a uint16, b bool) c.Double
 		{
 			name: "c builtin type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -550,7 +390,7 @@ func Foo(a uint16, b bool) c.Double
 					Ret: &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -571,7 +411,9 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 		{
 			name: "basic decl with c type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -589,7 +431,7 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 					Ret: &ast.BuiltinType{Kind: ast.Int, Flags: ast.Long | ast.Unsigned},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -610,7 +452,9 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 		{
 			name: "pointer type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -637,7 +481,7 @@ func Foo(a c.Uint, b c.Long) c.Ulong
 					},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -658,7 +502,9 @@ func Foo(a *c.Uint, b *c.Long) *c.Double
 		{
 			name: "void *",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -676,7 +522,7 @@ func Foo(a *c.Uint, b *c.Long) *c.Double
 					},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -697,7 +543,9 @@ func Foo(a c.Pointer) c.Pointer
 		{
 			name: "array",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -732,7 +580,7 @@ func Foo(a c.Pointer) c.Pointer
 					},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -756,7 +604,9 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 		{
 			name: "error array param",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -771,7 +621,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					Ret: nil,
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -783,14 +633,16 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 		{
 			name: "error return type",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: nil,
 					Ret:    &ast.BuiltinType{Kind: ast.Bool, Flags: ast.Double},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -802,7 +654,9 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 		{
 			name: "error nil param",
 			decl: &ast.FuncDecl{
-				Name:        &ast.Ident{Name: "foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "foo"},
+				},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -813,7 +667,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					Ret: nil,
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -825,10 +679,10 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 		{
 			name: "error receiver",
 			decl: &ast.FuncDecl{
-				DeclBase: ast.DeclBase{
-					Loc: &ast.Location{File: tempFile.File},
+				Object: ast.Object{
+					Loc:  &ast.Location{File: tempFile.File},
+					Name: &ast.Ident{Name: "foo"},
 				},
-				Name:        &ast.Ident{Name: "foo"},
 				MangledName: "foo",
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -840,7 +694,7 @@ func Foo(a *c.Uint, b *c.Double) **c.Char
 					},
 				},
 			},
-			symbs: []config.SymbolEntry{
+			symbs: []cltest.SymbolEntry{
 				{
 					CppName:    "foo",
 					MangleName: "foo",
@@ -863,7 +717,9 @@ func TestStructDecl(t *testing.T) {
 		{
 			name: "empty struct",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag:    ast.Struct,
 					Fields: nil,
@@ -881,7 +737,9 @@ type Foo struct {
 		{
 			name: "invalid struct type",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "InvalidStruct"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "InvalidStruct"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -900,7 +758,9 @@ type Foo struct {
 		{
 			name: "struct field builtin type",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -946,7 +806,9 @@ type Foo struct {
 		{
 			name: "struct field pointer",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -1005,7 +867,9 @@ type Foo struct {
 		{
 			name: "struct array field",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -1054,7 +918,9 @@ type Foo struct {
 		{
 			name: "struct array field",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -1103,7 +969,9 @@ type Foo struct {
 		{
 			name: "struct array field without len",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -1126,7 +994,9 @@ type Foo struct {
 		{
 			name: "struct array field without len",
 			decl: &ast.TypeDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.RecordType{
 					Tag: ast.Struct,
 					Fields: &ast.FieldList{
@@ -1162,7 +1032,9 @@ func TestTypedefFunc(t *testing.T) {
 		{
 			name: "typedef func",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "Foo"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Foo"},
+				},
 				Type: &ast.PointerType{
 					X: &ast.FuncType{
 						Params: &ast.FieldList{
@@ -1210,9 +1082,9 @@ type Foo func(a c.Int, b c.Int) c.Int
 func TestRedef(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Bar", MangleName: "Bar", GoName: "Bar"},
+		ConvSym: cltest.NewConvSym(
+			cltest.SymbolEntry{
+				CppName: "Bar", MangleName: "Bar", GoName: "Bar",
 			},
 		),
 	})
@@ -1229,7 +1101,9 @@ func TestRedef(t *testing.T) {
 		},
 	}
 	pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: flds,
@@ -1237,7 +1111,9 @@ func TestRedef(t *testing.T) {
 	})
 
 	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: flds,
@@ -1248,7 +1124,9 @@ func TestRedef(t *testing.T) {
 	}
 
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
-		Name:        &ast.Ident{Name: "Bar"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Bar"},
+		},
 		MangledName: "Bar",
 		Type: &ast.FuncType{
 			Ret: &ast.BuiltinType{
@@ -1261,7 +1139,9 @@ func TestRedef(t *testing.T) {
 	}
 
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
-		Name:        &ast.Ident{Name: "Bar"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Bar"},
+		},
 		MangledName: "Bar",
 		Type:        &ast.FuncType{},
 	})
@@ -1270,7 +1150,9 @@ func TestRedef(t *testing.T) {
 	}
 
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
-		Name:        &ast.Ident{Name: "Bar"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Bar"},
+		},
 		MangledName: "Bar",
 		Type:        &ast.FuncType{},
 	})
@@ -1294,7 +1176,7 @@ func TestRedef(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err = pkg.GetGenPackage().WriteTo(&buf)
+	err = pkg.Pkg().WriteTo(&buf)
 	if err != nil {
 		t.Fatalf("WriteTo failed: %v", err)
 	}
@@ -1320,7 +1202,9 @@ const MACRO_FOO = 1
 
 func TestRedefEnum(t *testing.T) {
 	typDecl := &ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag: ast.Struct,
 			Fields: &ast.FieldList{
@@ -1338,7 +1222,9 @@ func TestRedefEnum(t *testing.T) {
 		pkg.SetCurFile(tempFile)
 		pkg.NewTypeDecl(typDecl)
 		err = pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
-			Name: &ast.Ident{Name: "Foo"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "Foo"},
+			},
 			Type: &ast.EnumType{},
 		})
 		if err == nil {
@@ -1354,7 +1240,9 @@ func TestRedefEnum(t *testing.T) {
 		pkg.SetCurFile(tempFile)
 		pkg.NewTypeDecl(typDecl)
 		pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
-			Name: nil,
+			Object: ast.Object{
+				Name: nil,
+			},
 			Type: &ast.EnumType{
 				Items: []*ast.EnumItem{
 					{Name: &ast.Ident{Name: "Foo"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
@@ -1382,9 +1270,9 @@ const Foo__1 c.Int = 0
 
 func TestRedefTypedef(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Foo", MangleName: "Foo", GoName: "Foo"},
+		ConvSym: cltest.NewConvSym(
+			cltest.SymbolEntry{
+				CppName: "Foo", MangleName: "Foo", GoName: "Foo",
 			},
 		),
 	})
@@ -1394,7 +1282,9 @@ func TestRedefTypedef(t *testing.T) {
 	pkg.SetCurFile(tempFile)
 
 	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
@@ -1404,7 +1294,9 @@ func TestRedefTypedef(t *testing.T) {
 		t.Fatal("NewTypeDecl failed", err)
 	}
 	err = pkg.NewTypedefDecl(&ast.TypedefDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.Ident{Name: "Foo"},
 	})
 	if err == nil {
@@ -1414,9 +1306,9 @@ func TestRedefTypedef(t *testing.T) {
 
 func TestRedefineFunc(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Foo", MangleName: "Foo", GoName: "Foo"},
+		ConvSym: cltest.NewConvSym(
+			cltest.SymbolEntry{
+				CppName: "Foo", MangleName: "Foo", GoName: "Foo",
 			},
 		),
 	})
@@ -1426,7 +1318,9 @@ func TestRedefineFunc(t *testing.T) {
 	pkg.SetCurFile(tempFile)
 
 	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
@@ -1436,7 +1330,9 @@ func TestRedefineFunc(t *testing.T) {
 		t.Fatal("NewTypeDecl failed", err)
 	}
 	err = pkg.NewFuncDecl(&ast.FuncDecl{
-		Name:        &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		MangledName: "Foo",
 		Type:        &ast.FuncType{},
 	})
@@ -1451,7 +1347,9 @@ func TestTypedef(t *testing.T) {
 		{
 			name: "typedef double",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "DOUBLE"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "DOUBLE"},
+				},
 				Type: &ast.BuiltinType{
 					Kind:  ast.Float,
 					Flags: ast.Double,
@@ -1471,7 +1369,9 @@ type DOUBLE c.Double`,
 		{
 			name: "invalid typedef",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "INVALID"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "INVALID"},
+				},
 				Type: &ast.BuiltinType{
 					Kind:  ast.Bool,
 					Flags: ast.Double,
@@ -1483,7 +1383,9 @@ type DOUBLE c.Double`,
 		{
 			name: "typedef int",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "INT"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "INT"},
+				},
 				Type: &ast.BuiltinType{
 					Kind: ast.Int,
 				},
@@ -1502,7 +1404,9 @@ type INT c.Int
 		{
 			name: "typedef array",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "name"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "name"},
+				},
 				Type: &ast.ArrayType{
 					Elt: &ast.BuiltinType{
 						Kind:  ast.Char,
@@ -1525,7 +1429,9 @@ type Name [5]c.Char`,
 		{
 			name: "typedef pointer",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "ctx"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "ctx"},
+				},
 				Type: &ast.PointerType{
 					X: &ast.BuiltinType{
 						Kind: ast.Void,
@@ -1547,7 +1453,9 @@ type Ctx c.Pointer`,
 		{
 			name: "typedef pointer",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "name"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "name"},
+				},
 				Type: &ast.PointerType{
 					X: &ast.BuiltinType{
 						Kind:  ast.Char,
@@ -1569,7 +1477,9 @@ type Name *c.Char
 		{
 			name: "typedef invalid pointer",
 			decl: &ast.TypedefDecl{
-				Name: &ast.Ident{Name: "name"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "name"},
+				},
 				Type: &ast.PointerType{
 					X: &ast.BuiltinType{
 						Kind:  ast.Char,
@@ -1593,7 +1503,9 @@ func TestEnumDecl(t *testing.T) {
 		{
 			name: "enum",
 			decl: &ast.EnumTypeDecl{
-				Name: &ast.Ident{Name: "Color"},
+				Object: ast.Object{
+					Name: &ast.Ident{Name: "Color"},
+				},
 				Type: &ast.EnumType{
 					Items: []*ast.EnumItem{
 						{Name: &ast.Ident{Name: "Red"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
@@ -1622,7 +1534,9 @@ const (
 		{
 			name: "anonymous enum",
 			decl: &ast.EnumTypeDecl{
-				Name: nil,
+				Object: ast.Object{
+					Name: nil,
+				},
 				Type: &ast.EnumType{
 					Items: []*ast.EnumItem{
 						{Name: &ast.Ident{Name: "red"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
@@ -1648,7 +1562,6 @@ const (
 		{
 			name: "invalid enum item",
 			decl: &ast.EnumTypeDecl{
-				Name: nil,
 				Type: &ast.EnumType{
 					Items: []*ast.EnumItem{
 						{Name: &ast.Ident{Name: "red"}, Value: &ast.ArrayType{Elt: &ast.BuiltinType{Kind: ast.Bool}}},
@@ -1675,10 +1588,10 @@ func TestIdentRefer(t *testing.T) {
 		FileType: llcppg.Third,
 	})
 	pkg.NewTypedefDecl(&ast.TypedefDecl{
-		DeclBase: ast.DeclBase{
-			Loc: &ast.Location{File: "/path/to/stdio.h"},
+		Object: ast.Object{
+			Loc:  &ast.Location{File: "/path/to/stdio.h"},
+			Name: &ast.Ident{Name: "undefType"},
 		},
-		Name: &ast.Ident{Name: "undefType"},
 		Type: &ast.BuiltinType{
 			Kind:  ast.Char,
 			Flags: ast.Signed,
@@ -1690,10 +1603,10 @@ func TestIdentRefer(t *testing.T) {
 	})
 	t.Run("undef sys ident ref", func(t *testing.T) {
 		err := pkg.NewTypeDecl(&ast.TypeDecl{
-			DeclBase: ast.DeclBase{
-				Loc: &ast.Location{File: "/path/to/notsys.h"},
+			Object: ast.Object{
+				Loc:  &ast.Location{File: "/path/to/notsys.h"},
+				Name: &ast.Ident{Name: "Foo"},
 			},
-			Name: &ast.Ident{Name: "Foo"},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
 				Fields: &ast.FieldList{
@@ -1714,7 +1627,9 @@ func TestIdentRefer(t *testing.T) {
 	})
 	t.Run("undef tag ident ref", func(t *testing.T) {
 		err := pkg.NewTypeDecl(&ast.TypeDecl{
-			Name: &ast.Ident{Name: "Bar"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "Bar"},
+			},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
 				Fields: &ast.FieldList{
@@ -1743,7 +1658,9 @@ func TestIdentRefer(t *testing.T) {
 		}
 		pkg.SetCurFile(tempFile)
 		err = pkg.NewTypedefDecl(&ast.TypedefDecl{
-			Name: &ast.Ident{Name: "typ_int8_t"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "typ_int8_t"},
+			},
 			Type: &ast.BuiltinType{
 				Kind:  ast.Char,
 				Flags: ast.Signed,
@@ -1753,7 +1670,9 @@ func TestIdentRefer(t *testing.T) {
 			t.Fatal(err)
 		}
 		err = pkg.NewTypeDecl(&ast.TypeDecl{
-			Name: &ast.Ident{Name: "Foo"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "Foo"},
+			},
 			Type: &ast.RecordType{
 				Tag: ast.Struct,
 				Fields: &ast.FieldList{
@@ -1792,9 +1711,9 @@ type Foo struct {
 func TestForwardDecl(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Bar", MangleName: "Bar", GoName: "Bar"},
+		ConvSym: cltest.NewConvSym(
+			cltest.SymbolEntry{
+				CppName: "Bar", MangleName: "Bar", GoName: "Bar",
 			},
 		),
 	})
@@ -1804,7 +1723,9 @@ func TestForwardDecl(t *testing.T) {
 	pkg.SetCurFile(tempFile)
 
 	forwardDecl := &ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
 			Fields: &ast.FieldList{},
@@ -1818,7 +1739,9 @@ func TestForwardDecl(t *testing.T) {
 
 	// complete decl
 	err = pkg.NewTypeDecl(&ast.TypeDecl{
-		Name: &ast.Ident{Name: "Foo"},
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
 		Type: &ast.RecordType{
 			Tag: ast.Struct,
 			Fields: &ast.FieldList{
@@ -1860,7 +1783,7 @@ type Foo struct {
 type genDeclTestCase struct {
 	name        string
 	decl        ast.Decl
-	symbs       []config.SymbolEntry
+	symbs       []cltest.SymbolEntry
 	cppgconf    *llcppg.Config
 	expected    string
 	expectedErr string
@@ -1880,8 +1803,8 @@ func testGenDecl(t *testing.T, tc genDeclTestCase) {
 		deps = tc.cppgconf.Deps
 	}
 	pkg, err := createTestPkg(&convert.PackageConfig{
-		SymbolTable: config.CreateSymbolTable(tc.symbs),
-		LibCommand:  libCommand,
+		ConvSym:    cltest.NewConvSym(tc.symbs...),
+		LibCommand: libCommand,
 		PkgBase: convert.PkgBase{
 			Deps: deps,
 		},
@@ -1928,8 +1851,11 @@ func compareError(t *testing.T, err error, expectErr string) {
 }
 
 func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
-	if cfg.SymbolTable == nil {
-		cfg.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{})
+	if cfg.ConvSym == nil {
+		cfg.ConvSym = cltest.NewConvSym()
+	}
+	if cfg.LibCommand == "" {
+		cfg.LibCommand = "${pkg-config --libs xxx}"
 	}
 	return convert.NewPackage(&convert.PackageConfig{
 		PkgBase: convert.PkgBase{
@@ -1940,7 +1866,7 @@ func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 		Name:           "testpkg",
 		GenConf:        &gogen.Config{},
 		OutputDir:      cfg.OutputDir,
-		SymbolTable:    cfg.SymbolTable,
+		ConvSym:        cfg.ConvSym,
 		LibCommand:     cfg.LibCommand,
 		TrimPrefixes:   cfg.TrimPrefixes,
 		KeepUnderScore: cfg.KeepUnderScore,
@@ -1951,7 +1877,8 @@ func createTestPkg(cfg *convert.PackageConfig) (*convert.Package, error) {
 func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 	t.Helper()
 	// For Test,The Test package's header filename same as package name
-	buf, err := pkg.WriteToBuffer("temp.go")
+	var buf bytes.Buffer
+	err := pkg.Pkg().WriteTo(&buf, "temp.go")
 	if err != nil {
 		t.Fatalf("WriteTo failed: %v", err)
 	}
@@ -1967,11 +1894,9 @@ func comparePackageOutput(t *testing.T, pkg *convert.Package, expect string) {
 func TestTypeClean(t *testing.T) {
 	pkg, err := createTestPkg(&convert.PackageConfig{
 		OutputDir: "",
-		SymbolTable: config.CreateSymbolTable(
-			[]config.SymbolEntry{
-				{CppName: "Func1", MangleName: "Func1", GoName: "Func1"},
-				{CppName: "Func2", MangleName: "Func2", GoName: "Func2"},
-			},
+		ConvSym: cltest.NewConvSym(
+			cltest.SymbolEntry{CppName: "Func1", MangleName: "Func1", GoName: "Func1"},
+			cltest.SymbolEntry{CppName: "Func2", MangleName: "Func2", GoName: "Func2"},
 		),
 	})
 	if err != nil {
@@ -1986,7 +1911,9 @@ func TestTypeClean(t *testing.T) {
 		{
 			addType: func() {
 				pkg.NewTypeDecl(&ast.TypeDecl{
-					Name: &ast.Ident{Name: "Foo1"},
+					Object: ast.Object{
+						Name: &ast.Ident{Name: "Foo1"},
+					},
 					Type: &ast.RecordType{Tag: ast.Struct},
 				})
 			},
@@ -1997,7 +1924,9 @@ func TestTypeClean(t *testing.T) {
 		{
 			addType: func() {
 				pkg.NewTypedefDecl(&ast.TypedefDecl{
-					Name: &ast.Ident{Name: "Bar2"},
+					Object: ast.Object{
+						Name: &ast.Ident{Name: "Bar2"},
+					},
 					Type: &ast.BuiltinType{Kind: ast.Int},
 				})
 			},
@@ -2008,8 +1937,11 @@ func TestTypeClean(t *testing.T) {
 		{
 			addType: func() {
 				pkg.NewFuncDecl(&ast.FuncDecl{
-					Name: &ast.Ident{Name: "Func1"}, MangledName: "Func1",
-					Type: &ast.FuncType{Params: nil, Ret: &ast.BuiltinType{Kind: ast.Void}},
+					Object: ast.Object{
+						Name: &ast.Ident{Name: "Func1"},
+					},
+					MangledName: "Func1",
+					Type:        &ast.FuncType{Params: nil, Ret: &ast.BuiltinType{Kind: ast.Void}},
 				})
 			},
 			headerFile: "/path/to/file3.h",
@@ -2025,8 +1957,9 @@ func TestTypeClean(t *testing.T) {
 		})
 		tc.addType()
 
+		var buf bytes.Buffer
 		goFileName := name.HeaderFileToGo(tc.headerFile)
-		buf, err := pkg.WriteToBuffer(goFileName)
+		pkg.Pkg().WriteTo(&buf, goFileName)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2089,7 +2022,7 @@ func TestImport(t *testing.T) {
 			"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpath",
 			"github.com/goplus/llcppg/cl/internal/convert/testdata/partfinddep",
 		}
-		p.PkgInfo = convert.NewPkgInfo(".", ".", deps, nil)
+		p.PkgInfo = convert.NewPkgInfo(".", deps, nil)
 		loader := convert.NewPkgDepLoader(mod, genPkg)
 		depPkgs, err := loader.LoadDeps(p.PkgInfo)
 		p.PkgInfo.Deps = depPkgs
@@ -2150,4 +2083,17 @@ func TestUnkownHfile(t *testing.T) {
 		}
 	}()
 	convert.NewHeaderFile("/path/to/foo.h", 0).ToGoFileName("Pkg")
+}
+
+func TestNewPackageLinkFail(t *testing.T) {
+	_, err := convert.NewPackage(&convert.PackageConfig{
+		PkgBase: convert.PkgBase{
+			PkgPath: ".",
+		},
+		Name:    "testpkg",
+		GenConf: &gogen.Config{},
+	})
+	if err == nil {
+		t.Fatal("Expect Error")
+	}
 }

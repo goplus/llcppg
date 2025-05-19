@@ -37,7 +37,6 @@ func NewPkgDepLoader(mod *gopmod.Module, pkg *gogen.Package) *PkgDepLoader {
 type PkgInfo struct {
 	PkgBase
 	Deps []*PkgInfo
-	Dir  string // absolute local path of the package
 }
 
 type PkgBase struct {
@@ -46,13 +45,12 @@ type PkgBase struct {
 	Pubs    map[string]string // llcppg.pub
 }
 
-func NewPkgInfo(pkgPath string, pkgDir string, deps []string, pubs map[string]string) *PkgInfo {
+func NewPkgInfo(pkgPath string, deps []string, pubs map[string]string) *PkgInfo {
 	if pubs == nil {
 		pubs = make(map[string]string)
 	}
 	return &PkgInfo{
 		PkgBase: PkgBase{PkgPath: pkgPath, Deps: deps, Pubs: pubs},
-		Dir:     pkgDir,
 	}
 }
 
@@ -111,7 +109,7 @@ func (pm *PkgDepLoader) Import(pkgPath string) (*PkgInfo, error) {
 		deps = conf.Deps
 	}
 
-	newPkg := NewPkgInfo(pkgPath, pkgDir, deps, pubs)
+	newPkg := NewPkgInfo(pkgPath, deps, pubs)
 	pm.pkgCache[pkgPath] = newPkg
 
 	if conf != nil && len(conf.Deps) > 0 {

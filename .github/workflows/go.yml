@@ -30,6 +30,13 @@ jobs:
         llvm: ${{ matrix.llvm }}
         llgo: ${{ matrix.llgo }}
 
+    - name: Test llclang
+      run: |
+        # llgo test ./_xtool/llclang/internal/parser/...
+        # got go/bin/parser.test: exit code -1
+        cd _xtool/llclang/internal/parser
+        llgo test ./...
+
     - name: Test llcppsymg & llcppsigfetch
       run: |
         llgo cmptest ./_xtool/llcppsigfetch/parse/cvt_test/...

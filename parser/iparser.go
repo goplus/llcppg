@@ -30,6 +30,11 @@ import (
 // Mode represents the parsing mode.
 type Mode int
 
+const (
+	ParseC           Mode = 1 << iota // default parser with c++
+	ParseAllComments                  // clang -fparse-all-comments
+)
+
 // ParseIntermediateFile parses an intermediate file (*.i) and returns the corresponding AST.
 // Allow fset to be nil, in which case a new FileSet will be created.
 func ParseIntermediateFile(fset *token.FileSet, filename string, mode Mode) (f *ast.File, err error) {

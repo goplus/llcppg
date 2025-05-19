@@ -8,11 +8,11 @@ import (
 	"testing"
 
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cl/internal/cltest"
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-func emptyConverter() *Converter {
+func basicConverter() *Converter {
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -21,17 +21,24 @@ func emptyConverter() *Converter {
 	if err != nil {
 		panic(err)
 	}
+
+	cfg := &llcppg.Config{
+		Libs: "${pkg-config --libs xxx}",
+	}
 	converter, err := NewConverter(&Config{
+		PkgPath:   ".",
 		PkgName:   "test",
-		SymbFile:  "",
-		CfgFile:   "",
+		ConvSym:   cltest.NewConvSym(),
 		OutputDir: tempDir,
-		Pkg: &llcppg.Pkg{
-			File: &ast.File{
-				Decls: []ast.Decl{},
-			},
-			FileMap: map[string]*llcppg.FileInfo{},
+		Pkg: &ast.File{
+			Decls: []ast.Decl{},
 		},
+		FileMap:        map[string]*llcppg.FileInfo{},
+		TypeMap:        cfg.TypeMap,
+		Deps:           cfg.Deps,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		Libs:           cfg.Libs,
+		KeepUnderScore: cfg.KeepUnderScore,
 	})
 	if err != nil {
 		panic(err)
@@ -40,56 +47,36 @@ func emptyConverter() *Converter {
 }
 
 func TestPkgFail(t *testing.T) {
-	converter := emptyConverter()
+	converter := basicConverter()
 	defer os.RemoveAll(converter.GenPkg.conf.OutputDir)
-	t.Run("FmtFail", func(t *testing.T) {
-		defer func() {
-			checkPanic(t, recover(), "go fmt:")
-		}()
-		converter.Fmt()
-	})
 	t.Run("ProcessFail", func(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "File \"noexist.h\" not found in FileMap")
 		}()
-		converter.Pkg.File.Decls = append(converter.Pkg.File.Decls, &ast.TypeDecl{
-			DeclBase: ast.DeclBase{
+		converter.Pkg.Decls = append(converter.Pkg.Decls, &ast.TypeDecl{
+			Object: ast.Object{
 				Loc: &ast.Location{
 					File: "noexist.h",
 				},
 			},
 		})
-		converter.Pkg.FileMap["exist.h"] = &llcppg.FileInfo{
+		converter.FileMap["exist.h"] = &llcppg.FileInfo{
 			FileType: llcppg.Inter,
 		}
 		converter.Process()
 	})
 
-	t.Run("WriteLinkFileFail", func(t *testing.T) {
+	t.Run("Complete fail", func(t *testing.T) {
 		defer func() {
-			checkPanic(t, recover(), "WriteLinkFile:")
-		}()
-		converter.Write()
-	})
-	t.Run("WritePubFileFail", func(t *testing.T) {
-		defer func() {
-			checkPanic(t, recover(), "WritePubFile:")
-		}()
-		converter.GenPkg.conf.OutputDir = "/nonexistent_directory/test.txt"
-		converter.GenPkg.Pubs = map[string]string{"test": "Test"}
-		converter.Write()
-	})
-	t.Run("WritePkgFilesFail", func(t *testing.T) {
-		defer func() {
-			checkPanic(t, recover(), "WritePkgFiles:")
+			checkPanic(t, recover(), "Complete Fail: Mock Err")
 		}()
 		converter.GenPkg.incompleteTypes.Add(&Incomplete{cname: "Bar", file: &HeaderFile{
-			File:     "/path/to/temp.go",
+			File:     "temp.h",
 			FileType: llcppg.Inter,
 		}, getType: func() (types.Type, error) {
 			return nil, errors.New("Mock Err")
 		}})
-		converter.Write()
+		converter.Complete()
 	})
 }
 
@@ -97,26 +84,24 @@ func TestProcessWithError(t *testing.T) {
 	defer func() {
 		checkPanic(t, recover(), "NewTypedefDecl: Foo fail")
 	}()
-	converter := emptyConverter()
-	converter.GenPkg.conf.SymbolTable = config.CreateSymbolTable([]config.SymbolEntry{
-		{
-			CppName:    "Foo",
-			MangleName: "Foo",
-			GoName:     "Foo",
-		},
+	converter := basicConverter()
+	converter.GenPkg.conf.ConvSym = cltest.NewConvSym(cltest.SymbolEntry{
+		CppName:    "Foo",
+		MangleName: "Foo",
+		GoName:     "Foo",
 	})
-	declBase := ast.DeclBase{
-		Loc: &ast.Location{
-			File: "exist.h",
-		},
+	declLoc := &ast.Location{
+		File: "exist.h",
 	}
-	converter.Pkg.File.Decls = []ast.Decl{
+	converter.Pkg.Decls = []ast.Decl{
 		&ast.FuncDecl{
-			DeclBase:    declBase,
-			MangledName: "Foo",
-			Name: &ast.Ident{
-				Name: "Foo",
+			Object: ast.Object{
+				Loc: declLoc,
+				Name: &ast.Ident{
+					Name: "Foo",
+				},
 			},
+			MangledName: "Foo",
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
 					List: []*ast.Field{
@@ -127,16 +112,18 @@ func TestProcessWithError(t *testing.T) {
 			},
 		},
 		&ast.TypedefDecl{
-			DeclBase: declBase,
-			Name: &ast.Ident{
-				Name: "Foo",
+			Object: ast.Object{
+				Loc: declLoc,
+				Name: &ast.Ident{
+					Name: "Foo",
+				},
 			},
 			Type: &ast.Ident{
 				Name: "Foo",
 			},
 		},
 	}
-	converter.Pkg.FileMap["exist.h"] = &llcppg.FileInfo{
+	converter.FileMap["exist.h"] = &llcppg.FileInfo{
 		FileType: llcppg.Inter,
 	}
 	converter.Process()

@@ -118,18 +118,15 @@ func MarshalASTDecl(decl ast.Decl) *cjson.JSON {
 	switch d := decl.(type) {
 	case *ast.EnumTypeDecl:
 		root.SetItem(c.Str("_Type"), stringField("EnumTypeDecl"))
-		MarshalASTDeclBase(d.DeclBase, root)
-		root.SetItem(c.Str("Name"), MarshalASTExpr(d.Name))
+		MarshalObject(d.Object, root)
 		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
 	case *ast.TypedefDecl:
 		root.SetItem(c.Str("_Type"), stringField("TypedefDecl"))
-		MarshalASTDeclBase(d.DeclBase, root)
-		root.SetItem(c.Str("Name"), MarshalASTExpr(d.Name))
+		MarshalObject(d.Object, root)
 		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
 	case *ast.FuncDecl:
 		root.SetItem(c.Str("_Type"), stringField("FuncDecl"))
-		MarshalASTDeclBase(d.DeclBase, root)
-		root.SetItem(c.Str("Name"), MarshalASTExpr(d.Name))
+		MarshalObject(d.Object, root)
 		root.SetItem(c.Str("MangledName"), stringField(d.MangledName))
 		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
 		root.SetItem(c.Str("IsInline"), boolField(d.IsInline))
@@ -142,17 +139,17 @@ func MarshalASTDecl(decl ast.Decl) *cjson.JSON {
 		root.SetItem(c.Str("IsOverride"), boolField(d.IsOverride))
 	case *ast.TypeDecl:
 		root.SetItem(c.Str("_Type"), stringField("TypeDecl"))
-		MarshalASTDeclBase(d.DeclBase, root)
-		root.SetItem(c.Str("Name"), MarshalASTExpr(d.Name))
+		MarshalObject(d.Object, root)
 		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
 	}
 	return root
 }
 
-func MarshalASTDeclBase(decl ast.DeclBase, root *cjson.JSON) {
+func MarshalObject(decl ast.Object, root *cjson.JSON) {
 	root.SetItem(c.Str("Loc"), MarshalLocation(decl.Loc))
 	root.SetItem(c.Str("Doc"), MarshalASTExpr(decl.Doc))
 	root.SetItem(c.Str("Parent"), MarshalASTExpr(decl.Parent))
+	root.SetItem(c.Str("Name"), MarshalASTExpr(decl.Name))
 }
 
 func MarshalLocation(loc *ast.Location) *cjson.JSON {

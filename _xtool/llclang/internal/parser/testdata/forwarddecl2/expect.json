@@ -1,0 +1,95 @@
+{
+	"_Type":	"File",
+	"decls":	[{
+			"_Type":	"TypeDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl2/impl.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"foo"
+			},
+			"Type":	{
+				"_Type":	"RecordType",
+				"Tag":	0,
+				"Fields":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"BuiltinType",
+								"Kind":	6,
+								"Flags":	0
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	1,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"a"
+								}]
+						}]
+				},
+				"Methods":	[]
+			}
+		}, {
+			"_Type":	"FuncDecl",
+			"Loc":	{
+				"_Type":	"Location",
+				"File":	"testdata/forwarddecl2/temp.h"
+			},
+			"Doc":	null,
+			"Parent":	null,
+			"Name":	{
+				"_Type":	"Ident",
+				"Name":	"f"
+			},
+			"MangledName":	"__Z1fP3foo",
+			"Type":	{
+				"_Type":	"FuncType",
+				"Params":	{
+					"_Type":	"FieldList",
+					"List":	[{
+							"_Type":	"Field",
+							"Type":	{
+								"_Type":	"PointerType",
+								"X":	{
+									"_Type":	"Ident",
+									"Name":	"foo"
+								}
+							},
+							"Doc":	null,
+							"Comment":	null,
+							"IsStatic":	false,
+							"Access":	0,
+							"Names":	[{
+									"_Type":	"Ident",
+									"Name":	"f"
+								}]
+						}]
+				},
+				"Ret":	{
+					"_Type":	"BuiltinType",
+					"Kind":	0,
+					"Flags":	0
+				}
+			},
+			"IsInline":	false,
+			"IsStatic":	false,
+			"IsConst":	false,
+			"IsExplicit":	false,
+			"IsConstructor":	false,
+			"IsDestructor":	false,
+			"IsVirtual":	false,
+			"IsOverride":	false
+		}],
+	"includes":	[{
+			"_Type":	"Include",
+			"Path":	"testdata/forwarddecl2/impl.h"
+		}],
+	"macros":	[]
+}

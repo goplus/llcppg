@@ -1,7 +1,6 @@
 package convert
 
 import (
-	"errors"
 	"go/token"
 	"go/types"
 	"testing"
@@ -9,7 +8,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
-	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cl/internal/cltest"
 	llcppg "github.com/goplus/llcppg/config"
 	ctoken "github.com/goplus/llcppg/token"
 )
@@ -20,10 +19,11 @@ func emptyPkg() *Package {
 			PkgPath: ".",
 			Pubs:    make(map[string]string),
 		},
-		Name:        "testpkg",
-		GenConf:     &gogen.Config{},
-		OutputDir:   "",
-		SymbolTable: cfg.CreateSymbolTable([]cfg.SymbolEntry{}),
+		Name:       "testpkg",
+		GenConf:    &gogen.Config{},
+		OutputDir:  "",
+		ConvSym:    cltest.NewConvSym(),
+		LibCommand: "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		panic(err)
@@ -39,22 +39,13 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 	}
 	pkg.SetCurFile(tempFile)
 
-	t.Run("write pkg fail", func(t *testing.T) {
-		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar", file: tempFile, getType: func() (types.Type, error) {
-			return nil, errors.New("Mock Err")
-		}})
-		err := pkg.WritePkgFiles()
-		if err == nil {
-			t.Fatal("Expect Error")
-		}
-		pkg.incompleteTypes.Complete("Bar")
-	})
-
 	t.Run("defer write third type not found", func(t *testing.T) {
 		pkg.locMap.Add(&ast.Ident{Name: "Bar"}, &ast.Location{File: "Bar"})
 		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
 		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
-			Name: &ast.Ident{Name: "Foo"},
+			Object: ast.Object{
+				Name: &ast.Ident{Name: "Foo"},
+			},
 			Type: &ast.TagExpr{
 				Name: &ast.Ident{Name: "Bar"},
 			},
@@ -63,7 +54,7 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 			t.Fatal("NewTypedefDecl failed:", err)
 		}
 		pkg.incompleteTypes.Complete("Bar")
-		err = pkg.WritePkgFiles()
+		err = pkg.Complete()
 		if err == nil {
 			t.Fatal("expect a error")
 		}
@@ -95,10 +86,10 @@ func TestRedefPubName(t *testing.T) {
 	pkg.p.NewFuncDecl(token.NoPos, "Bar", types.NewSignatureType(nil, nil, nil, types.NewTuple(), types.NewTuple(), false))
 	t.Run("enum type redefine pubname", func(t *testing.T) {
 		err := pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
-			DeclBase: ast.DeclBase{
-				Loc: &ast.Location{File: "temp.h"},
+			Object: ast.Object{
+				Loc:  &ast.Location{File: "temp.h"},
+				Name: nil,
 			},
-			Name: nil,
 			Type: &ast.EnumType{
 				Items: []*ast.EnumItem{
 					{Name: &ast.Ident{Name: "Foo"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
@@ -173,8 +164,9 @@ func TestTrimPrefixes(t *testing.T) {
 		Name:         "testpkg",
 		GenConf:      &gogen.Config{},
 		OutputDir:    "",
-		SymbolTable:  &cfg.SymbolTable{},
+		ConvSym:      cltest.NewConvSym(),
 		TrimPrefixes: []string{"prefix1", "prefix2"},
+		LibCommand:   "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
@@ -208,6 +200,7 @@ func TestMarkUseFail(t *testing.T) {
 			PkgPath: ".",
 			Pubs:    make(map[string]string),
 		},
+		LibCommand: "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)

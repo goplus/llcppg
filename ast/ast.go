@@ -160,7 +160,7 @@ func (*ParenExpr) exprNode() {}
 // Parent::X
 type ScopingExpr struct {
 	Parent Expr
-	X      Expr
+	X      *Ident
 }
 
 func (*ScopingExpr) exprNode() {}
@@ -271,9 +271,10 @@ type Location struct {
 	File string
 }
 
-type DeclBase struct {
+type Object struct {
 	Doc    *CommentGroup // associated documentation; or nil
 	Loc    *Location
+	Name   *Ident
 	Parent Expr // namespace or class
 }
 
@@ -281,9 +282,8 @@ type DeclBase struct {
 
 // typedef Type Name;
 type TypedefDecl struct {
-	DeclBase
+	Object
 	Type Expr
-	Name *Ident
 }
 
 func (*TypedefDecl) declNode() {}
@@ -305,8 +305,7 @@ func (*EnumType) exprNode() {}
 
 // enum Name { Item1, Item2, ... };
 type EnumTypeDecl struct {
-	DeclBase
-	Name *Ident
+	Object
 	Type *EnumType
 }
 
@@ -316,8 +315,7 @@ func (*EnumTypeDecl) declNode() {}
 
 // Ret Name(Params);
 type FuncDecl struct {
-	DeclBase
-	Name        *Ident
+	Object
 	MangledName string // C: same as Name, C++: mangled
 	Type        *FuncType
 	IsInline    bool
@@ -338,8 +336,7 @@ func (*FuncDecl) declNode() {}
 
 // struct/union/class Name { Field1, Field2, ... };
 type TypeDecl struct {
-	DeclBase
-	Name *Ident
+	Object
 	Type *RecordType
 }
 

@@ -8,7 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/internal/cltest"
 	"github.com/goplus/llcppg/cl/internal/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
@@ -54,21 +56,21 @@ func TestSysToPkg(t *testing.T) {
 	testFrom(t, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
 		// check FileMap's info is right
 		inFileMap := func(file string) {
-			_, ok := cvt.Pkg.FileMap[file]
+			_, ok := cvt.FileMap[file]
 			if !ok {
 				t.Fatal("File not found in FileMap:", file)
 			}
 		}
-		for _, decl := range cvt.Pkg.File.Decls {
+		for _, decl := range cvt.Pkg.Decls {
 			switch decl := decl.(type) {
 			case *ast.TypeDecl:
-				inFileMap(decl.DeclBase.Loc.File)
+				inFileMap(decl.Object.Loc.File)
 			case *ast.EnumTypeDecl:
-				inFileMap(decl.DeclBase.Loc.File)
+				inFileMap(decl.Object.Loc.File)
 			case *ast.TypedefDecl:
-				inFileMap(decl.DeclBase.Loc.File)
+				inFileMap(decl.Object.Loc.File)
 			case *ast.FuncDecl:
-				inFileMap(decl.DeclBase.Loc.File)
+				inFileMap(decl.Object.Loc.File)
 			}
 		}
 	})
@@ -219,17 +221,50 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 	}
 
 	cvt, err := convert.NewConverter(&convert.Config{
+		PkgPath:   ".",
 		PkgName:   cfg.Name,
-		SymbFile:  symbPath,
-		CfgFile:   flagedCfgPath,
+		ConvSym:   cltest.GetConvSym(symbPath),
 		OutputDir: outputDir,
-		Pkg:       convertPkg,
-	})
+		Pkg:       convertPkg.File,
+		FileMap:   convertPkg.FileMap,
 
+		TypeMap:        cfg.TypeMap,
+		Deps:           cfg.Deps,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		Libs:           cfg.Libs,
+		KeepUnderScore: cfg.KeepUnderScore,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	cvt.Convert()
+
+	pkg := cvt.GenPkg.Pkg()
+	pkg.ForEachFile(func(fname string, _ *gogen.File) {
+		if fname != "" { // gogen default fname
+			outFile := filepath.Join(outputDir, fname)
+			e := pkg.WriteFile(outFile, fname)
+			if e != nil {
+				t.Fatal(e)
+			}
+		}
+	})
+
+	// todo:reuse same write logic
+	err = config.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), cvt.GenPkg.Pubs)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = config.RunCommand(outputDir, "go", "fmt", ".")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = config.RunCommand(outputDir, "go", "mod", "tidy")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var res strings.Builder
 
@@ -275,10 +310,21 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 }
 
 func TestNewConvert(t *testing.T) {
+	// todo: remove this,convert will not read llcppg.cfg directly
+	cfg := &llcppg.Config{
+		Libs: "${pkg-config --libs xxx}",
+	}
+
 	_, err := convert.NewConverter(&convert.Config{
-		PkgName:  "test",
-		SymbFile: "",
-		CfgFile:  "",
+		PkgPath: ".",
+		PkgName: "test",
+		ConvSym: cltest.NewConvSym(),
+
+		TypeMap:        cfg.TypeMap,
+		Deps:           cfg.Deps,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		Libs:           cfg.Libs,
+		KeepUnderScore: cfg.KeepUnderScore,
 	})
 	if err != nil {
 		t.Fatal("NewAstConvert Fail")
@@ -306,27 +352,6 @@ func TestModInitFail(t *testing.T) {
 			t.Fatal("no error")
 		}
 	})
-}
-
-func TestTidyFail(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatal("expect panic")
-		}
-	}()
-
-	tempDir, err := os.MkdirTemp("", "gogensig-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tempDir)
-
-	cvt := &convert.Converter{
-		Conf: &convert.Config{
-			OutputDir: tempDir,
-		},
-	}
-	cvt.Tidy()
 }
 
 func prepareEnv(name string, deps []string) (string, error) {
