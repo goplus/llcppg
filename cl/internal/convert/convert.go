@@ -8,6 +8,7 @@ import (
 	"github.com/goplus/llcppg/ast"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llconfig "github.com/goplus/llcppg/config"
+	ctoken "github.com/goplus/llcppg/token"
 )
 
 var (
@@ -41,6 +42,7 @@ type Config struct {
 	FileMap   map[string]*llconfig.FileInfo
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 	NodeConv  NodeConverter
+	Symbols   *ProcessSymbol
 
 	// CfgFile   string // llcppg.cfg
 	TypeMap        map[string]string // llcppg.pub
@@ -94,6 +96,7 @@ func NewConverter(config *Config) (*Converter, error) {
 		Name:           config.PkgName,
 		OutputDir:      config.OutputDir,
 		ConvSym:        config.ConvSym,
+		Symbols:        config.Symbols,
 		LibCommand:     config.Libs,
 		TrimPrefixes:   config.TrimPrefixes,
 		KeepUnderScore: config.KeepUnderScore,
@@ -123,10 +126,28 @@ func (p *Converter) Process() {
 		}
 	}
 
+	processNode := func(goFile string, process func() error) {
+		p.GenPkg.SetGoFile(goFile)
+		if err := process(); err != nil {
+			log.Panicln(err)
+		}
+	}
+
 	for _, macro := range p.Pkg.Macros {
-		processDecl(macro.Loc.File, func() error {
-			return p.GenPkg.NewMacro(macro)
-		})
+		if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
+			goName, goFile, err := p.Conf.NodeConv.ConvMacro(macro)
+			// todo(zzy):goName to New Macro
+			if err != nil {
+				if errors.Is(err, ErrSkip) {
+					continue
+				}
+				// todo(zzy):refine error handing
+				log.Panicln(err)
+			}
+			processNode(goFile, func() error {
+				return p.GenPkg.NewMacro(macro, goName)
+			})
+		}
 	}
 
 	for _, decl := range p.Pkg.Decls {

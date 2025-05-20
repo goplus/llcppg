@@ -52,6 +52,7 @@ type PackageConfig struct {
 	Name           string // current package name
 	OutputDir      string
 	ConvSym        func(name *ast.Object, mangleName string) (goName string, err error)
+	Symbols        *ProcessSymbol
 	GenConf        *gogen.Config
 	TrimPrefixes   []string
 	LibCommand     string // use to gen link command like $(pkg-config --libs xxx)
@@ -67,12 +68,18 @@ func NewPackage(config *PackageConfig) (*Package, error) {
 			EnableTypesalias: true,
 		}
 	}
+	var symbols *ProcessSymbol
+	if config.Symbols == nil {
+		symbols = NewProcessSymbol()
+	} else {
+		symbols = config.Symbols
+	}
 	p := &Package{
 		p:               gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
 		conf:            config,
 		incompleteTypes: NewIncompleteTypes(),
 		locMap:          NewThirdTypeLoc(),
-		symbols:         NewProcessSymbol(),
+		symbols:         symbols,
 	}
 
 	// default have load llgo/c
@@ -695,41 +702,45 @@ func (p *Package) createEnumItems(items []*ast.EnumItem, enumType types.Type) er
 	return nil
 }
 
-func (p *Package) NewMacro(macro *ast.Macro) error {
-	if !p.curFile.InCurPkg() {
-		return nil
-	}
-
+func (p *Package) NewMacro(macro *ast.Macro, goName string) error {
 	// simple const macro define (#define NAME value)
 	if len(macro.Tokens) == 2 && macro.Tokens[1].Token == ctoken.LITERAL {
 		value := macro.Tokens[1].Lit
 		defs := p.NewConstGroup()
-		node := Node{name: macro.Name, kind: Macro}
-		name, _, exist, err := p.RegisterNode(node, p.constName, p.lookupPub)
-		if err != nil {
-			return fmt.Errorf("NewMacro: %s fail: %w", macro.Name, err)
+
+		obj := p.lookupPub("", goName)
+		if obj != nil {
+			return fmt.Errorf("NewMacro: %s is already defined", macro.Name)
 		}
-		if exist {
-			if debugLog {
-				log.Printf("NewMacro: %s is processed\n", macro.Name)
-			}
-			return nil
-		}
+
+		// node := Node{name: macro.Name, kind: Macro}
+
+		// todo(zzy): remove this,current only to register name to ProcessSymbol,to keep other logic correct
+		// _, _, exist, err := p.RegisterNode(node, p.constName, p.lookupPub)
+		// if err != nil {
+		// 	return fmt.Errorf("NewMacro: %s fail: %w", macro.Name, err)
+		// }
+		// if exist {
+		// 	if debugLog {
+		// 		log.Printf("NewMacro: %s is processed\n", macro.Name)
+		// 	}
+		// 	return nil
+		// }
 		if debugLog {
-			log.Printf("NewMacro: %s = %s\n", name, value)
+			log.Printf("NewMacro: %s = %s\n", goName, value)
 		}
 		if str, err := litToString(value); err == nil {
-			defs.New(str, nil, name)
+			defs.New(str, nil, goName)
 		} else if _, err := litToUint(value); err == nil {
 			defs.New(&goast.BasicLit{
 				Kind:  token.INT,
 				Value: value,
-			}, nil, name)
+			}, nil, goName)
 		} else if _, err := litToFloat(value, 64); err == nil {
 			defs.New(&goast.BasicLit{
 				Kind:  token.FLOAT,
 				Value: value,
-			}, nil, name)
+			}, nil, goName)
 		}
 	}
 	return nil
@@ -737,6 +748,13 @@ func (p *Package) NewMacro(macro *ast.Macro) error {
 
 func (p *Package) NewConstGroup() *ConstGroup {
 	return NewConstGroup(p.p, p.p.Types.Scope())
+}
+
+func (p *Package) SetGoFile(fileName string) error {
+	_, err := p.p.SetCurFile(fileName, true)
+	// todo(zzy):avoid mark every time
+	p.p.Unsafe().MarkForceUsed(p.p)
+	return err
 }
 
 type ConstGroup struct {
@@ -976,10 +994,10 @@ func (it *IncompleteTypes) IterateIncomplete(fn func(*Incomplete) error) error {
 	return nil
 }
 
-type nodeKind int
+type NodeKind int
 
 const (
-	FuncDecl nodeKind = iota + 1
+	FuncDecl NodeKind = iota + 1
 	TypeDecl
 	TypedefDecl
 	EnumTypeDecl
@@ -989,7 +1007,19 @@ const (
 
 type Node struct {
 	name string
-	kind nodeKind
+	kind NodeKind
+}
+
+func NewNode(name string, kind NodeKind) Node {
+	return Node{name: name, kind: kind}
+}
+
+func (n Node) Name() string {
+	return n.name
+}
+
+func (n Node) Kind() NodeKind {
+	return n.kind
 }
 
 type ProcessSymbol struct {

@@ -13,6 +13,7 @@ import (
 	"github.com/goplus/llcppg/cl/internal/cltest"
 	"github.com/goplus/llcppg/cl/internal/convert"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cmd/gogensig/node"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/env"
@@ -220,6 +221,8 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		t.Fatal(err)
 	}
 
+	symbols := convert.NewProcessSymbol()
+
 	cvt, err := convert.NewConverter(&convert.Config{
 		PkgPath:   ".",
 		PkgName:   cfg.Name,
@@ -227,12 +230,22 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		OutputDir: outputDir,
 		Pkg:       convertPkg.File,
 		FileMap:   convertPkg.FileMap,
-
+		NodeConv: node.NewNodeConverter(
+			&node.NodeConverterConfig{
+				PkgName: cfg.Name,
+				// symbol table
+				FileMap:      convertPkg.FileMap,
+				TypeMap:      cfg.TypeMap,
+				TrimPrefixes: cfg.TrimPrefixes,
+				Symbols:      symbols,
+			},
+		),
 		TypeMap:        cfg.TypeMap,
 		Deps:           cfg.Deps,
 		TrimPrefixes:   cfg.TrimPrefixes,
 		Libs:           cfg.Libs,
 		KeepUnderScore: cfg.KeepUnderScore,
+		Symbols:        symbols,
 	})
 	if err != nil {
 		t.Fatal(err)

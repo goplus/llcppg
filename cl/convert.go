@@ -20,6 +20,22 @@ func ModInit(deps []string, outputDir string, modulePath string) error {
 
 type NodeConverter = convert.NodeConverter
 
+type ProcessSymbol = convert.ProcessSymbol
+
+func NewProcessSymbol() *ProcessSymbol {
+	return convert.NewProcessSymbol()
+}
+
+type NameMethod = convert.NameMethod
+
+type Node = convert.Node
+
+func NewNode(name string, kind NodeKind) Node {
+	return convert.NewNode(name, kind)
+}
+
+type NodeKind = convert.NodeKind
+
 type ConvConfig struct {
 	OutputDir string
 	PkgPath   string
@@ -28,6 +44,7 @@ type ConvConfig struct {
 	FileMap   map[string]*llconfig.FileInfo
 	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
 	NodeConv  NodeConverter
+	Symbols   *convert.ProcessSymbol
 
 	// CfgFile   string // llcppg.cfg
 	TypeMap        map[string]string // llcppg.pub
@@ -46,6 +63,7 @@ func Convert(config *ConvConfig) (pkg Package, err error) {
 		FileMap:   config.FileMap,
 		ConvSym:   config.ConvSym,
 		NodeConv:  config.NodeConv,
+		Symbols:   config.Symbols,
 
 		TypeMap:        config.TypeMap,
 		Deps:           config.Deps,

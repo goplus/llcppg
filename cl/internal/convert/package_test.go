@@ -1165,14 +1165,16 @@ func TestRedef(t *testing.T) {
 		Name:   "MACRO_FOO",
 		Tokens: []*ast.Token{{Token: token.IDENT, Lit: "MACRO_FOO"}, {Token: token.LITERAL, Lit: "1"}},
 	}
-	err = pkg.NewMacro(macro)
+	err = pkg.NewMacro(macro, macro.Name)
 	if err != nil {
 		t.Fatal("unexpect redefine err")
 	}
 
-	err = pkg.NewMacro(macro)
-	if err != nil {
-		t.Fatal("unexpect redefine err")
+	// NOTE(zzy):in upper layer logic to avoid reprocess node after refactor.
+	// So here we expect a redefine error.
+	err = pkg.NewMacro(macro, macro.Name)
+	if err == nil {
+		t.Fatal("expect a redefine error")
 	}
 
 	var buf bytes.Buffer

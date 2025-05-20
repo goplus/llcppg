@@ -27,6 +27,7 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
+	"github.com/goplus/llcppg/cmd/gogensig/node"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/qiniu/x/errors"
@@ -79,6 +80,8 @@ func main() {
 	symbTable, err := config.NewSymbolTable(symbFile)
 	check(err)
 
+	symbols := cl.NewProcessSymbol()
+
 	pkg, err := cl.Convert(&cl.ConvConfig{
 		PkgName: conf.Name,
 		ConvSym: func(name *ast.Object, mangleName string) (goName string, err error) {
@@ -88,6 +91,16 @@ func main() {
 			}
 			return item.GoName, nil
 		},
+		NodeConv: node.NewNodeConverter(
+			&node.NodeConverterConfig{
+				PkgName:      conf.Name,
+				SymbTable:    symbTable,
+				FileMap:      convertPkg.FileMap,
+				TypeMap:      conf.TypeMap,
+				TrimPrefixes: conf.TrimPrefixes,
+				Symbols:      symbols,
+			},
+		),
 		Pkg:            convertPkg.File,
 		FileMap:        convertPkg.FileMap,
 		TypeMap:        conf.TypeMap,

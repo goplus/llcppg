@@ -105,7 +105,7 @@ func TestRedefPubName(t *testing.T) {
 			Loc:    &ast.Location{File: "temp.h"},
 			Name:   "Bar",
 			Tokens: []*ast.Token{{Token: ctoken.IDENT, Lit: "Bar"}, {Token: ctoken.LITERAL, Lit: "1"}},
-		})
+		}, "Bar")
 		if err == nil {
 			t.Fatal("expect a error")
 		}
