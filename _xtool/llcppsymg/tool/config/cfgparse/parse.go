@@ -1,11 +1,15 @@
 package cfgparse
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/goplus/llcppg/config"
 )
 
 // Note: This package is not placed under the 'config' package because 'config'
@@ -108,4 +112,22 @@ func (cf *CFlags) GenHeaderFilePaths(files []string, defaultPaths []string) ([]s
 	}
 
 	return foundPaths, notFound, nil
+}
+
+func NewConfigFromByte(data []byte) (*config.Config, error) {
+	conf := config.NewDefault()
+	err := json.Unmarshal(data, &conf)
+	if err != nil {
+		return nil, err
+	}
+	return conf, nil
+}
+
+func ReadFile(filePath string) ([]byte, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	return io.ReadAll(file)
 }

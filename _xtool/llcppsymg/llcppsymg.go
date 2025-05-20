@@ -36,7 +36,6 @@ func main() {
 
 	conf, err := config.GetConf(ags.UseStdin, ags.CfgFile)
 	check(err)
-	defer conf.Delete()
 
 	if ags.VerboseParseIsMethod {
 		symg.SetDebug(symg.DbgParseIsMethod)
@@ -63,7 +62,7 @@ func main() {
 	}
 
 	err = symg.Do(&symg.Config{
-		Conf: conf.Config,
+		Conf: conf,
 	})
 	check(err)
 }
