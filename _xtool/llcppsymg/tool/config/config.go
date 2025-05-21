@@ -156,7 +156,7 @@ func PkgHfileInfo(conf *llcppg.Config, args []string) *PkgHfilesInfo {
 		}
 		clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 			if len(incins) == 1 {
-				filename := clang.GoString(inced.FileName())
+				filename := filepath.Clean(clang.GoString(inced.FileName()))
 				info.Inters = append(info.Inters, filename)
 				inters[filename] = struct{}{}
 			}
@@ -178,7 +178,7 @@ func PkgHfileInfo(conf *llcppg.Config, args []string) *PkgHfilesInfo {
 	}
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		// not in the first level include maybe impl or third hfile
-		filename := clang.GoString(inced.FileName())
+		filename := filepath.Clean(clang.GoString(inced.FileName()))
 		_, inter := inters[filename]
 		if len(incins) > 1 && !inter {
 			others = append(others, filename)
