@@ -689,7 +689,7 @@
 			}]
 	},
 	"FileMap":	{
-		"./hfile/forwarddecl.h":	{
+		"hfile/forwarddecl.h":	{
 			"FileType":	1
 		}
 	}
@@ -789,10 +789,10 @@
 		"macros":	[]
 	},
 	"FileMap":	{
-		"./hfile/def.h":	{
+		"hfile/def.h":	{
 			"FileType":	1
 		},
-		"./hfile/impl.h":	{
+		"hfile/impl.h":	{
 			"FileType":	2
 		}
 	}

@@ -118,10 +118,10 @@
 			}]
 	},
 	"FileMap":	{
-		"./hfile/compat.h":	{
+		"hfile/compat.h":	{
 			"FileType":	1
 		},
-		"./hfile/main.h":	{
+		"hfile/main.h":	{
 			"FileType":	1
 		}
 	}

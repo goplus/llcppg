@@ -58,7 +58,7 @@ func TestSystemHeader() {
 	fmt.Println("=== TestSystemHeader ===")
 	checkFileMap := func(conf *parse.Config, cvt *parse.Converter) {
 		for path, info := range cvt.Pkg.FileMap {
-			if path != "./testdata/sysinc/inc.h" && info.FileType != llcppg.Third {
+			if path != "testdata/sysinc/inc.h" && info.FileType != llcppg.Third {
 				panic(fmt.Errorf("include file is not third header: %s", path))
 			}
 		}
