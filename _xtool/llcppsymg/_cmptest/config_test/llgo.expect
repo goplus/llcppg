@@ -94,14 +94,14 @@ Input files: []
 Error: failed to find any header files
 
 === Test PkgHfileInfo Case 1 ===
-interfaces [./hfile/temp1.h ./hfile/temp2.h]
-implements [./hfile/tempimpl.h]
-third hfile found ./thirdhfile/third.h
+interfaces [hfile/temp1.h hfile/temp2.h]
+implements [hfile/tempimpl.h]
+third hfile found thirdhfile/third.h
 All third hfile found
 === Test PkgHfileInfo Case 2 ===
-interfaces [./hfile/temp1.h ./hfile/temp2.h]
+interfaces [hfile/temp1.h hfile/temp2.h]
 implements []
-third hfile found ./thirdhfile/third.h
+third hfile found thirdhfile/third.h
 All third hfile found
 
 #stderr
