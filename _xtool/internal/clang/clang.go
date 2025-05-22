@@ -1,16 +1,27 @@
 package clang
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"unsafe"
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
 )
+
+var _defaultSysRootDir []string
+
+var _matchISysrootRegex = regexp.MustCompile(`-(internal-isystem|isysroot|internal-externc-isystem)\s(\S+)`)
+
+func init() {
+	_defaultSysRootDir, _ = sysRoot()
+}
 
 type Config struct {
 	File  string
@@ -30,6 +41,7 @@ func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit
 	// default use the c/c++ standard of clang; c:gnu17 c++:gnu++17
 	// https://clang.llvm.org/docs/CommandGuide/clang.html
 	allArgs := append(defaultArgs(config.IsCpp), config.Args...)
+	allArgs = append(allArgs, _defaultSysRootDir...)
 
 	cArgs := make([]*c.Char, len(allArgs))
 	for i, arg := range allArgs {
@@ -177,4 +189,35 @@ func ParseClangIncOutput(output string) []string {
 		}
 	}
 	return paths
+}
+
+// sysRoot retrieves isysroot from clang preprocessor
+func sysRoot() ([]string, error) {
+	var output bytes.Buffer
+
+	// -x dones't matter, we don't care, just get the isysroot
+	cmd := exec.Command("clang", "-E", "-v", "-x", "c", "/dev/null")
+	cmd.Stderr = &output
+
+	cmd.Run()
+
+	return parseSystemPath(output.String())
+}
+
+func parseSystemPath(output string) ([]string, error) {
+	sysRootResults := _matchISysrootRegex.FindAllStringSubmatch(output, -1)
+
+	var result []string
+
+	for _, sysRootResult := range sysRootResults {
+		if len(sysRootResult) == 3 {
+			result = append(result, fmt.Sprintf("-%s%s", sysRootResult[1], sysRootResult[2]))
+		}
+	}
+
+	if len(result) == 0 {
+		return nil, fmt.Errorf("failed to find any sysRoot path")
+	}
+
+	return result, nil
 }
