@@ -11,6 +11,8 @@ import (
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
+	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
+
 	"github.com/goplus/llcppg/ast"
 
 	"github.com/goplus/llpkg/cjson"
@@ -488,7 +490,7 @@ type GetTypeOptions struct {
 // e.g. index.Dispose(), unit.Dispose()
 func GetType(option *GetTypeOptions) (clang.Type, *clang.Index, *clang.TranslationUnit) {
 	code := fmt.Sprintf("%s placeholder;", option.TypeCode)
-	index, unit, err := parser.CreateTranslationUnit(&parser.LibClangConfig{
+	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File:  code,
 		Temp:  true,
 		Args:  option.Args,
@@ -499,7 +501,7 @@ func GetType(option *GetTypeOptions) (clang.Type, *clang.Index, *clang.Translati
 	}
 	cursor := unit.Cursor()
 	var typ clang.Type
-	parser.VisitChildren(cursor, func(child, parent clang.Cursor) clang.ChildVisitResult {
+	clangutils.VisitChildren(cursor, func(child, parent clang.Cursor) clang.ChildVisitResult {
 		if child.Kind == clang.CursorVarDecl && (option.ExpectTypeKind == clang.TypeInvalid || option.ExpectTypeKind == child.Type().Kind) {
 			typ = child.Type()
 			return clang.ChildVisit_Break

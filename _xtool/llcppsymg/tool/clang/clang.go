@@ -1,4 +1,4 @@
-package clangutils
+package clang
 
 import (
 	"errors"
