@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/goplus/lib/c/clang"
-	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
+	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 )
 

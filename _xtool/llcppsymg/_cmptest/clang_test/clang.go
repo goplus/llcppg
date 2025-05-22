@@ -8,7 +8,7 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
-	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
+	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
 )
 
 func main() {
@@ -42,7 +42,7 @@ func TestClangUtil() {
 					void test_method();
 					static int static_method(float f);
 				};
-				
+
 				namespace TestNamespace {
 					void namespaced_function();
 				}

@@ -6,9 +6,9 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
+	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
-	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )
