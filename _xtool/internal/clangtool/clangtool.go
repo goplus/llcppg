@@ -78,7 +78,7 @@ func ParseClangIncOutput(output string) []string {
 
 func WithSysRoot(args []string) []string {
 	_defaultSysRootDir, _ := _sysRootDirOnce()
-	return append(args, ...)
+	return append(args, _defaultSysRootDir...)
 }
 
 func defaultArgs(isCpp bool) []string {
