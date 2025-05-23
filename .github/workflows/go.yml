@@ -30,16 +30,23 @@ jobs:
         llvm: ${{ matrix.llvm }}
         llgo: ${{ matrix.llgo }}
 
-    - name: Test llclang
+    - name: Test xtool
       run: |
         # llgo test ./_xtool/internal/parser/...
         # got go/bin/parser.test: exit code -1
-        cd _xtool/internal/parser
-        llgo test ./...
+
+        # check exit code outout for temporary fix
+        # with the latest update can exit in llgo test
+        # only with llgo test ./... with llgo update
+        # https://github.com/goplus/llgo/pull/1128
+        bash .github/workflows/llgo_test.sh $(ls -d _xtool/internal/*/)
+
 
     - name: Test llcppsymg & llcppsigfetch
       run: |
         llgo cmptest ./_xtool/llcppsigfetch/parse/cvt_test/...
+
+        bash .github/workflows/llgo_test.sh $(ls -d _xtool/llcppsymg/internal/*/)
 
         # llgo cmptest ./_xtool/llcppsymg/_cmptest/... causes 
         # panic: runtime error: index out of range [0] with length 0
@@ -48,10 +55,6 @@ jobs:
         # llgo cmptest ./... cause  lld: error: undefined symbol: sort.init
         # https://github.com/goplus/llgo/issues/944
 
-        llgo cmptest ./arg_test
-        llgo cmptest ./clang_test
-        llgo cmptest ./config_test
-        llgo cmptest ./name_test
         llgo cmptest ./symbol_test
         llgo cmptest ./symg_test
 

@@ -11,6 +11,7 @@ import (
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
+	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )
@@ -165,7 +166,7 @@ func PkgHfileInfo(conf *llcppg.Config, args []string) *PkgHfilesInfo {
 		index.Dispose()
 	}
 
-	clangutils.ComposeIncludes(conf.Include, outfile.Name())
+	clangtool.ComposeIncludes(conf.Include, outfile.Name())
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File: outfile.Name(),
 		Temp: false,

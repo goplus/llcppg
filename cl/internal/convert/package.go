@@ -9,9 +9,9 @@ import (
 	goast "go/ast"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/nc"
+	"github.com/goplus/llcppg/internal/name"
 	ctoken "github.com/goplus/llcppg/token"
 	"github.com/goplus/mod/gopmod"
 )

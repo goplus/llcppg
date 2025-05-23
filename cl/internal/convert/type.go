@@ -13,9 +13,9 @@ import (
 	"unsafe"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/nc"
+	"github.com/goplus/llcppg/internal/name"
 )
 
 type TypeContext int

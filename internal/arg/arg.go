@@ -6,11 +6,10 @@ import (
 )
 
 type Args struct {
-	Help                 bool
-	Verbose              bool
-	VerboseParseIsMethod bool //-vpim
-	UseStdin             bool
-	CfgFile              string
+	Help     bool
+	Verbose  bool
+	UseStdin bool
+	CfgFile  string
 }
 
 func ParseArgs(args []string, defaultCfgFile string, swflags map[string]bool) (*Args, []string) {
@@ -25,9 +24,6 @@ func ParseArgs(args []string, defaultCfgFile string, swflags map[string]bool) (*
 				continue
 			case "-v":
 				result.Verbose = true
-				continue
-			case "-vpim":
-				result.VerboseParseIsMethod = true
 				continue
 			case "-":
 				result.UseStdin = true

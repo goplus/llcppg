@@ -23,10 +23,10 @@ import (
 	"strings"
 
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
+	"github.com/goplus/llcppg/_xtool/internal/config"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/parse"
-	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	llcppg "github.com/goplus/llcppg/config"
+	args "github.com/goplus/llcppg/internal/arg"
 )
 
 func main() {

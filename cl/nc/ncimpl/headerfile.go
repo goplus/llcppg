@@ -1,8 +1,8 @@
 package ncimpl
 
 import (
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	llcppg "github.com/goplus/llcppg/config"
+	"github.com/goplus/llcppg/internal/name"
 )
 
 type HeaderFile struct {

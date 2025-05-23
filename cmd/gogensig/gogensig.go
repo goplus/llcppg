@@ -23,13 +23,13 @@ import (
 	"strings"
 
 	"github.com/goplus/gogen"
-	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cl/nc/ncimpl"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	llcppg "github.com/goplus/llcppg/config"
+	args "github.com/goplus/llcppg/internal/arg"
 	"github.com/qiniu/x/errors"
 )
 

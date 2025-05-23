@@ -1,27 +1,13 @@
 package clang
 
 import (
-	"bytes"
 	"errors"
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"regexp"
-	"strings"
 	"unsafe"
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
+	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 )
-
-var _defaultSysRootDir []string
-
-var _matchISysrootRegex = regexp.MustCompile(`-(internal-isystem|isysroot|internal-externc-isystem)\s(\S+)`)
-
-func init() {
-	_defaultSysRootDir, _ = sysRoot()
-}
 
 type Config struct {
 	File  string
@@ -40,8 +26,7 @@ const TEMP_FILE = "temp.h"
 func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit, error) {
 	// default use the c/c++ standard of clang; c:gnu17 c++:gnu++17
 	// https://clang.llvm.org/docs/CommandGuide/clang.html
-	allArgs := append(defaultArgs(config.IsCpp), config.Args...)
-	allArgs = append(allArgs, _defaultSysRootDir...)
+	allArgs := clangtool.WithSysRoot(append(defaultArgs(config.IsCpp), config.Args...))
 
 	cArgs := make([]*c.Char, len(allArgs))
 	for i, arg := range allArgs {
@@ -122,102 +107,10 @@ func GetInclusions(unit *clang.TranslationUnit, visitor InclusionVisitor) {
 	}, unsafe.Pointer(&visitor))
 }
 
-// ComposeIncludes create Include list
-// #include <file1.h>
-// #include <file2.h>
-func ComposeIncludes(files []string, outfile string) error {
-	var str string
-	for _, file := range files {
-		str += ("#include <" + file + ">\n")
-	}
-	return os.WriteFile(outfile, []byte(str), 0644)
-}
-
 func defaultArgs(isCpp bool) []string {
 	args := []string{"-x", "c"}
 	if isCpp {
 		args = []string{"-x", "c++"}
 	}
 	return args
-}
-
-type PreprocessConfig struct {
-	File    string
-	IsCpp   bool
-	Args    []string
-	OutFile string
-}
-
-func Preprocess(cfg *PreprocessConfig) error {
-	args := []string{"-E"}
-	args = append(args, defaultArgs(cfg.IsCpp)...)
-	args = append(args, cfg.Args...)
-	args = append(args, cfg.File)
-	args = append(args, "-o", cfg.OutFile)
-	cmd := exec.Command("clang", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
-func GetIncludePaths(isCpp bool) []string {
-	args := []string{"-E", "-v"}
-	args = append(args, defaultArgs(isCpp)...)
-	args = append(args, "/dev/null")
-	cmd := exec.Command("clang", args...)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
-	return ParseClangIncOutput(string(output))
-}
-
-func ParseClangIncOutput(output string) []string {
-	var paths []string
-	start := strings.Index(output, "#include <...> search starts here:")
-	end := strings.Index(output, "End of search list.")
-	if start == -1 || end == -1 {
-		return paths
-	}
-	content := output[start:end]
-	lines := strings.Split(content, "\n")
-	for _, line := range lines[1:] {
-		for _, item := range strings.Fields(line) {
-			if path := strings.TrimSpace(item); filepath.IsAbs(path) {
-				paths = append(paths, path)
-			}
-		}
-	}
-	return paths
-}
-
-// sysRoot retrieves isysroot from clang preprocessor
-func sysRoot() ([]string, error) {
-	var output bytes.Buffer
-
-	// -x dones't matter, we don't care, just get the isysroot
-	cmd := exec.Command("clang", "-E", "-v", "-x", "c", "/dev/null")
-	cmd.Stderr = &output
-
-	cmd.Run()
-
-	return parseSystemPath(output.String())
-}
-
-func parseSystemPath(output string) ([]string, error) {
-	sysRootResults := _matchISysrootRegex.FindAllStringSubmatch(output, -1)
-
-	var result []string
-
-	for _, sysRootResult := range sysRootResults {
-		if len(sysRootResult) == 3 {
-			result = append(result, fmt.Sprintf("-%s%s", sysRootResult[1], sysRootResult[2]))
-		}
-	}
-
-	if len(result) == 0 {
-		return nil, fmt.Errorf("failed to find any sysRoot path")
-	}
-
-	return result, nil
 }

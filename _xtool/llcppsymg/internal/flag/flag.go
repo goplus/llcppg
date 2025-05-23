@@ -1,4 +1,4 @@
-package cfgparse
+package flag
 
 import (
 	"fmt"

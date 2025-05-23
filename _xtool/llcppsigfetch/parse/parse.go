@@ -8,9 +8,9 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
-	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
+	"github.com/goplus/llcppg/_xtool/internal/clangtool"
+	"github.com/goplus/llcppg/_xtool/internal/config"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )
@@ -79,7 +79,7 @@ func Do(conf *Config) error {
 	}
 
 	// compose includes to a combined file
-	err := clangutils.ComposeIncludes(conf.Conf.Include, conf.CombinedFile)
+	err := clangtool.ComposeIncludes(conf.Conf.Include, conf.CombinedFile)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func Do(conf *Config) error {
 	clangFlags = append(clangFlags, "-dD") // keep macro
 	clangFlags = append(clangFlags, "-fparse-all-comments")
 
-	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
+	err = clangtool.Preprocess(&clangtool.PreprocessConfig{
 		File:    conf.CombinedFile,
 		IsCpp:   isCpp,
 		Args:    clangFlags,
