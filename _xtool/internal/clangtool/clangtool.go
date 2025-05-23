@@ -110,6 +110,10 @@ func ParseSystemPath(output string) ([]string, error) {
 	for _, sysRootResult := range sysRootResults {
 		if len(sysRootResult) == 3 {
 			result = append(result, fmt.Sprintf("-%s%s", sysRootResult[1], sysRootResult[2]))
+
+			if sysRootResult[1] == "resource-dir" {
+				result = append(result, fmt.Sprintf("-I%s", filepath.Join(sysRootResult[2], "include")))
+			}
 		}
 	}
 
