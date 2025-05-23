@@ -80,7 +80,7 @@ func TestLLCppcfg(t *testing.T) {
 				"libxslt",
 				"true",
 				[]string{".h"},
-				[]string{"c/os", "github.com/goplus/llpkg/libxml2@v1.0.0"},
+				[]string{"c/os", "github.com/goplus/llpkg/libxml2@v1.0.1"},
 				[]string{},
 			},
 			readFile(libxsltCfgFilePath),
