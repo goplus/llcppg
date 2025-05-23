@@ -91,7 +91,7 @@ End of search list.
 # 1 "/dev/null" 2
 `,
 			expect: []string{
-				"-resource-dir/opt/homebrew/Cellar/llvm@19/19.1.7/lib/clang/19",
+				"-resource-dir=/opt/homebrew/Cellar/llvm@19/19.1.7/lib/clang/19",
 				"-I/opt/homebrew/Cellar/llvm@19/19.1.7/lib/clang/19/include",
 				"-isysroot/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk",
 				"-internal-isystem/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/local/include",
