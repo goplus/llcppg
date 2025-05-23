@@ -13,7 +13,7 @@ import (
 
 var _sysRootDirOnce = sync.OnceValues(sysRoot)
 
-var _matchISysrootRegex = regexp.MustCompile(`-(internal-isystem|isysroot|internal-externc-isystem)\s(\S+)`)
+var _matchISysrootRegex = regexp.MustCompile(`-(resource-dir|internal-isystem|isysroot|internal-externc-isystem)\s(\S+)`)
 
 type PreprocessConfig struct {
 	File    string
