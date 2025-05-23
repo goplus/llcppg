@@ -8,15 +8,12 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 )
 
-var _defaultSysRootDir []string
+var _sysRootDirOnce = sync.OnceValues(sysRoot)
 
 var _matchISysrootRegex = regexp.MustCompile(`-(internal-isystem|isysroot|internal-externc-isystem)\s(\S+)`)
-
-func init() {
-	_defaultSysRootDir, _ = sysRoot()
-}
 
 type PreprocessConfig struct {
 	File    string
@@ -80,7 +77,8 @@ func ParseClangIncOutput(output string) []string {
 }
 
 func WithSysRoot(args []string) []string {
-	return append(args, _defaultSysRootDir...)
+	_defaultSysRootDir, _ := _sysRootDirOnce()
+	return append(args, ...)
 }
 
 func defaultArgs(isCpp bool) []string {
