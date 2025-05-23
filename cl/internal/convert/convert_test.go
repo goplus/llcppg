@@ -38,11 +38,11 @@ func TestDepWithVersion(t *testing.T) {
 		if err != nil {
 			t.Fatal("Read go.mod failed:", err)
 		}
-		if !strings.Contains(string(modContent), "libxml2 v1.0.0") {
-			t.Fatal(string(modContent), "\ngo.mod does not contain libxml2 v1.0.0")
+		if !strings.Contains(string(modContent), "libxml2 v1.0.1") {
+			t.Fatal(string(modContent), "\ngo.mod does not contain libxml2 v1.0.1")
 		}
-		if !strings.Contains(string(modContent), "zlib v1.0.0") {
-			t.Fatal(string(modContent), "\ngo.mod does not contain zlib v1.0.0")
+		if !strings.Contains(string(modContent), "zlib v1.0.1") {
+			t.Fatal(string(modContent), "\ngo.mod does not contain zlib v1.0.1")
 		}
 	})
 }
