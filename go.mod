@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	github.com/goplus/gogen v1.18.1
 	github.com/goplus/lib v0.2.0
-	github.com/goplus/llgo v0.11.3
+	github.com/goplus/llgo v0.11.6-0.20250522141046-450a3637e44f
 	github.com/goplus/llpkg/cjson v1.0.1
 	github.com/goplus/mod v0.16.1
 	github.com/qiniu/x v1.14.6
