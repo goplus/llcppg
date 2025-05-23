@@ -3,7 +3,6 @@ package parse
 import (
 	"fmt"
 	"os"
-	"path"
 	"strings"
 	"unsafe"
 
@@ -27,10 +26,6 @@ const (
 func SetDebug(dbgFlags dbgFlags) {
 	debugParse = (dbgFlags & DbgParse) != 0
 }
-
-// temp to avoid call clang in llcppsigfetch,will cause hang
-var ClangSearchPath []string
-var ClangResourceDir string
 
 type Config struct {
 	Conf   *llcppg.Config
@@ -106,9 +101,7 @@ func Do(conf *Config) error {
 	// Currently, directly calling exec.Command in the main flow of llcppsigfetch will cause hang and fail to execute correctly.
 	// As a solution, the resource directory is externally provided by llcppg.
 	libclangFlags := []string{"-fparse-all-comments"}
-	if ClangResourceDir != "" {
-		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
-	}
+
 	pkgHfiles := config.PkgHfileInfo(conf.Conf, libclangFlags)
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "interfaces", pkgHfiles.Inters)

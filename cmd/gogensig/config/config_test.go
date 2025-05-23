@@ -368,15 +368,3 @@ func TestCreateJSONFileError(t *testing.T) {
 		t.Fatal("Expected error when creating JSON file in nonexistent directory, but got nil")
 	}
 }
-
-func TestClangResourceError(t *testing.T) {
-	orgPath := os.Getenv("PATH")
-	os.Setenv("PATH", "/invalid")
-	defer os.Setenv("PATH", orgPath)
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fatal("Expect panic")
-		}
-	}()
-	config.ClangResourceDir()
-}
