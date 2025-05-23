@@ -101,10 +101,10 @@ func sysRoot() ([]string, error) {
 
 	cmd.Run()
 
-	return parseSystemPath(output.String())
+	return ParseSystemPath(output.String())
 }
 
-func parseSystemPath(output string) ([]string, error) {
+func ParseSystemPath(output string) ([]string, error) {
 	sysRootResults := _matchISysrootRegex.FindAllStringSubmatch(output, -1)
 
 	var result []string
