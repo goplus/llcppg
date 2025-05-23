@@ -237,10 +237,10 @@ TestDefine Case 3:
 			}]
 	},
 	"FileMap":	{
-		"./testdata/macroexpan/def.h":	{
+		"testdata/macroexpan/def.h":	{
 			"FileType":	2
 		},
-		"./testdata/macroexpan/ref.h":	{
+		"testdata/macroexpan/ref.h":	{
 			"FileType":	1
 		}
 	}

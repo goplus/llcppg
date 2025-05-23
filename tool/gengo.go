@@ -22,6 +22,7 @@ import (
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/cl"
+	"github.com/goplus/llcppg/cl/nc"
 	"github.com/goplus/llcppg/parser"
 	"github.com/qiniu/x/errors"
 )
@@ -31,10 +32,13 @@ type Config struct {
 	PkgPath string
 	PkgName string
 
+	Deps []string // dependent packages
+	Libs string   // $(pkg-config --libs xxx)
+
 	HeaderFiles []string
-	LibFiles    []string
 
 	Parser parser.Config
+	NC     nc.NodeConverter
 }
 
 // GenGo generates Go code from C++ header files.
@@ -48,9 +52,15 @@ func GenGo(outDir, buildDir string, conf *Config) (err error) {
 	if err != nil {
 		return
 	}
-	pkg, err := cl.NewPackage(conf.PkgPath, conf.PkgName, f, &cl.Config{
-		Fset:     nil,
-		Importer: nil,
+	pkg, err := cl.Convert(&cl.ConvConfig{
+		OutputDir: outDir,
+		PkgPath:   conf.PkgPath,
+		PkgName:   conf.PkgName,
+
+		Pkg:  f,
+		NC:   conf.NC,
+		Deps: conf.Deps,
+		Libs: conf.Libs,
 	})
 	if err != nil {
 		return

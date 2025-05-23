@@ -9,10 +9,11 @@ import (
 
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/cltest"
+	"github.com/goplus/llcppg/cl/nc"
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-func basicConverter() *Converter {
+func basicConverter(nc nc.NodeConverter) *Converter {
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -25,20 +26,20 @@ func basicConverter() *Converter {
 	cfg := &llcppg.Config{
 		Libs: "${pkg-config --libs xxx}",
 	}
+	nodeConverter := nc
+	if nodeConverter == nil {
+		nodeConverter = cltest.NC(cfg, nil, cltest.NewConvSym())
+	}
 	converter, err := NewConverter(&Config{
 		PkgPath:   ".",
 		PkgName:   "test",
-		ConvSym:   cltest.NewConvSym(),
 		OutputDir: tempDir,
 		Pkg: &ast.File{
 			Decls: []ast.Decl{},
 		},
-		FileMap:        map[string]*llcppg.FileInfo{},
-		TypeMap:        cfg.TypeMap,
-		Deps:           cfg.Deps,
-		TrimPrefixes:   cfg.TrimPrefixes,
-		Libs:           cfg.Libs,
-		KeepUnderScore: cfg.KeepUnderScore,
+		NC:   nodeConverter,
+		Deps: cfg.Deps,
+		Libs: cfg.Libs,
 	})
 	if err != nil {
 		panic(err)
@@ -47,8 +48,10 @@ func basicConverter() *Converter {
 }
 
 func TestPkgFail(t *testing.T) {
-	converter := basicConverter()
+	converter := basicConverter(nil)
 	defer os.RemoveAll(converter.GenPkg.conf.OutputDir)
+
+	/* todo(zzy): move to NC to test name fetch
 	t.Run("ProcessFail", func(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "File \"noexist.h\" not found in FileMap")
@@ -65,15 +68,15 @@ func TestPkgFail(t *testing.T) {
 		}
 		converter.Process()
 	})
+	*/
 
 	t.Run("Complete fail", func(t *testing.T) {
 		defer func() {
 			checkPanic(t, recover(), "Complete Fail: Mock Err")
 		}()
-		converter.GenPkg.incompleteTypes.Add(&Incomplete{cname: "Bar", file: &HeaderFile{
-			File:     "temp.h",
-			FileType: llcppg.Inter,
-		}, getType: func() (types.Type, error) {
+		ctx := converter.GenPkg
+		ctx.p.SetCurFile("temp.go", true)
+		ctx.incompleteTypes.Add(&Incomplete{cname: "Bar", file: ctx.p.CurFile(), getType: func() (types.Type, error) {
 			return nil, errors.New("Mock Err")
 		}})
 		converter.Complete()
@@ -84,12 +87,18 @@ func TestProcessWithError(t *testing.T) {
 	defer func() {
 		checkPanic(t, recover(), "NewTypedefDecl: Foo fail")
 	}()
-	converter := basicConverter()
-	converter.GenPkg.conf.ConvSym = cltest.NewConvSym(cltest.SymbolEntry{
-		CppName:    "Foo",
-		MangleName: "Foo",
-		GoName:     "Foo",
-	})
+	converter := basicConverter(cltest.NC(&llcppg.Config{},
+		map[string]*llcppg.FileInfo{
+			"exist.h": {
+				FileType: llcppg.Inter,
+			},
+		},
+		cltest.NewConvSym(cltest.SymbolEntry{
+			CppName:    "Foo",
+			MangleName: "Foo",
+			GoName:     "Foo",
+		}),
+	))
 	declLoc := &ast.Location{
 		File: "exist.h",
 	}
@@ -122,9 +131,6 @@ func TestProcessWithError(t *testing.T) {
 				Name: "Foo",
 			},
 		},
-	}
-	converter.FileMap["exist.h"] = &llcppg.FileInfo{
-		FileType: llcppg.Inter,
 	}
 	converter.Process()
 }

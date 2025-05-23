@@ -20,30 +20,40 @@ import "github.com/goplus/llcppg/token"
 
 // =============================================================================
 
-type Node interface {
-}
+// Node is the interface for an AST nodes.
+type Node any
 
+// Expr is an expression node.
 type Expr interface {
 	Node
 	exprNode()
 }
 
+// Decl is a declaration node.
 type Decl interface {
 	Node
-	declNode()
+	declNode() *Object
 }
 
+// ObjectOf returns the object of the declaration.
+func ObjectOf(decl Decl) *Object {
+	return decl.declNode()
+}
+
+// Stmt is a statement node.
 type Stmt interface {
 	Node
 	stmtNode()
 }
 
-type PPD interface { // preprocessing directive
+// PPD is a preprocessing directive node.
+type PPD interface {
 	Node
 	ppdNode()
 }
 
 // =============================================================================
+
 type AccessSpecifier uint
 
 const (
@@ -286,7 +296,9 @@ type TypedefDecl struct {
 	Type Expr
 }
 
-func (*TypedefDecl) declNode() {}
+func (p *TypedefDecl) declNode() *Object {
+	return &p.Object
+}
 
 // ------------------------------------------------
 
@@ -309,7 +321,9 @@ type EnumTypeDecl struct {
 	Type *EnumType
 }
 
-func (*EnumTypeDecl) declNode() {}
+func (p *EnumTypeDecl) declNode() *Object {
+	return &p.Object
+}
 
 // ------------------------------------------------
 
@@ -330,7 +344,9 @@ type FuncDecl struct {
 	IsOverride    bool
 }
 
-func (*FuncDecl) declNode() {}
+func (p *FuncDecl) declNode() *Object {
+	return &p.Object
+}
 
 // ------------------------------------------------
 
@@ -340,7 +356,9 @@ type TypeDecl struct {
 	Type *RecordType
 }
 
-func (*TypeDecl) declNode() {}
+func (p *TypeDecl) declNode() *Object {
+	return &p.Object
+}
 
 // =============================================================================
 // AST File

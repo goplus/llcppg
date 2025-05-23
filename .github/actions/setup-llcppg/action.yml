@@ -9,7 +9,7 @@ inputs:
     default: "19"
   llgo:
     description: "LLGo git ref or tag"
-    default: "44e1435c65dc472e1f1b4f7c083382a1f949ca26"
+    default: "450a3637e44f73de2cb05ddacc77f6886877c69b"
 runs:
   using: "composite"
   steps:
@@ -30,6 +30,8 @@ runs:
     run: |
       brew update
       brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv lld@${{inputs.llvm}}
+      brew install zlib # for llgo test .
+      brew link --force zlib # for llgo test .
       brew link --force libffi
       echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
       echo "$(brew --prefix lld@${{inputs.llvm}})/bin" >> $GITHUB_PATH

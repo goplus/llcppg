@@ -10,8 +10,8 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config/cfgparse"
+	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/flag"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/nm"
 	"github.com/goplus/llpkg/cjson"
@@ -85,7 +85,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 		fmt.Println("ParseDylibSymbols:sysPaths", sysPaths)
 	}
 
-	lbs := cfgparse.ParseLibs(lib)
+	lbs := flag.ParseLibs(lib)
 	if dbgSymbol {
 		fmt.Println("ParseDylibSymbols:LibConfig Parse To")
 		fmt.Println("libs.Names: ", lbs.Names)

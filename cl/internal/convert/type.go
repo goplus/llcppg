@@ -13,8 +13,9 @@ import (
 	"unsafe"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/nc"
+	"github.com/goplus/llcppg/internal/name"
 )
 
 type TypeContext int
@@ -43,18 +44,22 @@ func Sizeof(T types.Type) int64 {
 }
 
 type TypeConv struct {
-	pkg     *Package
+	types   *types.Package
 	typeMap *BuiltinTypeMap
 	ctx     TypeContext
+	pnc     nc.NodeConverter
+	lookup  func(name string, pnc nc.NodeConverter) (types.Type, error)
 }
 
-func NewConv(p *Package) *TypeConv {
-	clib := p.p.Import("github.com/goplus/lib/c")
-	math := p.p.Import("math")
-	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, p.p.Unsafe())
+func NewConv(pkg *gogen.Package, types *types.Package, pnc nc.NodeConverter, lookup func(name string, pnc nc.NodeConverter) (types.Type, error)) *TypeConv {
+	clib := pkg.Import("github.com/goplus/lib/c")
+	math := pkg.Import("math")
+	typeMap := NewBuiltinTypeMapWithPkgRefS(clib, math, pkg.Unsafe())
 	typeConv := &TypeConv{
 		typeMap: typeMap,
-		pkg:     p,
+		types:   types,
+		pnc:     pnc,
+		lookup:  lookup,
 	}
 	return typeConv
 }
@@ -135,31 +140,12 @@ func (p *TypeConv) handlePointerType(t *ast.PointerType) (types.Type, error) {
 	return types.NewPointer(baseType), nil
 }
 
-func (p *TypeConv) types() *types.Package {
-	return p.pkg.p.Types
-}
-
 func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 	lookup := func(name string) (types.Type, error) {
-		// For types defined in other packages, they should already be in current scope
-		// We don't check for types.Named here because the type returned from ConvertType
-		// for aliases like int8_t might be a built-in type (e.g., int8),
-
-		var typ types.Type
-		obj := p.pkg.Lookup(name)
-		if obj == nil {
-			// in third hfile but not have converted go type
-			if path, ok := p.pkg.locMap.Lookup(name); ok {
-				return nil, fmt.Errorf("convert %s first, declare converted package in llcppg.cfg deps for load [%s]. See: https://github.com/goplus/llcppg?tab=readme-ov-file#dependency", path, name)
-			} else {
-				// implicit forward decl
-				decl := p.pkg.handleImplicitForwardDecl(name)
-				typ = decl.Type()
-			}
-		} else {
-			typ = obj.Type()
+		typ, err := p.lookup(name, p.pnc)
+		if err != nil {
+			return nil, err
 		}
-
 		if p.ctx == Record {
 			if named, ok := typ.(*types.Named); ok {
 				if _, ok := named.Underlying().(*types.Signature); ok {
@@ -257,7 +243,7 @@ func (p *TypeConv) retToResult(ret ast.Expr) (*types.Tuple, error) {
 	}
 	if typ != nil && !p.typeMap.IsVoidType(typ) {
 		// in c havent multiple return
-		return types.NewTuple(types.NewVar(token.NoPos, p.types(), "", typ)), nil
+		return types.NewTuple(types.NewVar(token.NoPos, p.types, "", typ)), nil
 	}
 	return types.NewTuple(), nil
 }
@@ -284,7 +270,7 @@ func (p *TypeConv) fieldListToVars(params *ast.FieldList, hasNamedParam bool) ([
 // todo(zzy): use  Unused [unsafe.Sizeof(0)]byte in the source code
 func (p *TypeConv) defaultRecordField() []*types.Var {
 	return []*types.Var{
-		types.NewVar(token.NoPos, p.types(), "Unused", types.NewArray(types.Typ[types.Byte], int64(unsafe.Sizeof(0)))),
+		types.NewVar(token.NoPos, p.types, "Unused", types.NewArray(types.Typ[types.Byte], int64(unsafe.Sizeof(0)))),
 	}
 }
 
@@ -316,7 +302,7 @@ func (p *TypeConv) fieldToVar(field *ast.Field, hasNamedParam bool, argIndex int
 			name = avoidKeyword(name)
 		}
 	}
-	return types.NewVar(token.NoPos, p.types(), name, typ), nil
+	return types.NewVar(token.NoPos, p.types, name, typ), nil
 }
 
 func (p *TypeConv) RecordTypeToStruct(recordType *ast.RecordType) (types.Type, error) {

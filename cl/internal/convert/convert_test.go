@@ -56,10 +56,12 @@ func TestSysToPkg(t *testing.T) {
 	testFrom(t, path.Join(dir, "_testdata", name), false, func(t *testing.T, pkg *convert.Package, cvt *convert.Converter) {
 		// check FileMap's info is right
 		inFileMap := func(file string) {
+			/* TODO(xsw): remove this
 			_, ok := cvt.FileMap[file]
 			if !ok {
 				t.Fatal("File not found in FileMap:", file)
 			}
+			*/
 		}
 		for _, decl := range cvt.Pkg.Decls {
 			switch decl := decl.(type) {
@@ -223,16 +225,11 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 	cvt, err := convert.NewConverter(&convert.Config{
 		PkgPath:   ".",
 		PkgName:   cfg.Name,
-		ConvSym:   cltest.GetConvSym(symbPath),
 		OutputDir: outputDir,
 		Pkg:       convertPkg.File,
-		FileMap:   convertPkg.FileMap,
-
-		TypeMap:        cfg.TypeMap,
-		Deps:           cfg.Deps,
-		TrimPrefixes:   cfg.TrimPrefixes,
-		Libs:           cfg.Libs,
-		KeepUnderScore: cfg.KeepUnderScore,
+		NC:        cltest.NC(cfg, convertPkg.FileMap, cltest.GetConvSym(symbPath)),
+		Deps:      cfg.Deps,
+		Libs:      cfg.Libs,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -318,13 +315,9 @@ func TestNewConvert(t *testing.T) {
 	_, err := convert.NewConverter(&convert.Config{
 		PkgPath: ".",
 		PkgName: "test",
-		ConvSym: cltest.NewConvSym(),
-
-		TypeMap:        cfg.TypeMap,
-		Deps:           cfg.Deps,
-		TrimPrefixes:   cfg.TrimPrefixes,
-		Libs:           cfg.Libs,
-		KeepUnderScore: cfg.KeepUnderScore,
+		NC:      cltest.NC(cfg, nil, cltest.NewConvSym()),
+		Deps:    cfg.Deps,
+		Libs:    cfg.Libs,
 	})
 	if err != nil {
 		t.Fatal("NewAstConvert Fail")

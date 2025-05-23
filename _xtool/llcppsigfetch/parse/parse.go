@@ -3,20 +3,29 @@ package parse
 import (
 	"fmt"
 	"os"
-	"path"
 	"strings"
 	"unsafe"
 
 	"github.com/goplus/lib/c"
-	clangutils "github.com/goplus/llcppg/_xtool/llcppsymg/tool/clang"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/config"
+	"github.com/goplus/llcppg/_xtool/internal/clangtool"
+	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/parser"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkg/cjson"
 )
 
-// temp to avoid call clang in llcppsigfetch,will cause hang
-var ClangSearchPath []string
-var ClangResourceDir string
+type dbgFlags = int
+
+var debugParse bool
+
+const (
+	DbgParse   dbgFlags = 1 << iota
+	DbgFlagAll          = DbgParse
+)
+
+func SetDebug(dbgFlags dbgFlags) {
+	debugParse = (dbgFlags & DbgParse) != 0
+}
 
 type Config struct {
 	Conf   *llcppg.Config
@@ -30,11 +39,12 @@ type Config struct {
 
 	CombinedFile     string
 	PreprocessedFile string
-	Exec             func(conf *Config, converter *Converter)
+	Exec             func(conf *Config, pkg *llcppg.Pkg)
 }
 
 func Do(conf *Config) error {
 	if debugParse {
+		parser.SetDebug(parser.DbgFlagAll)
 		fmt.Fprintln(os.Stderr, "output to file:", conf.Out)
 		if conf.ExtractMode {
 			fmt.Fprintln(os.Stderr, "runExtract: extractFile:", conf.ExtractFile)
@@ -64,7 +74,7 @@ func Do(conf *Config) error {
 	}
 
 	// compose includes to a combined file
-	err := clangutils.ComposeIncludes(conf.Conf.Include, conf.CombinedFile)
+	err := clangtool.ComposeIncludes(conf.Conf.Include, conf.CombinedFile)
 	if err != nil {
 		return err
 	}
@@ -75,7 +85,7 @@ func Do(conf *Config) error {
 	clangFlags = append(clangFlags, "-dD") // keep macro
 	clangFlags = append(clangFlags, "-fparse-all-comments")
 
-	err = clangutils.Preprocess(&clangutils.PreprocessConfig{
+	err = clangtool.Preprocess(&clangtool.PreprocessConfig{
 		File:    conf.CombinedFile,
 		IsCpp:   isCpp,
 		Args:    clangFlags,
@@ -91,9 +101,7 @@ func Do(conf *Config) error {
 	// Currently, directly calling exec.Command in the main flow of llcppsigfetch will cause hang and fail to execute correctly.
 	// As a solution, the resource directory is externally provided by llcppg.
 	libclangFlags := []string{"-fparse-all-comments"}
-	if ClangResourceDir != "" {
-		libclangFlags = append(libclangFlags, "-resource-dir="+ClangResourceDir, "-I"+path.Join(ClangResourceDir, "include"))
-	}
+
 	pkgHfiles := config.PkgHfileInfo(conf.Conf, libclangFlags)
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "interfaces", pkgHfiles.Inters)
@@ -101,24 +109,37 @@ func Do(conf *Config) error {
 		fmt.Fprintln(os.Stderr, "thirdhfile", pkgHfiles.Thirds)
 	}
 	libclangFlags = append(libclangFlags, strings.Fields(conf.Conf.CFlags)...)
-	converter, err := NewConverter(
-		&ConverterConfig{
-			HfileInfo: pkgHfiles,
-			Cfg: &clangutils.Config{
-				File:  conf.PreprocessedFile,
-				IsCpp: isCpp,
-				Args:  libclangFlags,
-			},
-		})
+	file, err := parser.Do(&parser.ConverterConfig{
+		File:  conf.PreprocessedFile,
+		Args:  libclangFlags,
+		IsCpp: isCpp,
+	})
 	if err != nil {
 		return err
 	}
-	defer converter.Dispose()
 
-	pkg, err := converter.Convert()
-	if err != nil {
-		return err
+	pkg := &llcppg.Pkg{
+		File:    file,
+		FileMap: make(map[string]*llcppg.FileInfo),
 	}
+
+	fileTypeMappings := []struct {
+		files    []string
+		fileType llcppg.FileType
+	}{
+		{pkgHfiles.Inters, llcppg.Inter},
+		{pkgHfiles.Impls, llcppg.Impl},
+		{pkgHfiles.Thirds, llcppg.Third},
+	}
+
+	for _, mapping := range fileTypeMappings {
+		for _, file := range mapping.files {
+			pkg.FileMap[file] = &llcppg.FileInfo{
+				FileType: mapping.fileType,
+			}
+		}
+	}
+
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "Have %d Macros", len(pkg.File.Macros))
 		for _, macro := range pkg.File.Macros {
@@ -128,14 +149,14 @@ func Do(conf *Config) error {
 	}
 
 	if conf.Exec != nil {
-		conf.Exec(conf, converter)
+		conf.Exec(conf, pkg)
 	}
 
 	return nil
 }
 
-func OutputPkg(conf *Config, cvt *Converter) {
-	info := MarshalPkg(cvt.Pkg)
+func OutputPkg(conf *Config, pkg *llcppg.Pkg) {
+	info := MarshalPkg(pkg)
 	str := info.Print()
 	defer cjson.FreeCStr(unsafe.Pointer(str))
 	defer info.Delete()

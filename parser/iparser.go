@@ -24,7 +24,7 @@ import (
 	"strconv"
 
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/parser/internal/unmarshal"
+	"github.com/goplus/llcppg/internal/unmarshal"
 )
 
 // Mode represents the parsing mode.

@@ -2,7 +2,10 @@ package cltest
 
 import (
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/cl/nc"
+	"github.com/goplus/llcppg/cl/nc/ncimpl"
 	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
+	llcppg "github.com/goplus/llcppg/config"
 )
 
 type SymbolEntry = cfg.SymbolEntry
@@ -33,13 +36,13 @@ func fromSymbTable(symbTable *cfg.SymbolTable) func(name *ast.Object, mangleName
 	}
 }
 
-/* TODO(xsw): remove this
-func GetCppgConfig(cfgFile string) (conf *llcppg.Config) {
-	conf, err := cfg.GetCppgCfgFromPath(cfgFile)
-	if err != nil {
-		// NOTE(xsw): not a good idea, but make sense in test cases
-		conf = llcppg.NewDefault()
+func NC(cfg *llcppg.Config, fileMap map[string]*llcppg.FileInfo, convSym func(name *ast.Object, mangleName string) (goName string, err error)) nc.NodeConverter {
+	return &ncimpl.Converter{
+		PkgName:        cfg.Name,
+		Pubs:           cfg.TypeMap,
+		FileMap:        fileMap,
+		ConvSym:        convSym,
+		TrimPrefixes:   cfg.TrimPrefixes,
+		KeepUnderScore: cfg.KeepUnderScore,
 	}
-	return
 }
-*/

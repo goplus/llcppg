@@ -28,9 +28,9 @@ func TestDefine() {
 
 func TestInclusionMap() {
 	fmt.Println("=== TestInclusionMap ===")
-	checkFileMap := func(conf *parse.Config, cvt *parse.Converter) {
+	checkFileMap := func(conf *parse.Config, pkg *llcppg.Pkg) {
 		found := false
-		for path, info := range cvt.Pkg.FileMap {
+		for path, info := range pkg.FileMap {
 			if strings.HasSuffix(path, "sys/types.h") && info.FileType == llcppg.Third {
 				found = true
 			}
@@ -56,9 +56,9 @@ func TestInclusionMap() {
 
 func TestSystemHeader() {
 	fmt.Println("=== TestSystemHeader ===")
-	checkFileMap := func(conf *parse.Config, cvt *parse.Converter) {
-		for path, info := range cvt.Pkg.FileMap {
-			if path != "./testdata/sysinc/inc.h" && info.FileType != llcppg.Third {
+	checkFileMap := func(conf *parse.Config, pkg *llcppg.Pkg) {
+		for path, info := range pkg.FileMap {
+			if path != "testdata/sysinc/inc.h" && info.FileType != llcppg.Third {
 				panic(fmt.Errorf("include file is not third header: %s", path))
 			}
 		}

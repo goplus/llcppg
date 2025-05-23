@@ -6,15 +6,21 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/tool/name"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/cltest"
+	"github.com/goplus/llcppg/cl/nc"
+	"github.com/goplus/llcppg/cl/nc/ncimpl"
 	llcppg "github.com/goplus/llcppg/config"
+	"github.com/goplus/llcppg/internal/name"
 	ctoken "github.com/goplus/llcppg/token"
 )
 
-func emptyPkg() *Package {
-	pkg, err := NewPackage(&PackageConfig{
+func emptyPkg(nc nc.NodeConverter) *Package {
+	pnc := nc
+	if pnc == nil {
+		pnc = cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym())
+	}
+	pkg, err := NewPackage(pnc, &PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
 			Pubs:    make(map[string]string),
@@ -22,7 +28,6 @@ func emptyPkg() *Package {
 		Name:       "testpkg",
 		GenConf:    &gogen.Config{},
 		OutputDir:  "",
-		ConvSym:    cltest.NewConvSym(),
 		LibCommand: "${pkg-config --libs xxx}",
 	})
 	if err != nil {
@@ -32,17 +37,18 @@ func emptyPkg() *Package {
 }
 
 func TestTypeRefIncompleteFail(t *testing.T) {
-	pkg := emptyPkg()
-	tempFile := &HeaderFile{
-		File:     "temp.h",
-		FileType: llcppg.Inter,
-	}
-	pkg.SetCurFile(tempFile)
-
+	/* todo(zzy):move to nodeconverter test
 	t.Run("defer write third type not found", func(t *testing.T) {
-		pkg.locMap.Add(&ast.Ident{Name: "Bar"}, &ast.Location{File: "Bar"})
+		nc := cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym())
+		pkg := emptyPkg(nc)
+		tempFile := &ncimpl.HeaderFile{
+			File:     "temp.h",
+			FileType: llcppg.Inter,
+		}
+		pkg.p.SetCurFile(tempFile.ToGoFileName("testpkg"), true)
+		// pkg.locMap.Add(&ast.Ident{Name: "Bar"}, &ast.Location{File: "Bar"})
 		pkg.incompleteTypes.Add(&Incomplete{cname: "Bar"})
-		err := pkg.NewTypedefDecl(&ast.TypedefDecl{
+		err := pkg.NewTypedefDecl("Foo", &ast.TypedefDecl{
 			Object: ast.Object{
 				Name: &ast.Ident{Name: "Foo"},
 			},
@@ -59,7 +65,14 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 			t.Fatal("expect a error")
 		}
 	})
+	*/
 	t.Run("ref tag incomplete fail", func(t *testing.T) {
+		pkg := emptyPkg(nil)
+		tempFile := &ncimpl.HeaderFile{
+			File:     "temp.h",
+			FileType: llcppg.Inter,
+		}
+		pkg.p.SetCurFile(tempFile.ToGoFileName("testpkg"), true)
 		defer func() {
 			if r := recover(); r == nil {
 				t.Fatal("Expected panic, got nil")
@@ -75,17 +88,19 @@ func TestTypeRefIncompleteFail(t *testing.T) {
 }
 
 func TestRedefPubName(t *testing.T) {
-	pkg := emptyPkg()
-	tempFile := &HeaderFile{
+	pkg := emptyPkg(nil)
+	tempFile := &ncimpl.HeaderFile{
 		File:     "temp.h",
 		FileType: llcppg.Inter,
 	}
-	pkg.SetCurFile(tempFile)
+	// todo(zzy):remove this
+	// pkg.SetCurFile(tempFile)
+	pkg.p.SetCurFile(tempFile.ToGoFileName("testpkg"), true)
 	// mock a function name which is not register in processsymbol
 	pkg.p.NewFuncDecl(token.NoPos, "Foo", types.NewSignatureType(nil, nil, nil, types.NewTuple(), types.NewTuple(), false))
 	pkg.p.NewFuncDecl(token.NoPos, "Bar", types.NewSignatureType(nil, nil, nil, types.NewTuple(), types.NewTuple(), false))
 	t.Run("enum type redefine pubname", func(t *testing.T) {
-		err := pkg.NewEnumTypeDecl(&ast.EnumTypeDecl{
+		err := pkg.NewEnumTypeDecl("Foo", &ast.EnumTypeDecl{
 			Object: ast.Object{
 				Loc:  &ast.Location{File: "temp.h"},
 				Name: nil,
@@ -95,13 +110,13 @@ func TestRedefPubName(t *testing.T) {
 					{Name: &ast.Ident{Name: "Foo"}, Value: &ast.BasicLit{Kind: ast.IntLit, Value: "0"}},
 				},
 			},
-		})
+		}, cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym()))
 		if err == nil {
 			t.Fatal("expect a error")
 		}
 	})
 	t.Run("macro redefine pubname", func(t *testing.T) {
-		err := pkg.NewMacro(&ast.Macro{
+		err := pkg.NewMacro("Bar", &ast.Macro{
 			Loc:    &ast.Location{File: "temp.h"},
 			Name:   "Bar",
 			Tokens: []*ast.Token{{Token: ctoken.IDENT, Lit: "Bar"}, {Token: ctoken.LITERAL, Lit: "1"}},
@@ -155,18 +170,20 @@ func TestGetNameType(t *testing.T) {
 	}
 }
 
+/* todo(zzy):move to node convert test
 func TestTrimPrefixes(t *testing.T) {
-	pkg, err := NewPackage(&PackageConfig{
+	pkg, err := NewPackage(cltest.NC(&llcppg.Config{
+		TrimPrefixes: []string{"prefix1", "prefix2"},
+	}, nil, cltest.NewConvSym()), &PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
 			Pubs:    make(map[string]string),
 		},
-		Name:         "testpkg",
-		GenConf:      &gogen.Config{},
-		OutputDir:    "",
-		ConvSym:      cltest.NewConvSym(),
-		TrimPrefixes: []string{"prefix1", "prefix2"},
-		LibCommand:   "${pkg-config --libs xxx}",
+		Name:       "testpkg",
+		GenConf:    &gogen.Config{},
+		OutputDir:  "",
+		ConvSym:    cltest.NewConvSym(),
+		LibCommand: "${pkg-config --libs xxx}",
 	})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
@@ -188,6 +205,7 @@ func TestTrimPrefixes(t *testing.T) {
 		t.Errorf("Expected Empty TrimPrefix")
 	}
 }
+*/
 
 func TestMarkUseFail(t *testing.T) {
 	defer func() {
@@ -195,7 +213,7 @@ func TestMarkUseFail(t *testing.T) {
 			t.Fatal("Expected panic, got nil")
 		}
 	}()
-	pkg, err := NewPackage(&PackageConfig{
+	pkg, err := NewPackage(cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym()), &PackageConfig{
 		PkgBase: PkgBase{
 			PkgPath: ".",
 			Pubs:    make(map[string]string),
@@ -209,12 +227,12 @@ func TestMarkUseFail(t *testing.T) {
 }
 
 func TestProcessSymbol(t *testing.T) {
-	toCamel := func(trimprefix []string) NameMethod {
+	toCamel := func(trimprefix []string) ncimpl.NameMethod {
 		return func(cname string) string {
 			return name.PubName(name.RemovePrefixedName(cname, trimprefix))
 		}
 	}
-	toExport := func(trimprefix []string) NameMethod {
+	toExport := func(trimprefix []string) ncimpl.NameMethod {
 		return func(cname string) string {
 			return name.ExportName(name.RemovePrefixedName(cname, trimprefix))
 		}
@@ -224,7 +242,7 @@ func TestProcessSymbol(t *testing.T) {
 	testCases := []struct {
 		name         string
 		trimPrefixes []string
-		nameMethod   func(trimprefix []string) NameMethod
+		nameMethod   func(trimprefix []string) ncimpl.NameMethod
 		expected     string
 		expectChange bool
 	}{

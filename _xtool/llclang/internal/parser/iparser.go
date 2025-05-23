@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
+	cparser "github.com/goplus/llcppg/_xtool/internal/parser"
 	"github.com/goplus/llcppg/parser"
 	"github.com/goplus/llpkg/cjson"
 )
@@ -41,7 +42,7 @@ func parseIntermediateFile(filename string, mode Mode) error {
 		args = append(args, "-fparse-all-comments")
 	}
 
-	file, err := Do(&ConverterConfig{
+	file, err := cparser.Do(&cparser.ConverterConfig{
 		File:  filename,
 		IsCpp: isCpp,
 		Args:  args,
@@ -49,7 +50,7 @@ func parseIntermediateFile(filename string, mode Mode) error {
 	if err != nil {
 		return fmt.Errorf("parseIntermediateFile: %w", err)
 	}
-	json := MarshalASTFile(file)
+	json := cparser.MarshalASTFile(file)
 	str := json.Print()
 	defer cjson.FreeCStr(unsafe.Pointer(str))
 	defer json.Delete()

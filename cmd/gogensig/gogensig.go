@@ -23,12 +23,13 @@ import (
 	"strings"
 
 	"github.com/goplus/gogen"
-	args "github.com/goplus/llcppg/_xtool/llcppsymg/tool/arg"
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl"
+	"github.com/goplus/llcppg/cl/nc/ncimpl"
 	"github.com/goplus/llcppg/cmd/gogensig/config"
 	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
 	llcppg "github.com/goplus/llcppg/config"
+	args "github.com/goplus/llcppg/internal/arg"
 	"github.com/qiniu/x/errors"
 )
 
@@ -46,8 +47,7 @@ func main() {
 
 	var cfgFile string
 	var modulePath string
-	for i := 0; i < len(remainArgs); i++ {
-		arg := remainArgs[i]
+	for _, arg := range remainArgs {
 		if strings.HasPrefix(arg, "-cfg=") {
 			cfgFile = args.StringArg(arg, llcppg.LLCPPG_CFG)
 		}
@@ -81,20 +81,23 @@ func main() {
 
 	pkg, err := cl.Convert(&cl.ConvConfig{
 		PkgName: conf.Name,
-		ConvSym: func(name *ast.Object, mangleName string) (goName string, err error) {
-			item, err := symbTable.LookupSymbol(mangleName)
-			if err != nil {
-				return
-			}
-			return item.GoName, nil
+		Pkg:     convertPkg.File,
+		NC: &ncimpl.Converter{
+			PkgName: conf.Name,
+			Pubs:    conf.TypeMap,
+			ConvSym: func(name *ast.Object, mangleName string) (goName string, err error) {
+				item, err := symbTable.LookupSymbol(mangleName)
+				if err != nil {
+					return
+				}
+				return item.GoName, nil
+			},
+			FileMap:        convertPkg.FileMap,
+			TrimPrefixes:   conf.TrimPrefixes,
+			KeepUnderScore: conf.KeepUnderScore,
 		},
-		Pkg:            convertPkg.File,
-		FileMap:        convertPkg.FileMap,
-		TypeMap:        conf.TypeMap,
-		Deps:           conf.Deps,
-		TrimPrefixes:   conf.TrimPrefixes,
-		Libs:           conf.Libs,
-		KeepUnderScore: conf.KeepUnderScore,
+		Deps: conf.Deps,
+		Libs: conf.Libs,
 	})
 	check(err)
 

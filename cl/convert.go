@@ -3,7 +3,7 @@ package cl
 import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/cl/internal/convert"
-	llconfig "github.com/goplus/llcppg/config"
+	"github.com/goplus/llcppg/cl/nc"
 )
 
 const DbgFlagAll = convert.DbgFlagAll
@@ -21,15 +21,10 @@ type ConvConfig struct {
 	PkgPath   string
 	PkgName   string
 	Pkg       *ast.File
-	FileMap   map[string]*llconfig.FileInfo
-	ConvSym   func(name *ast.Object, mangleName string) (goName string, err error)
+	NC        nc.NodeConverter
 
-	// CfgFile   string // llcppg.cfg
-	TypeMap        map[string]string // llcppg.pub
-	Deps           []string          // dependent packages
-	TrimPrefixes   []string
-	Libs           string
-	KeepUnderScore bool
+	Deps []string // dependent packages
+	Libs string   // $(pkg-config --libs xxx)
 }
 
 func Convert(config *ConvConfig) (pkg Package, err error) {
@@ -38,14 +33,9 @@ func Convert(config *ConvConfig) (pkg Package, err error) {
 		PkgPath:   config.PkgPath,
 		PkgName:   config.PkgName,
 		Pkg:       config.Pkg,
-		FileMap:   config.FileMap,
-		ConvSym:   config.ConvSym,
-
-		TypeMap:        config.TypeMap,
-		Deps:           config.Deps,
-		TrimPrefixes:   config.TrimPrefixes,
-		Libs:           config.Libs,
-		KeepUnderScore: config.KeepUnderScore,
+		NC:        config.NC,
+		Deps:      config.Deps,
+		Libs:      config.Libs,
 	})
 	if err != nil {
 		return

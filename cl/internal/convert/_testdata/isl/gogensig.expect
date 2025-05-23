@@ -19,7 +19,7 @@ type IslArgChoice struct {
 }
 type IslArgType c.Int
 
-const IslArgChoice__1 IslArgType = 0
+const Isl_arg_choice IslArgType = 0
 
 ===== llcppg.pub =====
 isl_arg_choice IslArgChoice

@@ -1,3 +1,5 @@
 coverage:
   ignore:
     - cl/internal/cltest
+    - cl/nc
+    - tool
