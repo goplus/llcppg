@@ -8,7 +8,7 @@ require (
 	github.com/goplus/llgo v0.11.6-0.20250522141046-450a3637e44f
 	github.com/goplus/llpkg/cjson v1.0.1
 	github.com/goplus/mod v0.16.1
-	github.com/qiniu/x v1.14.6
+	github.com/qiniu/x v1.15.0
 )
 
 require golang.org/x/mod v0.23.0 // indirect
