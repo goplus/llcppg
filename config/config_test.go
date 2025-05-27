@@ -33,7 +33,7 @@ func TestReadPubFileError(t *testing.T) {
 	}
 	defer os.Remove(temp.Name())
 	content := `a b c`
-	_, err = temp.Write([]byte(content))
+	_, err = temp.WriteString(content)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,6 @@ func TestWritePubFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tempDir)
 	pubFile := filepath.Join(tempDir, config.LLCPPG_PUB)
 	err = config.WritePubFile(pubFile, pub)
 	if err != nil {

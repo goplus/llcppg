@@ -55,6 +55,6 @@ func WritePubFile(file string, public map[string]string) (err error) {
 		}
 	}
 	sort.Strings(ret)
-	_, err = f.WriteString(strings.Join(ret, "\n"))
+	_, err = f.Write([]byte(strings.Join(ret, "\n")))
 	return
 }
