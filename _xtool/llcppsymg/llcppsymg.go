@@ -36,7 +36,6 @@ func main() {
 
 	conf, err := config.GetConf(ags.UseStdin, ags.CfgFile)
 	check(err)
-	defer conf.Delete()
 
 	if ags.Verbose {
 		symg.SetDebug(symg.DbgFlagAll)
