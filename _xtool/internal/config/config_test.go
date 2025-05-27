@@ -60,7 +60,6 @@ func TestGetConfByByte(t *testing.T) {
 				Include:      []string{"lua.h"},
 				Libs:         "-L/opt/homebrew/lib -llua -lm",
 				TrimPrefixes: []string{"lua_", "lua_"},
-				SymMap:       map[string]string{},
 			},
 		},
 		{
