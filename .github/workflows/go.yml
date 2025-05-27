@@ -40,7 +40,8 @@ jobs:
         # only with llgo test ./... with llgo update
         # https://github.com/goplus/llgo/pull/1128
         bash .github/workflows/llgo_test.sh $(ls -d _xtool/internal/*/)
-        bash .github/workflows/llgo_test.sh $(ls -d config/*/)
+        cd config
+        llgo test .
 
     - name: Test llcppsymg & llcppsigfetch
       run: |
