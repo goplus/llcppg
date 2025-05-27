@@ -19,10 +19,6 @@ type ImplFiles struct {
 	Cond  Condition `json:"cond"`
 }
 
-func NewImplFiles() *ImplFiles {
-	return &ImplFiles{Files: []string{}, Cond: Condition{OS: []string{}, Arch: []string{}}}
-}
-
 // Config represents a configuration for the llcppg tool.
 type Config struct {
 	Name           string            `json:"name"`
@@ -40,7 +36,7 @@ type Config struct {
 }
 
 func NewDefault() *Config {
-	return &Config{Impl: []ImplFiles{*NewImplFiles()}}
+	return &Config{}
 }
 
 type SymbolInfo struct {
