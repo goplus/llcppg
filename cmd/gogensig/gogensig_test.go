@@ -80,7 +80,7 @@ func testFrom(t *testing.T, dir string, modulePath string, gen bool) {
 		t.Fatal("Chdir failed:", err)
 	}
 
-	conf, err := config.GetCppgCfgFromPath(path.Join(confDir, llconfig.LLCPPG_CFG))
+	conf, err := llconfig.GetConfFromFile(path.Join(confDir, llconfig.LLCPPG_CFG))
 	if err != nil {
 		t.Fatal("GetCppgCfgFromPath failed:", err)
 	}

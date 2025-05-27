@@ -1,8 +1,6 @@
 package config
 
 import (
-	"encoding/json"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,39 +10,6 @@ import (
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	llcppg "github.com/goplus/llcppg/config"
 )
-
-type Conf struct {
-	*llcppg.Config
-}
-
-func GetConf(useStdin bool, cfgFile string) (conf Conf, err error) {
-	var data []byte
-	if useStdin {
-		data, err = io.ReadAll(os.Stdin)
-	} else {
-		data, err = os.ReadFile(cfgFile)
-	}
-	if err != nil {
-		return
-	}
-	conf, err = GetConfByByte(data)
-	if err != nil {
-		return
-	}
-	return conf, nil
-}
-
-func GetConfByByte(data []byte) (Conf, error) {
-	var config llcppg.Config
-
-	if err := json.Unmarshal(data, &config); err != nil {
-		return Conf{}, err
-	}
-
-	return Conf{
-		Config: &config,
-	}, nil
-}
 
 type PkgHfilesInfo struct {
 	Inters []string // From types.Config.Include

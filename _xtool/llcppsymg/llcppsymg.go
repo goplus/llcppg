@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/goplus/llcppg/_xtool/internal/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/symg"
 	llcppg "github.com/goplus/llcppg/config"
 	args "github.com/goplus/llcppg/internal/arg"
@@ -34,7 +33,14 @@ func main() {
 		return
 	}
 
-	conf, err := config.GetConf(ags.UseStdin, ags.CfgFile)
+	var err error
+	var conf llcppg.Config
+
+	if ags.UseStdin {
+		conf, err = llcppg.GetConfFromStdin()
+	} else {
+		conf, err = llcppg.GetConfFromFile(ags.CfgFile)
+	}
 	check(err)
 
 	if ags.Verbose {
@@ -58,7 +64,7 @@ func main() {
 	}
 
 	err = symg.Do(&symg.Config{
-		Conf: conf.Config,
+		Conf: &conf,
 	})
 	check(err)
 }

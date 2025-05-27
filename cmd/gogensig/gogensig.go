@@ -58,8 +58,7 @@ func main() {
 	if cfgFile == "" {
 		cfgFile = llcppg.LLCPPG_CFG
 	}
-
-	conf, err := config.GetCppgCfgFromPath(cfgFile)
+	conf, err := llcppg.GetConfFromFile(cfgFile)
 	check(err)
 	wd, err := os.Getwd()
 	check(err)

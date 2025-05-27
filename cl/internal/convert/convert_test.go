@@ -97,7 +97,7 @@ func TestDepPkg(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		cfg, err := config.GetCppgCfgFromPath(cfgPath)
+		cfg, err := llcppg.GetConfFromFile(cfgPath)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -176,7 +176,7 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		}
 	}
 
-	cfg, err := config.GetCppgCfgFromPath(cfgPath)
+	cfg, err := llcppg.GetConfFromFile(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -227,7 +227,7 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		PkgName:   cfg.Name,
 		OutputDir: outputDir,
 		Pkg:       convertPkg.File,
-		NC:        cltest.NC(cfg, convertPkg.FileMap, cltest.GetConvSym(symbPath)),
+		NC:        cltest.NC(&cfg, convertPkg.FileMap, cltest.GetConvSym(symbPath)),
 		Deps:      cfg.Deps,
 		Libs:      cfg.Libs,
 	})

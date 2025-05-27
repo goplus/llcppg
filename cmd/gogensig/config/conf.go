@@ -10,23 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-
-	llcppg "github.com/goplus/llcppg/config"
 )
-
-// llcppg.cfg
-func GetCppgCfgFromPath(filePath string) (*llcppg.Config, error) {
-	bytes, err := ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	conf := llcppg.NewDefault()
-	err = json.Unmarshal(bytes, &conf)
-	if err != nil {
-		return nil, err
-	}
-	return conf, nil
-}
 
 // llcppg.pub
 func GetPubFromPath(filePath string) (map[string]string, error) {

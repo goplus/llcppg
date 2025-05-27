@@ -12,7 +12,6 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/internal/config"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/symg"
-	llconfig "github.com/goplus/llcppg/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/internal/name"
 	"github.com/goplus/llgo/xtool/nm"
@@ -78,7 +77,7 @@ func TestGetCommonSymbols(t *testing.T) {
 		name          string
 		dylibSymbols  []*nm.Symbol
 		headerSymbols map[string]*symg.SymbolInfo
-		expect        []*llconfig.SymbolInfo
+		expect        []*llcppg.SymbolInfo
 	}{
 		{
 			name: "Lua symbols",
@@ -96,7 +95,7 @@ func TestGetCommonSymbols(t *testing.T) {
 				"lua_callk":              {ProtoName: "lua_callk(lua_State *, int, int, lua_KContext, lua_KFunction)", GoName: "Callk"},
 				"lua_header_nonexistent": {ProtoName: "lua_header_nonexistent()", GoName: "HeaderNonexistent"},
 			},
-			expect: []*llconfig.SymbolInfo{
+			expect: []*llcppg.SymbolInfo{
 				{Mangle: "lua_absindex", CPP: "lua_absindex(lua_State *, int)", Go: "Absindex"},
 				{Mangle: "lua_arith", CPP: "lua_arith(lua_State *, int)", Go: "Arith"},
 				{Mangle: "lua_atpanic", CPP: "lua_atpanic(lua_State *, lua_CFunction)", Go: "Atpanic"},
@@ -117,7 +116,7 @@ func TestGetCommonSymbols(t *testing.T) {
 				"_ZNK9INIReader10ParseErrorEv": {GoName: "(*Reader).ParseError", ProtoName: "INIReader::ParseError()"},
 				"_ZNK9INIReader10GetBooleanERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_b": {GoName: "(*Reader).GetBoolean", ProtoName: "INIReader::GetBoolean(const std::string &, const std::string &, bool)"},
 			},
-			expect: []*llconfig.SymbolInfo{
+			expect: []*llcppg.SymbolInfo{
 				{Mangle: "_ZNK9INIReader10ParseErrorEv", CPP: "INIReader::ParseError()", Go: "(*Reader).ParseError"},
 				{Mangle: "_ZNK9INIReader12GetInteger64ERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_x", CPP: "INIReader::GetInteger64(const std::string &, const std::string &, int64_t)", Go: "(*Reader).GetInteger64"},
 				{Mangle: "_ZNK9INIReader7GetRealERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_d", CPP: "INIReader::GetReal(const std::string &, const std::string &, double)", Go: "(*Reader).GetReal"},
@@ -178,7 +177,7 @@ func TestParseHeaderFile(t *testing.T) {
 		content  string
 		isCpp    bool
 		prefixes []string
-		expect   []*llconfig.SymbolInfo
+		expect   []*llcppg.SymbolInfo
 	}{
 		{
 			name: "C++ Class with Methods",
@@ -195,7 +194,7 @@ class INIReader {
             `,
 			isCpp:    true,
 			prefixes: []string{"INI"},
-			expect: []*llconfig.SymbolInfo{
+			expect: []*llcppg.SymbolInfo{
 				{
 					Go:     "(*Reader).Init__1",
 					CPP:    "INIReader::INIReader(const char *, int)",
@@ -228,7 +227,7 @@ class INIReader {
 		            `,
 			isCpp:    false,
 			prefixes: []string{"lua_"},
-			expect: []*llconfig.SymbolInfo{
+			expect: []*llcppg.SymbolInfo{
 				{
 					Go:     "(*State).Compare",
 					CPP:    "lua_compare(lua_State *, int, int, int)",
@@ -256,7 +255,7 @@ class INIReader {
 					            `,
 			isCpp:    false,
 			prefixes: []string{"sqlite3_"},
-			expect: []*llconfig.SymbolInfo{
+			expect: []*llcppg.SymbolInfo{
 				{
 					Go:     "(*Sqlite3).Errcode",
 					CPP:    "sqlite3_errcode(sqlite3 *)",
@@ -278,7 +277,7 @@ class INIReader {
 								`,
 			isCpp:    false,
 			prefixes: []string{"asn1_"},
-			expect: []*llconfig.SymbolInfo{
+			expect: []*llcppg.SymbolInfo{
 				{
 					Go:     "DerDecoding",
 					CPP:    "asn1_der_decoding(asn1_node *, const void *, int, char *)",
@@ -294,7 +293,7 @@ class INIReader {
 					`,
 			isCpp:    false,
 			prefixes: []string{""},
-			expect: []*llconfig.SymbolInfo{
+			expect: []*llcppg.SymbolInfo{
 				{
 					Go:     "InitWindow",
 					CPP:    "InitWindow(int, int, const char *)",
@@ -327,7 +326,7 @@ class INIReader {
 					`,
 			isCpp:    false,
 			prefixes: []string{""},
-			expect: []*llconfig.SymbolInfo{
+			expect: []*llcppg.SymbolInfo{
 				{
 					Go:     "X__mpzSetUiSafe",
 					CPP:    "__mpz_set_ui_safe(mpz_ptr, unsigned long)",
@@ -350,10 +349,10 @@ class INIReader {
 			}
 			sort.Strings(keys)
 
-			result := make([]*llconfig.SymbolInfo, 0, len(keys))
+			result := make([]*llcppg.SymbolInfo, 0, len(keys))
 			for _, key := range keys {
 				info := symbolMap[key]
-				result = append(result, &llconfig.SymbolInfo{
+				result = append(result, &llcppg.SymbolInfo{
 					Go:     info.GoName,
 					CPP:    info.ProtoName,
 					Mangle: key,
@@ -516,17 +515,17 @@ func TestGen(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			cfgdata, err := os.ReadFile(filepath.Join(projPath, llconfig.LLCPPG_CFG))
+			cfgdata, err := os.ReadFile(filepath.Join(projPath, llcppg.LLCPPG_CFG))
 			if err != nil {
 				t.Fatal(err)
 			}
-			cfg, err := config.GetConfByByte(cfgdata)
+			cfg, err := llcppg.GetConfByByte(cfgdata)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			cfg.CFlags = "-I" + projPath
-			pkgHfileInfo := config.PkgHfileInfo(cfg.Config, []string{})
+			pkgHfileInfo := config.PkgHfileInfo(&cfg, []string{})
 			headerSymbolMap, err := symg.ParseHeaderFile(pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.SymMap, cfg.Cplusplus, false)
 			if err != nil {
 				t.Fatal(err)

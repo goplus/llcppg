@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
-	"github.com/goplus/llcppg/_xtool/internal/config"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/internal/parse"
 	llcppg "github.com/goplus/llcppg/config"
 	args "github.com/goplus/llcppg/internal/arg"
@@ -83,9 +82,16 @@ func main() {
 		check(err)
 		parseConfig.Conf = conf
 	} else {
-		conf, err := config.GetConf(ags.UseStdin, ags.CfgFile)
+		var err error
+		var conf llcppg.Config
+
+		if ags.UseStdin {
+			conf, err = llcppg.GetConfFromStdin()
+		} else {
+			conf, err = llcppg.GetConfFromFile(ags.CfgFile)
+		}
 		check(err)
-		parseConfig.Conf = conf.Config
+		parseConfig.Conf = &conf
 	}
 
 	err := parse.Do(parseConfig)
