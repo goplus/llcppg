@@ -12,7 +12,7 @@ func TestGetConfByByte(t *testing.T) {
 	testCases := []struct {
 		name      string
 		input     string
-		expect    *llconfig.Config
+		expect    llconfig.Config
 		expectErr bool
 	}{
 		{
@@ -28,7 +28,7 @@ func TestGetConfByByte(t *testing.T) {
     "sqlite3_finalize":".Close"
   }
 }`,
-			expect: &llconfig.Config{
+			expect: llconfig.Config{
 				Name:         "sqlite",
 				CFlags:       "-I/opt/homebrew/opt/sqlite/include",
 				Include:      []string{"sqlite3.h"},
@@ -51,7 +51,7 @@ func TestGetConfByByte(t *testing.T) {
 		  "trimPrefixes": ["lua_", "lua_"],
 		  "cplusplus": false
 		}`,
-			expect: &llconfig.Config{
+			expect: llconfig.Config{
 				Name:         "lua",
 				CFlags:       "-I/opt/homebrew/include/lua",
 				Include:      []string{"lua.h"},
