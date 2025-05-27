@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/goplus/gogen"
-	cfg "github.com/goplus/llcppg/cmd/gogensig/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/mod/xgomod"
 )
