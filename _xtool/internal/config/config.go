@@ -6,18 +6,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unsafe"
 
-	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llpkg/cjson"
 )
 
 type Conf struct {
-	*cjson.JSON
 	*llcppg.Config
 }
 
@@ -40,16 +36,7 @@ func GetConf(useStdin bool, cfgFile string) (conf Conf, err error) {
 
 func GetConfByByte(data []byte) (Conf, error) {
 	var config llcppg.Config
-	// config := &llcppg.Config{
-	// 	Name:         GetStringItem(parsedConf, "name", ""),
-	// 	CFlags:       GetStringItem(parsedConf, "cflags", ""),
-	// 	Libs:         GetStringItem(parsedConf, "libs", ""),
-	// 	Include:      GetStringArrayItem(parsedConf, "include"),
-	// 	TrimPrefixes: GetStringArrayItem(parsedConf, "trimPrefixes"),
-	// 	Cplusplus:    GetBoolItem(parsedConf, "cplusplus"),
-	// 	Mix:          GetBoolItem(parsedConf, "mix"),
-	// 	SymMap:       GetStringMapItem(parsedConf, "symMap"),
-	// }
+
 	if err := json.Unmarshal(data, &config); err != nil {
 		return Conf{}, err
 	}
@@ -57,57 +44,6 @@ func GetConfByByte(data []byte) (Conf, error) {
 	return Conf{
 		Config: &config,
 	}, nil
-}
-
-func GetString(obj *cjson.JSON) (value string) {
-	str := obj.GetStringValue()
-	return unsafe.String((*byte)(unsafe.Pointer(str)), c.Strlen(str))
-}
-
-func GetStringItem(obj *cjson.JSON, key string, defval string) (value string) {
-	item := obj.GetObjectItemCaseSensitive(c.AllocaCStr(key))
-	if item == nil {
-		return defval
-	}
-	return GetString(item)
-}
-
-func GetStringArrayItem(obj *cjson.JSON, key string) (value []string) {
-	item := obj.GetObjectItemCaseSensitive(c.AllocaCStr(key))
-	if item == nil {
-		return
-	}
-	value = make([]string, item.GetArraySize())
-	for i := range value {
-		value[i] = GetString(item.GetArrayItem(c.Int(i)))
-	}
-	return
-}
-
-func GetBoolItem(obj *cjson.JSON, key string) bool {
-	item := obj.GetObjectItemCaseSensitive(c.AllocaCStr(key))
-	if item == nil {
-		return false
-	}
-	if item.IsBool() != 0 {
-		return item.IsTrue() != 0
-	}
-	return false
-}
-
-func GetStringMapItem(obj *cjson.JSON, key string) map[string]string {
-	item := obj.GetObjectItemCaseSensitive(c.AllocaCStr(key))
-	result := make(map[string]string)
-	if item == nil {
-		return result
-	}
-	for child := item.Child; child != nil; child = child.Next {
-		k := c.GoString(child.String)
-		if child.IsString() != 0 {
-			result[k] = GetString(child)
-		}
-	}
-	return result
 }
 
 type PkgHfilesInfo struct {
@@ -227,8 +163,4 @@ func commonParentDir(paths []string) string {
 		}
 	}
 	return filepath.Dir(paths[0])
-}
-
-func ParseBytes(value []byte) *cjson.JSON {
-	return cjson.ParseWithLength((*c.Char)(unsafe.Pointer(unsafe.SliceData(value))), uintptr(len(value)))
 }
