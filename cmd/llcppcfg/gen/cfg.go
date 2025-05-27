@@ -204,9 +204,6 @@ func newLLCppgConfig(name string, flag FlagMode) *llcppg.Config {
 	cfg.Name = name
 	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
 	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
-	cfg.TrimPrefixes = []string{}
-	cfg.Deps = []string{}
-	cfg.Include = []string{}
 	cfg.Cplusplus = (flag&WithCpp != 0)
 	return cfg
 }
