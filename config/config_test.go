@@ -33,7 +33,7 @@ func TestReadPubFileError(t *testing.T) {
 	}
 	defer os.Remove(temp.Name())
 	content := `a b c`
-	_, err = temp.WriteString(content)
+	_, err = temp.Write([]byte(content))
 	if err != nil {
 		t.Fatal(err)
 	}
