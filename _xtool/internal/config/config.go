@@ -1,7 +1,7 @@
 package config
 
 import (
-	"errors"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -39,25 +39,23 @@ func GetConf(useStdin bool, cfgFile string) (conf Conf, err error) {
 }
 
 func GetConfByByte(data []byte) (Conf, error) {
-	parsedConf := ParseBytes(data)
-	if parsedConf == nil {
-		return Conf{}, errors.New("failed to parse config")
-	}
-
-	config := &llcppg.Config{
-		Name:         GetStringItem(parsedConf, "name", ""),
-		CFlags:       GetStringItem(parsedConf, "cflags", ""),
-		Libs:         GetStringItem(parsedConf, "libs", ""),
-		Include:      GetStringArrayItem(parsedConf, "include"),
-		TrimPrefixes: GetStringArrayItem(parsedConf, "trimPrefixes"),
-		Cplusplus:    GetBoolItem(parsedConf, "cplusplus"),
-		Mix:          GetBoolItem(parsedConf, "mix"),
-		SymMap:       GetStringMapItem(parsedConf, "symMap"),
+	var config llcppg.Config
+	// config := &llcppg.Config{
+	// 	Name:         GetStringItem(parsedConf, "name", ""),
+	// 	CFlags:       GetStringItem(parsedConf, "cflags", ""),
+	// 	Libs:         GetStringItem(parsedConf, "libs", ""),
+	// 	Include:      GetStringArrayItem(parsedConf, "include"),
+	// 	TrimPrefixes: GetStringArrayItem(parsedConf, "trimPrefixes"),
+	// 	Cplusplus:    GetBoolItem(parsedConf, "cplusplus"),
+	// 	Mix:          GetBoolItem(parsedConf, "mix"),
+	// 	SymMap:       GetStringMapItem(parsedConf, "symMap"),
+	// }
+	if err := json.Unmarshal(data, &config); err != nil {
+		return Conf{}, err
 	}
 
 	return Conf{
-		JSON:   parsedConf,
-		Config: config,
+		Config: &config,
 	}, nil
 }
 
