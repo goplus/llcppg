@@ -94,7 +94,7 @@ func (pm *PkgDepLoader) Import(pkgPath string) (*PkgInfo, error) {
 		return nil, err
 	}
 
-	pubs, err := cfg.ReadPubFile(filepath.Join(pkgDir, llcppg.LLCPPG_PUB))
+	pubs, err := llcppg.ReadPubFile(filepath.Join(pkgDir, llcppg.LLCPPG_PUB))
 	if err != nil {
 		return nil, err
 	}

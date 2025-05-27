@@ -100,7 +100,7 @@ func main() {
 	})
 	check(err)
 
-	err = config.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), pkg.Pubs)
+	err = llcppg.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), pkg.Pubs)
 	check(err)
 
 	err = writePkg(pkg.Package, outputDir)

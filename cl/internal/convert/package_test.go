@@ -255,26 +255,6 @@ import _ "unsafe"
 func Foo(__llgo_va_list ...interface{})
 `,
 		},
-		/** todo(zzy):fix this case
-				{
-					name: "func not in symbol table",
-					decl: &ast.FuncDecl{
-						Object: ast.Object{
-							Name: &ast.Ident{Name: "foo"},
-						},
-						MangledName: "foo",
-						Type: &ast.FuncType{
-							Params: nil,
-							Ret:    nil,
-						},
-					},
-					expected: `
-		package testpkg
-
-		import _ "unsafe"
-					`,
-				},
-		*/
 		{
 			name: "invalid function type",
 			decl: &ast.FuncDecl{
@@ -1593,147 +1573,64 @@ const (
 	}
 }
 
-/*
-	todo(zzy): fix this test
-
-func TestIdentRefer(t *testing.T) {
-
-	pkg, err := createTestPkg(nil, &convert.PackageConfig{})
+func TestTypeAlias(t *testing.T) {
+	nc := cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym())
+	pkg, err := createTestPkg(nc, &convert.PackageConfig{})
 	if err != nil {
 		t.Fatal("NewPackage failed:", err)
 	}
-	hfile := &ncimpl.HeaderFile{
-		File:     "/path/to/stdio.h",
-		FileType: llcppg.Third,
-	}
-	pkg.SetGoFile(hfile.ToGoFileName("testpkg"))
-	pkg.NewTypedefDecl("undefType", &ast.TypedefDecl{
+	SetTempFile(pkg)
+	err = pkg.NewTypedefDecl("TypInt8T", &ast.TypedefDecl{
 		Object: ast.Object{
-			Loc:  &ast.Location{File: "/path/to/stdio.h"},
-			Name: &ast.Ident{Name: "undefType"},
+			Name: &ast.Ident{Name: "typ_int8_t"},
 		},
 		Type: &ast.BuiltinType{
 			Kind:  ast.Char,
 			Flags: ast.Signed,
 		},
-	})
-	curFile := &ncimpl.HeaderFile{
-		File:     "/path/to/notsys.h",
-		FileType: llcppg.Inter,
+	}, nc)
+	if err != nil {
+		t.Fatal(err)
 	}
-	pkg.SetGoFile(curFile.ToGoFileName("testpkg"))
-	t.Run("undef sys ident ref", func(t *testing.T) {
-		err := pkg.NewTypeDecl("Foo", &ast.TypeDecl{
-			Object: ast.Object{
-				Loc:  &ast.Location{File: "/path/to/notsys.h"},
-				Name: &ast.Ident{Name: "Foo"},
-			},
-			Type: &ast.RecordType{
-				Tag: ast.Struct,
-				Fields: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{{Name: "notfound"}},
-							Type: &ast.Ident{
-								Name: "undefType",
-							},
+	err = pkg.NewTypeDecl("Foo", &ast.TypeDecl{
+		Object: ast.Object{
+			Name: &ast.Ident{Name: "Foo"},
+		},
+		Type: &ast.RecordType{
+			Tag: ast.Struct,
+			Fields: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{{Name: "a"}},
+						Type: &ast.Ident{
+							Name: "typ_int8_t",
 						},
 					},
 				},
 			},
-		})
-		if err == nil {
-			t.Fatal("expect a error")
-		}
-	})
-	t.Run("undef tag ident ref", func(t *testing.T) {
-		err := pkg.NewTypeDecl("Bar", &ast.TypeDecl{
-			Object: ast.Object{
-				Name: &ast.Ident{Name: "Bar"},
-			},
-			Type: &ast.RecordType{
-				Tag: ast.Struct,
-				Fields: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{{Name: "notfound"}},
-							Type: &ast.TagExpr{
-								Tag: ast.Class,
-								Name: &ast.Ident{
-									Name: "undefType",
-								},
-							},
-						},
-					},
-				},
-			},
-		})
-		if err == nil {
-			t.Fatal("expect a error")
-		}
-	})
-	t.Run("type alias", func(t *testing.T) {
-		pkg, err := createTestPkg(&convert.PackageConfig{})
-		if err != nil {
-			t.Fatal("NewPackage failed:", err)
-		}
-		pkg.SetGoFile(tempFile.ToGoFileName("testpkg"))
-		err = pkg.NewTypedefDecl("typ_int8_t", &ast.TypedefDecl{
-			Object: ast.Object{
-				Name: &ast.Ident{Name: "typ_int8_t"},
-			},
-			Type: &ast.BuiltinType{
-				Kind:  ast.Char,
-				Flags: ast.Signed,
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = pkg.NewTypeDecl(&ast.TypeDecl{
-			Object: ast.Object{
-				Name: &ast.Ident{Name: "Foo"},
-			},
-			Type: &ast.RecordType{
-				Tag: ast.Struct,
-				Fields: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{{Name: "a"}},
-							Type: &ast.Ident{
-								Name: "typ_int8_t",
-							},
-						},
-					},
-				},
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		expect := `
-
+		},
+	}, nc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expect := `
 package testpkg
 
 import (
-
 	"github.com/goplus/lib/c"
 	_ "unsafe"
-
 )
 
 type TypInt8T c.Char
 
-	type Foo struct {
-		A TypInt8T
-	}
-
+type Foo struct {
+	A TypInt8T
+}
 `
 
-			comparePackageOutput(t, pkg, expect)
-		})
-	}
-*/
+	comparePackageOutput(t, pkg, expect)
+}
+
 func TestForwardDecl(t *testing.T) {
 	nc := cltest.NC(&llcppg.Config{}, nil, cltest.NewConvSym(
 		cltest.SymbolEntry{

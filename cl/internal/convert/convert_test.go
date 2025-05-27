@@ -251,7 +251,7 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 	})
 
 	// todo:reuse same write logic
-	err = config.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), cvt.GenPkg.Pubs)
+	err = llcppg.WritePubFile(filepath.Join(outputDir, llcppg.LLCPPG_PUB), cvt.GenPkg.Pubs)
 	if err != nil {
 		t.Fatal(err)
 	}

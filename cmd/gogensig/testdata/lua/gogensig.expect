@@ -411,9 +411,9 @@ func Pushlstring(L *State, s *c.Char, len c.SizeT) *c.Char
 //go:linkname Pushstring C.lua_pushstring
 func Pushstring(L *State, s *c.Char) *c.Char
 
-// todo(zzy):on macos undef va_list will be a int,it is mistake
-// LUA_API const char *(lua_pushvfstring)(lua_State *L, const char *fmt, va_list argp);
-//
+//go:linkname Pushvfstring C.lua_pushvfstring
+func Pushvfstring(L *State, fmt *c.Char, argp c.VaList) *c.Char
+
 //go:linkname Pushfstring C.lua_pushfstring
 func Pushfstring(L *State, fmt *c.Char, __llgo_va_list ...interface{}) *c.Char
 
