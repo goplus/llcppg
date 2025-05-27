@@ -211,7 +211,7 @@ func TestGetCppgCfgFromPath(t *testing.T) {
 		expectedConfig.Libs = "$(pkg-config --libs lua5.4)"
 		expectedConfig.TrimPrefixes = []string{"lua_"}
 
-		if !reflect.DeepEqual(cfg, expectedConfig) {
+		if !reflect.DeepEqual(&cfg, expectedConfig) {
 			t.Errorf("Parsed config does not match expected config.\nGot: %+v\nWant: %+v", cfg, expectedConfig)
 		}
 	})
