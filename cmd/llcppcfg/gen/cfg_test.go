@@ -480,7 +480,7 @@ func TestNewLLCppConfig(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want llcppg.Config
+		want *llcppg.Config
 	}{
 		{
 			"libcjson",
@@ -488,7 +488,7 @@ func TestNewLLCppConfig(t *testing.T) {
 				"libcjson",
 				WithTab,
 			},
-			llcppg.Config{
+			&llcppg.Config{
 				Name:           "libcjson",
 				CFlags:         "$(pkg-config --cflags libcjson)",
 				Libs:           "$(pkg-config --libs libcjson)",
