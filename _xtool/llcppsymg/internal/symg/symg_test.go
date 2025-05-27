@@ -515,11 +515,7 @@ func TestGen(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			cfgdata, err := os.ReadFile(filepath.Join(projPath, llcppg.LLCPPG_CFG))
-			if err != nil {
-				t.Fatal(err)
-			}
-			cfg, err := llcppg.GetConfByByte(cfgdata)
+			cfg, err := llcppg.GetConfFromFile(filepath.Join(projPath, llcppg.LLCPPG_CFG))
 			if err != nil {
 				t.Fatal(err)
 			}
