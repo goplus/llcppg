@@ -1,248 +1,261 @@
 package parser
 
 import (
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llpkg/cjson"
 )
 
-func XMarshalDeclList(list []ast.Decl) []map[string]any {
-	var root []map[string]any
+func MarshalDeclList(list []ast.Decl) *cjson.JSON {
+	root := cjson.Array()
 	for _, item := range list {
-		root = append(root, XMarshalASTDecl(item))
+		root.AddItem(MarshalASTDecl(item))
 	}
 	return root
 }
 
-func XMarshalFieldList(list []*ast.Field) []map[string]any {
+func MarshalFieldList(list []*ast.Field) *cjson.JSON {
 	if list == nil {
-		return nil
+		return cjson.Null()
 	}
-	var root []map[string]any
-
+	root := cjson.Array()
 	for _, item := range list {
-		root = append(root, XMarshalASTExpr(item))
+		root.AddItem(MarshalASTExpr(item))
 	}
 	return root
 }
 
-func XMarshalIncludeList(list []*ast.Include) []map[string]any {
-	var root []map[string]any
+func MarshalIncludeList(list []*ast.Include) *cjson.JSON {
+	root := cjson.Array()
 	for _, item := range list {
-		root = append(root, map[string]any{
-			"_Type": "Include",
-			"Path":  item.Path,
-		})
+		include := cjson.Object()
+		include.SetItem(c.Str("_Type"), stringField("Include"))
+		include.SetItem(c.Str("Path"), stringField(item.Path))
+		root.AddItem(include)
 	}
 	return root
 }
 
-func XMarshalMacroList(list []*ast.Macro) []map[string]any {
-	var root []map[string]any
-
+func MarshalMacroList(list []*ast.Macro) *cjson.JSON {
+	root := cjson.Array()
 	for _, item := range list {
-		root = append(root, map[string]any{
-			"_Type":  "Macro",
-			"Loc":    XMarshalLocation(item.Loc),
-			"Name":   item.Name,
-			"Tokens": XMarshalTokenList(item.Tokens),
-		})
+		macro := cjson.Object()
+		macro.SetItem(c.Str("_Type"), stringField("Macro"))
+		macro.SetItem(c.Str("Loc"), MarshalLocation(item.Loc))
+		macro.SetItem(c.Str("Name"), stringField(item.Name))
+		macro.SetItem(c.Str("Tokens"), MarshalTokenList(item.Tokens))
+		root.AddItem(macro)
 	}
 	return root
 }
 
-func XMarshalTokenList(list []*ast.Token) []map[string]any {
+func MarshalTokenList(list []*ast.Token) *cjson.JSON {
 	if list == nil {
-		return nil
+		return cjson.Null()
 	}
-	var root []map[string]any
+	root := cjson.Array()
 	for _, item := range list {
-		root = append(root, XMarshalToken(item))
+		root.AddItem(MarshalToken(item))
 	}
 	return root
 }
 
-func XMarshalIdentList(list []*ast.Ident) []map[string]any {
+func MarshalIdentList(list []*ast.Ident) *cjson.JSON {
 	if list == nil {
-		return nil
+		return cjson.Null()
 	}
-	var root []map[string]any
-
+	root := cjson.Array()
 	for _, item := range list {
-		root = append(root, XMarshalASTExpr(item))
+		root.AddItem(MarshalASTExpr(item))
 	}
 	return root
 }
 
-func XMarshalASTFile(file *ast.File) map[string]any {
-	return map[string]any{
-		"_Type":    "File",
-		"decls":    XMarshalDeclList(file.Decls),
-		"includes": XMarshalIncludeList(file.Includes),
-		"macros":   XMarshalMacroList(file.Macros),
-	}
+func MarshalASTFile(file *ast.File) *cjson.JSON {
+	root := cjson.Object()
+	root.SetItem(c.Str("_Type"), stringField("File"))
+	root.SetItem(c.Str("decls"), MarshalDeclList(file.Decls))
+	root.SetItem(c.Str("includes"), MarshalIncludeList(file.Includes))
+	root.SetItem(c.Str("macros"), MarshalMacroList(file.Macros))
+	return root
 }
 
-func XMarshalToken(tok *ast.Token) map[string]any {
-	return map[string]any{
-		"_Type": "Token",
-		"Token": uint(tok.Token),
-		"Lit":   tok.Lit,
-	}
+func MarshalToken(tok *ast.Token) *cjson.JSON {
+	root := cjson.Object()
+	root.SetItem(c.Str("_Type"), stringField("Token"))
+	root.SetItem(c.Str("Token"), numberField(uint(tok.Token)))
+	root.SetItem(c.Str("Lit"), stringField(tok.Lit))
+	return root
 }
 
-func XMarshalASTDecl(decl ast.Decl) map[string]any {
+func MarshalASTDecl(decl ast.Decl) *cjson.JSON {
 	if decl == nil {
-		return nil
+		return cjson.Null()
 	}
-	root := make(map[string]any)
-
+	root := cjson.Object()
 	switch d := decl.(type) {
 	case *ast.EnumTypeDecl:
-		root["_Type"] = "EnumTypeDecl"
-		XMarshalObject(d.Object, root)
-		root["Type"] = XMarshalASTExpr(d.Type)
+		root.SetItem(c.Str("_Type"), stringField("EnumTypeDecl"))
+		MarshalObject(d.Object, root)
+		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
 	case *ast.TypedefDecl:
-		root["_Type"] = "TypedefDecl"
-		XMarshalObject(d.Object, root)
-		root["Type"] = XMarshalASTExpr(d.Type)
+		root.SetItem(c.Str("_Type"), stringField("TypedefDecl"))
+		MarshalObject(d.Object, root)
+		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
 	case *ast.FuncDecl:
-		root["_Type"] = "FuncDecl"
-		XMarshalObject(d.Object, root)
-		root["MangledName"] = d.MangledName
-		root["Type"] = XMarshalASTExpr(d.Type)
-		root["IsInline"] = d.IsInline
-		root["IsStatic"] = d.IsStatic
-		root["IsConst"] = d.IsConst
-		root["IsExplicit"] = d.IsExplicit
-		root["IsConstructor"] = d.IsConstructor
-		root["IsDestructor"] = d.IsDestructor
-		root["IsVirtual"] = d.IsVirtual
-		root["IsOverride"] = d.IsOverride
+		root.SetItem(c.Str("_Type"), stringField("FuncDecl"))
+		MarshalObject(d.Object, root)
+		root.SetItem(c.Str("MangledName"), stringField(d.MangledName))
+		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
+		root.SetItem(c.Str("IsInline"), boolField(d.IsInline))
+		root.SetItem(c.Str("IsStatic"), boolField(d.IsStatic))
+		root.SetItem(c.Str("IsConst"), boolField(d.IsConst))
+		root.SetItem(c.Str("IsExplicit"), boolField(d.IsExplicit))
+		root.SetItem(c.Str("IsConstructor"), boolField(d.IsConstructor))
+		root.SetItem(c.Str("IsDestructor"), boolField(d.IsDestructor))
+		root.SetItem(c.Str("IsVirtual"), boolField(d.IsVirtual))
+		root.SetItem(c.Str("IsOverride"), boolField(d.IsOverride))
 	case *ast.TypeDecl:
-		root["_Type"] = "TypeDecl"
-		XMarshalObject(d.Object, root)
-		root["Type"] = XMarshalASTExpr(d.Type)
+		root.SetItem(c.Str("_Type"), stringField("TypeDecl"))
+		MarshalObject(d.Object, root)
+		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
 	}
 	return root
 }
 
-func XMarshalObject(decl ast.Object, root map[string]any) {
-	root["Loc"] = XMarshalLocation(decl.Loc)
-	root["Doc"] = XMarshalASTExpr(decl.Doc)
-	root["Parent"] = XMarshalASTExpr(decl.Parent)
-	root["Name"] = XMarshalASTExpr(decl.Name)
+func MarshalObject(decl ast.Object, root *cjson.JSON) {
+	root.SetItem(c.Str("Loc"), MarshalLocation(decl.Loc))
+	root.SetItem(c.Str("Doc"), MarshalASTExpr(decl.Doc))
+	root.SetItem(c.Str("Parent"), MarshalASTExpr(decl.Parent))
+	root.SetItem(c.Str("Name"), MarshalASTExpr(decl.Name))
 }
 
-func XMarshalLocation(loc *ast.Location) map[string]any {
+func MarshalLocation(loc *ast.Location) *cjson.JSON {
 	if loc == nil {
-		return nil
+		return cjson.Null()
 	}
-	root := make(map[string]any)
-	root["_Type"] = "Location"
-	root["File"] = loc.File
+	root := cjson.Object()
+	root.SetItem(c.Str("_Type"), stringField("Location"))
+	root.SetItem(c.Str("File"), stringField(loc.File))
 	return root
 }
 
-func XMarshalASTExpr(t ast.Expr) map[string]any {
+func MarshalASTExpr(t ast.Expr) *cjson.JSON {
 	if t == nil {
-		return nil
+		return cjson.Null()
 	}
 
-	root := make(map[string]any)
+	root := cjson.Object()
 
 	switch d := t.(type) {
 	case *ast.EnumType:
-		root["_Type"] = "EnumType"
-		var items []map[string]any
+		root.SetItem(c.Str("_Type"), stringField("EnumType"))
+		items := cjson.Array()
 		for _, e := range d.Items {
-			items = append(items, XMarshalASTExpr(e))
+			items.AddItem(MarshalASTExpr(e))
 		}
-		root["Items"] = items
+		root.SetItem(c.Str("Items"), items)
 	case *ast.EnumItem:
-		root["_Type"] = "EnumItem"
-		root["Name"] = XMarshalASTExpr(d.Name)
-		root["Value"] = XMarshalASTExpr(d.Value)
+		root.SetItem(c.Str("_Type"), stringField("EnumItem"))
+		root.SetItem(c.Str("Name"), MarshalASTExpr(d.Name))
+		root.SetItem(c.Str("Value"), MarshalASTExpr(d.Value))
 	case *ast.RecordType:
-		root["_Type"] = "RecordType"
-		root["Tag"] = uint(d.Tag)
-		root["Fields"] = XMarshalASTExpr(d.Fields)
-		var methods []map[string]any
+		root.SetItem(c.Str("_Type"), stringField("RecordType"))
+		root.SetItem(c.Str("Tag"), numberField(uint(d.Tag)))
+		root.SetItem(c.Str("Fields"), MarshalASTExpr(d.Fields))
+		methods := cjson.Array()
 		for _, m := range d.Methods {
-			methods = append(methods, XMarshalASTDecl(m))
+			methods.AddItem(MarshalASTDecl(m))
 		}
-		root["Methods"] = methods
+		root.SetItem(c.Str("Methods"), methods)
 	case *ast.FuncType:
-		root["_Type"] = "FuncType"
-		root["Params"] = XMarshalASTExpr(d.Params)
-		root["Ret"] = XMarshalASTExpr(d.Ret)
+		root.SetItem(c.Str("_Type"), stringField("FuncType"))
+		root.SetItem(c.Str("Params"), MarshalASTExpr(d.Params))
+		root.SetItem(c.Str("Ret"), MarshalASTExpr(d.Ret))
 	case *ast.FieldList:
-		root["_Type"] = "FieldList"
-		root["List"] = XMarshalFieldList(d.List)
+		root.SetItem(c.Str("_Type"), stringField("FieldList"))
+		root.SetItem(c.Str("List"), MarshalFieldList(d.List))
 	case *ast.Field:
-		root["_Type"] = "Field"
-		root["Type"] = XMarshalASTExpr(d.Type)
-		root["Doc"] = XMarshalASTExpr(d.Doc)
-		root["Comment"] = XMarshalASTExpr(d.Comment)
-		root["IsStatic"] = d.IsStatic
-		root["Access"] = uint(d.Access)
-		root["Names"] = XMarshalIdentList(d.Names)
+		root.SetItem(c.Str("_Type"), stringField("Field"))
+		root.SetItem(c.Str("Type"), MarshalASTExpr(d.Type))
+		root.SetItem(c.Str("Doc"), MarshalASTExpr(d.Doc))
+		root.SetItem(c.Str("Comment"), MarshalASTExpr(d.Comment))
+		root.SetItem(c.Str("IsStatic"), boolField(d.IsStatic))
+		root.SetItem(c.Str("Access"), numberField(uint(d.Access)))
+		root.SetItem(c.Str("Names"), MarshalIdentList(d.Names))
 	case *ast.Variadic:
-		root["_Type"] = "Variadic"
+		root.SetItem(c.Str("_Type"), stringField("Variadic"))
 	case *ast.Ident:
-		root["_Type"] = "Ident"
+		root.SetItem(c.Str("_Type"), stringField("Ident"))
 		if d == nil {
-			return nil
+			return cjson.Null()
 		}
-		root["Name"] = d.Name
+		root.SetItem(c.Str("Name"), stringField(d.Name))
 	case *ast.TagExpr:
-		root["_Type"] = "TagExpr"
-		root["Name"] = XMarshalASTExpr(d.Name)
-		root["Tag"] = uint(d.Tag)
+		root.SetItem(c.Str("_Type"), stringField("TagExpr"))
+		root.SetItem(c.Str("Name"), MarshalASTExpr(d.Name))
+		root.SetItem(c.Str("Tag"), numberField(uint(d.Tag)))
 	case *ast.BasicLit:
-		root["_Type"] = "BasicLit"
-		root["Kind"] = uint(d.Kind)
-		root["Value"] = d.Value
+		root.SetItem(c.Str("_Type"), stringField("BasicLit"))
+		root.SetItem(c.Str("Kind"), numberField(uint(d.Kind)))
+		root.SetItem(c.Str("Value"), stringField(d.Value))
 	case *ast.LvalueRefType:
-		root["_Type"] = "LvalueRefType"
-		root["X"] = XMarshalASTExpr(d.X)
+		root.SetItem(c.Str("_Type"), stringField("LvalueRefType"))
+		root.SetItem(c.Str("X"), MarshalASTExpr(d.X))
 	case *ast.RvalueRefType:
-		root["_Type"] = "RvalueRefType"
-		root["X"] = XMarshalASTExpr(d.X)
+		root.SetItem(c.Str("_Type"), stringField("RvalueRefType"))
+		root.SetItem(c.Str("X"), MarshalASTExpr(d.X))
 	case *ast.PointerType:
-		root["_Type"] = "PointerType"
-		root["X"] = XMarshalASTExpr(d.X)
+		root.SetItem(c.Str("_Type"), stringField("PointerType"))
+		root.SetItem(c.Str("X"), MarshalASTExpr(d.X))
 	case *ast.BlockPointerType:
-		root["_Type"] = "BlockPointerType"
-		root["X"] = XMarshalASTExpr(d.X)
+		root.SetItem(c.Str("_Type"), stringField("BlockPointerType"))
+		root.SetItem(c.Str("X"), MarshalASTExpr(d.X))
 	case *ast.ArrayType:
-		root["_Type"] = "ArrayType"
-		root["Elt"] = XMarshalASTExpr(d.Elt)
-		root["Len"] = XMarshalASTExpr(d.Len)
+		root.SetItem(c.Str("_Type"), stringField("ArrayType"))
+		root.SetItem(c.Str("Elt"), MarshalASTExpr(d.Elt))
+		root.SetItem(c.Str("Len"), MarshalASTExpr(d.Len))
 	case *ast.BuiltinType:
-		root["_Type"] = "BuiltinType"
-		root["Kind"] = uint(d.Kind)
-		root["Flags"] = uint(d.Flags)
+		root.SetItem(c.Str("_Type"), stringField("BuiltinType"))
+		root.SetItem(c.Str("Kind"), numberField(uint(d.Kind)))
+		root.SetItem(c.Str("Flags"), numberField(uint(d.Flags)))
 	case *ast.Comment:
-		root["_Type"] = "Comment"
+		root.SetItem(c.Str("_Type"), stringField("Comment"))
 		if d == nil {
-			return nil
+			return cjson.Null()
 		}
-		root["Text"] = d.Text
+		root.SetItem(c.Str("Text"), stringField(d.Text))
 	case *ast.CommentGroup:
-		root["_Type"] = "CommentGroup"
+		root.SetItem(c.Str("_Type"), stringField("CommentGroup"))
 		if d == nil {
-			return nil
+			return cjson.Null()
 		}
-		var list []map[string]any
+		list := cjson.Array()
 		for _, c := range d.List {
-			list = append(list, XMarshalASTExpr(c))
+			list.AddItem(MarshalASTExpr(c))
 		}
-		root["List"] = list
+		root.SetItem(c.Str("List"), list)
 	case *ast.ScopingExpr:
-		root["_Type"] = "ScopingExpr"
-		root["X"] = XMarshalASTExpr(d.X)
-		root["Parent"] = XMarshalASTExpr(d.Parent)
+		root.SetItem(c.Str("_Type"), stringField("ScopingExpr"))
+		root.SetItem(c.Str("X"), MarshalASTExpr(d.X))
+		root.SetItem(c.Str("Parent"), MarshalASTExpr(d.Parent))
 	default:
-		return nil
+		return cjson.Null()
 	}
 	return root
+}
+
+func stringField(s string) *cjson.JSON {
+	return cjson.String(c.AllocaCStr(s))
+}
+
+func numberField(n uint) *cjson.JSON {
+	return cjson.Number(float64(n))
+}
+
+func boolField(b bool) *cjson.JSON {
+	if b {
+		return cjson.True()
+	}
+	return cjson.False()
 }
