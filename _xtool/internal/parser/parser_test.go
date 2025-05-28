@@ -1,12 +1,12 @@
 package parser_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
-	"unsafe"
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
@@ -14,8 +14,6 @@ import (
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 
 	"github.com/goplus/llcppg/ast"
-
-	"github.com/goplus/llpkg/cjson"
 )
 
 func TestParser(t *testing.T) {
@@ -53,19 +51,16 @@ func testFrom(t *testing.T, dir string, filename string, gen bool) {
 	if err != nil {
 		t.Fatal("MarshalIndent failed:", err)
 	}
-	json := parser.MarshalASTFile(ast)
-	output := json.Print()
-	actual := c.GoString(output)
-	defer cjson.FreeCStr(unsafe.Pointer(output))
-	defer json.Delete()
+	js := parser.MarshalASTFile(ast)
+	output, _ := json.MarshalIndent(&js, "", "	")
 
 	if gen {
-		err = os.WriteFile(filepath.Join(dir, "expect.json"), []byte(actual), os.ModePerm)
+		err = os.WriteFile(filepath.Join(dir, "expect.json"), output, os.ModePerm)
 		if err != nil {
 			t.Fatal("WriteFile failed:", err)
 		}
-	} else if expect != actual {
-		t.Fatalf("expect %s, got %s", expect, actual)
+	} else if expect != string(output) {
+		t.Fatalf("expect %s, got %s", expect, string(output))
 	}
 }
 
@@ -378,8 +373,6 @@ func TestNonBuiltinTypes(t *testing.T) {
 			})
 			converter := &parser.Converter{}
 			expr := converter.ProcessType(typ)
-			json := parser.MarshalASTExpr(expr)
-			str := json.Print()
 			typstr := typ.String()
 			if typGoStr := c.GoString(typstr.CStr()); typGoStr != tc.ExpectTypeStr {
 				t.Fatalf("expect %s , got %s", tc.ExpectTypeStr, typGoStr)
@@ -389,8 +382,7 @@ func TestNonBuiltinTypes(t *testing.T) {
 			}
 
 			typstr.Dispose()
-			cjson.FreeCStr(unsafe.Pointer(str))
-			json.Delete()
+
 			index.Dispose()
 			unit.Dispose()
 		})

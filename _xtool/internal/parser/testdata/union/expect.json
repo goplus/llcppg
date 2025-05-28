@@ -1,157 +1,184 @@
 {
-	"_Type":	"File",
-	"decls":	[{
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/union/temp.h"
+	"_Type": "File",
+	"decls": [
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/union/temp.h",
+				"_Type": "Location"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"A"
+			"Name": {
+				"Name": "A",
+				"_Type": "Ident"
 			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	1,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
+			"Parent": null,
+			"Type": {
+				"Fields": {
+					"List": [
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "a",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"a"
-								}]
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
+							"_Type": "Field"
+						},
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "b",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"b"
-								}]
-						}]
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
 				},
-				"Methods":	[]
-			}
-		}, {
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/union/temp.h"
+				"Methods": null,
+				"Tag": 1,
+				"_Type": "RecordType"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"OuterUnion"
+			"_Type": "TypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/union/temp.h",
+				"_Type": "Location"
 			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	1,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
+			"Name": {
+				"Name": "OuterUnion",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Fields": {
+					"List": [
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "i",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"i"
-								}]
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	8,
-								"Flags":	0
+							"_Type": "Field"
+						},
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "f",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 8,
+								"_Type": "BuiltinType"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"f"
-								}]
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"RecordType",
-								"Tag":	1,
-								"Fields":	{
-									"_Type":	"FieldList",
-									"List":	[{
-											"_Type":	"Field",
-											"Type":	{
-												"_Type":	"BuiltinType",
-												"Kind":	6,
-												"Flags":	0
+							"_Type": "Field"
+						},
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "inner",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Fields": {
+									"List": [
+										{
+											"Access": 1,
+											"Comment": null,
+											"Doc": null,
+											"IsStatic": false,
+											"Names": [
+												{
+													"Name": "c",
+													"_Type": "Ident"
+												}
+											],
+											"Type": {
+												"Flags": 0,
+												"Kind": 6,
+												"_Type": "BuiltinType"
 											},
-											"Doc":	null,
-											"Comment":	null,
-											"IsStatic":	false,
-											"Access":	1,
-											"Names":	[{
-													"_Type":	"Ident",
-													"Name":	"c"
-												}]
-										}, {
-											"_Type":	"Field",
-											"Type":	{
-												"_Type":	"BuiltinType",
-												"Kind":	6,
-												"Flags":	32
+											"_Type": "Field"
+										},
+										{
+											"Access": 1,
+											"Comment": null,
+											"Doc": null,
+											"IsStatic": false,
+											"Names": [
+												{
+													"Name": "s",
+													"_Type": "Ident"
+												}
+											],
+											"Type": {
+												"Flags": 32,
+												"Kind": 6,
+												"_Type": "BuiltinType"
 											},
-											"Doc":	null,
-											"Comment":	null,
-											"IsStatic":	false,
-											"Access":	1,
-											"Names":	[{
-													"_Type":	"Ident",
-													"Name":	"s"
-												}]
-										}]
+											"_Type": "Field"
+										}
+									],
+									"_Type": "FieldList"
 								},
-								"Methods":	[]
+								"Methods": null,
+								"Tag": 1,
+								"_Type": "RecordType"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"inner"
-								}]
-						}]
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
 				},
-				"Methods":	[]
-			}
-		}],
-	"includes":	[],
-	"macros":	[]
+				"Methods": null,
+				"Tag": 1,
+				"_Type": "RecordType"
+			},
+			"_Type": "TypeDecl"
+		}
+	],
+	"includes": null,
+	"macros": null
 }

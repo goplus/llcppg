@@ -1,759 +1,822 @@
 {
-	"_Type":	"File",
-	"decls":	[{
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
+	"_Type": "File",
+	"decls": [
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": false,
+			"IsOverride": false,
+			"IsStatic": false,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"foo1"
+			"MangledName": "_Z4foo1v",
+			"Name": {
+				"Name": "foo1",
+				"_Type": "Ident"
 			},
-			"MangledName":	"_Z4foo1v",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	null
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": null,
+					"_Type": "FieldList"
 				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	0,
-					"Flags":	0
-				}
-			},
-			"IsInline":	false,
-			"IsStatic":	false,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}, {
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"foo2"
-			},
-			"MangledName":	"_Z4foo2i",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"a"
-								}]
-						}]
+				"Ret": {
+					"Flags": 0,
+					"Kind": 0,
+					"_Type": "BuiltinType"
 				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	0,
-					"Flags":	0
-				}
+				"_Type": "FuncType"
 			},
-			"IsInline":	false,
-			"IsStatic":	false,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}, {
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
+			"_Type": "FuncDecl"
+		},
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": false,
+			"IsOverride": false,
+			"IsStatic": false,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"foo3"
+			"MangledName": "_Z4foo2i",
+			"Name": {
+				"Name": "foo2",
+				"_Type": "Ident"
 			},
-			"MangledName":	"_Z4foo3iz",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"a"
-								}]
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"Variadic"
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}]
-				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	0,
-					"Flags":	0
-				}
-			},
-			"IsInline":	false,
-			"IsStatic":	false,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}, {
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"foo4"
-			},
-			"MangledName":	"_Z4foo4id",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"a"
-								}]
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	8,
-								"Flags":	16
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"b"
-								}]
-						}]
-				},
-				"Ret":	{
-					"_Type":	"PointerType",
-					"X":	{
-						"_Type":	"BuiltinType",
-						"Kind":	8,
-						"Flags":	0
-					}
-				}
-			},
-			"IsInline":	false,
-			"IsStatic":	false,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}, {
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"foo5"
-			},
-			"MangledName":	"_ZL4foo5ii",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"a"
-								}]
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"b"
-								}]
-						}]
-				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	6,
-					"Flags":	0
-				}
-			},
-			"IsInline":	true,
-			"IsStatic":	true,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"fntype1"
-			},
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	null
-				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	0,
-					"Flags":	0
-				}
-			}
-		}, {
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"bar1"
-			},
-			"MangledName":	"_Z4bar1v",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	null
-				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	0,
-					"Flags":	0
-				}
-			},
-			"IsInline":	false,
-			"IsStatic":	false,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"fntype2"
-			},
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	4
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}]
-				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	6,
-					"Flags":	4
-				}
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"fntype3"
-			},
-			"Type":	{
-				"_Type":	"Ident",
-				"Name":	"fntype2"
-			}
-		}, {
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"bar2"
-			},
-			"MangledName":	"_Z4bar2l",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	4
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}]
-				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	6,
-					"Flags":	4
-				}
-			},
-			"IsInline":	false,
-			"IsStatic":	false,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}, {
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"OSSL_CORE_HANDLE"
-			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	0,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	null
-				},
-				"Methods":	[]
-			}
-		}, {
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"OSSL_DISPATCH"
-			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	0,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	null
-				},
-				"Methods":	[]
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"OSSL_provider_init_fn"
-			},
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"Ident",
-									"Name":	"OSSL_CORE_HANDLE"
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "a",
+									"_Type": "Ident"
 								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"Ident",
-									"Name":	"OSSL_DISPATCH"
-								}
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"PointerType",
-									"X":	{
-										"_Type":	"Ident",
-										"Name":	"OSSL_DISPATCH"
-									}
-								}
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"PointerType",
-									"X":	{
-										"_Type":	"BuiltinType",
-										"Kind":	0,
-										"Flags":	0
-									}
-								}
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}]
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
 				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	6,
-					"Flags":	0
-				}
-			}
-		}, {
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"OSSL_provider_init"
-			},
-			"MangledName":	"_Z18OSSL_provider_initPK16OSSL_CORE_HANDLEPK13OSSL_DISPATCHPS4_PPv",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"Ident",
-									"Name":	"OSSL_CORE_HANDLE"
-								}
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"Ident",
-									"Name":	"OSSL_DISPATCH"
-								}
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"PointerType",
-									"X":	{
-										"_Type":	"Ident",
-										"Name":	"OSSL_DISPATCH"
-									}
-								}
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"PointerType",
-									"X":	{
-										"_Type":	"BuiltinType",
-										"Kind":	0,
-										"Flags":	0
-									}
-								}
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	null
-						}]
+				"Ret": {
+					"Flags": 0,
+					"Kind": 0,
+					"_Type": "BuiltinType"
 				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	6,
-					"Flags":	0
-				}
+				"_Type": "FuncType"
 			},
-			"IsInline":	false,
-			"IsStatic":	false,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}, {
-			"_Type":	"FuncDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/func/temp.h"
+			"_Type": "FuncDecl"
+		},
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": false,
+			"IsOverride": false,
+			"IsStatic": false,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"qsort_b"
+			"MangledName": "_Z4foo3iz",
+			"Name": {
+				"Name": "foo3",
+				"_Type": "Ident"
 			},
-			"MangledName":	"_Z7qsort_bPvU13block_pointerFiPKvS1_E",
-			"Type":	{
-				"_Type":	"FuncType",
-				"Params":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"PointerType",
-								"X":	{
-									"_Type":	"BuiltinType",
-									"Kind":	0,
-									"Flags":	0
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "a",
+									"_Type": "Ident"
 								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"__base"
-								}]
-						}, {
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BlockPointerType",
-								"X":	{
-									"_Type":	"FuncType",
-									"Params":	{
-										"_Type":	"FieldList",
-										"List":	[{
-												"_Type":	"Field",
-												"Type":	{
-													"_Type":	"PointerType",
-													"X":	{
-														"_Type":	"BuiltinType",
-														"Kind":	0,
-														"Flags":	0
-													}
-												},
-												"Doc":	null,
-												"Comment":	null,
-												"IsStatic":	false,
-												"Access":	0,
-												"Names":	null
-											}, {
-												"_Type":	"Field",
-												"Type":	{
-													"_Type":	"PointerType",
-													"X":	{
-														"_Type":	"BuiltinType",
-														"Kind":	0,
-														"Flags":	0
-													}
-												},
-												"Doc":	null,
-												"Comment":	null,
-												"IsStatic":	false,
-												"Access":	0,
-												"Names":	null
-											}]
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"_Type": "Variadic"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"Flags": 0,
+					"Kind": 0,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "FuncDecl"
+		},
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": false,
+			"IsOverride": false,
+			"IsStatic": false,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"MangledName": "_Z4foo4id",
+			"Name": {
+				"Name": "foo4",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "a",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "b",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 16,
+								"Kind": 8,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"X": {
+						"Flags": 0,
+						"Kind": 8,
+						"_Type": "BuiltinType"
+					},
+					"_Type": "PointerType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "FuncDecl"
+		},
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": true,
+			"IsOverride": false,
+			"IsStatic": true,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"MangledName": "_ZL4foo5ii",
+			"Name": {
+				"Name": "foo5",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "a",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "b",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"Flags": 0,
+					"Kind": 6,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "FuncDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "fntype1",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": null,
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"Flags": 0,
+					"Kind": 0,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": false,
+			"IsOverride": false,
+			"IsStatic": false,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"MangledName": "_Z4bar1v",
+			"Name": {
+				"Name": "bar1",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": null,
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"Flags": 0,
+					"Kind": 0,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "FuncDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "fntype2",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"Flags": 4,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"Flags": 4,
+					"Kind": 6,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "fntype3",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Name": "fntype2",
+				"_Type": "Ident"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": false,
+			"IsOverride": false,
+			"IsStatic": false,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"MangledName": "_Z4bar2l",
+			"Name": {
+				"Name": "bar2",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"Flags": 4,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"Flags": 4,
+					"Kind": 6,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "FuncDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "OSSL_CORE_HANDLE",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Fields": {
+					"List": null,
+					"_Type": "FieldList"
+				},
+				"Methods": null,
+				"Tag": 0,
+				"_Type": "RecordType"
+			},
+			"_Type": "TypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "OSSL_DISPATCH",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Fields": {
+					"List": null,
+					"_Type": "FieldList"
+				},
+				"Methods": null,
+				"Tag": 0,
+				"_Type": "RecordType"
+			},
+			"_Type": "TypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "OSSL_provider_init_fn",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"X": {
+									"Name": "OSSL_CORE_HANDLE",
+									"_Type": "Ident"
+								},
+								"_Type": "PointerType"
+							},
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"X": {
+									"Name": "OSSL_DISPATCH",
+									"_Type": "Ident"
+								},
+								"_Type": "PointerType"
+							},
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"X": {
+									"X": {
+										"Name": "OSSL_DISPATCH",
+										"_Type": "Ident"
 									},
-									"Ret":	{
-										"_Type":	"BuiltinType",
-										"Kind":	6,
-										"Flags":	0
-									}
-								}
+									"_Type": "PointerType"
+								},
+								"_Type": "PointerType"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	0,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"__compar"
-								}]
-						}]
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"X": {
+									"X": {
+										"Flags": 0,
+										"Kind": 0,
+										"_Type": "BuiltinType"
+									},
+									"_Type": "PointerType"
+								},
+								"_Type": "PointerType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
 				},
-				"Ret":	{
-					"_Type":	"BuiltinType",
-					"Kind":	0,
-					"Flags":	0
-				}
+				"Ret": {
+					"Flags": 0,
+					"Kind": 6,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
 			},
-			"IsInline":	false,
-			"IsStatic":	false,
-			"IsConst":	false,
-			"IsExplicit":	false,
-			"IsConstructor":	false,
-			"IsDestructor":	false,
-			"IsVirtual":	false,
-			"IsOverride":	false
-		}],
-	"includes":	[],
-	"macros":	[]
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": false,
+			"IsOverride": false,
+			"IsStatic": false,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"MangledName": "_Z18OSSL_provider_initPK16OSSL_CORE_HANDLEPK13OSSL_DISPATCHPS4_PPv",
+			"Name": {
+				"Name": "OSSL_provider_init",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"X": {
+									"Name": "OSSL_CORE_HANDLE",
+									"_Type": "Ident"
+								},
+								"_Type": "PointerType"
+							},
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"X": {
+									"Name": "OSSL_DISPATCH",
+									"_Type": "Ident"
+								},
+								"_Type": "PointerType"
+							},
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"X": {
+									"X": {
+										"Name": "OSSL_DISPATCH",
+										"_Type": "Ident"
+									},
+									"_Type": "PointerType"
+								},
+								"_Type": "PointerType"
+							},
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": null,
+							"Type": {
+								"X": {
+									"X": {
+										"Flags": 0,
+										"Kind": 0,
+										"_Type": "BuiltinType"
+									},
+									"_Type": "PointerType"
+								},
+								"_Type": "PointerType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"Flags": 0,
+					"Kind": 6,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "FuncDecl"
+		},
+		{
+			"Doc": null,
+			"IsConst": false,
+			"IsConstructor": false,
+			"IsDestructor": false,
+			"IsExplicit": false,
+			"IsInline": false,
+			"IsOverride": false,
+			"IsStatic": false,
+			"IsVirtual": false,
+			"Loc": {
+				"File": "testdata/func/temp.h",
+				"_Type": "Location"
+			},
+			"MangledName": "_Z7qsort_bPvU13block_pointerFiPKvS1_E",
+			"Name": {
+				"Name": "qsort_b",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Params": {
+					"List": [
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "__base",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"X": {
+									"Flags": 0,
+									"Kind": 0,
+									"_Type": "BuiltinType"
+								},
+								"_Type": "PointerType"
+							},
+							"_Type": "Field"
+						},
+						{
+							"Access": 0,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "__compar",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"X": {
+									"Params": {
+										"List": [
+											{
+												"Access": 0,
+												"Comment": null,
+												"Doc": null,
+												"IsStatic": false,
+												"Names": null,
+												"Type": {
+													"X": {
+														"Flags": 0,
+														"Kind": 0,
+														"_Type": "BuiltinType"
+													},
+													"_Type": "PointerType"
+												},
+												"_Type": "Field"
+											},
+											{
+												"Access": 0,
+												"Comment": null,
+												"Doc": null,
+												"IsStatic": false,
+												"Names": null,
+												"Type": {
+													"X": {
+														"Flags": 0,
+														"Kind": 0,
+														"_Type": "BuiltinType"
+													},
+													"_Type": "PointerType"
+												},
+												"_Type": "Field"
+											}
+										],
+										"_Type": "FieldList"
+									},
+									"Ret": {
+										"Flags": 0,
+										"Kind": 6,
+										"_Type": "BuiltinType"
+									},
+									"_Type": "FuncType"
+								},
+								"_Type": "BlockPointerType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Ret": {
+					"Flags": 0,
+					"Kind": 0,
+					"_Type": "BuiltinType"
+				},
+				"_Type": "FuncType"
+			},
+			"_Type": "FuncDecl"
+		}
+	],
+	"includes": null,
+	"macros": null
 }

@@ -1,985 +1,1056 @@
 {
-	"_Type":	"File",
-	"decls":	[{
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
+	"_Type": "File",
+	"decls": [
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"INT"
+			"Name": {
+				"Name": "INT",
+				"_Type": "Ident"
 			},
-			"Type":	{
-				"_Type":	"BuiltinType",
-				"Kind":	6,
-				"Flags":	0
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
+			"Parent": null,
+			"Type": {
+				"Flags": 0,
+				"Kind": 6,
+				"_Type": "BuiltinType"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"STANDARD_INT"
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
 			},
-			"Type":	{
-				"_Type":	"Ident",
-				"Name":	"INT"
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
+			"Name": {
+				"Name": "STANDARD_INT",
+				"_Type": "Ident"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"NewINT"
+			"Parent": null,
+			"Type": {
+				"Name": "INT",
+				"_Type": "Ident"
 			},
-			"Type":	{
-				"_Type":	"BuiltinType",
-				"Kind":	6,
-				"Flags":	0
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"NewIntPtr"
+			"Name": {
+				"Name": "NewINT",
+				"_Type": "Ident"
 			},
-			"Type":	{
-				"_Type":	"PointerType",
-				"X":	{
-					"_Type":	"BuiltinType",
-					"Kind":	6,
-					"Flags":	0
-				}
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
+			"Parent": null,
+			"Type": {
+				"Flags": 0,
+				"Kind": 6,
+				"_Type": "BuiltinType"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"NewIntArr"
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
 			},
-			"Type":	{
-				"_Type":	"ArrayType",
-				"Elt":	{
-					"_Type":	"BuiltinType",
-					"Kind":	6,
-					"Flags":	0
+			"Name": {
+				"Name": "NewIntPtr",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"X": {
+					"Flags": 0,
+					"Kind": 6,
+					"_Type": "BuiltinType"
 				},
-				"Len":	null
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
+				"_Type": "PointerType"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"Foo1"
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
 			},
-			"Type":	{
-				"_Type":	"PointerType",
-				"X":	{
-					"_Type":	"FuncType",
-					"Params":	{
-						"_Type":	"FieldList",
-						"List":	[{
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"BuiltinType",
-									"Kind":	6,
-									"Flags":	0
+			"Name": {
+				"Name": "NewIntArr",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Elt": {
+					"Flags": 0,
+					"Kind": 6,
+					"_Type": "BuiltinType"
+				},
+				"Len": null,
+				"_Type": "ArrayType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "Foo1",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"X": {
+					"Params": {
+						"List": [
+							{
+								"Access": 0,
+								"Comment": null,
+								"Doc": null,
+								"IsStatic": false,
+								"Names": null,
+								"Type": {
+									"Flags": 0,
+									"Kind": 6,
+									"_Type": "BuiltinType"
 								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	0,
-								"Names":	null
-							}, {
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"BuiltinType",
-									"Kind":	6,
-									"Flags":	0
-								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	0,
-								"Names":	null
-							}, {
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"Variadic"
-								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	0,
-								"Names":	null
-							}]
-					},
-					"Ret":	{
-						"_Type":	"BuiltinType",
-						"Kind":	6,
-						"Flags":	0
-					}
-				}
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"Foo2"
-			},
-			"Type":	{
-				"_Type":	"PointerType",
-				"X":	{
-					"_Type":	"FuncType",
-					"Params":	{
-						"_Type":	"FieldList",
-						"List":	[{
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"BuiltinType",
-									"Kind":	6,
-									"Flags":	0
-								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	0,
-								"Names":	null
-							}, {
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"BuiltinType",
-									"Kind":	6,
-									"Flags":	0
-								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	0,
-								"Names":	null
-							}]
-					},
-					"Ret":	{
-						"_Type":	"BuiltinType",
-						"Kind":	6,
-						"Flags":	0
-					}
-				}
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"Bar"
-			},
-			"Type":	{
-				"_Type":	"PointerType",
-				"X":	{
-					"_Type":	"FuncType",
-					"Params":	{
-						"_Type":	"FieldList",
-						"List":	[{
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"PointerType",
-									"X":	{
-										"_Type":	"BuiltinType",
-										"Kind":	0,
-										"Flags":	0
-									}
-								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	0,
-								"Names":	null
-							}, {
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"PointerType",
-									"X":	{
-										"_Type":	"BuiltinType",
-										"Kind":	0,
-										"Flags":	0
-									}
-								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	0,
-								"Names":	null
-							}]
-					},
-					"Ret":	{
-						"_Type":	"BuiltinType",
-						"Kind":	6,
-						"Flags":	0
-					}
-				}
-			}
-		}, {
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	{
-				"_Type":	"Ident",
-				"Name":	"A"
-			},
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"Foo"
-			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	3,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
+								"_Type": "Field"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	3,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"x"
-								}]
-						}]
-				},
-				"Methods":	[]
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	{
-				"_Type":	"Ident",
-				"Name":	"A"
-			},
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyClass"
-			},
-			"Type":	{
-				"_Type":	"TagExpr",
-				"Name":	{
-					"_Type":	"ScopingExpr",
-					"X":	{
-						"_Type":	"Ident",
-						"Name":	"Foo"
-					},
-					"Parent":	{
-						"_Type":	"Ident",
-						"Name":	"A"
-					}
-				},
-				"Tag":	3
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	{
-				"_Type":	"Ident",
-				"Name":	"A"
-			},
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyClassPtr"
-			},
-			"Type":	{
-				"_Type":	"PointerType",
-				"X":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"ScopingExpr",
-						"X":	{
-							"_Type":	"Ident",
-							"Name":	"Foo"
-						},
-						"Parent":	{
-							"_Type":	"Ident",
-							"Name":	"A"
-						}
-					},
-					"Tag":	3
-				}
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	{
-				"_Type":	"Ident",
-				"Name":	"A"
-			},
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyClassArray"
-			},
-			"Type":	{
-				"_Type":	"ArrayType",
-				"Elt":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"ScopingExpr",
-						"X":	{
-							"_Type":	"Ident",
-							"Name":	"Foo"
-						},
-						"Parent":	{
-							"_Type":	"Ident",
-							"Name":	"A"
-						}
-					},
-					"Tag":	3
-				},
-				"Len":	null
-			}
-		}, {
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyStruct1"
-			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	0,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
+							{
+								"Access": 0,
+								"Comment": null,
+								"Doc": null,
+								"IsStatic": false,
+								"Names": null,
+								"Type": {
+									"Flags": 0,
+									"Kind": 6,
+									"_Type": "BuiltinType"
+								},
+								"_Type": "Field"
 							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"x"
-								}]
-						}]
-				},
-				"Methods":	[]
-			}
-		}, {
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyUnion1"
-			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	1,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"x"
-								}]
-						}]
-				},
-				"Methods":	[]
-			}
-		}, {
-			"_Type":	"EnumTypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyEnum1"
-			},
-			"Type":	{
-				"_Type":	"EnumType",
-				"Items":	[{
-						"_Type":	"EnumItem",
-						"Name":	{
-							"_Type":	"Ident",
-							"Name":	"MyEnum1RED"
-						},
-						"Value":	{
-							"_Type":	"BasicLit",
-							"Kind":	0,
-							"Value":	"0"
-						}
-					}, {
-						"_Type":	"EnumItem",
-						"Name":	{
-							"_Type":	"Ident",
-							"Name":	"MyEnum1GREEN"
-						},
-						"Value":	{
-							"_Type":	"BasicLit",
-							"Kind":	0,
-							"Value":	"1"
-						}
-					}, {
-						"_Type":	"EnumItem",
-						"Name":	{
-							"_Type":	"Ident",
-							"Name":	"MyEnum1BLUE"
-						},
-						"Value":	{
-							"_Type":	"BasicLit",
-							"Kind":	0,
-							"Value":	"2"
-						}
-					}]
-			}
-		}, {
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyStruct2"
-			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	0,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"x"
-								}]
-						}]
-				},
-				"Methods":	[]
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyStruct3"
-			},
-			"Type":	{
-				"_Type":	"TagExpr",
-				"Name":	{
-					"_Type":	"Ident",
-					"Name":	"MyStruct2"
-				},
-				"Tag":	0
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"StructPtr"
-			},
-			"Type":	{
-				"_Type":	"PointerType",
-				"X":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"Ident",
-						"Name":	"MyStruct2"
-					},
-					"Tag":	0
-				}
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"StructArr"
-			},
-			"Type":	{
-				"_Type":	"ArrayType",
-				"Elt":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"Ident",
-						"Name":	"MyStruct2"
-					},
-					"Tag":	0
-				},
-				"Len":	null
-			}
-		}, {
-			"_Type":	"EnumTypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyEnum2"
-			},
-			"Type":	{
-				"_Type":	"EnumType",
-				"Items":	[{
-						"_Type":	"EnumItem",
-						"Name":	{
-							"_Type":	"Ident",
-							"Name":	"MyEnum2RED"
-						},
-						"Value":	{
-							"_Type":	"BasicLit",
-							"Kind":	0,
-							"Value":	"0"
-						}
-					}, {
-						"_Type":	"EnumItem",
-						"Name":	{
-							"_Type":	"Ident",
-							"Name":	"MyEnum2GREEN"
-						},
-						"Value":	{
-							"_Type":	"BasicLit",
-							"Kind":	0,
-							"Value":	"1"
-						}
-					}, {
-						"_Type":	"EnumItem",
-						"Name":	{
-							"_Type":	"Ident",
-							"Name":	"MyEnum2BLUE"
-						},
-						"Value":	{
-							"_Type":	"BasicLit",
-							"Kind":	0,
-							"Value":	"2"
-						}
-					}]
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyEnum3"
-			},
-			"Type":	{
-				"_Type":	"TagExpr",
-				"Name":	{
-					"_Type":	"Ident",
-					"Name":	"MyEnum2"
-				},
-				"Tag":	2
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"EnumPtr"
-			},
-			"Type":	{
-				"_Type":	"PointerType",
-				"X":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"Ident",
-						"Name":	"MyEnum2"
-					},
-					"Tag":	2
-				}
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"EnumArr"
-			},
-			"Type":	{
-				"_Type":	"ArrayType",
-				"Elt":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"Ident",
-						"Name":	"MyEnum2"
-					},
-					"Tag":	2
-				},
-				"Len":	null
-			}
-		}, {
-			"_Type":	"TypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	{
-				"_Type":	"ScopingExpr",
-				"X":	{
-					"_Type":	"Ident",
-					"Name":	"B"
-				},
-				"Parent":	{
-					"_Type":	"Ident",
-					"Name":	"A"
-				}
-			},
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyStruct"
-			},
-			"Type":	{
-				"_Type":	"RecordType",
-				"Tag":	0,
-				"Fields":	{
-					"_Type":	"FieldList",
-					"List":	[{
-							"_Type":	"Field",
-							"Type":	{
-								"_Type":	"BuiltinType",
-								"Kind":	6,
-								"Flags":	0
-							},
-							"Doc":	null,
-							"Comment":	null,
-							"IsStatic":	false,
-							"Access":	1,
-							"Names":	[{
-									"_Type":	"Ident",
-									"Name":	"x"
-								}]
-						}]
-				},
-				"Methods":	[]
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	{
-				"_Type":	"ScopingExpr",
-				"X":	{
-					"_Type":	"Ident",
-					"Name":	"B"
-				},
-				"Parent":	{
-					"_Type":	"Ident",
-					"Name":	"A"
-				}
-			},
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"MyStruct2"
-			},
-			"Type":	{
-				"_Type":	"TagExpr",
-				"Name":	{
-					"_Type":	"ScopingExpr",
-					"X":	{
-						"_Type":	"Ident",
-						"Name":	"MyStruct"
-					},
-					"Parent":	{
-						"_Type":	"ScopingExpr",
-						"X":	{
-							"_Type":	"Ident",
-							"Name":	"B"
-						},
-						"Parent":	{
-							"_Type":	"Ident",
-							"Name":	"A"
-						}
-					}
-				},
-				"Tag":	0
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	{
-				"_Type":	"ScopingExpr",
-				"X":	{
-					"_Type":	"Ident",
-					"Name":	"B"
-				},
-				"Parent":	{
-					"_Type":	"Ident",
-					"Name":	"A"
-				}
-			},
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"StructPtr"
-			},
-			"Type":	{
-				"_Type":	"PointerType",
-				"X":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"ScopingExpr",
-						"X":	{
-							"_Type":	"Ident",
-							"Name":	"MyStruct"
-						},
-						"Parent":	{
-							"_Type":	"ScopingExpr",
-							"X":	{
-								"_Type":	"Ident",
-								"Name":	"B"
-							},
-							"Parent":	{
-								"_Type":	"Ident",
-								"Name":	"A"
+							{
+								"Access": 0,
+								"Comment": null,
+								"Doc": null,
+								"IsStatic": false,
+								"Names": null,
+								"Type": {
+									"_Type": "Variadic"
+								},
+								"_Type": "Field"
 							}
-						}
+						],
+						"_Type": "FieldList"
 					},
-					"Tag":	0
-				}
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
-			},
-			"Doc":	null,
-			"Parent":	{
-				"_Type":	"ScopingExpr",
-				"X":	{
-					"_Type":	"Ident",
-					"Name":	"B"
+					"Ret": {
+						"Flags": 0,
+						"Kind": 6,
+						"_Type": "BuiltinType"
+					},
+					"_Type": "FuncType"
 				},
-				"Parent":	{
-					"_Type":	"Ident",
-					"Name":	"A"
-				}
+				"_Type": "PointerType"
 			},
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"StructArr"
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
 			},
-			"Type":	{
-				"_Type":	"ArrayType",
-				"Elt":	{
-					"_Type":	"TagExpr",
-					"Name":	{
-						"_Type":	"ScopingExpr",
-						"X":	{
-							"_Type":	"Ident",
-							"Name":	"MyStruct"
-						},
-						"Parent":	{
-							"_Type":	"ScopingExpr",
-							"X":	{
-								"_Type":	"Ident",
-								"Name":	"B"
+			"Name": {
+				"Name": "Foo2",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"X": {
+					"Params": {
+						"List": [
+							{
+								"Access": 0,
+								"Comment": null,
+								"Doc": null,
+								"IsStatic": false,
+								"Names": null,
+								"Type": {
+									"Flags": 0,
+									"Kind": 6,
+									"_Type": "BuiltinType"
+								},
+								"_Type": "Field"
 							},
-							"Parent":	{
-								"_Type":	"Ident",
-								"Name":	"A"
+							{
+								"Access": 0,
+								"Comment": null,
+								"Doc": null,
+								"IsStatic": false,
+								"Names": null,
+								"Type": {
+									"Flags": 0,
+									"Kind": 6,
+									"_Type": "BuiltinType"
+								},
+								"_Type": "Field"
 							}
-						}
+						],
+						"_Type": "FieldList"
 					},
-					"Tag":	0
+					"Ret": {
+						"Flags": 0,
+						"Kind": 6,
+						"_Type": "BuiltinType"
+					},
+					"_Type": "FuncType"
 				},
-				"Len":	null
-			}
-		}, {
-			"_Type":	"EnumTypeDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
+				"_Type": "PointerType"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"algorithm"
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
 			},
-			"Type":	{
-				"_Type":	"EnumType",
-				"Items":	[{
-						"_Type":	"EnumItem",
-						"Name":	{
-							"_Type":	"Ident",
-							"Name":	"AlgorithmA"
-						},
-						"Value":	{
-							"_Type":	"BasicLit",
-							"Kind":	0,
-							"Value":	"0"
-						}
-					}, {
-						"_Type":	"EnumItem",
-						"Name":	{
-							"_Type":	"Ident",
-							"Name":	"AlgorithmB"
-						},
-						"Value":	{
-							"_Type":	"BasicLit",
-							"Kind":	0,
-							"Value":	"1"
-						}
-					}]
-			}
-		}, {
-			"_Type":	"TypedefDecl",
-			"Loc":	{
-				"_Type":	"Location",
-				"File":	"testdata/typedef/temp.h"
+			"Name": {
+				"Name": "Bar",
+				"_Type": "Ident"
 			},
-			"Doc":	null,
-			"Parent":	null,
-			"Name":	{
-				"_Type":	"Ident",
-				"Name":	"algorithm_t"
-			},
-			"Type":	{
-				"_Type":	"TagExpr",
-				"Name":	{
-					"_Type":	"Ident",
-					"Name":	"algorithm"
+			"Parent": null,
+			"Type": {
+				"X": {
+					"Params": {
+						"List": [
+							{
+								"Access": 0,
+								"Comment": null,
+								"Doc": null,
+								"IsStatic": false,
+								"Names": null,
+								"Type": {
+									"X": {
+										"Flags": 0,
+										"Kind": 0,
+										"_Type": "BuiltinType"
+									},
+									"_Type": "PointerType"
+								},
+								"_Type": "Field"
+							},
+							{
+								"Access": 0,
+								"Comment": null,
+								"Doc": null,
+								"IsStatic": false,
+								"Names": null,
+								"Type": {
+									"X": {
+										"Flags": 0,
+										"Kind": 0,
+										"_Type": "BuiltinType"
+									},
+									"_Type": "PointerType"
+								},
+								"_Type": "Field"
+							}
+						],
+						"_Type": "FieldList"
+					},
+					"Ret": {
+						"Flags": 0,
+						"Kind": 6,
+						"_Type": "BuiltinType"
+					},
+					"_Type": "FuncType"
 				},
-				"Tag":	2
-			}
-		}],
-	"includes":	[],
-	"macros":	[]
+				"_Type": "PointerType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "Foo",
+				"_Type": "Ident"
+			},
+			"Parent": {
+				"Name": "A",
+				"_Type": "Ident"
+			},
+			"Type": {
+				"Fields": {
+					"List": [
+						{
+							"Access": 3,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "x",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Methods": null,
+				"Tag": 3,
+				"_Type": "RecordType"
+			},
+			"_Type": "TypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyClass",
+				"_Type": "Ident"
+			},
+			"Parent": {
+				"Name": "A",
+				"_Type": "Ident"
+			},
+			"Type": {
+				"Name": {
+					"Parent": {
+						"Name": "A",
+						"_Type": "Ident"
+					},
+					"X": {
+						"Name": "Foo",
+						"_Type": "Ident"
+					},
+					"_Type": "ScopingExpr"
+				},
+				"Tag": 3,
+				"_Type": "TagExpr"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyClassPtr",
+				"_Type": "Ident"
+			},
+			"Parent": {
+				"Name": "A",
+				"_Type": "Ident"
+			},
+			"Type": {
+				"X": {
+					"Name": {
+						"Parent": {
+							"Name": "A",
+							"_Type": "Ident"
+						},
+						"X": {
+							"Name": "Foo",
+							"_Type": "Ident"
+						},
+						"_Type": "ScopingExpr"
+					},
+					"Tag": 3,
+					"_Type": "TagExpr"
+				},
+				"_Type": "PointerType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyClassArray",
+				"_Type": "Ident"
+			},
+			"Parent": {
+				"Name": "A",
+				"_Type": "Ident"
+			},
+			"Type": {
+				"Elt": {
+					"Name": {
+						"Parent": {
+							"Name": "A",
+							"_Type": "Ident"
+						},
+						"X": {
+							"Name": "Foo",
+							"_Type": "Ident"
+						},
+						"_Type": "ScopingExpr"
+					},
+					"Tag": 3,
+					"_Type": "TagExpr"
+				},
+				"Len": null,
+				"_Type": "ArrayType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyStruct1",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Fields": {
+					"List": [
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "x",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Methods": null,
+				"Tag": 0,
+				"_Type": "RecordType"
+			},
+			"_Type": "TypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyUnion1",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Fields": {
+					"List": [
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "x",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Methods": null,
+				"Tag": 1,
+				"_Type": "RecordType"
+			},
+			"_Type": "TypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyEnum1",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Items": [
+					{
+						"Name": {
+							"Name": "MyEnum1RED",
+							"_Type": "Ident"
+						},
+						"Value": {
+							"Kind": 0,
+							"Value": "0",
+							"_Type": "BasicLit"
+						},
+						"_Type": "EnumItem"
+					},
+					{
+						"Name": {
+							"Name": "MyEnum1GREEN",
+							"_Type": "Ident"
+						},
+						"Value": {
+							"Kind": 0,
+							"Value": "1",
+							"_Type": "BasicLit"
+						},
+						"_Type": "EnumItem"
+					},
+					{
+						"Name": {
+							"Name": "MyEnum1BLUE",
+							"_Type": "Ident"
+						},
+						"Value": {
+							"Kind": 0,
+							"Value": "2",
+							"_Type": "BasicLit"
+						},
+						"_Type": "EnumItem"
+					}
+				],
+				"_Type": "EnumType"
+			},
+			"_Type": "EnumTypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyStruct2",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Fields": {
+					"List": [
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "x",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Methods": null,
+				"Tag": 0,
+				"_Type": "RecordType"
+			},
+			"_Type": "TypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyStruct3",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Name": {
+					"Name": "MyStruct2",
+					"_Type": "Ident"
+				},
+				"Tag": 0,
+				"_Type": "TagExpr"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "StructPtr",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"X": {
+					"Name": {
+						"Name": "MyStruct2",
+						"_Type": "Ident"
+					},
+					"Tag": 0,
+					"_Type": "TagExpr"
+				},
+				"_Type": "PointerType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "StructArr",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Elt": {
+					"Name": {
+						"Name": "MyStruct2",
+						"_Type": "Ident"
+					},
+					"Tag": 0,
+					"_Type": "TagExpr"
+				},
+				"Len": null,
+				"_Type": "ArrayType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyEnum2",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Items": [
+					{
+						"Name": {
+							"Name": "MyEnum2RED",
+							"_Type": "Ident"
+						},
+						"Value": {
+							"Kind": 0,
+							"Value": "0",
+							"_Type": "BasicLit"
+						},
+						"_Type": "EnumItem"
+					},
+					{
+						"Name": {
+							"Name": "MyEnum2GREEN",
+							"_Type": "Ident"
+						},
+						"Value": {
+							"Kind": 0,
+							"Value": "1",
+							"_Type": "BasicLit"
+						},
+						"_Type": "EnumItem"
+					},
+					{
+						"Name": {
+							"Name": "MyEnum2BLUE",
+							"_Type": "Ident"
+						},
+						"Value": {
+							"Kind": 0,
+							"Value": "2",
+							"_Type": "BasicLit"
+						},
+						"_Type": "EnumItem"
+					}
+				],
+				"_Type": "EnumType"
+			},
+			"_Type": "EnumTypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyEnum3",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Name": {
+					"Name": "MyEnum2",
+					"_Type": "Ident"
+				},
+				"Tag": 2,
+				"_Type": "TagExpr"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "EnumPtr",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"X": {
+					"Name": {
+						"Name": "MyEnum2",
+						"_Type": "Ident"
+					},
+					"Tag": 2,
+					"_Type": "TagExpr"
+				},
+				"_Type": "PointerType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "EnumArr",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Elt": {
+					"Name": {
+						"Name": "MyEnum2",
+						"_Type": "Ident"
+					},
+					"Tag": 2,
+					"_Type": "TagExpr"
+				},
+				"Len": null,
+				"_Type": "ArrayType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyStruct",
+				"_Type": "Ident"
+			},
+			"Parent": {
+				"Parent": {
+					"Name": "A",
+					"_Type": "Ident"
+				},
+				"X": {
+					"Name": "B",
+					"_Type": "Ident"
+				},
+				"_Type": "ScopingExpr"
+			},
+			"Type": {
+				"Fields": {
+					"List": [
+						{
+							"Access": 1,
+							"Comment": null,
+							"Doc": null,
+							"IsStatic": false,
+							"Names": [
+								{
+									"Name": "x",
+									"_Type": "Ident"
+								}
+							],
+							"Type": {
+								"Flags": 0,
+								"Kind": 6,
+								"_Type": "BuiltinType"
+							},
+							"_Type": "Field"
+						}
+					],
+					"_Type": "FieldList"
+				},
+				"Methods": null,
+				"Tag": 0,
+				"_Type": "RecordType"
+			},
+			"_Type": "TypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "MyStruct2",
+				"_Type": "Ident"
+			},
+			"Parent": {
+				"Parent": {
+					"Name": "A",
+					"_Type": "Ident"
+				},
+				"X": {
+					"Name": "B",
+					"_Type": "Ident"
+				},
+				"_Type": "ScopingExpr"
+			},
+			"Type": {
+				"Name": {
+					"Parent": {
+						"Parent": {
+							"Name": "A",
+							"_Type": "Ident"
+						},
+						"X": {
+							"Name": "B",
+							"_Type": "Ident"
+						},
+						"_Type": "ScopingExpr"
+					},
+					"X": {
+						"Name": "MyStruct",
+						"_Type": "Ident"
+					},
+					"_Type": "ScopingExpr"
+				},
+				"Tag": 0,
+				"_Type": "TagExpr"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "StructPtr",
+				"_Type": "Ident"
+			},
+			"Parent": {
+				"Parent": {
+					"Name": "A",
+					"_Type": "Ident"
+				},
+				"X": {
+					"Name": "B",
+					"_Type": "Ident"
+				},
+				"_Type": "ScopingExpr"
+			},
+			"Type": {
+				"X": {
+					"Name": {
+						"Parent": {
+							"Parent": {
+								"Name": "A",
+								"_Type": "Ident"
+							},
+							"X": {
+								"Name": "B",
+								"_Type": "Ident"
+							},
+							"_Type": "ScopingExpr"
+						},
+						"X": {
+							"Name": "MyStruct",
+							"_Type": "Ident"
+						},
+						"_Type": "ScopingExpr"
+					},
+					"Tag": 0,
+					"_Type": "TagExpr"
+				},
+				"_Type": "PointerType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "StructArr",
+				"_Type": "Ident"
+			},
+			"Parent": {
+				"Parent": {
+					"Name": "A",
+					"_Type": "Ident"
+				},
+				"X": {
+					"Name": "B",
+					"_Type": "Ident"
+				},
+				"_Type": "ScopingExpr"
+			},
+			"Type": {
+				"Elt": {
+					"Name": {
+						"Parent": {
+							"Parent": {
+								"Name": "A",
+								"_Type": "Ident"
+							},
+							"X": {
+								"Name": "B",
+								"_Type": "Ident"
+							},
+							"_Type": "ScopingExpr"
+						},
+						"X": {
+							"Name": "MyStruct",
+							"_Type": "Ident"
+						},
+						"_Type": "ScopingExpr"
+					},
+					"Tag": 0,
+					"_Type": "TagExpr"
+				},
+				"Len": null,
+				"_Type": "ArrayType"
+			},
+			"_Type": "TypedefDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "algorithm",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Items": [
+					{
+						"Name": {
+							"Name": "AlgorithmA",
+							"_Type": "Ident"
+						},
+						"Value": {
+							"Kind": 0,
+							"Value": "0",
+							"_Type": "BasicLit"
+						},
+						"_Type": "EnumItem"
+					},
+					{
+						"Name": {
+							"Name": "AlgorithmB",
+							"_Type": "Ident"
+						},
+						"Value": {
+							"Kind": 0,
+							"Value": "1",
+							"_Type": "BasicLit"
+						},
+						"_Type": "EnumItem"
+					}
+				],
+				"_Type": "EnumType"
+			},
+			"_Type": "EnumTypeDecl"
+		},
+		{
+			"Doc": null,
+			"Loc": {
+				"File": "testdata/typedef/temp.h",
+				"_Type": "Location"
+			},
+			"Name": {
+				"Name": "algorithm_t",
+				"_Type": "Ident"
+			},
+			"Parent": null,
+			"Type": {
+				"Name": {
+					"Name": "algorithm",
+					"_Type": "Ident"
+				},
+				"Tag": 2,
+				"_Type": "TagExpr"
+			},
+			"_Type": "TypedefDecl"
+		}
+	],
+	"includes": null,
+	"macros": null
 }
