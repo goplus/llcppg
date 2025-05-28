@@ -136,10 +136,10 @@ func XMarshalLocation(loc *ast.Location) map[string]any {
 	if loc == nil {
 		return nil
 	}
-	return map[string]any{
-		"_Type": "Location",
-		"File":  loc.File,
-	}
+	root := make(map[string]any)
+	root["_Type"] = "Location"
+	root["File"] = loc.File
+	return root
 }
 
 func XMarshalASTExpr(t ast.Expr) map[string]any {
@@ -189,6 +189,9 @@ func XMarshalASTExpr(t ast.Expr) map[string]any {
 		root["_Type"] = "Variadic"
 	case *ast.Ident:
 		root["_Type"] = "Ident"
+		if d == nil {
+			return nil
+		}
 		root["Name"] = d.Name
 	case *ast.TagExpr:
 		root["_Type"] = "TagExpr"
@@ -220,9 +223,15 @@ func XMarshalASTExpr(t ast.Expr) map[string]any {
 		root["Flags"] = uint(d.Flags)
 	case *ast.Comment:
 		root["_Type"] = "Comment"
+		if d == nil {
+			return nil
+		}
 		root["Text"] = d.Text
 	case *ast.CommentGroup:
 		root["_Type"] = "CommentGroup"
+		if d == nil {
+			return nil
+		}
 		var list []map[string]any
 		for _, c := range d.List {
 			list = append(list, XMarshalASTExpr(c))
