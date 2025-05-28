@@ -51,7 +51,7 @@ func testFrom(t *testing.T, dir string, filename string, gen bool) {
 	if err != nil {
 		t.Fatal("MarshalIndent failed:", err)
 	}
-	js := parser.MarshalASTFile(ast)
+	js := parser.XMarshalASTFile(ast)
 	output, _ := json.MarshalIndent(&js, "", "	")
 
 	if gen {

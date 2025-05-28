@@ -4,27 +4,27 @@ import (
 	"github.com/goplus/llcppg/ast"
 )
 
-func MarshalDeclList(list []ast.Decl) []map[string]any {
+func XMarshalDeclList(list []ast.Decl) []map[string]any {
 	var root []map[string]any
 	for _, item := range list {
-		root = append(root, MarshalASTDecl(item))
+		root = append(root, XMarshalASTDecl(item))
 	}
 	return root
 }
 
-func MarshalFieldList(list []*ast.Field) []map[string]any {
+func XMarshalFieldList(list []*ast.Field) []map[string]any {
 	if list == nil {
 		return nil
 	}
 	var root []map[string]any
 
 	for _, item := range list {
-		root = append(root, MarshalASTExpr(item))
+		root = append(root, XMarshalASTExpr(item))
 	}
 	return root
 }
 
-func MarshalIncludeList(list []*ast.Include) []map[string]any {
+func XMarshalIncludeList(list []*ast.Include) []map[string]any {
 	var root []map[string]any
 	for _, item := range list {
 		root = append(root, map[string]any{
@@ -35,61 +35,61 @@ func MarshalIncludeList(list []*ast.Include) []map[string]any {
 	return root
 }
 
-func MarshalMacroList(list []*ast.Macro) []map[string]any {
+func XMarshalMacroList(list []*ast.Macro) []map[string]any {
 	var root []map[string]any
 
 	for _, item := range list {
 		root = append(root, map[string]any{
 			"_Type":  "Macro",
-			"Loc":    MarshalLocation(item.Loc),
+			"Loc":    XMarshalLocation(item.Loc),
 			"Name":   item.Name,
-			"Tokens": MarshalTokenList(item.Tokens),
+			"Tokens": XMarshalTokenList(item.Tokens),
 		})
 	}
 	return root
 }
 
-func MarshalTokenList(list []*ast.Token) []map[string]any {
+func XMarshalTokenList(list []*ast.Token) []map[string]any {
 	if list == nil {
 		return nil
 	}
 	var root []map[string]any
 	for _, item := range list {
-		root = append(root, MarshalToken(item))
+		root = append(root, XMarshalToken(item))
 	}
 	return root
 }
 
-func MarshalIdentList(list []*ast.Ident) []map[string]any {
+func XMarshalIdentList(list []*ast.Ident) []map[string]any {
 	if list == nil {
 		return nil
 	}
 	var root []map[string]any
 
 	for _, item := range list {
-		root = append(root, MarshalASTExpr(item))
+		root = append(root, XMarshalASTExpr(item))
 	}
 	return root
 }
 
-func MarshalASTFile(file *ast.File) map[string]any {
-	root := make(map[string]any)
-	root["_Type"] = "File"
-	root["decls"] = MarshalDeclList(file.Decls)
-	root["includes"] = MarshalIncludeList(file.Includes)
-	root["macros"] = MarshalMacroList(file.Macros)
-	return root
+func XMarshalASTFile(file *ast.File) map[string]any {
+	return map[string]any{
+		"_Type":    "File",
+		"decls":    XMarshalDeclList(file.Decls),
+		"includes": XMarshalIncludeList(file.Includes),
+		"macros":   XMarshalMacroList(file.Macros),
+	}
 }
 
-func MarshalToken(tok *ast.Token) map[string]any {
-	root := make(map[string]any)
-	root["_Type"] = "Token"
-	root["Token"] = uint(tok.Token)
-	root["Lit"] = tok.Lit
-	return root
+func XMarshalToken(tok *ast.Token) map[string]any {
+	return map[string]any{
+		"_Type": "Token",
+		"Token": uint(tok.Token),
+		"Lit":   tok.Lit,
+	}
 }
 
-func MarshalASTDecl(decl ast.Decl) map[string]any {
+func XMarshalASTDecl(decl ast.Decl) map[string]any {
 	if decl == nil {
 		return nil
 	}
@@ -98,17 +98,17 @@ func MarshalASTDecl(decl ast.Decl) map[string]any {
 	switch d := decl.(type) {
 	case *ast.EnumTypeDecl:
 		root["_Type"] = "EnumTypeDecl"
-		MarshalObject(d.Object, root)
-		root["Type"] = MarshalASTExpr(d.Type)
+		XMarshalObject(d.Object, root)
+		root["Type"] = XMarshalASTExpr(d.Type)
 	case *ast.TypedefDecl:
 		root["_Type"] = "TypedefDecl"
-		MarshalObject(d.Object, root)
-		root["Type"] = MarshalASTExpr(d.Type)
+		XMarshalObject(d.Object, root)
+		root["Type"] = XMarshalASTExpr(d.Type)
 	case *ast.FuncDecl:
 		root["_Type"] = "FuncDecl"
-		MarshalObject(d.Object, root)
+		XMarshalObject(d.Object, root)
 		root["MangledName"] = d.MangledName
-		root["Type"] = MarshalASTExpr(d.Type)
+		root["Type"] = XMarshalASTExpr(d.Type)
 		root["IsInline"] = d.IsInline
 		root["IsStatic"] = d.IsStatic
 		root["IsConst"] = d.IsConst
@@ -119,20 +119,20 @@ func MarshalASTDecl(decl ast.Decl) map[string]any {
 		root["IsOverride"] = d.IsOverride
 	case *ast.TypeDecl:
 		root["_Type"] = "TypeDecl"
-		MarshalObject(d.Object, root)
-		root["Type"] = MarshalASTExpr(d.Type)
+		XMarshalObject(d.Object, root)
+		root["Type"] = XMarshalASTExpr(d.Type)
 	}
 	return root
 }
 
-func MarshalObject(decl ast.Object, root map[string]any) {
-	root["Loc"] = MarshalLocation(decl.Loc)
-	root["Doc"] = MarshalASTExpr(decl.Doc)
-	root["Parent"] = MarshalASTExpr(decl.Parent)
-	root["Name"] = MarshalASTExpr(decl.Name)
+func XMarshalObject(decl ast.Object, root map[string]any) {
+	root["Loc"] = XMarshalLocation(decl.Loc)
+	root["Doc"] = XMarshalASTExpr(decl.Doc)
+	root["Parent"] = XMarshalASTExpr(decl.Parent)
+	root["Name"] = XMarshalASTExpr(decl.Name)
 }
 
-func MarshalLocation(loc *ast.Location) map[string]any {
+func XMarshalLocation(loc *ast.Location) map[string]any {
 	if loc == nil {
 		return nil
 	}
@@ -142,7 +142,7 @@ func MarshalLocation(loc *ast.Location) map[string]any {
 	return root
 }
 
-func MarshalASTExpr(t ast.Expr) map[string]any {
+func XMarshalASTExpr(t ast.Expr) map[string]any {
 	if t == nil {
 		return nil
 	}
@@ -154,37 +154,37 @@ func MarshalASTExpr(t ast.Expr) map[string]any {
 		root["_Type"] = "EnumType"
 		var items []map[string]any
 		for _, e := range d.Items {
-			items = append(items, MarshalASTExpr(e))
+			items = append(items, XMarshalASTExpr(e))
 		}
 		root["Items"] = items
 	case *ast.EnumItem:
 		root["_Type"] = "EnumItem"
-		root["Name"] = MarshalASTExpr(d.Name)
-		root["Value"] = MarshalASTExpr(d.Value)
+		root["Name"] = XMarshalASTExpr(d.Name)
+		root["Value"] = XMarshalASTExpr(d.Value)
 	case *ast.RecordType:
 		root["_Type"] = "RecordType"
 		root["Tag"] = uint(d.Tag)
-		root["Fields"] = MarshalASTExpr(d.Fields)
+		root["Fields"] = XMarshalASTExpr(d.Fields)
 		var methods []map[string]any
 		for _, m := range d.Methods {
-			methods = append(methods, MarshalASTDecl(m))
+			methods = append(methods, XMarshalASTDecl(m))
 		}
 		root["Methods"] = methods
 	case *ast.FuncType:
 		root["_Type"] = "FuncType"
-		root["Params"] = MarshalASTExpr(d.Params)
-		root["Ret"] = MarshalASTExpr(d.Ret)
+		root["Params"] = XMarshalASTExpr(d.Params)
+		root["Ret"] = XMarshalASTExpr(d.Ret)
 	case *ast.FieldList:
 		root["_Type"] = "FieldList"
-		root["List"] = MarshalFieldList(d.List)
+		root["List"] = XMarshalFieldList(d.List)
 	case *ast.Field:
 		root["_Type"] = "Field"
-		root["Type"] = MarshalASTExpr(d.Type)
-		root["Doc"] = MarshalASTExpr(d.Doc)
-		root["Comment"] = MarshalASTExpr(d.Comment)
+		root["Type"] = XMarshalASTExpr(d.Type)
+		root["Doc"] = XMarshalASTExpr(d.Doc)
+		root["Comment"] = XMarshalASTExpr(d.Comment)
 		root["IsStatic"] = d.IsStatic
 		root["Access"] = uint(d.Access)
-		root["Names"] = MarshalIdentList(d.Names)
+		root["Names"] = XMarshalIdentList(d.Names)
 	case *ast.Variadic:
 		root["_Type"] = "Variadic"
 	case *ast.Ident:
@@ -195,7 +195,7 @@ func MarshalASTExpr(t ast.Expr) map[string]any {
 		root["Name"] = d.Name
 	case *ast.TagExpr:
 		root["_Type"] = "TagExpr"
-		root["Name"] = MarshalASTExpr(d.Name)
+		root["Name"] = XMarshalASTExpr(d.Name)
 		root["Tag"] = uint(d.Tag)
 	case *ast.BasicLit:
 		root["_Type"] = "BasicLit"
@@ -203,20 +203,20 @@ func MarshalASTExpr(t ast.Expr) map[string]any {
 		root["Value"] = d.Value
 	case *ast.LvalueRefType:
 		root["_Type"] = "LvalueRefType"
-		root["X"] = MarshalASTExpr(d.X)
+		root["X"] = XMarshalASTExpr(d.X)
 	case *ast.RvalueRefType:
 		root["_Type"] = "RvalueRefType"
-		root["X"] = MarshalASTExpr(d.X)
+		root["X"] = XMarshalASTExpr(d.X)
 	case *ast.PointerType:
 		root["_Type"] = "PointerType"
-		root["X"] = MarshalASTExpr(d.X)
+		root["X"] = XMarshalASTExpr(d.X)
 	case *ast.BlockPointerType:
 		root["_Type"] = "BlockPointerType"
-		root["X"] = MarshalASTExpr(d.X)
+		root["X"] = XMarshalASTExpr(d.X)
 	case *ast.ArrayType:
 		root["_Type"] = "ArrayType"
-		root["Elt"] = MarshalASTExpr(d.Elt)
-		root["Len"] = MarshalASTExpr(d.Len)
+		root["Elt"] = XMarshalASTExpr(d.Elt)
+		root["Len"] = XMarshalASTExpr(d.Len)
 	case *ast.BuiltinType:
 		root["_Type"] = "BuiltinType"
 		root["Kind"] = uint(d.Kind)
@@ -234,13 +234,13 @@ func MarshalASTExpr(t ast.Expr) map[string]any {
 		}
 		var list []map[string]any
 		for _, c := range d.List {
-			list = append(list, MarshalASTExpr(c))
+			list = append(list, XMarshalASTExpr(c))
 		}
 		root["List"] = list
 	case *ast.ScopingExpr:
 		root["_Type"] = "ScopingExpr"
-		root["X"] = MarshalASTExpr(d.X)
-		root["Parent"] = MarshalASTExpr(d.Parent)
+		root["X"] = XMarshalASTExpr(d.X)
+		root["Parent"] = XMarshalASTExpr(d.Parent)
 	default:
 		return nil
 	}
