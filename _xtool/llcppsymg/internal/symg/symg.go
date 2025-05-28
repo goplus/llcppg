@@ -126,7 +126,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 			args = append(args, "-D")
 		}
 
-		files, err := nm.New("").List(dylibPath, args...)
+		files, err := nm.New("llvm-nm").List(dylibPath, args...)
 		if err != nil {
 			parseErrors = append(parseErrors, fmt.Sprintf("ParseDylibSymbols:Failed to list symbols in dylib %s: %v", dylibPath, err))
 			continue
