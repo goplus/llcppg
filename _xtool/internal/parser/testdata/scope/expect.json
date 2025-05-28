@@ -1,252 +1,252 @@
 {
-	"_Type": "File",
-	"decls": [
-		{
-			"Doc": null,
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/scope/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z3foov",
-			"Name": {
-				"Name": "foo",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": null,
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/scope/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_ZN1a3fooEv",
-			"Name": {
-				"Name": "foo",
-				"_Type": "Ident"
-			},
-			"Parent": {
-				"Name": "a",
-				"_Type": "Ident"
-			},
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": null,
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/scope/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_ZN1a1b3fooEv",
-			"Name": {
-				"Name": "foo",
-				"_Type": "Ident"
-			},
-			"Parent": {
-				"Parent": {
-					"Name": "a",
-					"_Type": "Ident"
-				},
-				"X": {
-					"Name": "b",
-					"_Type": "Ident"
-				},
-				"_Type": "ScopingExpr"
-			},
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": null,
-			"Loc": {
-				"File": "testdata/scope/temp.h",
-				"_Type": "Location"
-			},
-			"Name": {
-				"Name": "Foo",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Fields": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Methods": [
-					{
-						"Doc": null,
-						"IsConst": false,
-						"IsConstructor": false,
-						"IsDestructor": false,
-						"IsExplicit": false,
-						"IsInline": false,
-						"IsOverride": false,
-						"IsStatic": false,
-						"IsVirtual": false,
-						"Loc": {
-							"File": "testdata/scope/temp.h",
-							"_Type": "Location"
-						},
-						"MangledName": "_ZN3Foo3fooEv",
-						"Name": {
-							"Name": "foo",
-							"_Type": "Ident"
-						},
-						"Parent": {
-							"Name": "Foo",
-							"_Type": "Ident"
-						},
-						"Type": {
-							"Params": {
-								"List": null,
-								"_Type": "FieldList"
-							},
-							"Ret": {
-								"Flags": 0,
-								"Kind": 0,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "FuncType"
-						},
-						"_Type": "FuncDecl"
-					}
-				],
-				"Tag": 3,
-				"_Type": "RecordType"
-			},
-			"_Type": "TypeDecl"
-		},
-		{
-			"Doc": null,
-			"Loc": {
-				"File": "testdata/scope/temp.h",
-				"_Type": "Location"
-			},
-			"Name": {
-				"Name": "Foo",
-				"_Type": "Ident"
-			},
-			"Parent": {
-				"Name": "a",
-				"_Type": "Ident"
-			},
-			"Type": {
-				"Fields": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Methods": [
-					{
-						"Doc": null,
-						"IsConst": false,
-						"IsConstructor": false,
-						"IsDestructor": false,
-						"IsExplicit": false,
-						"IsInline": false,
-						"IsOverride": false,
-						"IsStatic": false,
-						"IsVirtual": false,
-						"Loc": {
-							"File": "testdata/scope/temp.h",
-							"_Type": "Location"
-						},
-						"MangledName": "_ZN1a3Foo3fooEv",
-						"Name": {
-							"Name": "foo",
-							"_Type": "Ident"
-						},
-						"Parent": {
-							"Parent": {
-								"Name": "a",
-								"_Type": "Ident"
-							},
-							"X": {
-								"Name": "Foo",
-								"_Type": "Ident"
-							},
-							"_Type": "ScopingExpr"
-						},
-						"Type": {
-							"Params": {
-								"List": null,
-								"_Type": "FieldList"
-							},
-							"Ret": {
-								"Flags": 0,
-								"Kind": 0,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "FuncType"
-						},
-						"_Type": "FuncDecl"
-					}
-				],
-				"Tag": 3,
-				"_Type": "RecordType"
-			},
-			"_Type": "TypeDecl"
-		}
-	],
-	"includes": null,
-	"macros": null
+  "_Type": "File",
+  "decls": [
+    {
+      "Doc": null,
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/scope/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z3foov",
+      "Name": {
+        "Name": "foo",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": null,
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/scope/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_ZN1a3fooEv",
+      "Name": {
+        "Name": "foo",
+        "_Type": "Ident"
+      },
+      "Parent": {
+        "Name": "a",
+        "_Type": "Ident"
+      },
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": null,
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/scope/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_ZN1a1b3fooEv",
+      "Name": {
+        "Name": "foo",
+        "_Type": "Ident"
+      },
+      "Parent": {
+        "Parent": {
+          "Name": "a",
+          "_Type": "Ident"
+        },
+        "X": {
+          "Name": "b",
+          "_Type": "Ident"
+        },
+        "_Type": "ScopingExpr"
+      },
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/scope/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "Foo",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Methods": [
+          {
+            "Doc": null,
+            "IsConst": false,
+            "IsConstructor": false,
+            "IsDestructor": false,
+            "IsExplicit": false,
+            "IsInline": false,
+            "IsOverride": false,
+            "IsStatic": false,
+            "IsVirtual": false,
+            "Loc": {
+              "File": "testdata/scope/temp.h",
+              "_Type": "Location"
+            },
+            "MangledName": "_ZN3Foo3fooEv",
+            "Name": {
+              "Name": "foo",
+              "_Type": "Ident"
+            },
+            "Parent": {
+              "Name": "Foo",
+              "_Type": "Ident"
+            },
+            "Type": {
+              "Params": {
+                "List": null,
+                "_Type": "FieldList"
+              },
+              "Ret": {
+                "Flags": 0,
+                "Kind": 0,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "FuncType"
+            },
+            "_Type": "FuncDecl"
+          }
+        ],
+        "Tag": 3,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/scope/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "Foo",
+        "_Type": "Ident"
+      },
+      "Parent": {
+        "Name": "a",
+        "_Type": "Ident"
+      },
+      "Type": {
+        "Fields": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Methods": [
+          {
+            "Doc": null,
+            "IsConst": false,
+            "IsConstructor": false,
+            "IsDestructor": false,
+            "IsExplicit": false,
+            "IsInline": false,
+            "IsOverride": false,
+            "IsStatic": false,
+            "IsVirtual": false,
+            "Loc": {
+              "File": "testdata/scope/temp.h",
+              "_Type": "Location"
+            },
+            "MangledName": "_ZN1a3Foo3fooEv",
+            "Name": {
+              "Name": "foo",
+              "_Type": "Ident"
+            },
+            "Parent": {
+              "Parent": {
+                "Name": "a",
+                "_Type": "Ident"
+              },
+              "X": {
+                "Name": "Foo",
+                "_Type": "Ident"
+              },
+              "_Type": "ScopingExpr"
+            },
+            "Type": {
+              "Params": {
+                "List": null,
+                "_Type": "FieldList"
+              },
+              "Ret": {
+                "Flags": 0,
+                "Kind": 0,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "FuncType"
+            },
+            "_Type": "FuncDecl"
+          }
+        ],
+        "Tag": 3,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    }
+  ],
+  "includes": null,
+  "macros": null
 }

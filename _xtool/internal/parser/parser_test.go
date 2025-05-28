@@ -52,7 +52,7 @@ func testFrom(t *testing.T, dir string, filename string, gen bool) {
 		t.Fatal("MarshalIndent failed:", err)
 	}
 	js := parser.XMarshalASTFile(ast)
-	output, _ := json.MarshalIndent(&js, "", "	")
+	output, _ := json.MarshalIndent(&js, "", "  ")
 
 	if gen {
 		err = os.WriteFile(filepath.Join(dir, "expect.json"), output, os.ModePerm)

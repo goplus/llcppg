@@ -1,733 +1,733 @@
 {
-	"_Type": "File",
-	"decls": [
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "// not read doc 1\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo1v",
-			"Name": {
-				"Name": "foo1",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "/* not read doc 2 */\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo2v",
-			"Name": {
-				"Name": "foo2",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "/// doc\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo3v",
-			"Name": {
-				"Name": "foo3",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "/** doc */\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo4v",
-			"Name": {
-				"Name": "foo4",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "/*! doc */\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo5v",
-			"Name": {
-				"Name": "foo5",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "/// doc 1\n",
-						"_Type": "Comment"
-					},
-					{
-						"Text": "/// doc 2\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo6v",
-			"Name": {
-				"Name": "foo6",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "/*! doc 1 */\n",
-						"_Type": "Comment"
-					},
-					{
-						"Text": "/*! doc 2 */\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo7v",
-			"Name": {
-				"Name": "foo7",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "/** doc 1 */\n",
-						"_Type": "Comment"
-					},
-					{
-						"Text": "/** doc 1 */\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo8v",
-			"Name": {
-				"Name": "foo8",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": {
-				"List": [
-					{
-						"Text": "/**\n",
-						"_Type": "Comment"
-					},
-					{
-						"Text": " * doc 1\n",
-						"_Type": "Comment"
-					},
-					{
-						"Text": " * doc 2\n",
-						"_Type": "Comment"
-					},
-					{
-						"Text": " */\n",
-						"_Type": "Comment"
-					}
-				],
-				"_Type": "CommentGroup"
-			},
-			"IsConst": false,
-			"IsConstructor": false,
-			"IsDestructor": false,
-			"IsExplicit": false,
-			"IsInline": false,
-			"IsOverride": false,
-			"IsStatic": false,
-			"IsVirtual": false,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"MangledName": "_Z4foo9v",
-			"Name": {
-				"Name": "foo9",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Params": {
-					"List": null,
-					"_Type": "FieldList"
-				},
-				"Ret": {
-					"Flags": 0,
-					"Kind": 0,
-					"_Type": "BuiltinType"
-				},
-				"_Type": "FuncType"
-			},
-			"_Type": "FuncDecl"
-		},
-		{
-			"Doc": null,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"Name": {
-				"Name": "Foo",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Fields": {
-					"List": [
-						{
-							"Access": 1,
-							"Comment": null,
-							"Doc": {
-								"List": [
-									{
-										"Text": "/// doc\n",
-										"_Type": "Comment"
-									}
-								],
-								"_Type": "CommentGroup"
-							},
-							"IsStatic": false,
-							"Names": [
-								{
-									"Name": "x",
-									"_Type": "Ident"
-								}
-							],
-							"Type": {
-								"Flags": 0,
-								"Kind": 6,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "Field"
-						},
-						{
-							"Access": 1,
-							"Comment": {
-								"List": [
-									{
-										"Text": "///\u003c comment\n",
-										"_Type": "Comment"
-									}
-								],
-								"_Type": "CommentGroup"
-							},
-							"Doc": null,
-							"IsStatic": false,
-							"Names": [
-								{
-									"Name": "y",
-									"_Type": "Ident"
-								}
-							],
-							"Type": {
-								"Flags": 0,
-								"Kind": 6,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "Field"
-						},
-						{
-							"Access": 1,
-							"Comment": {
-								"List": [
-									{
-										"Text": "/*!\u003c comment */\n",
-										"_Type": "Comment"
-									}
-								],
-								"_Type": "CommentGroup"
-							},
-							"Doc": null,
-							"IsStatic": false,
-							"Names": [
-								{
-									"Name": "z",
-									"_Type": "Ident"
-								}
-							],
-							"Type": {
-								"Flags": 0,
-								"Kind": 6,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "Field"
-						}
-					],
-					"_Type": "FieldList"
-				},
-				"Methods": null,
-				"Tag": 0,
-				"_Type": "RecordType"
-			},
-			"_Type": "TypeDecl"
-		},
-		{
-			"Doc": null,
-			"Loc": {
-				"File": "testdata/comment/temp.h",
-				"_Type": "Location"
-			},
-			"Name": {
-				"Name": "Doc",
-				"_Type": "Ident"
-			},
-			"Parent": null,
-			"Type": {
-				"Fields": {
-					"List": [
-						{
-							"Access": 1,
-							"Comment": null,
-							"Doc": {
-								"List": [
-									{
-										"Text": "/**\n",
-										"_Type": "Comment"
-									},
-									{
-										"Text": "     * static field doc\n",
-										"_Type": "Comment"
-									},
-									{
-										"Text": "     */\n",
-										"_Type": "Comment"
-									}
-								],
-								"_Type": "CommentGroup"
-							},
-							"IsStatic": true,
-							"Names": [
-								{
-									"Name": "x",
-									"_Type": "Ident"
-								}
-							],
-							"Type": {
-								"Flags": 0,
-								"Kind": 6,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "Field"
-						},
-						{
-							"Access": 1,
-							"Comment": {
-								"List": [
-									{
-										"Text": "/*!\u003c static field comment */\n",
-										"_Type": "Comment"
-									}
-								],
-								"_Type": "CommentGroup"
-							},
-							"Doc": null,
-							"IsStatic": true,
-							"Names": [
-								{
-									"Name": "y",
-									"_Type": "Ident"
-								}
-							],
-							"Type": {
-								"Flags": 0,
-								"Kind": 6,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "Field"
-						},
-						{
-							"Access": 1,
-							"Comment": null,
-							"Doc": {
-								"List": [
-									{
-										"Text": "/**\n",
-										"_Type": "Comment"
-									},
-									{
-										"Text": "     * field doc\n",
-										"_Type": "Comment"
-									},
-									{
-										"Text": "     */\n",
-										"_Type": "Comment"
-									}
-								],
-								"_Type": "CommentGroup"
-							},
-							"IsStatic": false,
-							"Names": [
-								{
-									"Name": "a",
-									"_Type": "Ident"
-								}
-							],
-							"Type": {
-								"Flags": 0,
-								"Kind": 6,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "Field"
-						},
-						{
-							"Access": 1,
-							"Comment": {
-								"List": [
-									{
-										"Text": "///\u003c field comment\n",
-										"_Type": "Comment"
-									}
-								],
-								"_Type": "CommentGroup"
-							},
-							"Doc": null,
-							"IsStatic": false,
-							"Names": [
-								{
-									"Name": "b",
-									"_Type": "Ident"
-								}
-							],
-							"Type": {
-								"Flags": 0,
-								"Kind": 6,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "Field"
-						},
-						{
-							"Access": 2,
-							"Comment": {
-								"List": [
-									{
-										"Text": "/*!\u003c protected field comment */\n",
-										"_Type": "Comment"
-									}
-								],
-								"_Type": "CommentGroup"
-							},
-							"Doc": null,
-							"IsStatic": false,
-							"Names": [
-								{
-									"Name": "value",
-									"_Type": "Ident"
-								}
-							],
-							"Type": {
-								"Flags": 0,
-								"Kind": 6,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "Field"
-						}
-					],
-					"_Type": "FieldList"
-				},
-				"Methods": [
-					{
-						"Doc": {
-							"List": [
-								{
-									"Text": "/**\n",
-									"_Type": "Comment"
-								},
-								{
-									"Text": "     * method doc\n",
-									"_Type": "Comment"
-								},
-								{
-									"Text": "     */\n",
-									"_Type": "Comment"
-								}
-							],
-							"_Type": "CommentGroup"
-						},
-						"IsConst": false,
-						"IsConstructor": false,
-						"IsDestructor": false,
-						"IsExplicit": false,
-						"IsInline": false,
-						"IsOverride": false,
-						"IsStatic": false,
-						"IsVirtual": false,
-						"Loc": {
-							"File": "testdata/comment/temp.h",
-							"_Type": "Location"
-						},
-						"MangledName": "_ZN3Doc3FooEv",
-						"Name": {
-							"Name": "Foo",
-							"_Type": "Ident"
-						},
-						"Parent": {
-							"Name": "Doc",
-							"_Type": "Ident"
-						},
-						"Type": {
-							"Params": {
-								"List": null,
-								"_Type": "FieldList"
-							},
-							"Ret": {
-								"Flags": 0,
-								"Kind": 0,
-								"_Type": "BuiltinType"
-							},
-							"_Type": "FuncType"
-						},
-						"_Type": "FuncDecl"
-					}
-				],
-				"Tag": 3,
-				"_Type": "RecordType"
-			},
-			"_Type": "TypeDecl"
-		}
-	],
-	"includes": null,
-	"macros": null
+  "_Type": "File",
+  "decls": [
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "// not read doc 1\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo1v",
+      "Name": {
+        "Name": "foo1",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "/* not read doc 2 */\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo2v",
+      "Name": {
+        "Name": "foo2",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "/// doc\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo3v",
+      "Name": {
+        "Name": "foo3",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "/** doc */\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo4v",
+      "Name": {
+        "Name": "foo4",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "/*! doc */\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo5v",
+      "Name": {
+        "Name": "foo5",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "/// doc 1\n",
+            "_Type": "Comment"
+          },
+          {
+            "Text": "/// doc 2\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo6v",
+      "Name": {
+        "Name": "foo6",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "/*! doc 1 */\n",
+            "_Type": "Comment"
+          },
+          {
+            "Text": "/*! doc 2 */\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo7v",
+      "Name": {
+        "Name": "foo7",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "/** doc 1 */\n",
+            "_Type": "Comment"
+          },
+          {
+            "Text": "/** doc 1 */\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo8v",
+      "Name": {
+        "Name": "foo8",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": {
+        "List": [
+          {
+            "Text": "/**\n",
+            "_Type": "Comment"
+          },
+          {
+            "Text": " * doc 1\n",
+            "_Type": "Comment"
+          },
+          {
+            "Text": " * doc 2\n",
+            "_Type": "Comment"
+          },
+          {
+            "Text": " */\n",
+            "_Type": "Comment"
+          }
+        ],
+        "_Type": "CommentGroup"
+      },
+      "IsConst": false,
+      "IsConstructor": false,
+      "IsDestructor": false,
+      "IsExplicit": false,
+      "IsInline": false,
+      "IsOverride": false,
+      "IsStatic": false,
+      "IsVirtual": false,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "MangledName": "_Z4foo9v",
+      "Name": {
+        "Name": "foo9",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Params": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Ret": {
+          "Flags": 0,
+          "Kind": 0,
+          "_Type": "BuiltinType"
+        },
+        "_Type": "FuncType"
+      },
+      "_Type": "FuncDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "Foo",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": [
+            {
+              "Access": 1,
+              "Comment": null,
+              "Doc": {
+                "List": [
+                  {
+                    "Text": "/// doc\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "x",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            },
+            {
+              "Access": 1,
+              "Comment": {
+                "List": [
+                  {
+                    "Text": "///\u003c comment\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "y",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            },
+            {
+              "Access": 1,
+              "Comment": {
+                "List": [
+                  {
+                    "Text": "/*!\u003c comment */\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "z",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            }
+          ],
+          "_Type": "FieldList"
+        },
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/comment/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "Doc",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": [
+            {
+              "Access": 1,
+              "Comment": null,
+              "Doc": {
+                "List": [
+                  {
+                    "Text": "/**\n",
+                    "_Type": "Comment"
+                  },
+                  {
+                    "Text": "     * static field doc\n",
+                    "_Type": "Comment"
+                  },
+                  {
+                    "Text": "     */\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
+              "IsStatic": true,
+              "Names": [
+                {
+                  "Name": "x",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            },
+            {
+              "Access": 1,
+              "Comment": {
+                "List": [
+                  {
+                    "Text": "/*!\u003c static field comment */\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
+              "Doc": null,
+              "IsStatic": true,
+              "Names": [
+                {
+                  "Name": "y",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            },
+            {
+              "Access": 1,
+              "Comment": null,
+              "Doc": {
+                "List": [
+                  {
+                    "Text": "/**\n",
+                    "_Type": "Comment"
+                  },
+                  {
+                    "Text": "     * field doc\n",
+                    "_Type": "Comment"
+                  },
+                  {
+                    "Text": "     */\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "a",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            },
+            {
+              "Access": 1,
+              "Comment": {
+                "List": [
+                  {
+                    "Text": "///\u003c field comment\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "b",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            },
+            {
+              "Access": 2,
+              "Comment": {
+                "List": [
+                  {
+                    "Text": "/*!\u003c protected field comment */\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "value",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            }
+          ],
+          "_Type": "FieldList"
+        },
+        "Methods": [
+          {
+            "Doc": {
+              "List": [
+                {
+                  "Text": "/**\n",
+                  "_Type": "Comment"
+                },
+                {
+                  "Text": "     * method doc\n",
+                  "_Type": "Comment"
+                },
+                {
+                  "Text": "     */\n",
+                  "_Type": "Comment"
+                }
+              ],
+              "_Type": "CommentGroup"
+            },
+            "IsConst": false,
+            "IsConstructor": false,
+            "IsDestructor": false,
+            "IsExplicit": false,
+            "IsInline": false,
+            "IsOverride": false,
+            "IsStatic": false,
+            "IsVirtual": false,
+            "Loc": {
+              "File": "testdata/comment/temp.h",
+              "_Type": "Location"
+            },
+            "MangledName": "_ZN3Doc3FooEv",
+            "Name": {
+              "Name": "Foo",
+              "_Type": "Ident"
+            },
+            "Parent": {
+              "Name": "Doc",
+              "_Type": "Ident"
+            },
+            "Type": {
+              "Params": {
+                "List": null,
+                "_Type": "FieldList"
+              },
+              "Ret": {
+                "Flags": 0,
+                "Kind": 0,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "FuncType"
+            },
+            "_Type": "FuncDecl"
+          }
+        ],
+        "Tag": 3,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    }
+  ],
+  "includes": null,
+  "macros": null
 }
