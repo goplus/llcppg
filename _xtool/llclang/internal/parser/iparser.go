@@ -1,12 +1,14 @@
 package parser
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
+	"unsafe"
 
+	"github.com/goplus/lib/c"
 	cparser "github.com/goplus/llcppg/_xtool/internal/parser"
 	"github.com/goplus/llcppg/parser"
+	"github.com/goplus/llpkg/cjson"
 )
 
 type Mode = parser.Mode
@@ -48,9 +50,10 @@ func parseIntermediateFile(filename string, mode Mode) error {
 	if err != nil {
 		return fmt.Errorf("parseIntermediateFile: %w", err)
 	}
-	js := cparser.MarshalASTFile(file)
-	str, _ := json.Marshal(&js)
-
-	fmt.Println(str)
+	json := cparser.MarshalASTFile(file)
+	str := json.Print()
+	defer cjson.FreeCStr(unsafe.Pointer(str))
+	defer json.Delete()
+	c.Printf(c.Str("%s"), str)
 	return nil
 }

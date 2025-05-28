@@ -1,16 +1,17 @@
 package parse
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
+	"unsafe"
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	"github.com/goplus/llcppg/_xtool/internal/config"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	llcppg "github.com/goplus/llcppg/config"
+	"github.com/goplus/llpkg/cjson"
 )
 
 type dbgFlags = int
@@ -156,7 +157,9 @@ func Do(conf *Config) error {
 
 func OutputPkg(conf *Config, pkg *llcppg.Pkg) {
 	info := MarshalPkg(pkg)
-	str, _ := json.Marshal(&info)
+	str := info.Print()
+	defer cjson.FreeCStr(unsafe.Pointer(str))
+	defer info.Delete()
 	outputResult(str, conf.Out)
 }
 
