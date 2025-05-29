@@ -40,7 +40,7 @@ func parseIntermediateFile(filename string, mode Mode) error {
 		args = append(args, "-fparse-all-comments")
 	}
 
-	file, err := cparser.Do(&cparser.ConverterConfig{
+	file, err := marshaler.Do(&marshaler.ConverterConfig{
 		File:  filename,
 		IsCpp: isCpp,
 		Args:  args,
