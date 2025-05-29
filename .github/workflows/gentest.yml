@@ -47,13 +47,12 @@ jobs:
       run: |
         # install demo's lib
         sudo apt install liblua5.4-dev libsqlite3-dev libgmp-dev libgpg-error-dev zlib1g-dev libisl-dev libz3-dev -y
-        llcppgtest -demo ./_llcppgtest/cjson -conf conf/linux
-        llcppgtest -demo ./_llcppgtest/gmp -conf conf/linux
-        llcppgtest -demo ./_llcppgtest/gpgerror -conf conf/linux
-        llcppgtest -demo ./_llcppgtest/isl
-        llcppgtest -demo ./_llcppgtest/lua -conf conf/linux
-        llcppgtest -demo ./_llcppgtest/sqlite -conf conf/linux
-        llcppgtest -demo ./_llcppgtest/z3 -conf conf/linux
-        llcppgtest -demo ./_llcppgtest/zlib -conf conf/linux
-
+        llcppgtest -demos ./_llcppgtest
+    - name: Upload Logs to Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{matrix.os}}-log
+        path: ${{env.LLCPPG_TEST_LOG_DIR}}
+        retention-days: 1
+        include-hidden-files: true
 
