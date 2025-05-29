@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	marshaler "github.com/goplus/llcppg/_xtool/internal/parser"
+	cparser "github.com/goplus/llcppg/_xtool/internal/parser"
 	"github.com/goplus/llcppg/parser"
 )
 
@@ -40,7 +40,7 @@ func parseIntermediateFile(filename string, mode Mode) error {
 		args = append(args, "-fparse-all-comments")
 	}
 
-	file, err := marshaler.Do(&marshaler.ConverterConfig{
+	file, err := cparser.Do(&cparser.ConverterConfig{
 		File:  filename,
 		IsCpp: isCpp,
 		Args:  args,
@@ -48,7 +48,7 @@ func parseIntermediateFile(filename string, mode Mode) error {
 	if err != nil {
 		return fmt.Errorf("parseIntermediateFile: %w", err)
 	}
-	js := marshaler.XMarshalASTFile(file)
+	js := cparser.XMarshalASTFile(file)
 	str, _ := json.MarshalIndent(&js, "", "  ")
 
 	fmt.Println(string(str))
