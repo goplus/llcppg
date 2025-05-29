@@ -89,6 +89,10 @@ func RunGenPkgDemo(demoRoot string, confDir string) {
 	}
 	demoPkgName := filepath.Base(absPath)
 
+	if runtime.GOOS == "linux" && confDir == "" {
+		confDir = filepath.Join("conf", "linux")
+	}
+
 	if confDir == "" {
 		confDir = "."
 	}

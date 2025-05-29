@@ -29,7 +29,6 @@ jobs:
 
     - name: Test demos with generated pkgs
       if: startsWith(matrix.os, 'macos')
-      continue-on-error: true
       run: |
         # install demo's lib
         brew install lua zlib isl libgpg-error raylib z3 sqlite3 gmp libxml2 libxslt
@@ -45,13 +44,13 @@ jobs:
 
     - name: Test demos with generated pkgs
       if: startsWith(matrix.os, 'ubuntu')
-      continue-on-error: true
       run: |
         # install demo's lib
         sudo apt install liblua5.4-dev libsqlite3-dev libgmp-dev libgpg-error-dev zlib1g-dev libisl-dev libz3-dev -y
         llcppgtest -demos ./_llcppgtest
     - name: Upload Logs to Artifacts
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: ${{matrix.os}}-log
         path: ${{env.LLCPPG_TEST_LOG_DIR}}
