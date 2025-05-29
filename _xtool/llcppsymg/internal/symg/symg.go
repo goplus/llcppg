@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/ld"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/flag"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/nm"
@@ -85,7 +86,7 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 	if dbgSymbol {
 		fmt.Println("ParseDylibSymbols:from", lib)
 	}
-	sysPaths := GetLibPaths()
+	sysPaths := ld.GetLibSearchPaths()
 	if dbgSymbol {
 		fmt.Println("ParseDylibSymbols:sysPaths", sysPaths)
 	}

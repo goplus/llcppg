@@ -1,4 +1,4 @@
-package symg
+package ld
 
 import (
 	"os/exec"
@@ -6,7 +6,9 @@ import (
 	"runtime"
 )
 
-func GetLibPaths() []string {
+// GetLibSearchPaths returns the library paths from the ld command.
+// With linux, it will use ld --verbose to get the library paths.
+func GetLibSearchPaths() []string {
 	var paths []string
 	if runtime.GOOS == "linux" {
 		//resolution from https://github.com/goplus/llcppg/commit/02307485db9269481297a4dc5e8449fffaa4f562
@@ -15,14 +17,14 @@ func GetLibPaths() []string {
 		if err != nil {
 			panic(err)
 		}
-		return ParseLdOutput(string(output))
+		return ParseOutput(string(output))
 	}
 	return paths
 }
 
-// Note:this function is only use in this package
-// The public function name is for llgo test
-func ParseLdOutput(output string) []string {
+// ParseOutput parses the output of the ld command.
+// It returns the search library paths from the ld command.
+func ParseOutput(output string) []string {
 	var paths []string
 	matches := regexp.MustCompile(`SEARCH_DIR\("=([^"]+)"\)`).FindAllStringSubmatch(output, -1)
 	for _, match := range matches {
