@@ -3,3 +3,4 @@ coverage:
     - cl/internal/cltest
     - cl/nc
     - tool
+    - cmd/llcppgtest
