@@ -185,8 +185,8 @@ func getFirstLevelDemos(baseDir string, confDir string) []string {
 		panic(fmt.Sprintf("failed to read directory: %v", err))
 	}
 
-	if runtime.GOOS == "linux" {
-		confDir = filepath.Join(confDir, "linux")
+	if runtime.GOOS == "linux" && confDir == "" {
+		confDir = filepath.Join("conf", "linux")
 	}
 
 	var demos []string
