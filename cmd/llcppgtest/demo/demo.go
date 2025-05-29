@@ -44,7 +44,9 @@ func mustSetEnv(name, value string) {
 func logFile(demoDir string) (*os.File, error) {
 	dirName := fmt.Sprintf("%s-%s-llcppg-%s", runtime.GOOS, runtime.GOARCH, filepath.Base(demoDir))
 
-	err := os.MkdirAll(filepath.Join(mkdirTempLazily(), dirName), 0644)
+	dirName = filepath.Join(mkdirTempLazily(), dirName)
+
+	err := os.MkdirAll(dirName, 0644)
 	if err != nil {
 		return nil, err
 	}
