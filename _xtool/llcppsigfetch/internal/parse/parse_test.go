@@ -74,7 +74,7 @@ func testFrom(t *testing.T, conf *parse.Config, dir string, gen bool) {
 	pkg := parseWithConfig(conf)
 
 	result := marshalPkg(pkg)
-	output, _ := json.Marshal(&result)
+	output, _ := json.MarshalIndent(&result, "", "  ")
 
 	expectFile := filepath.Join(dir, "expect.json")
 	if gen {
