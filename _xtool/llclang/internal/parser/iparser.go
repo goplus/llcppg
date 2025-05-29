@@ -49,7 +49,7 @@ func parseIntermediateFile(filename string, mode Mode) error {
 		return fmt.Errorf("parseIntermediateFile: %w", err)
 	}
 	js := marshaler.XMarshalASTFile(file)
-	str, _ := json.Marshal(&js)
+	str, _ := json.MarshalIndent(&js, "", "  ")
 
 	fmt.Println(string(str))
 	return nil
