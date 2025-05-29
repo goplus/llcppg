@@ -1,8 +1,10 @@
 package parse_test
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -109,23 +111,22 @@ func parseWithConfig(config *parse.Config) (res *llcppg.Pkg) {
 }
 
 // for test order map
-func marshalPkg(pkg *llcppg.Pkg) *cjson.JSON {
-	root := cjson.Object()
-	root.SetItem(c.Str("File"), parser.MarshalASTFile(pkg.File))
-	root.SetItem(c.Str("FileMap"), marshalFileMap(pkg.FileMap))
-	return root
+func marshalPkg(pkg *llcppg.Pkg) map[string]any {
+	return map[string]any{
+		"File":    parser.XMarshalASTFile(pkg.File),
+		"FileMap": marshalFileMap(pkg.FileMap),
+	}
 }
 
 // for test order map
-func marshalFileMap(fmap map[string]*llcppg.FileInfo) *cjson.JSON {
-	root := cjson.Object()
-	keys := make([]string, 0, len(fmap))
-	for path := range fmap {
-		keys = append(keys, path)
-	}
+func marshalFileMap(fmap map[string]*llcppg.FileInfo) map[string]any {
+	root := make(map[string]any)
+	keys := slices.Collect(maps.Keys(fmap))
+
 	sort.Strings(keys)
+
 	for _, path := range keys {
-		root.SetItem(c.AllocaCStr(path), parse.MarshalFileInfo(fmap[path]))
+		root[path] = parse.MarshalFileInfo(fmap[path])
 	}
 	return root
 }
