@@ -1,6 +1,7 @@
 package parse_test
 
 import (
+	"encoding/json"
 	"maps"
 	"os"
 	"path/filepath"
@@ -8,13 +9,10 @@ import (
 	"sort"
 	"strings"
 	"testing"
-	"unsafe"
 
-	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/internal/parse"
 	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llpkg/cjson"
 )
 
 func TestInclusionMap(t *testing.T) {
@@ -76,12 +74,11 @@ func testFrom(t *testing.T, conf *parse.Config, dir string, gen bool) {
 	pkg := parseWithConfig(conf)
 
 	result := marshalPkg(pkg)
-	str := result.Print()
-	actual := c.GoString(str)
+	output, _ := json.Marshal(&result)
 
 	expectFile := filepath.Join(dir, "expect.json")
 	if gen {
-		err := os.WriteFile(expectFile, []byte(actual), os.ModePerm)
+		err := os.WriteFile(expectFile, output, os.ModePerm)
 		if err != nil {
 			t.Fatal("WriteFile failed:", err)
 		}
@@ -91,12 +88,10 @@ func testFrom(t *testing.T, conf *parse.Config, dir string, gen bool) {
 			t.Fatal("ReadExpectFile failed:", err)
 		}
 		expect := string(json)
-		if expect != actual {
-			t.Fatalf("expect %s, got %s", expect, actual)
+		if expect != string(output) {
+			t.Fatalf("expect %s, got %s", expect, string(output))
 		}
 	}
-	cjson.FreeCStr(unsafe.Pointer(str))
-	result.Delete()
 }
 
 func parseWithConfig(config *parse.Config) (res *llcppg.Pkg) {
