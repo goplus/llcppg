@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
+
+	"github.com/goplus/llcppg/_xtool/internal/symbol"
 )
 
 // Note: This package is not placed under the 'config' package because 'config'
@@ -45,17 +46,16 @@ func ParseLibs(libs string) *Libs {
 func (l *Libs) GenDylibPaths(defaultPaths []string) ([]string, []string, error) {
 	var foundPaths []string
 	var notFound []string
-	affix := ".dylib"
-	if runtime.GOOS == "linux" {
-		affix = ".so"
-	}
 	searchPaths := append(l.Paths, defaultPaths...)
 	for _, name := range l.Names {
 		var foundPath string
 		for _, path := range searchPaths {
-			dylibPath := filepath.Join(path, "lib"+name+affix)
-			if _, err := os.Stat(dylibPath); err == nil {
-				foundPath = dylibPath
+			libPath, err := symbol.FindLibFile(path, name, symbol.ModeDynamic)
+			if err != nil {
+				continue
+			}
+			if libPath != "" {
+				foundPath = libPath
 				break
 			}
 		}
