@@ -51,12 +51,7 @@ func logFile(demoDir string) (*os.File, error) {
 		return nil, err
 	}
 
-	f, err := os.Create(filepath.Join(dirName, "version.log"))
-	if err != nil {
-		return nil, err
-	}
-
-	return f, nil
+	return os.Create(filepath.Join(dirName, "version.log"))
 }
 
 // runSingleDemo tests a single LLCPPG conversion case in the given demo directory.
