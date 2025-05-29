@@ -46,7 +46,7 @@ func logFile(demoDir string) (*os.File, error) {
 
 	dirName = filepath.Join(mkdirTempLazily(), dirName)
 
-	err := os.MkdirAll(dirName, 0644)
+	err := os.MkdirAll(dirName, 0755)
 	if err != nil {
 		return nil, err
 	}
