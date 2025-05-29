@@ -155,7 +155,7 @@ func Do(conf *Config) error {
 
 func OutputPkg(conf *Config, pkg *llcppg.Pkg) {
 	info := MarshalPkg(pkg)
-	str, _ := json.Marshal(&info)
+	str, _ := json.MarshalIndent(&info, "", "  ")
 	outputResult(str, conf.Out)
 }
 
