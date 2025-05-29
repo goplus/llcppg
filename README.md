@@ -3,6 +3,7 @@ llcppg - LLGo autogen tool for C/C++ libraries
 
 [![Build Status](https://github.com/goplus/llcppg/actions/workflows/go.yml/badge.svg)](https://github.com/goplus/llcppg/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goplus/llcppg)](https://goreportcard.com/report/github.com/goplus/llcppg)
+[![GitHub release](https://img.shields.io/github/v/tag/goplus/llcppg.svg?label=release)](https://github.com/goplus/llcppg/releases)
 [![Coverage Status](https://codecov.io/gh/goplus/llcppg/branch/main/graph/badge.svg)](https://codecov.io/gh/goplus/llcppg)
 [![Language](https://img.shields.io/badge/language-Go+-blue.svg)](https://github.com/goplus/gop)
 

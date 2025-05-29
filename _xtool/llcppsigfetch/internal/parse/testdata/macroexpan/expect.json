@@ -1,108 +1,127 @@
 {
-	"File":	{
-		"_Type":	"File",
-		"decls":	[{
-				"_Type":	"TypeDecl",
-				"Loc":	{
-					"_Type":	"Location",
-					"File":	"./testdata/macroexpan/hfile/ref.h"
-				},
-				"Doc":	null,
-				"Parent":	null,
-				"Name":	{
-					"_Type":	"Ident",
-					"Name":	"NewType"
-				},
-				"Type":	{
-					"_Type":	"RecordType",
-					"Tag":	0,
-					"Fields":	{
-						"_Type":	"FieldList",
-						"List":	[{
-								"_Type":	"Field",
-								"Type":	{
-									"_Type":	"ArrayType",
-									"Elt":	{
-										"_Type":	"BuiltinType",
-										"Kind":	6,
-										"Flags":	0
-									},
-									"Len":	{
-										"_Type":	"BasicLit",
-										"Kind":	0,
-										"Value":	"2"
-									}
-								},
-								"Doc":	null,
-								"Comment":	null,
-								"IsStatic":	false,
-								"Access":	1,
-								"Names":	[{
-										"_Type":	"Ident",
-										"Name":	"__val"
-									}]
-							}]
-					},
-					"Methods":	[]
-				}
-			}],
-		"includes":	[],
-		"macros":	[{
-				"_Type":	"Macro",
-				"Loc":	{
-					"_Type":	"Location",
-					"File":	"./testdata/macroexpan/hfile/def.h"
-				},
-				"Name":	"__FSID_T_TYPE",
-				"Tokens":	[{
-						"_Type":	"Token",
-						"Token":	3,
-						"Lit":	"__FSID_T_TYPE"
-					}, {
-						"_Type":	"Token",
-						"Token":	2,
-						"Lit":	"struct"
-					}, {
-						"_Type":	"Token",
-						"Token":	1,
-						"Lit":	"{"
-					}, {
-						"_Type":	"Token",
-						"Token":	2,
-						"Lit":	"int"
-					}, {
-						"_Type":	"Token",
-						"Token":	3,
-						"Lit":	"__val"
-					}, {
-						"_Type":	"Token",
-						"Token":	1,
-						"Lit":	"["
-					}, {
-						"_Type":	"Token",
-						"Token":	4,
-						"Lit":	"2"
-					}, {
-						"_Type":	"Token",
-						"Token":	1,
-						"Lit":	"]"
-					}, {
-						"_Type":	"Token",
-						"Token":	1,
-						"Lit":	";"
-					}, {
-						"_Type":	"Token",
-						"Token":	1,
-						"Lit":	"}"
-					}]
-			}]
-	},
-	"FileMap":	{
-		"testdata/macroexpan/hfile/def.h":	{
-			"FileType":	2
-		},
-		"testdata/macroexpan/hfile/ref.h":	{
-			"FileType":	1
-		}
-	}
+  "File": {
+    "_Type": "File",
+    "decls": [
+      {
+        "Doc": null,
+        "Loc": {
+          "File": "./testdata/macroexpan/hfile/ref.h",
+          "_Type": "Location"
+        },
+        "Name": {
+          "Name": "NewType",
+          "_Type": "Ident"
+        },
+        "Parent": null,
+        "Type": {
+          "Fields": {
+            "List": [
+              {
+                "Access": 1,
+                "Comment": null,
+                "Doc": null,
+                "IsStatic": false,
+                "Names": [
+                  {
+                    "Name": "__val",
+                    "_Type": "Ident"
+                  }
+                ],
+                "Type": {
+                  "Elt": {
+                    "Flags": 0,
+                    "Kind": 6,
+                    "_Type": "BuiltinType"
+                  },
+                  "Len": {
+                    "Kind": 0,
+                    "Value": "2",
+                    "_Type": "BasicLit"
+                  },
+                  "_Type": "ArrayType"
+                },
+                "_Type": "Field"
+              }
+            ],
+            "_Type": "FieldList"
+          },
+          "Methods": null,
+          "Tag": 0,
+          "_Type": "RecordType"
+        },
+        "_Type": "TypeDecl"
+      }
+    ],
+    "includes": null,
+    "macros": [
+      {
+        "Loc": {
+          "File": "./testdata/macroexpan/hfile/def.h",
+          "_Type": "Location"
+        },
+        "Name": "__FSID_T_TYPE",
+        "Tokens": [
+          {
+            "Lit": "__FSID_T_TYPE",
+            "Token": 3,
+            "_Type": "Token"
+          },
+          {
+            "Lit": "struct",
+            "Token": 2,
+            "_Type": "Token"
+          },
+          {
+            "Lit": "{",
+            "Token": 1,
+            "_Type": "Token"
+          },
+          {
+            "Lit": "int",
+            "Token": 2,
+            "_Type": "Token"
+          },
+          {
+            "Lit": "__val",
+            "Token": 3,
+            "_Type": "Token"
+          },
+          {
+            "Lit": "[",
+            "Token": 1,
+            "_Type": "Token"
+          },
+          {
+            "Lit": "2",
+            "Token": 4,
+            "_Type": "Token"
+          },
+          {
+            "Lit": "]",
+            "Token": 1,
+            "_Type": "Token"
+          },
+          {
+            "Lit": ";",
+            "Token": 1,
+            "_Type": "Token"
+          },
+          {
+            "Lit": "}",
+            "Token": 1,
+            "_Type": "Token"
+          }
+        ],
+        "_Type": "Macro"
+      }
+    ]
+  },
+  "FileMap": {
+    "testdata/macroexpan/hfile/def.h": {
+      "FileType": 2
+    },
+    "testdata/macroexpan/hfile/ref.h": {
+      "FileType": 1
+    }
+  }
 }

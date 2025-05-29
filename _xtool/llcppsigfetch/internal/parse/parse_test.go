@@ -1,18 +1,18 @@
 package parse_test
 
 import (
+	"encoding/json"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
-	"unsafe"
 
-	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/internal/parse"
 	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llpkg/cjson"
 )
 
 func TestInclusionMap(t *testing.T) {
@@ -74,12 +74,11 @@ func testFrom(t *testing.T, conf *parse.Config, dir string, gen bool) {
 	pkg := parseWithConfig(conf)
 
 	result := marshalPkg(pkg)
-	str := result.Print()
-	actual := c.GoString(str)
+	output, _ := json.MarshalIndent(&result, "", "  ")
 
 	expectFile := filepath.Join(dir, "expect.json")
 	if gen {
-		err := os.WriteFile(expectFile, []byte(actual), os.ModePerm)
+		err := os.WriteFile(expectFile, output, os.ModePerm)
 		if err != nil {
 			t.Fatal("WriteFile failed:", err)
 		}
@@ -89,12 +88,10 @@ func testFrom(t *testing.T, conf *parse.Config, dir string, gen bool) {
 			t.Fatal("ReadExpectFile failed:", err)
 		}
 		expect := string(json)
-		if expect != actual {
-			t.Fatalf("expect %s, got %s", expect, actual)
+		if expect != string(output) {
+			t.Fatalf("expect %s, got %s", expect, string(output))
 		}
 	}
-	cjson.FreeCStr(unsafe.Pointer(str))
-	result.Delete()
 }
 
 func parseWithConfig(config *parse.Config) (res *llcppg.Pkg) {
@@ -109,23 +106,22 @@ func parseWithConfig(config *parse.Config) (res *llcppg.Pkg) {
 }
 
 // for test order map
-func marshalPkg(pkg *llcppg.Pkg) *cjson.JSON {
-	root := cjson.Object()
-	root.SetItem(c.Str("File"), parser.MarshalASTFile(pkg.File))
-	root.SetItem(c.Str("FileMap"), marshalFileMap(pkg.FileMap))
-	return root
+func marshalPkg(pkg *llcppg.Pkg) map[string]any {
+	return map[string]any{
+		"File":    parser.XMarshalASTFile(pkg.File),
+		"FileMap": marshalFileMap(pkg.FileMap),
+	}
 }
 
 // for test order map
-func marshalFileMap(fmap map[string]*llcppg.FileInfo) *cjson.JSON {
-	root := cjson.Object()
-	keys := make([]string, 0, len(fmap))
-	for path := range fmap {
-		keys = append(keys, path)
-	}
+func marshalFileMap(fmap map[string]*llcppg.FileInfo) map[string]any {
+	root := make(map[string]any)
+	keys := slices.Collect(maps.Keys(fmap))
+
 	sort.Strings(keys)
+
 	for _, path := range keys {
-		root.SetItem(c.AllocaCStr(path), parse.MarshalFileInfo(fmap[path]))
+		root[path] = parse.MarshalFileInfo(fmap[path])
 	}
 	return root
 }

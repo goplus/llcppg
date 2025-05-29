@@ -30,7 +30,6 @@ import (
 
 	// import to make it linked in go.mod
 	_ "github.com/goplus/lib/c"
-	_ "github.com/goplus/llpkg/cjson"
 )
 
 type modeFlags int

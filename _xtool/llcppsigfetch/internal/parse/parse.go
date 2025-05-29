@@ -1,17 +1,15 @@
 package parse
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
-	"unsafe"
 
-	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	"github.com/goplus/llcppg/_xtool/internal/config"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llpkg/cjson"
 )
 
 type dbgFlags = int
@@ -157,23 +155,21 @@ func Do(conf *Config) error {
 
 func OutputPkg(conf *Config, pkg *llcppg.Pkg) {
 	info := MarshalPkg(pkg)
-	str := info.Print()
-	defer cjson.FreeCStr(unsafe.Pointer(str))
-	defer info.Delete()
+	str, _ := json.MarshalIndent(&info, "", "  ")
 	outputResult(str, conf.Out)
 }
 
-func outputResult(result *c.Char, outputToFile bool) {
+func outputResult(result []byte, outputToFile bool) {
 	if outputToFile {
 		outputFile := llcppg.LLCPPG_SIGFETCH
-		err := os.WriteFile(outputFile, []byte(c.GoString(result)), 0644)
+		err := os.WriteFile(outputFile, result, 0644)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error writing to output file: %v\n", err)
 			os.Exit(1)
 		}
 		fmt.Fprintf(os.Stderr, "Results saved to %s\n", outputFile)
 	} else {
-		c.Printf(c.Str("%s"), result)
+		fmt.Println(string(result))
 	}
 }
 
