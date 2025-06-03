@@ -236,7 +236,7 @@ func RunAllGenPkgDemos(baseDir string, confDir string) {
 	}
 
 	if len(failedDemos) > 0 {
-		fmt.Fprintln(os.Stderr, "Failed generated package demos:", strings.Join(failedDemos, ","))
+		log.Panicln("Failed generated package demos:", strings.Join(failedDemos, ","))
 	}
 }
 
