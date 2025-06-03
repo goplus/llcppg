@@ -166,7 +166,6 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 
 	// start to test demos via llgo run
 	// to avoid potential racy, we must grab the lock
-
 	llgoRunMu.Lock()
 	defer llgoRunMu.Unlock()
 
