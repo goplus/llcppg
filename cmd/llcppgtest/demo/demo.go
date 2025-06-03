@@ -2,7 +2,6 @@ package demo
 
 import (
 	"fmt"
-	"log"
 
 	"os"
 	"os/exec"
@@ -175,10 +174,10 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 }
 
 // Get all first-level directories containing llcppg.cfg
-func getFirstLevelDemos(baseDir string, confDir string) []string {
+func getFirstLevelDemos(baseDir string, confDir string) ([]string, error) {
 	entries, err := os.ReadDir(baseDir)
 	if err != nil {
-		log.Panicf("failed to read directory: %v", err)
+		return nil, fmt.Errorf("failed to read directory: %w", err)
 	}
 
 	if runtime.GOOS == "linux" && confDir == "" {
@@ -195,20 +194,20 @@ func getFirstLevelDemos(baseDir string, confDir string) []string {
 			}
 		}
 	}
-	return demos
+	return demos, nil
 }
 
-func RunAllGenPkgDemos(baseDir string, confDir string) {
+func RunAllGenPkgDemos(baseDir string, confDir string) error {
 	fmt.Printf("Starting generated package tests in directory: %s\n", baseDir)
 
 	stat, err := os.Stat(baseDir)
 	if err != nil || !stat.IsDir() {
-		log.Panicf("specified path is not a directory or does not exist: %s", baseDir)
+		return fmt.Errorf("specified path is not a directory or does not exist: %s", baseDir)
 	}
 
-	demos := getFirstLevelDemos(baseDir, confDir)
-	if len(demos) == 0 {
-		log.Panicf("no directories containing llcppg.cfg found in %s", baseDir)
+	demos, err := getFirstLevelDemos(baseDir, confDir)
+	if len(demos) == 0 || err != nil {
+		return fmt.Errorf("no directories containing llcppg.cfg found in %s", baseDir)
 	}
 
 	failedDemosCh := make(chan string, len(demos))
@@ -236,8 +235,9 @@ func RunAllGenPkgDemos(baseDir string, confDir string) {
 	}
 
 	if len(failedDemos) > 0 {
-		log.Panicln("Failed generated package demos:", strings.Join(failedDemos, ","))
+		return fmt.Errorf("failed generated package demos: %v", strings.Join(failedDemos, ","))
 	}
+	return nil
 }
 
 func runCommand(logFile *os.File, dir, command string, args ...string) error {
