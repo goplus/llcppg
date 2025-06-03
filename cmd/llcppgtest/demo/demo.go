@@ -13,11 +13,8 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-<<<<<<< HEAD
 var llgoRunMu sync.Mutex
 
-=======
->>>>>>> remotes/llcppg/main
 var mkdirTempLazily = sync.OnceValue(func() string {
 	if env := os.Getenv("LLCPPG_TEST_LOG_DIR"); env != "" {
 		return env
