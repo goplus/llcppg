@@ -52,7 +52,7 @@ func logFile(demoDir string) (*os.File, error) {
 // _llcppgtest/lua/           - Demo root directory
 //
 //		├── llcppg.cfg          - LLCPPG configuration file
-//	 ├── conf         		- Configuration directory for speficied platforms
+//	 	├── conf         		- Configuration directory for speficied platforms
 //		|	└── linux			- Linux Platform
 //		| 	  	 └── llcppg.cfg - LLCPPG configuration file (linux platform)
 //		├── out/                - Generated package output directory
