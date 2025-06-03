@@ -54,7 +54,7 @@ func logFile(demoDir string) (*os.File, error) {
 //		├── llcppg.cfg          - LLCPPG configuration file
 //	 	├── conf         		- Configuration directory for speficied platforms
 //		|	└── linux			- Linux Platform
-//		| 	  	 └── llcppg.cfg - LLCPPG configuration file (linux platform)
+//		| 	  	└── llcppg.cfg  - LLCPPG configuration file (linux platform)
 //		├── out/                - Generated package output directory
 //		└── demo/               - Example programs directory
 //		    ├── example1/       - First example program
