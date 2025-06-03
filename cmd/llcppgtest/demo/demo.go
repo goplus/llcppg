@@ -13,8 +13,11 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
+<<<<<<< HEAD
 var llgoRunMu sync.Mutex
 
+=======
+>>>>>>> remotes/llcppg/main
 var mkdirTempLazily = sync.OnceValue(func() string {
 	if env := os.Getenv("LLCPPG_TEST_LOG_DIR"); env != "" {
 		return env
@@ -173,7 +176,6 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 	for _, demo := range demos {
 		if demo.IsDir() {
 			fmt.Printf("%s: Running demo: %s\n", demoPkgName, demo.Name())
-
 			if demoErr := runCommand(tempLog, filepath.Join(demosPath, demo.Name()), "llgo", "run", "."); demoErr != nil {
 				return fmt.Errorf("%s: failed to run demo: %s: %w", demoPkgName, demo.Name(), demoErr)
 			}

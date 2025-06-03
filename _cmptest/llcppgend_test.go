@@ -15,10 +15,11 @@ import (
 const llcppgGoVersion = "1.20.14"
 
 type testCase struct {
-	modpath string
-	dir     string
-	pkg     upstream.Package
-	config  map[string]string // conan options
+	modpath  string
+	dir      string
+	pkg      upstream.Package
+	config   map[string]string // conan options
+	demosDir string
 }
 
 var testCases = []testCase{
@@ -29,14 +30,23 @@ var testCases = []testCase{
 		config: map[string]string{
 			"options": "utils=True",
 		},
+		demosDir: "./testdata/cjson/demo",
+	},
+	{
+		modpath: "github.com/goplus/llcppg/_cmptest/testdata/cjson/1.7.17/cjson",
+		dir:     "./testdata/cjson/1.7.17",
+		pkg:     upstream.Package{Name: "cjson", Version: "1.7.17"},
+		config: map[string]string{
+			"options": "utils=True",
+		},
+		demosDir: "./testdata/cjson/demo",
 	},
 }
 
 func TestEnd2End(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
-		t.Run(tc.pkg.Name, func(t *testing.T) {
-			t.Parallel()
+		t.Run(fmt.Sprintf("%s/%s", tc.pkg.Name, tc.pkg.Version), func(t *testing.T) {
 			testFrom(t, tc, false)
 		})
 	}
@@ -44,6 +54,7 @@ func TestEnd2End(t *testing.T) {
 
 func testFrom(t *testing.T, tc testCase, gen bool) {
 	wd, _ := os.Getwd()
+	dir := filepath.Join(wd, tc.dir)
 	conanDir, err := os.MkdirTemp("", "llcppg_end2end_test_conan_dir_*")
 	if err != nil {
 		t.Fatal(err)
@@ -68,33 +79,82 @@ func testFrom(t *testing.T, tc testCase, gen bool) {
 		t.Fatal(err)
 	}
 
-	cmd := exec.Command("llcppg", "-v", "-mod="+tc.modpath)
-	cmd.Dir = resultDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	lockGoVersion(cmd, conanDir)
+	cmd := command(resultDir, "llcppg", "-v", "-mod="+tc.modpath)
+	cmd.Env = append(cmd.Env, goVerEnv())
+	cmd.Env = append(cmd.Env, pcPathEnv(conanDir)...)
 
 	err = cmd.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	// llcppg.symb.json is a middle file
 	os.Remove(filepath.Join(resultDir, config.LLCPPG_SYMB))
 
 	if gen {
-		os.RemoveAll(filepath.Join(wd, tc.dir))
-		os.Rename(resultDir, filepath.Join(wd, tc.dir))
-		return
+		os.RemoveAll(dir)
+		os.Rename(resultDir, dir)
+	} else {
+		// check the result is the same as the expected result
+		// when have diff,will got exit code 1
+		diffCmd := command(wd, "git", "diff", "--no-index", dir, resultDir)
+		err = diffCmd.Run()
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
+	runDemos(t, filepath.Join(wd, tc.demosDir), tc.pkg.Name, filepath.Join(dir, tc.pkg.Name), conanDir)
+}
 
-	diffCmd := exec.Command("git", "diff", "--no-index", tc.dir, resultDir)
-	diffCmd.Dir = wd
-	diffCmd.Stdout = os.Stdout
-	diffCmd.Stderr = os.Stderr
-	err = diffCmd.Run()
+// pkgpath is the filepath use to replace the import path in demo's go.mod
+func runDemos(t *testing.T, demosPath string, pkgname, pkgpath, pcPath string) {
+	tempDemosPath, err := os.MkdirTemp("", "llcppg_end2end_test_demos_*")
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer os.RemoveAll(tempDemosPath)
+	err = os.CopyFS(tempDemosPath, os.DirFS(demosPath))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	goMod := command(tempDemosPath, "go", "mod", "init", "test")
+	err = goMod.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	replace := command(tempDemosPath, "go", "mod", "edit", "-replace", pkgname+"="+pkgpath)
+	err = replace.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tidy := command(tempDemosPath, "go", "mod", "tidy")
+	err = tidy.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	demos, err := os.ReadDir(tempDemosPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, demo := range demos {
+		if !demo.IsDir() {
+			continue
+		}
+		demoPath := filepath.Join(tempDemosPath, demo.Name())
+		demoCmd := command(demoPath, "llgo", "run", ".")
+		demoCmd.Env = append(demoCmd.Env, llgoEnv()...)
+		demoCmd.Env = append(demoCmd.Env, pcPathEnv(pcPath)...)
+		err = demoCmd.Run()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
 }
 
 func appendPCPath(path string) string {
@@ -104,15 +164,29 @@ func appendPCPath(path string) string {
 	return path
 }
 
-// lockGoVersion locks current Go version to `llcppgGoVersion` via GOTOOLCHAIN
-func lockGoVersion(cmd *exec.Cmd, pcPath string) {
-	// don't change global settings, use temporary environment.
-	// see issue: https://github.com/goplus/llpkgstore/issues/18
-	setPath(cmd, pcPath)
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GOTOOLCHAIN=go%s", llcppgGoVersion))
+// llgo env
+func llgoEnv() []string {
+	return []string{
+		// for https://github.com/goplus/llgo/issues/1135
+		"LLGO_RPATH_CHANGE=on",
+	}
 }
 
-func setPath(cmd *exec.Cmd, path string) {
+// env for pkg-config
+func pcPathEnv(path string) []string {
 	pcPath := fmt.Sprintf("PKG_CONFIG_PATH=%s", appendPCPath(path))
-	cmd.Env = append(os.Environ(), pcPath)
+	return append(os.Environ(), pcPath)
+}
+
+// control the go version in output version
+func goVerEnv() string {
+	return fmt.Sprintf("GOTOOLCHAIN=go%s", llcppgGoVersion)
+}
+
+func command(dir string, app string, args ...string) *exec.Cmd {
+	cmd := exec.Command(app, args...)
+	cmd.Dir = dir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd
 }
