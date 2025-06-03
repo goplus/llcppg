@@ -13,6 +13,8 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
+var stderrMu sync.Mutex
+
 var mkdirTempLazily = sync.OnceValue(func() string {
 	dir, err := os.MkdirTemp("", "test-log")
 	if err != nil {
@@ -42,10 +44,18 @@ func mustSetEnv(name, value string) {
 	}
 }
 
-func logFile(demoDir string) (*os.File, error) {
-	dirName := fmt.Sprintf("%s-%s-llcppg-%s", runtime.GOOS, runtime.GOARCH, filepath.Base(demoDir))
+func isCI() bool {
+	_, ok := os.LookupEnv("GITHUB_ENV")
+	return ok
+}
 
-	dirName = filepath.Join(mkdirTempLazily(), dirName)
+func demoLogDir(demoDir string) string {
+	dirName := fmt.Sprintf("%s-%s-llcppg-%s", runtime.GOOS, runtime.GOARCH, filepath.Base(demoDir))
+	return filepath.Join(mkdirTempLazily(), dirName)
+}
+
+func logFile(demoDir string) (*os.File, error) {
+	dirName := demoLogDir(demoDir)
 
 	err := os.MkdirAll(dirName, 0755)
 	if err != nil {
@@ -57,38 +67,51 @@ func logFile(demoDir string) (*os.File, error) {
 
 // runSingleDemo tests a single LLCPPG conversion case in the given demo directory.
 // The testing process includes:
-// 1. Reading and validating the llcppg.cfg configuration file
-// 2. Running LLCPPG to generate the converted package
-// 3. Verifying the generated package can be built using llgo
-// 4. Running example programs in the demo subdirectory that use the generated package
+//  1. Reading and validating the llcppg.cfg configuration file
+//     if the current OS is not macOS, it will look up the `conf/{OS}/llcppg.cfg` and skip if llcppg.cfg dones't exist.
+//  2. Running LLCPPG to generate the converted package
+//  3. Verifying the generated package can be built using llgo
+//  4. Running example programs in the demo subdirectory that use the generated package
 //
 // Directory structure (take _llcppgtest/lua as an example):
 // _llcppgtest/lua/           - Demo root directory
 //
-//	├── llcppg.cfg          - LLCPPG configuration file
-//	├── out/                - Generated package output directory
-//	└── demo/               - Example programs directory
-//	    ├── example1/       - First example program
-//	    └── example2/       - Second example program
+//		├── llcppg.cfg          - LLCPPG configuration file
+//	 ├── conf         		- Configuration directory for speficied platforms
+//		|	└── linux			- Linux Platform
+//		| 	  	 └── llcppg.cfg - LLCPPG configuration file (linux platform)
+//		├── out/                - Generated package output directory
+//		└── demo/               - Example programs directory
+//		    ├── example1/       - First example program
+//		    └── example2/       - Second example program
 //
 // The function will panic if any step in the testing process fails.
 //
 // Parameters:
 //   - demoRoot: Path to the root directory of a single demo case
 //   - confDir: Path to the configuration directory relative to demoRoot, defaults to "." if empty
-func RunGenPkgDemo(demoRoot string, confDir string) {
+func RunGenPkgDemo(demoRoot string, confDir string) (paniced bool) {
 	fmt.Printf("Testing demo: %s\n", demoRoot)
-
-	tempLog, err := logFile(demoRoot)
-	if err != nil {
-		panic(err)
-	}
 
 	absPath, err := filepath.Abs(demoRoot)
 	if err != nil {
 		log.Panicf("failed to get absolute path for %s: %v", demoRoot, err)
 	}
 	demoPkgName := filepath.Base(absPath)
+
+	tempLog, err := logFile(demoRoot)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s: log file: %s\n", demoPkgName, tempLog.Name())
+
+	defer func() {
+		if err := recover(); err != nil && !isCI() {
+			paniced = true
+			return
+		}
+	}()
 
 	if runtime.GOOS == "linux" && confDir == "" {
 		confDir = filepath.Join("conf", "linux")
@@ -178,6 +201,8 @@ func RunGenPkgDemo(demoRoot string, confDir string) {
 			}
 		}
 	}
+
+	return
 }
 
 // Get all first-level directories containing llcppg.cfg
@@ -217,20 +242,30 @@ func RunAllGenPkgDemos(baseDir string, confDir string) {
 		log.Panicf("no directories containing llcppg.cfg found in %s", baseDir)
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(demos))
+	failedDemosCh := make(chan string, len(demos))
 	// Test each demo
 	for _, demo := range demos {
 		demo := demo
 
 		go func() {
-			defer wg.Done()
-			RunGenPkgDemo(demo, confDir)
+			if paniced := RunGenPkgDemo(demo, confDir); !paniced {
+				failedDemosCh <- ""
+			} else {
+				failedDemosCh <- demo
+			}
 		}()
 	}
 
-	wg.Wait()
-	fmt.Println("All generated package demos passed:", strings.Join(demos, ","))
+	var failedDemos []string
+	for range demos {
+		demoDir := <-failedDemosCh
+
+		if demoDir != "" {
+			failedDemos = append(failedDemos, demoDir)
+		}
+	}
+
+	fmt.Println("Failed generated package demos:", strings.Join(failedDemos, ","))
 }
 
 func runCommand(logFile *os.File, dir, command string, args ...string) error {

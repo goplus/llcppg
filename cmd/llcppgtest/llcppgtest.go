@@ -268,7 +268,9 @@ func main() {
 	case appMode == runDemos:
 		demo.RunAllGenPkgDemos(*demosPath, *confPath)
 	case appMode == runDemo:
-		demo.RunGenPkgDemo(*demoPath, *confPath)
+		if paniced := demo.RunGenPkgDemo(*demoPath, *confPath); paniced {
+			os.Exit(1)
+		}
 	default:
 		if len(flag.Args()) > 0 {
 			arg := flag.Arg(0)
