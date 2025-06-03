@@ -82,10 +82,7 @@ func RunGenPkgDemo(demoRoot string, confDir string) (paniced bool) {
 	fmt.Printf("%s: log file: %s\n", demoPkgName, tempLog.Name())
 
 	defer func() {
-		if err := recover(); err != nil {
-			paniced = true
-			return
-		}
+		paniced = recover() != nil
 	}()
 
 	if runtime.GOOS == "linux" && confDir == "" {
@@ -240,7 +237,9 @@ func RunAllGenPkgDemos(baseDir string, confDir string) {
 		}
 	}
 
-	fmt.Println("Failed generated package demos:", strings.Join(failedDemos, ","))
+	if len(failedDemos) > 0 {
+		fmt.Println("Failed generated package demos:", strings.Join(failedDemos, ","))
+	}
 }
 
 func runCommand(logFile *os.File, dir, command string, args ...string) error {
