@@ -3,6 +3,7 @@ package demo
 import (
 	"fmt"
 	"log"
+
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -65,25 +66,21 @@ func logFile(demoDir string) (*os.File, error) {
 // Parameters:
 //   - demoRoot: Path to the root directory of a single demo case
 //   - confDir: Path to the configuration directory relative to demoRoot, defaults to "." if empty
-func RunGenPkgDemo(demoRoot string, confDir string) (paniced bool) {
+func RunGenPkgDemo(demoRoot string, confDir string) error {
 	fmt.Printf("Testing demo: %s\n", demoRoot)
 
 	absPath, err := filepath.Abs(demoRoot)
 	if err != nil {
-		log.Panicf("failed to get absolute path for %s: %v", demoRoot, err)
+		return fmt.Errorf("failed to get absolute path for %s: %v", demoRoot, err)
 	}
 	demoPkgName := filepath.Base(absPath)
 
 	tempLog, err := logFile(demoRoot)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create temp log for %s: %w", demoPkgName, err)
 	}
 
 	fmt.Printf("%s: log file: %s\n", demoPkgName, tempLog.Name())
-
-	defer func() {
-		paniced = recover() != nil
-	}()
 
 	if runtime.GOOS == "linux" && confDir == "" {
 		confDir = filepath.Join("conf", "linux")
@@ -98,14 +95,14 @@ func RunGenPkgDemo(demoRoot string, confDir string) (paniced bool) {
 	fmt.Printf("Looking for config file at: %s\n", configFile)
 
 	if _, err = os.Stat(configFile); os.IsNotExist(err) {
-		log.Panicf("config file not found: %s", configFile)
+		return fmt.Errorf("config file not found: %s", configFile)
 	}
 
 	llcppgArgs := []string{"-v", "-mod", demoPkgName}
 
 	outDir := filepath.Join(absPath, "out")
 	if err = os.MkdirAll(outDir, 0755); err != nil {
-		log.Panicf("failed to create output directory: %v", err)
+		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 	defer os.RemoveAll(outDir)
 
@@ -120,40 +117,40 @@ func RunGenPkgDemo(demoRoot string, confDir string) (paniced bool) {
 			if os.IsNotExist(err) && cfg != llcppg.LLCPPG_CFG {
 				continue
 			}
-			log.Panicf("%s: failed to read config file: %v", demoPkgName, err)
+			return fmt.Errorf("%s: failed to read config file: %w", demoPkgName, err)
 		}
 		if err = os.WriteFile(dst, content, 0600); err != nil {
-			log.Panicf("%s: failed to write config file: %v", demoPkgName, err)
+			return fmt.Errorf("%s: failed to write config file: %w", demoPkgName, err)
 		}
 	}
 
 	// run llcppg to gen pkg
 	if err = runCommand(tempLog, outDir, "llcppg", llcppgArgs...); err != nil {
-		log.Panicf("%s: llcppg execution failed: %v", demoPkgName, err)
+		return fmt.Errorf("%s: llcppg execution failed: %w", demoPkgName, err)
 	}
 	fmt.Printf("%s: llcppg execution success\n", demoPkgName)
 
 	// check if the gen pkg is ok
 	genPkgDir := filepath.Join(outDir, demoPkgName)
 	if err = runCommand(tempLog, genPkgDir, "go", "fmt"); err != nil {
-		log.Panicf("%s: go fmt failed in %s: %v", demoPkgName, genPkgDir, err)
+		return fmt.Errorf("%s: go fmt failed in %s: %w", demoPkgName, genPkgDir, err)
 	}
 
 	if err = runCommand(tempLog, genPkgDir, "llgo", "build", "."); err != nil {
-		log.Panicf("%s: llgo build failed in %s: %v", demoPkgName, genPkgDir, err)
+		return fmt.Errorf("%s: llgo build failed in %s: %w", demoPkgName, genPkgDir, err)
 	}
 	fmt.Printf("%s: llgo build success\n", demoPkgName)
 
 	demosPath := filepath.Join(demoRoot, "demo")
 	// init mods to test package,because the demo is dependent on the gen pkg
 	if err = runCommand(tempLog, demoRoot, "go", "mod", "init", "demo"); err != nil {
-		log.Panicf("go mod init failed in %s: %v", demoRoot, err)
+		return fmt.Errorf("go mod init failed in %s: %w", demoRoot, err)
 	}
 	if err = runCommand(tempLog, demoRoot, "go", "mod", "edit", "-replace", demoPkgName+"="+"./out/"+demoPkgName); err != nil {
-		log.Panicf("go mod edit failed in %s: %v", demoRoot, err)
+		return fmt.Errorf("go mod edit failed in %s: %w", demoRoot, err)
 	}
 	if err = runCommand(tempLog, demoRoot, "go", "mod", "tidy"); err != nil {
-		log.Panicf("go mod tidy failed in %s: %v", demoRoot, err)
+		return fmt.Errorf("go mod tidy failed in %s: %w", demoRoot, err)
 	}
 	defer os.Remove(filepath.Join(absPath, "go.mod"))
 	defer os.Remove(filepath.Join(absPath, "go.sum"))
@@ -163,18 +160,18 @@ func RunGenPkgDemo(demoRoot string, confDir string) (paniced bool) {
 	var demos []os.DirEntry
 	demos, err = os.ReadDir(demosPath)
 	if err != nil {
-		log.Panicf("%s: failed to read demo directory: %v", demoPkgName, err)
+		return fmt.Errorf("%s: failed to read demo directory: %v", demoPkgName, err)
 	}
 	for _, demo := range demos {
 		if demo.IsDir() {
 			fmt.Printf("%s: Running demo: %s\n", demoPkgName, demo.Name())
 			if demoErr := runCommand(tempLog, filepath.Join(demosPath, demo.Name()), "llgo", "run", "."); demoErr != nil {
-				log.Panicf("%s: failed to run demo: %s: %v", demoPkgName, demo.Name(), demoErr)
+				return fmt.Errorf("%s: failed to run demo: %s: %w", demoPkgName, demo.Name(), demoErr)
 			}
 		}
 	}
 
-	return
+	return nil
 }
 
 // Get all first-level directories containing llcppg.cfg
@@ -220,7 +217,9 @@ func RunAllGenPkgDemos(baseDir string, confDir string) {
 		demo := demo
 
 		go func() {
-			if paniced := RunGenPkgDemo(demo, confDir); !paniced {
+			if err := RunGenPkgDemo(demo, confDir); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+
 				failedDemosCh <- ""
 			} else {
 				failedDemosCh <- demo
@@ -238,7 +237,7 @@ func RunAllGenPkgDemos(baseDir string, confDir string) {
 	}
 
 	if len(failedDemos) > 0 {
-		fmt.Println("Failed generated package demos:", strings.Join(failedDemos, ","))
+		fmt.Fprintln(os.Stderr, "Failed generated package demos:", strings.Join(failedDemos, ","))
 	}
 }
 
