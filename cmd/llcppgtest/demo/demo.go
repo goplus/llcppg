@@ -13,36 +13,16 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-var stderrMu sync.Mutex
-
 var mkdirTempLazily = sync.OnceValue(func() string {
+	if env := os.Getenv("LLCPPG_TEST_LOG_DIR"); env != "" {
+		return env
+	}
 	dir, err := os.MkdirTemp("", "test-log")
 	if err != nil {
 		panic(err)
 	}
-	mustSetEnv("LLCPPG_TEST_LOG_DIR", dir)
 	return dir
 })
-
-func mustSetEnv(name, value string) {
-	githubEnv := os.Getenv("GITHUB_ENV")
-	if githubEnv == "" {
-		if err := os.Setenv(name, value); err != nil {
-			panic(err)
-		}
-		return
-	}
-	envFile, err := os.OpenFile(githubEnv, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	defer envFile.Close()
-
-	_, err = envFile.Write([]byte(fmt.Sprintf("%s=%s\n", name, value)))
-	if err != nil {
-		panic(err)
-	}
-}
 
 func isCI() bool {
 	_, ok := os.LookupEnv("GITHUB_ENV")

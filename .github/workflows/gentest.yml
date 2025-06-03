@@ -26,7 +26,8 @@ jobs:
         go: ${{ matrix.go }}
         llvm: ${{ matrix.llvm }}
         llgo: ${{ matrix.llgo }}
-
+    - name: Setup Log directory
+      run: echo "LLCPPG_TEST_LOG_DIR=$(mktemp -d)" >> $GITHUB_ENV
     - name: Test demos with generated pkgs
       if: startsWith(matrix.os, 'macos')
       run: |
