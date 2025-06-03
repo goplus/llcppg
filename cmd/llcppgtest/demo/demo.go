@@ -24,11 +24,6 @@ var mkdirTempLazily = sync.OnceValue(func() string {
 	return dir
 })
 
-func isCI() bool {
-	_, ok := os.LookupEnv("GITHUB_ENV")
-	return ok
-}
-
 func demoLogDir(demoDir string) string {
 	dirName := fmt.Sprintf("%s-%s-llcppg-%s", runtime.GOOS, runtime.GOARCH, filepath.Base(demoDir))
 	return filepath.Join(mkdirTempLazily(), dirName)
@@ -87,7 +82,7 @@ func RunGenPkgDemo(demoRoot string, confDir string) (paniced bool) {
 	fmt.Printf("%s: log file: %s\n", demoPkgName, tempLog.Name())
 
 	defer func() {
-		if err := recover(); err != nil && !isCI() {
+		if err := recover(); err != nil {
 			paniced = true
 			return
 		}
