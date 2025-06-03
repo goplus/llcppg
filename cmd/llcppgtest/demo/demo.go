@@ -219,10 +219,9 @@ func RunAllGenPkgDemos(baseDir string, confDir string) {
 		go func() {
 			if err := RunGenPkgDemo(demo, confDir); err != nil {
 				fmt.Fprintln(os.Stderr, err)
-
-				failedDemosCh <- ""
-			} else {
 				failedDemosCh <- demo
+			} else {
+				failedDemosCh <- ""
 			}
 		}()
 	}
