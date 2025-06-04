@@ -6,7 +6,7 @@ github.com/goplus/llgo v0.11.6-0.20250522141046-450a3637e44f h1:PiZrYVulp2ld4CxW
 github.com/goplus/llgo v0.11.6-0.20250522141046-450a3637e44f/go.mod h1:XYPQZWzRos7V/hRBHBt1dhEsQuQvgM/30jKmNwIWV/Y=
 github.com/goplus/mod v0.17.0 h1:2rwBjNT/5a9fsZMkjBFYORxXzXldh/Oe/SAsZqCvP/I=
 github.com/goplus/mod v0.17.0/go.mod h1:5aGvHagL++m6XlBpqPfkeGqpkHl2biuWXyQcVxmpm3I=
-github.com/qiniu/x v1.15.0 h1:Tal7jtNNgBkFneJXG8qsTadVywC5zBQCfw9b12Igsr4=
-github.com/qiniu/x v1.15.0/go.mod h1:AiovSOCaRijaf3fj+0CBOpR1457pn24b0Vdb1JpwhII=
+github.com/qiniu/x v1.15.1 h1:avE+YQaowp8ZExjylOeSM73rUo3MQKBAYVxh4NJ8dY8=
+github.com/qiniu/x v1.15.1/go.mod h1:AiovSOCaRijaf3fj+0CBOpR1457pn24b0Vdb1JpwhII=
 golang.org/x/mod v0.23.0 h1:Zb7khfcRGKk+kqfxFaP5tZqCnDZMjC5VtUBs87Hr6QM=
 golang.org/x/mod v0.23.0/go.mod h1:6SkKJ3Xj0I0BrPOZoBy3bdMptDDU9oJrpohJ3eWZ1fY=
