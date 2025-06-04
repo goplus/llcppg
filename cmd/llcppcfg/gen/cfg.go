@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,15 +15,11 @@ import (
 )
 
 type Config struct {
-	name           string
-	flag           FlagMode
-	exts           []string
-	deps           []string
-	excludeSubdirs []string
-}
-
-func NewConfig(name string, flag FlagMode, exts, deps, excludeSubdirs []string) *Config {
-	return &Config{name: name, flag: flag, exts: exts, deps: deps, excludeSubdirs: excludeSubdirs}
+	Name           string
+	IsCpp          bool
+	Exts           []string
+	Deps           []string
+	ExcludeSubdirs []string
 }
 
 type llcppCfgKey string
@@ -32,13 +27,6 @@ type llcppCfgKey string
 const (
 	cfgLibsKey   llcppCfgKey = "libs"
 	cfgCflagsKey llcppCfgKey = "cflags"
-)
-
-type FlagMode int
-
-const (
-	WithTab FlagMode = 1 << iota
-	WithCpp
 )
 
 type emptyStringError struct {
@@ -189,25 +177,6 @@ func parseCFlagsEntry(cflags, cflag string, exts []string, excludeSubdirs []stri
 	return &cflagEntry
 }
 
-func sortIncludes(expandCflags string, cfg *llcppg.Config, exts []string, excludeSubdirs []string) {
-	list := strings.Fields(expandCflags)
-	includeList := NewIncludeList()
-	for i, cflag := range list {
-		pCflagEntry := parseCFlagsEntry(expandCflags, cflag, exts, excludeSubdirs)
-		includeList.AddCflagEntry(i, pCflagEntry)
-	}
-	cfg.Include = includeList.include
-}
-
-func newLLCppgConfig(name string, flag FlagMode) *llcppg.Config {
-	cfg := llcppg.NewDefault()
-	cfg.Name = name
-	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", name)
-	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", name)
-	cfg.Cplusplus = (flag&WithCpp != 0)
-	return cfg
-}
-
 func NormalizePackageName(name string) string {
 	fields := strings.FieldsFunc(name, func(r rune) bool {
 		return !unicode.IsLetter(r) && r != '_' && !unicode.IsDigit(r)
@@ -220,24 +189,35 @@ func NormalizePackageName(name string) string {
 	return strings.Join(fields, "_")
 }
 
+func (c *Config) toLLCppg() *llcppg.Config {
+	cfg := llcppg.NewDefault()
+	cfg.Name = NormalizePackageName(c.Name)
+	cfg.CFlags = fmt.Sprintf("$(pkg-config --cflags %s)", c.Name)
+	cfg.Libs = fmt.Sprintf("$(pkg-config --libs %s)", c.Name)
+	cfg.Cplusplus = c.IsCpp
+	cfg.Deps = c.Deps
+
+	expandCFlags := ExpandName(c.Name, "", cfgCflagsKey)
+	cfg.Include = c.sortIncludes(expandCFlags, c.Exts, c.ExcludeSubdirs)
+
+	return cfg
+}
+
+func (c *Config) sortIncludes(expandCflags string, exts []string, excludeSubdirs []string) []string {
+	list := strings.Fields(expandCflags)
+	includeList := NewIncludeList()
+	for i, cflag := range list {
+		pCflagEntry := parseCFlagsEntry(expandCflags, cflag, exts, excludeSubdirs)
+		includeList.AddCflagEntry(i, pCflagEntry)
+	}
+	return includeList.include
+}
+
 func Do(genCfg *Config) ([]byte, error) {
-	if len(genCfg.name) == 0 {
+	if len(genCfg.Name) == 0 {
 		return nil, newEmptyStringError("name")
 	}
-	cfg := newLLCppgConfig(genCfg.name, genCfg.flag)
-	expandCFlags := ExpandName(genCfg.name, "", cfgCflagsKey)
-	sortIncludes(expandCFlags, cfg, genCfg.exts, genCfg.excludeSubdirs)
-	cfg.Name = NormalizePackageName(cfg.Name)
-	cfg.Deps = genCfg.deps
+	cfg := genCfg.toLLCppg()
 
-	buf := bytes.NewBuffer([]byte{})
-	jsonEncoder := json.NewEncoder(buf)
-	if genCfg.flag&WithTab != 0 {
-		jsonEncoder.SetIndent("", "\t")
-	}
-	err := jsonEncoder.Encode(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return json.MarshalIndent(cfg, "", "  ")
 }

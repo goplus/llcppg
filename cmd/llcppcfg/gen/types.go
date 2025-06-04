@@ -57,7 +57,7 @@ type IncludeList struct {
 }
 
 func NewIncludeList() *IncludeList {
-	return &IncludeList{include: make([]string, 0), absPathMap: make(map[string]struct{}), relPathMap: make(map[string]struct{})}
+	return &IncludeList{absPathMap: make(map[string]struct{}), relPathMap: make(map[string]struct{})}
 }
 
 func (p *IncludeList) AddCflagEntry(index int, entry *CflagEntry) {
