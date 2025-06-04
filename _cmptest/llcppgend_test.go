@@ -140,9 +140,8 @@ func TestEnd2End(t *testing.T) {
 // │   └── {{OS}}
 // │       └── 2.13.6
 // └── cjson
-//
-//	└── {{OS}}
-//	    └── 1.7.18
+//     └── {{OS}}
+//         └── 1.7.18
 //
 // Due to inconsistencies in header file paths across different systems, the expected test files are platform-based.​​
 func TestEnd2EndLLCppcfg(t *testing.T) {
