@@ -17,10 +17,9 @@ usage: llcppcfg [-cpp|-tab|-excludes|-exts|-help] libname`)
 
 func main() {
 	var dependencies string
-	var cpp, help, tab bool
+	var cpp, help bool
 	flag.BoolVar(&cpp, "cpp", false, "if it is c++ lib")
 	flag.BoolVar(&help, "help", false, "print help message")
-	flag.BoolVar(&tab, "tab", true, "generate .cfg config file with tab indent")
 	extsString := ""
 	flag.StringVar(&extsString, "exts", ".h", "extra include file extensions for example -exts=\".h .hpp .hh\"")
 	excludes := ""
@@ -44,14 +43,14 @@ func main() {
 	if len(excludes) > 0 {
 		excludeSubdirs = strings.Fields(excludes)
 	}
-	var flag gen.FlagMode
-	if cpp {
-		flag |= gen.WithCpp
-	}
-	if tab {
-		flag |= gen.WithTab
-	}
-	buf, err := gen.Do(gen.NewConfig(name, flag, exts, deps, excludeSubdirs))
+
+	buf, err := gen.Do(&gen.Config{
+		Name:           name,
+		Exts:           exts,
+		Deps:           deps,
+		IsCpp:          cpp,
+		ExcludeSubdirs: excludeSubdirs,
+	})
 	if err != nil {
 		panic(err)
 	}
