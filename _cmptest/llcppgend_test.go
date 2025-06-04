@@ -133,6 +133,18 @@ func TestEnd2End(t *testing.T) {
 	}
 }
 
+// ​​The cfgdata directory is used by llcppcfg to generate end-to-end tests. Its directory structure is as follows.
+//
+// cfgdata
+// ├── libxml2
+// │   └── {{OS}}
+// │       └── 2.13.6
+// └── cjson
+//
+//	└── {{OS}}
+//	    └── 1.7.18
+//
+// Due to inconsistencies in header file paths across different systems, the expected test files are platform-based.​​
 func TestEnd2EndLLCppcfg(t *testing.T) {
 	null, err := os.OpenFile(os.DevNull, os.O_RDWR, 0644)
 	if err != nil {
@@ -171,8 +183,10 @@ func TestEnd2EndLLCppcfg(t *testing.T) {
 			cmd.Stdout = os.Stdout
 
 			platformCfgDir := filepath.Join(tc.cfgDir, runtime.GOOS, tc.pkg.Version)
-			if false {
 
+			gen := false
+			// generate config only
+			if gen {
 				os.MkdirAll(platformCfgDir, 0700)
 				cmd.Dir = platformCfgDir
 
