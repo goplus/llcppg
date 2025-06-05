@@ -1,8 +1,12 @@
 package config
 
 import (
+	"bufio"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
+	"sort"
 	"strings"
 
 	"github.com/goplus/lib/c/clang"
@@ -41,54 +45,49 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	}
 	defer os.Remove(outfile.Name())
 
-	refMap := make(map[string]int, len(includes))
+	mmOutput, err := os.CreateTemp("", "mmoutput_*")
+	if err != nil {
+		panic(err)
+	}
+	defer os.Remove(mmOutput.Name())
 
 	clangtool.ComposeIncludes(includes, outfile.Name())
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File: outfile.Name(),
 		Temp: false,
-		Args: args,
+		Args: append(args, "-MMD", "-MF", mmOutput.Name()),
 	})
+
 	defer unit.Dispose()
 	defer index.Dispose()
 	if err != nil {
 		panic(err)
 	}
 
+	inters := ParseMMOutout(outfile.Name(), mmOutput)
+	var others []string
+
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		// not in the first level include maybe impl or third hfile
 		filename := filepath.Clean(clang.GoString(inced.FileName()))
 
-		if len(incins) == 1 {
-			info.Inters = append(info.Inters, filename)
-		}
-
-		ref, ok := refMap[filename]
-		if !ok {
-			refMap[filename] = len(incins)
+		// skip the composed header
+		if filename == outfile.Name() {
 			return
 		}
-		// Handle duplicate references: Retain only the reference with the smallest source location.
-		// Example:
-		//   temp1.h: temp2 tempimpl.h
-		//   temp2.h: temp2
-		// The reference count for temp2.h should be 1 (not 2).
-		// If its count is 2, decrement it to 1.
-		if len(incins) < ref {
-			refMap[filename] = len(incins)
+		if _, ok := inters[filename]; !ok {
+			others = append(others, filename)
 		}
 	})
+
+	info.Inters = slices.Collect(maps.Keys(inters))
 
 	absLongestPrefix, err := filepath.Abs(CommonParentDir(info.Inters))
 	if err != nil {
 		panic(err)
 	}
 
-	for filename, ref := range refMap {
-		if ref == 1 {
-			continue
-		}
-
+	for _, filename := range others {
 		if mix {
 			info.Thirds = append(info.Thirds, filename)
 			continue
@@ -103,6 +102,9 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 			info.Thirds = append(info.Thirds, filename)
 		}
 	}
+
+	sort.Strings(info.Inters)
+	sort.Strings(info.Impls)
 
 	return info
 }
@@ -127,4 +129,23 @@ func CommonParentDir(paths []string) string {
 		}
 	}
 	return filepath.Dir(paths[0])
+}
+
+func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (inters map[string]struct{}) {
+	scanner := bufio.NewScanner(outputFile)
+
+	fileName := strings.TrimSuffix(filepath.Base(composedHeaderFileName), ".h")
+
+	inters = make(map[string]struct{})
+
+	for scanner.Scan() {
+		// skip composed header file
+		if strings.Contains(scanner.Text(), fileName) {
+			continue
+		}
+		inter := filepath.Clean(strings.TrimSpace(strings.TrimSuffix(scanner.Text(), `\`)))
+		inters[inter] = struct{}{}
+	}
+
+	return
 }
