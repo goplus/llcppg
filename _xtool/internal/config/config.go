@@ -56,7 +56,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File: outfile.Name(),
 		Temp: false,
-		Args: append(ignoreIncludesArgs(includes), "-MD", "-MF", mmOutput.Name()),
+		Args: append(ignoreIncludesArgs(includes), "-MMD", "-MF", mmOutput.Name()),
 	})
 
 	defer unit.Dispose()
