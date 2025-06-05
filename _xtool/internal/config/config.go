@@ -69,7 +69,8 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		panic(err)
 	}
 
-	inters := ParseMMOutout(outfile.Name(), mmOutput)
+	inters := make(map[string]struct{})
+	includeMap := ParseMMOutout(outfile.Name(), mmOutput)
 	var others []string
 
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
@@ -80,11 +81,23 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		if filename == outfile.Name() {
 			return
 		}
-		if _, ok := inters[filename]; !ok {
-			others = append(others, filename)
+		refcnt := len(incins)
+		for _, inc := range incins {
+			incFileName := clang.GoString(inc.File().FileName())
+
+			if incFileName == outfile.Name() {
+				refcnt--
+				continue
+			}
+			if _, ok := includeMap[incFileName]; ok {
+				refcnt--
+			}
 		}
 
-		fmt.Fprintln(os.Stderr, "fffffff", filename, inters)
+		if refcnt == 0 {
+			inters[filename] = struct{}{}
+		}
+		others = append(others, filename)
 	})
 
 	info.Inters = slices.Collect(maps.Keys(inters))
@@ -95,6 +108,9 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	}
 
 	for _, filename := range others {
+		if _, isInterface := inters[filename]; isInterface {
+			continue
+		}
 		if mix {
 			info.Thirds = append(info.Thirds, filename)
 			continue
@@ -138,10 +154,10 @@ func CommonParentDir(paths []string) string {
 	return filepath.Dir(paths[0])
 }
 
-func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (inters map[string]struct{}) {
+func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (includeMap map[string]struct{}) {
 	fileName := strings.TrimSuffix(filepath.Base(composedHeaderFileName), ".h")
 
-	inters = make(map[string]struct{})
+	includeMap = make(map[string]struct{})
 
 	content, _ := io.ReadAll(outputFile)
 
@@ -153,8 +169,7 @@ func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (inters m
 			continue
 		}
 
-		inter := filepath.Clean(line)
-		inters[inter] = struct{}{}
+		includeMap[filepath.Clean(line)] = struct{}{}
 	}
 
 	return
