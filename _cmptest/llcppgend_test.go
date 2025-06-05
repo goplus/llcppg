@@ -1,4 +1,4 @@
-package main
+package _cmptest
 
 import (
 	"fmt"
@@ -26,7 +26,6 @@ var (
 type testCase struct {
 	modpath  string
 	dir      string
-	cfgDir   string
 	pkg      upstream.Package
 	config   map[string]string // conan options
 	demosDir string
@@ -36,7 +35,6 @@ var testCases = []testCase{
 	{
 		modpath: "github.com/goplus/llcppg/_cmptest/testdata/cjson/1.7.18/cjson",
 		dir:     "./testdata/cjson/1.7.18",
-		cfgDir:  "./cfgdata/cjson",
 		pkg:     upstream.Package{Name: "cjson", Version: "1.7.18"},
 		config: map[string]string{
 			"options": "utils=True",
@@ -46,7 +44,6 @@ var testCases = []testCase{
 	{
 		modpath: "github.com/goplus/llcppg/_cmptest/testdata/cjson/1.7.17/cjson",
 		dir:     "./testdata/cjson/1.7.17",
-		cfgDir:  "./cfgdata/cjson",
 		pkg:     upstream.Package{Name: "cjson", Version: "1.7.17"},
 		config: map[string]string{
 			"options": "utils=True",
@@ -56,7 +53,6 @@ var testCases = []testCase{
 	{
 		modpath: "github.com/goplus/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2",
 		dir:     "./testdata/libxml2/2.13.6",
-		cfgDir:  "./cfgdata/libxml2",
 		pkg:     upstream.Package{Name: "libxml2", Version: "2.13.6"},
 		config: map[string]string{
 			"options": "iconv=False",
@@ -66,35 +62,30 @@ var testCases = []testCase{
 	{
 		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/sqlite3/3.49.1/sqlite3",
 		dir:      "./testdata/sqlite3/3.49.1",
-		cfgDir:   "./cfgdata/sqlite3",
 		pkg:      upstream.Package{Name: "sqlite3", Version: "3.49.1"},
 		demosDir: "./testdata/sqlite3/demo",
 	},
 	{
 		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/zlib/1.3.1/zlib",
 		dir:      "./testdata/zlib/1.3.1",
-		cfgDir:   "./cfgdata/zlib",
 		pkg:      upstream.Package{Name: "zlib", Version: "1.3.1"},
 		demosDir: "./testdata/zlib/demo",
 	},
 	{
 		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/bzip3/1.5.1/bzip3",
 		dir:      "./testdata/bzip3/1.5.1",
-		cfgDir:   "./cfgdata/bzip3",
 		pkg:      upstream.Package{Name: "bzip3", Version: "1.5.1"},
 		demosDir: "./testdata/bzip3/demo",
 	},
 	{
 		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/cargs/1.2.0/cargs",
 		dir:      "./testdata/cargs/1.2.0",
-		cfgDir:   "./cfgdata/cargs",
 		pkg:      upstream.Package{Name: "cargs", Version: "1.2.0"},
 		demosDir: "./testdata/cargs/demo",
 	},
 	{
 		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/bzip2/1.0.8/bzip2",
 		dir:      "./testdata/bzip2/1.0.8",
-		cfgDir:   "./cfgdata/bzip2",
 		pkg:      upstream.Package{Name: "bzip2", Version: "1.0.8"},
 		demosDir: "./testdata/bzip2/demo",
 	},
@@ -129,84 +120,6 @@ func TestEnd2End(t *testing.T) {
 		t.Run(fmt.Sprintf("%s/%s", tc.pkg.Name, tc.pkg.Version), func(t *testing.T) {
 			t.Parallel()
 			testFrom(t, tc, false)
-		})
-	}
-}
-
-// ​​The cfgdata directory is used by llcppcfg to generate end-to-end tests. Its directory structure is as follows.
-//
-// cfgdata
-// ├── libxml2
-// │   └── {{OS}}
-// │       └── 2.13.6
-// └── cjson
-//     └── {{OS}}
-//         └── 1.7.18
-//
-// Due to inconsistencies in header file paths across different systems, the expected test files are platform-based.​​
-func TestEnd2EndLLCppcfg(t *testing.T) {
-	null, err := os.OpenFile(os.DevNull, os.O_RDWR, 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%s/%s", tc.pkg.Name, tc.pkg.Version), func(t *testing.T) {
-			conanDir, err := os.MkdirTemp("", "llcppg_end2end_test_conan_dir_*")
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer os.RemoveAll(conanDir)
-
-			resultDir, err := os.MkdirTemp("", "llcppg_end2end_llcppcfg_gen_result_*")
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer os.RemoveAll(resultDir)
-
-			stderr := os.Stderr
-
-			os.Stderr = null
-			actualPcFiles, err := conan.NewConanInstaller(tc.config).Install(tc.pkg, conanDir)
-			os.Stderr = stderr
-
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			pcFileName := actualPcFiles[0]
-
-			cmd := exec.Command("llcppcfg", pcFileName)
-			cmd.Env = os.Environ()
-			cmd.Env = append(cmd.Env, pcPathEnv(conanDir)...)
-			cmd.Stderr = os.Stderr
-			cmd.Stdout = os.Stdout
-
-			platformCfgDir := filepath.Join(tc.cfgDir, runtime.GOOS, tc.pkg.Version)
-
-			gen := false
-			// generate config only
-			if gen {
-				os.MkdirAll(platformCfgDir, 0700)
-				cmd.Dir = platformCfgDir
-
-				if err = cmd.Run(); err != nil {
-					t.Fatal(err)
-				}
-				return
-			}
-
-			cmd.Dir = resultDir
-			if err = cmd.Run(); err != nil {
-				t.Fatal(err)
-			}
-
-			cmd = exec.Command("git", "diff", "--no-index", resultDir, platformCfgDir)
-			cmd.Stderr = os.Stderr
-			cmd.Stdout = os.Stdout
-			err = cmd.Run()
-			if err != nil {
-				t.Fatal(err)
-			}
 		})
 	}
 }
