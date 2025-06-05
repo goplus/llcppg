@@ -1,8 +1,7 @@
 package config
 
 import (
-	"bufio"
-	"fmt"
+	"io"
 	"maps"
 	"os"
 	"path/filepath"
@@ -79,7 +78,6 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		if _, ok := inters[filename]; !ok {
 			others = append(others, filename)
 		}
-		fmt.Fprintln(os.Stderr, "tttttt", filename, inters)
 	})
 
 	info.Inters = slices.Collect(maps.Keys(inters))
@@ -134,21 +132,19 @@ func CommonParentDir(paths []string) string {
 }
 
 func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (inters map[string]struct{}) {
-	scanner := bufio.NewScanner(outputFile)
-
 	fileName := strings.TrimSuffix(filepath.Base(composedHeaderFileName), ".h")
 
 	inters = make(map[string]struct{})
 
-	for scanner.Scan() {
+	content, _ := io.ReadAll(outputFile)
+
+	for _, line := range strings.Fields(string(content)) {
 		// skip composed header file
-		if strings.Contains(scanner.Text(), fileName) {
+		if strings.Contains(line, fileName) || line == `\` {
 			continue
 		}
-		for _, elem := range strings.Fields(scanner.Text()) {
-			inter := filepath.Clean(strings.TrimSpace(strings.TrimSuffix(elem, `\`)))
-			inters[inter] = struct{}{}
-		}
+		inter := filepath.Clean(line)
+		inters[inter] = struct{}{}
 	}
 
 	return
