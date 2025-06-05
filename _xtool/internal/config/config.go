@@ -41,28 +41,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	}
 	defer os.Remove(outfile.Name())
 
-	inters := make(map[string]struct{})
-	others := []string{} // impl & third
-	for _, f := range includes {
-		content := "#include <" + f + ">"
-		index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
-			File: content,
-			Temp: true,
-			Args: args,
-		})
-		if err != nil {
-			panic(err)
-		}
-		clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
-			if len(incins) == 1 {
-				filename := filepath.Clean(clang.GoString(inced.FileName()))
-				info.Inters = append(info.Inters, filename)
-				inters[filename] = struct{}{}
-			}
-		})
-		unit.Dispose()
-		index.Dispose()
-	}
+	refMap := make(map[string]int, len(includes))
 
 	clangtool.ComposeIncludes(includes, outfile.Name())
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
@@ -75,41 +54,62 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	if err != nil {
 		panic(err)
 	}
+
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		// not in the first level include maybe impl or third hfile
 		filename := filepath.Clean(clang.GoString(inced.FileName()))
-		_, inter := inters[filename]
-		if len(incins) > 1 && !inter {
-			others = append(others, filename)
+
+		if len(incins) == 1 {
+			info.Inters = append(info.Inters, filename)
+		}
+
+		ref, ok := refMap[filename]
+		if !ok {
+			refMap[filename] = len(incins)
+			return
+		}
+		// Handle duplicate references: Retain only the reference with the smallest source location.
+		// Example:
+		//   temp1.h: temp2 tempimpl.h
+		//   temp2.h: temp2
+		// The reference count for temp2.h should be 1 (not 2).
+		// If its count is 2, decrement it to 1.
+		if len(incins) < ref {
+			refMap[filename] = len(incins)
 		}
 	})
 
-	if mix {
-		info.Thirds = others
-		return info
-	}
-
-	root, err := filepath.Abs(commonParentDir(info.Inters))
+	absLongestPrefix, err := filepath.Abs(CommonParentDir(info.Inters))
 	if err != nil {
 		panic(err)
 	}
-	for _, f := range others {
-		file, err := filepath.Abs(f)
+
+	for filename, ref := range refMap {
+		if ref == 1 {
+			continue
+		}
+
+		if mix {
+			info.Thirds = append(info.Thirds, filename)
+			continue
+		}
+		filePath, err := filepath.Abs(filename)
 		if err != nil {
 			panic(err)
 		}
-		if strings.HasPrefix(file, root) {
-			info.Impls = append(info.Impls, f)
+		if strings.HasPrefix(filePath, absLongestPrefix) {
+			info.Impls = append(info.Impls, filename)
 		} else {
-			info.Thirds = append(info.Thirds, f)
+			info.Thirds = append(info.Thirds, filename)
 		}
 	}
+
 	return info
 }
 
 // commonParentDir finds the longest common parent directory path for a given slice of paths.
 // For example, given paths ["/a/b/c/d", "/a/b/e/f"], it returns "/a/b".
-func commonParentDir(paths []string) string {
+func CommonParentDir(paths []string) string {
 	if len(paths) == 0 {
 		return ""
 	}

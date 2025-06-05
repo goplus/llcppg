@@ -2,11 +2,16 @@ package config_test
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/goplus/lib/c/clang"
+	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
+	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	"github.com/goplus/llcppg/_xtool/internal/config"
 	llconfig "github.com/goplus/llcppg/config"
 )
@@ -72,4 +77,168 @@ func TestPkgHfileInfo(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLongestPrefix(t *testing.T) {
+	testCases := []struct {
+		name string
+		strs []string
+		want string
+	}{
+		{
+			name: "empty string 1",
+			strs: []string{},
+			want: "",
+		},
+		{
+			name: "empty string 2",
+			strs: []string{"", ""},
+			want: ".",
+		},
+		{
+			name: "one empty string(b)",
+			strs: []string{"/a", ""},
+			want: "",
+		},
+		{
+			name: "one empty string(a)",
+			strs: []string{"", "/a"},
+
+			want: "",
+		},
+		// FIXME: substring bug
+		// {
+		// 	name: "b is substring of a",
+		// 	strs: []string{"/usr/a/b", "/usr/a"},
+		// 	want: "/usr/a",
+		// },
+		// {
+		// 	name: "a is substring of b",
+		// 	strs: []string{"/usr/c", "/usr/c/b"},
+		// 	want: "/usr/c",
+		// },
+		{
+			name: "normal case 1",
+			strs: []string{"testdata/hfile/temp1.h", "testdata/thirdhfile/third.h"},
+			want: "testdata",
+		},
+		{
+			name: "normal case 2",
+			strs: []string{"testdata/hfile/temp1.h", "testdata/hfile/third.h"},
+
+			want: "testdata/hfile",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := config.CommonParentDir(tc.strs); got != tc.want {
+				t.Fatalf("unexpected longest prefix: want %s got %s", tc.want, got)
+			}
+		})
+	}
+}
+
+func benchmarkFn(fn func()) time.Duration {
+	now := time.Now()
+
+	fn()
+
+	return time.Since(now)
+}
+
+func BenchmarkPkgHfileInfo(t *testing.B) {
+	include := []string{"temp1.h", "temp2.h"}
+	cflags := []string{"-I./testdata/hfile", "-I./testdata/thirdhfile"}
+	t1 := benchmarkFn(func() {
+		for i := 0; i < t.N; i++ {
+			pkgHfileInfo(include, cflags, false)
+		}
+	})
+
+	t2 := benchmarkFn(func() {
+		for i := 0; i < t.N; i++ {
+			config.PkgHfileInfo(include, cflags, false)
+		}
+	})
+
+	fmt.Println("old PkgHfileInfo elapsed: ", t1, "new PkgHfileInfo elasped: ", t2)
+}
+
+func pkgHfileInfo(includes []string, args []string, mix bool) *config.PkgHfilesInfo {
+	info := &config.PkgHfilesInfo{
+		Inters: []string{},
+		Impls:  []string{},
+		Thirds: []string{},
+	}
+	outfile, err := os.CreateTemp("", "compose_*.h")
+	if err != nil {
+		panic(err)
+	}
+	defer os.Remove(outfile.Name())
+
+	inters := make(map[string]struct{})
+	others := []string{} // impl & third
+	for _, f := range includes {
+		content := "#include <" + f + ">"
+		index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
+			File: content,
+			Temp: true,
+			Args: args,
+		})
+		if err != nil {
+			panic(err)
+		}
+		clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
+			if len(incins) == 1 {
+				filename := filepath.Clean(clang.GoString(inced.FileName()))
+				info.Inters = append(info.Inters, filename)
+				inters[filename] = struct{}{}
+			}
+		})
+		unit.Dispose()
+		index.Dispose()
+	}
+
+	clangtool.ComposeIncludes(includes, outfile.Name())
+	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
+		File: outfile.Name(),
+		Temp: false,
+		Args: args,
+	})
+	defer unit.Dispose()
+	defer index.Dispose()
+	if err != nil {
+		panic(err)
+	}
+	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
+		// not in the first level include maybe impl or third hfile
+		filename := filepath.Clean(clang.GoString(inced.FileName()))
+		_, inter := inters[filename]
+		if len(incins) > 1 && !inter {
+			others = append(others, filename)
+		}
+	})
+
+	if mix {
+		info.Thirds = others
+		return info
+	}
+
+	root, err := filepath.Abs(config.CommonParentDir(info.Inters))
+	if err != nil {
+		panic(err)
+	}
+	for _, f := range others {
+		file, err := filepath.Abs(f)
+		if err != nil {
+			panic(err)
+		}
+		if strings.HasPrefix(file, root) {
+			info.Impls = append(info.Impls, f)
+		} else {
+			info.Thirds = append(info.Thirds, f)
+		}
+	}
+	return info
 }
