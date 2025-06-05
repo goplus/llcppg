@@ -56,7 +56,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File: outfile.Name(),
 		Temp: false,
-		Args: append(args, "-MM", "-MF", mmOutput.Name()),
+		Args: append(args, "-fkeep-system-includes", "-MD", "-MF", mmOutput.Name()),
 	})
 
 	defer unit.Dispose()
@@ -71,7 +71,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		// not in the first level include maybe impl or third hfile
 		filename := filepath.Clean(clang.GoString(inced.FileName()))
-
+		inced.
 		// skip the composed header
 		if filename == outfile.Name() {
 			return
