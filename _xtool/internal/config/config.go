@@ -52,11 +52,15 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	}
 	defer os.Remove(mmOutput.Name())
 
+	args = append(args, ignoreIncludesArgs(includes)...)
+
+	args = append(args, "-MM", "-MF", mmOutput.Name())
+
 	clangtool.ComposeIncludes(includes, outfile.Name())
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File: outfile.Name(),
 		Temp: false,
-		Args: append(ignoreIncludesArgs(includes), "-MMD", "-MF", mmOutput.Name()),
+		Args: args,
 	})
 
 	defer unit.Dispose()
