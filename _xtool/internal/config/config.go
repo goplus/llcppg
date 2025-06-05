@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
@@ -78,6 +79,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		if _, ok := inters[filename]; !ok {
 			others = append(others, filename)
 		}
+		fmt.Fprintln(os.Stderr, "tttttt", filename, inters)
 	})
 
 	info.Inters = slices.Collect(maps.Keys(inters))
@@ -143,8 +145,10 @@ func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (inters m
 		if strings.Contains(scanner.Text(), fileName) {
 			continue
 		}
-		inter := filepath.Clean(strings.TrimSpace(strings.TrimSuffix(scanner.Text(), `\`)))
-		inters[inter] = struct{}{}
+		for _, elem := range strings.Fields(scanner.Text()) {
+			inter := filepath.Clean(strings.TrimSpace(strings.TrimSuffix(elem, `\`)))
+			inters[inter] = struct{}{}
+		}
 	}
 
 	return
