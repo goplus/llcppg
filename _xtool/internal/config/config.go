@@ -56,7 +56,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File: outfile.Name(),
 		Temp: false,
-		Args: append(args, "-fkeep-system-includes", "-MD", "-MF", mmOutput.Name()),
+		Args: append(ignoreIncludesArgs(includes), "-MD", "-MF", mmOutput.Name()),
 	})
 
 	defer unit.Dispose()
@@ -154,4 +154,10 @@ func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (inters m
 	}
 
 	return
+}
+
+func ignoreIncludesArgs(includes []string) (args []string) {
+	for _, inc := range includes {
+		args = append(args, fmt.Sprintf("--no-system-header-prefix=%s", inc))
+	}
 }
