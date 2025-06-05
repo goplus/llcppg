@@ -160,4 +160,5 @@ func ignoreIncludesArgs(includes []string) (args []string) {
 	for _, inc := range includes {
 		args = append(args, fmt.Sprintf("--no-system-header-prefix=%s", inc))
 	}
+	return
 }
