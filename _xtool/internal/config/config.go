@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"maps"
 	"os"
@@ -78,6 +79,8 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		if _, ok := inters[filename]; !ok {
 			others = append(others, filename)
 		}
+
+		fmt.Fprintln(os.Stderr, "fffffff", filename, inters)
 	})
 
 	info.Inters = slices.Collect(maps.Keys(inters))
