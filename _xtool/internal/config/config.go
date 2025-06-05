@@ -146,7 +146,7 @@ func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (inters m
 		if strings.Contains(line, fileName) || line == `\` {
 			continue
 		}
-		fmt.Fprintln(line)
+		fmt.Fprintln(os.Stderr, "aaaaa", line)
 
 		inter := filepath.Clean(line)
 		inters[inter] = struct{}{}
