@@ -71,7 +71,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		// not in the first level include maybe impl or third hfile
 		filename := filepath.Clean(clang.GoString(inced.FileName()))
-		inced.
+
 		// skip the composed header
 		if filename == outfile.Name() {
 			return
