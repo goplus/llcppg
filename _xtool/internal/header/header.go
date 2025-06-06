@@ -156,7 +156,6 @@ func RetrieveInterfaceFromMM(
 
 	mmTrie := NewTrie()
 
-	var longestPrefix string
 	for _, line := range strings.Fields(string(content)) {
 		// skip composed header file
 		if strings.Contains(line, fileName) || line == `\` {
@@ -164,20 +163,12 @@ func RetrieveInterfaceFromMM(
 		}
 		headerFile := filepath.Clean(line)
 
-		if includeTrie.IsSubsetOf(headerFile) {
-			if longestPrefix == "" {
-				longestPrefix = headerFile
-			} else {
-				mmTrie.Insert(headerFile)
-			}
+		if includeTrie.IsOnSameBranch(headerFile) {
+			mmTrie.Insert(headerFile)
 
 			interfaceMap[headerFile] = struct{}{}
 		}
 	}
-
-	if longestPrefix != "" {
-		prefix = mmTrie.LongestPrefix(longestPrefix)
-	}
-
+	prefix = mmTrie.LongestPrefix()
 	return
 }
