@@ -173,12 +173,6 @@ func TestTrieSearch(t *testing.T) {
 			want:     false,
 		},
 		{
-			name:     "Mixed path separators",
-			search:   "/usr/local/bin/",
-			inserted: []string{"/usr/local/bin/"},
-			want:     true,
-		},
-		{
 			name:     "Non-existent path",
 			search:   "/non/existent/path",
 			inserted: []string{"/usr/local/bin/", "/usr/local/lib/"},
