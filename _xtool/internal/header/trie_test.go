@@ -3,7 +3,7 @@ package header_test
 import (
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/header"
 )
 
 func TestTrieContains(t *testing.T) {
@@ -99,7 +99,7 @@ func TestTrieContains(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			trie := config.NewTrie()
+			trie := header.NewTrie()
 
 			for _, i := range tc.inserted {
 				trie.Insert(i)
@@ -188,7 +188,7 @@ func TestTrieSearch(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			trie := config.NewTrie()
+			trie := header.NewTrie()
 			for _, word := range tc.inserted {
 				trie.Insert(word)
 			}
@@ -291,7 +291,7 @@ func TestTrieLongestPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			trie := config.NewTrie()
+			trie := header.NewTrie()
 			for _, word := range tt.inserted {
 				trie.Insert(word)
 			}
@@ -412,7 +412,7 @@ func TestTrieReverse(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			trie := config.NewTrie(config.WithReversePathSegmenter())
+			trie := header.NewTrie(header.WithReversePathSegmenter())
 
 			for _, i := range tc.inserted {
 				trie.Insert(i)
