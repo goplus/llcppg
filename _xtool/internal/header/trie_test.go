@@ -84,6 +84,30 @@ func TestTrieContains(t *testing.T) {
 		},
 
 		{
+			name:     "substring string case 4",
+			search:   "/c/b",
+			inserted: []string{"/a/b", "/c/b/a"},
+			want:     true,
+		},
+		{
+			name:     "substring string case 5",
+			search:   "/c/a",
+			inserted: []string{"/a/b", "/c/b/a"},
+			want:     false,
+		},
+		{
+			name:     "substring string case 6",
+			search:   "/c/b/c",
+			inserted: []string{"/a/b", "/c/b/a"},
+			want:     false,
+		},
+		{
+			name:     "substring string case 7",
+			search:   "/c/b",
+			inserted: []string{"/a/b", "/c/b/c/a"},
+			want:     true,
+		},
+		{
 			name:     "absolute path case 1",
 			search:   "a",
 			inserted: []string{"/a/b"},
@@ -356,7 +380,7 @@ func TestTrieReverse(t *testing.T) {
 
 		{
 			name:     "multiple string case 4",
-			search:   "/c/d",
+			search:   "c/d",
 			inserted: []string{"/a/c/d", "/b/c/d", "/c/d/a"},
 			want:     true,
 		},
