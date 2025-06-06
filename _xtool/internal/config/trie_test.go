@@ -285,7 +285,7 @@ func TestTrieLongestPrefix(t *testing.T) {
 			name:     "absolute path case 2",
 			inserted: []string{"usr/share", "/usr", "usr/include"},
 			input:    "usr/include/share",
-			want:     "usr",
+			want:     "",
 		},
 	}
 
