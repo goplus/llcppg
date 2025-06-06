@@ -21,7 +21,7 @@ func TestPkgHfileInfo(t *testing.T) {
 				CFlags:  "-I./testdata/hfile -I ./testdata/thirdhfile",
 				Include: []string{"temp1.h", "temp2.h"},
 			},
-			want: &config.PkgHfilesInfo{
+			want: &header.PkgHfilesInfo{
 				Inters: []string{"testdata/hfile/temp1.h", "testdata/hfile/temp2.h"},
 				Impls:  []string{"testdata/hfile/tempimpl.h"},
 			},
@@ -32,7 +32,7 @@ func TestPkgHfileInfo(t *testing.T) {
 				Include: []string{"temp1.h", "temp2.h"},
 				Mix:     true,
 			},
-			want: &config.PkgHfilesInfo{
+			want: &header.PkgHfilesInfo{
 				Inters: []string{"testdata/hfile/temp1.h", "testdata/hfile/temp2.h"},
 				Impls:  []string{},
 			},
