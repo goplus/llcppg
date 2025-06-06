@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	llcppg "github.com/goplus/llcppg/config"
 )
@@ -100,7 +100,7 @@ func Do(conf *Config) error {
 	// As a solution, the resource directory is externally provided by llcppg.
 	libclangFlags := []string{"-fparse-all-comments"}
 
-	pkgHfiles := config.PkgHfileInfo(conf.Conf.Include, append(libclangFlags, strings.Fields(conf.Conf.CFlags)...), conf.Conf.Mix)
+	pkgHfiles := header.PkgHfileInfo(conf.Conf.Include, append(libclangFlags, strings.Fields(conf.Conf.CFlags)...), conf.Conf.Mix)
 	if debugParse {
 		fmt.Fprintln(os.Stderr, "interfaces", pkgHfiles.Inters)
 		fmt.Fprintln(os.Stderr, "implements", pkgHfiles.Impls)

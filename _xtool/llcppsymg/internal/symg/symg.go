@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/internal/ld"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/flag"
 	llcppg "github.com/goplus/llcppg/config"
@@ -47,7 +47,7 @@ func Do(conf *Config) error {
 		return err
 	}
 
-	pkgHfiles := config.PkgHfileInfo(conf.Includes, strings.Fields(conf.CFlags), conf.Mix)
+	pkgHfiles := header.PkgHfileInfo(conf.Includes, strings.Fields(conf.CFlags), conf.Mix)
 	if dbgSymbol {
 		fmt.Println("interfaces", pkgHfiles.Inters)
 		fmt.Println("implements", pkgHfiles.Impls)

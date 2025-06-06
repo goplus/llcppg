@@ -1,4 +1,4 @@
-package config_test
+package header_test
 
 import (
 	"fmt"
@@ -7,21 +7,21 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/header"
 	llconfig "github.com/goplus/llcppg/config"
 )
 
 func TestPkgHfileInfo(t *testing.T) {
 	cases := []struct {
 		conf *llconfig.Config
-		want *config.PkgHfilesInfo
+		want *header.PkgHfilesInfo
 	}{
 		{
 			conf: &llconfig.Config{
 				CFlags:  "-I./testdata/hfile -I ./testdata/thirdhfile",
 				Include: []string{"temp1.h", "temp2.h"},
 			},
-			want: &config.PkgHfilesInfo{
+			want: &header.PkgHfilesInfo{
 				Inters: []string{"testdata/hfile/temp1.h", "testdata/hfile/temp2.h"},
 				Impls:  []string{"testdata/hfile/tempimpl.h"},
 			},
@@ -32,7 +32,7 @@ func TestPkgHfileInfo(t *testing.T) {
 				Include: []string{"temp1.h", "temp2.h"},
 				Mix:     true,
 			},
-			want: &config.PkgHfilesInfo{
+			want: &header.PkgHfilesInfo{
 				Inters: []string{"testdata/hfile/temp1.h", "testdata/hfile/temp2.h"},
 				Impls:  []string{},
 			},
@@ -41,7 +41,7 @@ func TestPkgHfileInfo(t *testing.T) {
 
 	for i, tc := range cases {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
-			info := config.PkgHfileInfo(tc.conf.Include, strings.Fields(tc.conf.CFlags), tc.conf.Mix)
+			info := header.PkgHfileInfo(tc.conf.Include, strings.Fields(tc.conf.CFlags), tc.conf.Mix)
 			if !reflect.DeepEqual(info.Inters, tc.want.Inters) {
 				t.Fatalf("inter expected %v, but got %v", tc.want.Inters, info.Inters)
 			}
