@@ -75,7 +75,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	}
 
 	var others []string
-	inters := RetrieveInterfaceFromMM(outfile.Name(), mmOutput, includeTrie)
+	inters, longestPrefix := RetrieveInterfaceFromMM(outfile.Name(), mmOutput, includeTrie)
 
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		// not in the first level include maybe impl or third hfile
@@ -93,7 +93,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 
 	info.Inters = slices.Collect(maps.Keys(inters))
 
-	absLongestPrefix, err := filepath.Abs(CommonParentDir(info.Inters))
+	absLongestPrefix, err := filepath.Abs(longestPrefix)
 	if err != nil {
 		panic(err)
 	}
@@ -145,13 +145,16 @@ func RetrieveInterfaceFromMM(
 	composedHeaderFileName string,
 	mmOutput *os.File,
 	includeTrie *Trie,
-) (interfaceMap map[string]struct{}) {
+) (interfaceMap map[string]struct{}, prefix string) {
 	fileName := strings.TrimSuffix(filepath.Base(composedHeaderFileName), ".h")
 
 	interfaceMap = make(map[string]struct{})
 
 	content, _ := io.ReadAll(mmOutput)
 
+	mmTrie := NewTrie()
+
+	var longestPrefix string
 	for _, line := range strings.Fields(string(content)) {
 		// skip composed header file
 		if strings.Contains(line, fileName) || line == `\` {
@@ -159,9 +162,19 @@ func RetrieveInterfaceFromMM(
 		}
 		headerFile := filepath.Clean(line)
 
-		if includeTrie.Contains(headerFile) {
+		if includeTrie.IsSubsetOf(headerFile) {
+			if longestPrefix == "" {
+				longestPrefix = headerFile
+			} else {
+				mmTrie.Insert(headerFile)
+			}
+
 			interfaceMap[headerFile] = struct{}{}
 		}
+	}
+
+	if longestPrefix != "" {
+		prefix = mmTrie.LongestPrefix(longestPrefix)
 	}
 
 	return

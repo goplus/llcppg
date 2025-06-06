@@ -153,17 +153,17 @@ func benchmarkFn(fn func()) time.Duration {
 	return time.Since(now)
 }
 
-func BenchmarkPkgHfileInfo(t *testing.B) {
+func TestBenchmarkPkgHfileInfo(t *testing.T) {
 	include := []string{"temp1.h", "temp2.h"}
 	cflags := []string{"-I./testdata/hfile", "-I./testdata/thirdhfile"}
 	t1 := benchmarkFn(func() {
-		for i := 0; i < t.N; i++ {
+		for i := 0; i < 100; i++ {
 			pkgHfileInfo(include, cflags, false)
 		}
 	})
 
 	t2 := benchmarkFn(func() {
-		for i := 0; i < t.N; i++ {
+		for i := 0; i < 100; i++ {
 			header.PkgHfileInfo(include, cflags, false)
 		}
 	})
