@@ -128,7 +128,7 @@ func TestTrieSubset(t *testing.T) {
 			for _, i := range tc.inserted {
 				trie.Insert(i)
 			}
-			if got := trie.IsSubsetOf(tc.search); got != tc.want {
+			if got := trie.IsOnSameBranch(tc.search); got != tc.want {
 				t.Fatalf("unexpected result: want %v got %v", tc.want, got)
 			}
 		})
@@ -430,7 +430,7 @@ func TestTrieReverse(t *testing.T) {
 			for _, i := range tc.inserted {
 				trie.Insert(i)
 			}
-			if got := trie.IsSubsetOf(tc.search); got != tc.want {
+			if got := trie.IsOnSameBranch(tc.search); got != tc.want {
 				t.Fatalf("unexpected result: want %v got %v", tc.want, got)
 			}
 		})

@@ -178,8 +178,8 @@ func dfs(prefix *[]string, currentPrefix string, node, parent *TrieNode) {
 	}
 }
 
-// IsSubsetOf checks the given s is the subset of trie tree
-func (t *Trie) IsSubsetOf(s string) bool {
+// IsOnSameBranch checks the given s is the subset of trie tree
+func (t *Trie) IsOnSameBranch(s string) bool {
 	if s == "" {
 		return false
 	}
