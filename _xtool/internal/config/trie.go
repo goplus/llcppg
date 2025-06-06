@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"iter"
 	"os"
 	"path/filepath"
@@ -57,8 +56,6 @@ func splitPathAbsSafe(path string) (paths []string) {
 	if len(paths) == 0 {
 		paths = skipEmpty(strings.Split(originalPath, sep))
 	}
-
-	fmt.Println(paths)
 
 	return
 }
@@ -165,7 +162,7 @@ func (t *Trie) LongestPrefix(s string) string {
 		child := node.children[segment]
 
 		isLongestPrefix := child != nil && node.linkCount == 1 && !node.isLeaf
-		fmt.Println(segment, child, node)
+
 		if !isLongestPrefix {
 			break
 		}
