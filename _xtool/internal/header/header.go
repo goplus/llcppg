@@ -98,7 +98,7 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		panic(err)
 	}
 
-	fmt.Println(longestPrefix, CommonParentDir(info.Inters))
+	fmt.Fprintln(os.Stderr, "tttttt", longestPrefix, CommonParentDir(info.Inters))
 
 	for _, filename := range others {
 		if mix {
