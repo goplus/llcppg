@@ -98,6 +98,8 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		panic(err)
 	}
 
+	fmt.Println(longestPrefix, CommonParentDir(info.Inters))
+
 	for _, filename := range others {
 		if mix {
 			info.Thirds = append(info.Thirds, filename)
