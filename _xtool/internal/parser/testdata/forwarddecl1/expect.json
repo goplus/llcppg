@@ -678,7 +678,19 @@
             {
               "Access": 1,
               "Comment": null,
-              "Doc": null,
+              "Doc": {
+                "List": [
+                  {
+                    "Text": "// char in ast will got unsigned char \u0026 signed char and they are same in go\n",
+                    "_Type": "Comment"
+                  },
+                  {
+                    "Text": "    // but in ast,will have different,but with compare test,we need avoid these senario\n",
+                    "_Type": "Comment"
+                  }
+                ],
+                "_Type": "CommentGroup"
+              },
               "IsStatic": false,
               "Names": [
                 {
@@ -688,8 +700,8 @@
               ],
               "Type": {
                 "Elt": {
-                  "Flags": 1,
-                  "Kind": 2,
+                  "Flags": 0,
+                  "Kind": 6,
                   "_Type": "BuiltinType"
                 },
                 "Len": {

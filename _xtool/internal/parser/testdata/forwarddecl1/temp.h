@@ -39,7 +39,9 @@ typedef struct lua_Debug lua_Debug;
 int(lua_getstack)(lua_State *L, int level, lua_Debug *ar);
 
 struct lua_Debug {
-    char short_src[LUA_IDSIZE];
+    // char in ast will got unsigned char & signed char and they are same in go
+    // but in ast,will have different,but with compare test,we need avoid these senario
+    int short_src[LUA_IDSIZE];
     /* private part */
     struct CallInfo *i_ci; /* active function */
 };

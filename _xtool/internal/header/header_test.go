@@ -1,4 +1,4 @@
-package config_test
+package header_test
 
 import (
 	"fmt"
@@ -12,21 +12,21 @@ import (
 	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/header"
 	llconfig "github.com/goplus/llcppg/config"
 )
 
 func TestPkgHfileInfo(t *testing.T) {
 	cases := []struct {
 		conf *llconfig.Config
-		want *config.PkgHfilesInfo
+		want *header.PkgHfilesInfo
 	}{
 		{
 			conf: &llconfig.Config{
 				CFlags:  "-I./testdata/hfile -I ./testdata/thirdhfile",
 				Include: []string{"temp1.h", "temp2.h"},
 			},
-			want: &config.PkgHfilesInfo{
+			want: &header.PkgHfilesInfo{
 				Inters: []string{"testdata/hfile/temp1.h", "testdata/hfile/temp2.h"},
 				Impls:  []string{"testdata/hfile/tempimpl.h"},
 			},
@@ -37,7 +37,7 @@ func TestPkgHfileInfo(t *testing.T) {
 				Include: []string{"temp1.h", "temp2.h"},
 				Mix:     true,
 			},
-			want: &config.PkgHfilesInfo{
+			want: &header.PkgHfilesInfo{
 				Inters: []string{"testdata/hfile/temp1.h", "testdata/hfile/temp2.h"},
 				Impls:  []string{},
 			},
@@ -46,7 +46,7 @@ func TestPkgHfileInfo(t *testing.T) {
 
 	for i, tc := range cases {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
-			info := config.PkgHfileInfo(tc.conf.Include, strings.Fields(tc.conf.CFlags), tc.conf.Mix)
+			info := header.PkgHfileInfo(tc.conf.Include, strings.Fields(tc.conf.CFlags), tc.conf.Mix)
 			if !reflect.DeepEqual(info.Inters, tc.want.Inters) {
 				t.Fatalf("inter expected %v, but got %v", tc.want.Inters, info.Inters)
 			}
@@ -138,7 +138,7 @@ func TestLongestPrefix(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := config.CommonParentDir(tc.strs); got != tc.want {
+			if got := header.CommonParentDir(tc.strs); got != tc.want {
 				t.Fatalf("unexpected longest prefix: want %s got %s", tc.want, got)
 			}
 		})
@@ -164,15 +164,15 @@ func BenchmarkPkgHfileInfo(t *testing.B) {
 
 	t2 := benchmarkFn(func() {
 		for i := 0; i < t.N; i++ {
-			config.PkgHfileInfo(include, cflags, false)
+			header.PkgHfileInfo(include, cflags, false)
 		}
 	})
 
 	fmt.Println("old PkgHfileInfo elapsed: ", t1, "new PkgHfileInfo elasped: ", t2)
 }
 
-func pkgHfileInfo(includes []string, args []string, mix bool) *config.PkgHfilesInfo {
-	info := &config.PkgHfilesInfo{
+func pkgHfileInfo(includes []string, args []string, mix bool) *header.PkgHfilesInfo {
+	info := &header.PkgHfilesInfo{
 		Inters: []string{},
 		Impls:  []string{},
 		Thirds: []string{},
@@ -231,7 +231,7 @@ func pkgHfileInfo(includes []string, args []string, mix bool) *config.PkgHfilesI
 		return info
 	}
 
-	root, err := filepath.Abs(config.CommonParentDir(info.Inters))
+	root, err := filepath.Abs(header.CommonParentDir(info.Inters))
 	if err != nil {
 		panic(err)
 	}

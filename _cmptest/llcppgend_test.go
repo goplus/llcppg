@@ -89,6 +89,12 @@ var testCases = []testCase{
 		pkg:      upstream.Package{Name: "bzip2", Version: "1.0.8"},
 		demosDir: "./testdata/bzip2/demo",
 	},
+	{
+		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/libxslt/1.1.42/libxslt",
+		dir:      "./testdata/libxslt/1.1.42",
+		pkg:      upstream.Package{Name: "libxslt", Version: "1.1.42"},
+		demosDir: "./testdata/libxslt/demo",
+	},
 }
 
 var mkdirTempLazily = sync.OnceValue(func() string {
