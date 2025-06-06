@@ -52,7 +52,12 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	}
 	defer os.Remove(mmOutput.Name())
 
-	args = append(args, ignoreIncludesArgs(includes)...)
+	includeTrie := NewTrie(WithReversePathSegmenter())
+
+	for _, inc := range includes {
+		includeTrie.Insert(inc)
+		args = append(args, fmt.Sprintf("--no-system-header-prefix=%s", inc))
+	}
 
 	args = append(args, "-MM", "-MF", mmOutput.Name())
 
@@ -69,9 +74,8 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		panic(err)
 	}
 
-	inters := make(map[string]struct{})
-	includeMap := ParseMMOutout(outfile.Name(), mmOutput)
 	var others []string
+	inters := RetrieveInterfaceFromMM(outfile.Name(), mmOutput, includeTrie)
 
 	clangutils.GetInclusions(unit, func(inced clang.File, incins []clang.SourceLocation) {
 		// not in the first level include maybe impl or third hfile
@@ -81,23 +85,10 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 		if filename == outfile.Name() {
 			return
 		}
-		refcnt := len(incins)
-		for _, inc := range incins {
-			incFileName := clang.GoString(inc.File().FileName())
 
-			if incFileName == outfile.Name() {
-				refcnt--
-				continue
-			}
-			if _, ok := includeMap[incFileName]; ok {
-				refcnt--
-			}
+		if _, isInterface := inters[filename]; !isInterface {
+			others = append(others, filename)
 		}
-
-		if refcnt == 0 {
-			inters[filename] = struct{}{}
-		}
-		others = append(others, filename)
 	})
 
 	info.Inters = slices.Collect(maps.Keys(inters))
@@ -108,9 +99,6 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	}
 
 	for _, filename := range others {
-		if _, isInterface := inters[filename]; isInterface {
-			continue
-		}
 		if mix {
 			info.Thirds = append(info.Thirds, filename)
 			continue
@@ -127,7 +115,6 @@ func PkgHfileInfo(includes []string, args []string, mix bool) *PkgHfilesInfo {
 	}
 
 	sort.Strings(info.Inters)
-	sort.Strings(info.Impls)
 
 	return info
 }
@@ -154,30 +141,28 @@ func CommonParentDir(paths []string) string {
 	return filepath.Dir(paths[0])
 }
 
-func ParseMMOutout(composedHeaderFileName string, outputFile *os.File) (includeMap map[string]struct{}) {
+func RetrieveInterfaceFromMM(
+	composedHeaderFileName string,
+	mmOutput *os.File,
+	includeTrie *Trie,
+) (interfaceMap map[string]struct{}) {
 	fileName := strings.TrimSuffix(filepath.Base(composedHeaderFileName), ".h")
 
-	includeMap = make(map[string]struct{})
+	interfaceMap = make(map[string]struct{})
 
-	content, _ := io.ReadAll(outputFile)
-
-	fmt.Fprintln(os.Stderr, "aaaaa", string(content))
+	content, _ := io.ReadAll(mmOutput)
 
 	for _, line := range strings.Fields(string(content)) {
 		// skip composed header file
 		if strings.Contains(line, fileName) || line == `\` {
 			continue
 		}
+		headerFile := filepath.Clean(line)
 
-		includeMap[filepath.Clean(line)] = struct{}{}
+		if includeTrie.Contains(headerFile) {
+			interfaceMap[headerFile] = struct{}{}
+		}
 	}
 
-	return
-}
-
-func ignoreIncludesArgs(includes []string) (args []string) {
-	for _, inc := range includes {
-		args = append(args, fmt.Sprintf("--no-system-header-prefix=%s", inc))
-	}
 	return
 }
