@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	config "github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	llcppg "github.com/goplus/llcppg/config"
 )

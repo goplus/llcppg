@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	config "github.com/goplus/llcppg/_xtool/internal/header"
 	llconfig "github.com/goplus/llcppg/config"
 )
 
