@@ -221,67 +221,51 @@ func TestTrieLongestPrefix(t *testing.T) {
 	tests := []struct {
 		name     string
 		inserted []string
-		input    string
 		want     string
 	}{
 		{
 			name:     "Empty trie",
 			inserted: []string{},
-			input:    "/usr/local/bin",
 			want:     "",
 		},
 		{
 			name:     "Single directory exact match",
 			inserted: []string{"/usr/local/bin/"},
-			input:    "/usr/local/bin",
 			want:     "/usr/local/bin",
 		},
 		{
 			name:     "Single directory partial match",
-			inserted: []string{"/usr/local/bin/"},
-			input:    "/usr/local/bin/python",
+			inserted: []string{"/usr/local/bin/", "/usr/local/bin/python"},
 			want:     "/usr/local/bin",
 		},
 		{
 			name:     "Multiple directories with common prefix",
-			inserted: []string{"/usr/local/bin/", "/usr/local/lib/", "/usr/include/"},
-			input:    "/usr/local/bin/python",
+			inserted: []string{"/usr/local/bin/", "/usr/local/lib/", "/usr/include/", "/usr/local/bin/python"},
 			want:     "/usr",
 		},
 		{
 			name:     "No common prefix",
-			inserted: []string{"/home/user/", "/var/log/", "/tmp/"},
-			input:    "/etc/passwd",
+			inserted: []string{"/home/user/", "/var/log/", "/tmp/", "/etc/passwd"},
 			want:     "",
 		},
 		{
 			name:     "Reverse path match",
-			inserted: []string{"bin", "lib", "include"},
-			input:    "include/lib/bin",
+			inserted: []string{"bin", "lib", "include", "include/lib/bin"},
 			want:     "",
 		},
 		{
 			name:     "Longer input than stored",
-			inserted: []string{"/short/"},
-			input:    "/shorter/path",
-			want:     "",
-		},
-		{
-			name:     "Empty input",
-			inserted: []string{"/test/"},
-			input:    "",
+			inserted: []string{"/short/", "/shorter/path"},
 			want:     "",
 		},
 		{
 			name:     "No match",
-			inserted: []string{"/apple/", "/banana/"},
-			input:    "/cherry/",
+			inserted: []string{"/apple/", "/banana/", "/cherry/"},
 			want:     "",
 		},
 		{
 			name:     "Partial reverse match",
-			inserted: []string{"bin", "lib", "include"},
-			input:    "lib/bin",
+			inserted: []string{"bin", "lib", "include", "lib/bin"},
 			want:     "",
 		},
 		{
@@ -289,20 +273,18 @@ func TestTrieLongestPrefix(t *testing.T) {
 			inserted: []string{
 				"/opt/homebrew/Cellar/cjson/1.7.18/include/cJSON.h",
 				"/opt/homebrew/Cellar/cjson/1.7.18/include/zlib/zlib.h",
+				"/opt/homebrew/Cellar/cjson/1.7.18/include/cJSON/cJSON.h",
 			},
-			input: "/opt/homebrew/Cellar/cjson/1.7.18/include/cJSON/cJSON.h",
-			want:  "/opt/homebrew/Cellar/cjson/1.7.18/include",
+			want: "/opt/homebrew/Cellar/cjson/1.7.18/include",
 		},
 		{
 			name:     "absolute path case 1",
-			inserted: []string{"/usr", "usr", "/usr/include"},
-			input:    "/usr",
+			inserted: []string{"/usr", "usr", "/usr/include", "/usr"},
 			want:     "",
 		},
 		{
 			name:     "absolute path case 2",
-			inserted: []string{"usr/share", "/usr", "usr/include"},
-			input:    "usr/include/share",
+			inserted: []string{"usr/share", "/usr", "usr/include", "usr/include/share"},
 			want:     "",
 		},
 	}
@@ -313,9 +295,9 @@ func TestTrieLongestPrefix(t *testing.T) {
 			for _, word := range tt.inserted {
 				trie.Insert(word)
 			}
-			result := trie.LongestPrefix(tt.input)
+			result := trie.LongestPrefix()
 			if result != tt.want {
-				t.Errorf("LongestPrefix(%q) = %q, want %q", tt.input, result, tt.want)
+				t.Errorf("LongestPrefix(%q) = %q, want %q", tt.inserted, result, tt.want)
 			}
 		})
 	}
