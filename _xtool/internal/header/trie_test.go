@@ -432,6 +432,19 @@ func TestTrieReverse(t *testing.T) {
 			},
 			want: false,
 		},
+
+		{
+			name:   "normal case 3",
+			search: "libxslt/imports.h",
+			inserted: []string{
+				"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/zlib/imports.h",
+				"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/libxml2/imports.h",
+
+				"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/libxslt/xsltexports.h",
+				"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/libxslt/variables.h",
+			},
+			want: false,
+		},
 	}
 
 	for _, tc := range testCases {
