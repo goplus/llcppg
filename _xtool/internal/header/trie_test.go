@@ -6,7 +6,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/internal/header"
 )
 
-func TestTrieContains(t *testing.T) {
+func TestTrieSubset(t *testing.T) {
 	testCases := []struct {
 		name     string
 		search   string
@@ -84,6 +84,30 @@ func TestTrieContains(t *testing.T) {
 		},
 
 		{
+			name:     "substring string case 4",
+			search:   "/c/b",
+			inserted: []string{"/a/b", "/c/b/a"},
+			want:     true,
+		},
+		{
+			name:     "substring string case 5",
+			search:   "/c/a",
+			inserted: []string{"/a/b", "/c/b/a"},
+			want:     false,
+		},
+		{
+			name:     "substring string case 6",
+			search:   "/c/b/c",
+			inserted: []string{"/a/b", "/c/b/a"},
+			want:     false,
+		},
+		{
+			name:     "substring string case 7",
+			search:   "/c/b",
+			inserted: []string{"/a/b", "/c/b/c/a"},
+			want:     true,
+		},
+		{
 			name:     "absolute path case 1",
 			search:   "a",
 			inserted: []string{"/a/b"},
@@ -104,7 +128,7 @@ func TestTrieContains(t *testing.T) {
 			for _, i := range tc.inserted {
 				trie.Insert(i)
 			}
-			if got := trie.Contains(tc.search); got != tc.want {
+			if got := trie.IsSubsetOf(tc.search); got != tc.want {
 				t.Fatalf("unexpected result: want %v got %v", tc.want, got)
 			}
 		})
@@ -147,12 +171,6 @@ func TestTrieSearch(t *testing.T) {
 			search:   "/usr/local/lib/python",
 			inserted: []string{"/usr/local/bin/", "/usr/local/lib/", "/usr/include/"},
 			want:     false,
-		},
-		{
-			name:     "Mixed path separators",
-			search:   "/usr/local/bin/",
-			inserted: []string{"/usr/local/bin/"},
-			want:     true,
 		},
 		{
 			name:     "Non-existent path",
@@ -356,7 +374,7 @@ func TestTrieReverse(t *testing.T) {
 
 		{
 			name:     "multiple string case 4",
-			search:   "/c/d",
+			search:   "c/d",
 			inserted: []string{"/a/c/d", "/b/c/d", "/c/d/a"},
 			want:     true,
 		},
@@ -408,6 +426,19 @@ func TestTrieReverse(t *testing.T) {
 			},
 			want: false,
 		},
+
+		{
+			name:   "normal case 3",
+			search: "libxslt/imports.h",
+			inserted: []string{
+				"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/zlib/imports.h",
+				"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/libxml2/imports.h",
+
+				"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/libxslt/xsltexports.h",
+				"/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include/libxslt/variables.h",
+			},
+			want: false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -417,7 +448,7 @@ func TestTrieReverse(t *testing.T) {
 			for _, i := range tc.inserted {
 				trie.Insert(i)
 			}
-			if got := trie.Contains(tc.search); got != tc.want {
+			if got := trie.IsSubsetOf(tc.search); got != tc.want {
 				t.Fatalf("unexpected result: want %v got %v", tc.want, got)
 			}
 		})
