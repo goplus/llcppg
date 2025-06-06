@@ -153,25 +153,29 @@ func (t *Trie) searchPrefix(s string) *TrieNode {
 // Returns the longest prefix that exists in the trie
 //
 // Implement Source: https://leetcode.com/problems/longest-common-prefix/solutions/127449/longest-common-prefix
-func (t *Trie) LongestPrefix(s string) string {
+func (t *Trie) LongestPrefix() string {
 	var prefix []string
 
-	node := t.root
-
-	for segment := range t.segmenter(s) {
-		child := node.children[segment]
-
-		isLongestPrefix := child != nil && node.linkCount == 1 && !node.isLeaf
-
-		if !isLongestPrefix {
-			break
-		}
-
-		prefix = append(prefix, segment)
-		node = child
-	}
+	dfs(&prefix, "", t.root, nil)
 
 	return filepath.Join(prefix...)
+}
+
+func dfs(prefix *[]string, currentPrefix string, node, parent *TrieNode) {
+	if node == nil {
+		return
+	}
+	if parent != nil && (parent.linkCount != 1 || parent.isLeaf) {
+		return
+	}
+
+	if currentPrefix != "" {
+		*prefix = append(*prefix, currentPrefix)
+	}
+
+	for current, child := range node.children {
+		dfs(prefix, current, child, node)
+	}
 }
 
 // IsSubsetOf checks the given s is the subset of trie tree
