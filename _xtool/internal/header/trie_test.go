@@ -6,7 +6,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/internal/header"
 )
 
-func TestTrieContains(t *testing.T) {
+func TestTrieSubset(t *testing.T) {
 	testCases := []struct {
 		name     string
 		search   string
@@ -128,7 +128,7 @@ func TestTrieContains(t *testing.T) {
 			for _, i := range tc.inserted {
 				trie.Insert(i)
 			}
-			if got := trie.Contains(tc.search); got != tc.want {
+			if got := trie.IsSubsetOf(tc.search); got != tc.want {
 				t.Fatalf("unexpected result: want %v got %v", tc.want, got)
 			}
 		})
@@ -454,7 +454,7 @@ func TestTrieReverse(t *testing.T) {
 			for _, i := range tc.inserted {
 				trie.Insert(i)
 			}
-			if got := trie.Contains(tc.search); got != tc.want {
+			if got := trie.IsSubsetOf(tc.search); got != tc.want {
 				t.Fatalf("unexpected result: want %v got %v", tc.want, got)
 			}
 		})

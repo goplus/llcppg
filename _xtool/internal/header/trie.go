@@ -174,8 +174,8 @@ func (t *Trie) LongestPrefix(s string) string {
 	return filepath.Join(prefix...)
 }
 
-// Checks if the trie contains the given string as a prefix
-func (t *Trie) Contains(s string) bool {
+// IsSubsetOf checks the given s is the subset of trie tree
+func (t *Trie) IsSubsetOf(s string) bool {
 	if s == "" {
 		return false
 	}
@@ -183,16 +183,13 @@ func (t *Trie) Contains(s string) bool {
 
 	for segment := range t.segmenter(s) {
 		child, ok := node.children[segment]
-		// if the current node is end, but there's something unmatched, we still consider it valid.
-		// for example,
-		// input: /c/b/a, tree: /c/b, valid
-		// input: /c/b/a, tree: /c/b/c, invalid
-		// input: /c/b, tree: /c/b/c, valid
-		if !ok && node.isLeaf {
-			return true
-		}
 		if !ok {
-			return false
+			// if the current node is end, but there's something unmatched, we still consider it valid.
+			// for example,
+			// input: /c/b/a, tree: /c/b, valid
+			// input: /c/b/a, tree: /c/b/c, invalid
+			// input: /c/b, tree: /c/b/c, valid
+			return node.isLeaf
 		}
 		node = child
 	}
