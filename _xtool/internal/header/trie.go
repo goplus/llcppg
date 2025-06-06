@@ -176,7 +176,23 @@ func (t *Trie) LongestPrefix(s string) string {
 
 // Checks if the trie contains the given string as a prefix
 func (t *Trie) Contains(s string) bool {
-	return t.searchPrefix(s) != nil
+	if s == "" {
+		return false
+	}
+	node := t.root
+
+	for segment := range t.segmenter(s) {
+		child, ok := node.children[segment]
+		if !ok {
+			if node == t.root {
+				node = nil
+			}
+			break
+		}
+		node = child
+	}
+
+	return node != nil
 }
 
 // Checks if the trie contains the exact string
