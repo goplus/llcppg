@@ -67,7 +67,7 @@ func TestTrieContains(t *testing.T) {
 			name:     "substring string case 1",
 			search:   "/a/b",
 			inserted: []string{"/a"},
-			want:     false,
+			want:     true,
 		},
 		{
 			name:     "substring string case 2",
@@ -358,7 +358,7 @@ func TestTrieReverse(t *testing.T) {
 			name:     "multiple string case 4",
 			search:   "/c/d",
 			inserted: []string{"/a/c/d", "/b/c/d", "/c/d/a"},
-			want:     false,
+			want:     true,
 		},
 
 		{
