@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goplus/llcppg/_xtool/internal/header"
 	config "github.com/goplus/llcppg/_xtool/internal/header"
 	llconfig "github.com/goplus/llcppg/config"
 )
@@ -14,7 +15,7 @@ import (
 func TestPkgHfileInfo(t *testing.T) {
 	cases := []struct {
 		conf *llconfig.Config
-		want *config.PkgHfilesInfo
+		want *header.PkgHfilesInfo
 	}{
 		{
 			conf: &llconfig.Config{
@@ -41,7 +42,7 @@ func TestPkgHfileInfo(t *testing.T) {
 
 	for i, tc := range cases {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
-			info := config.PkgHfileInfo(tc.conf.Include, strings.Fields(tc.conf.CFlags), tc.conf.Mix)
+			info := header.PkgHfileInfo(tc.conf.Include, strings.Fields(tc.conf.CFlags), tc.conf.Mix)
 			if !reflect.DeepEqual(info.Inters, tc.want.Inters) {
 				t.Fatalf("inter expected %v, but got %v", tc.want.Inters, info.Inters)
 			}
