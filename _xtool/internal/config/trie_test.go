@@ -90,7 +90,7 @@ func TestTrieContains(t *testing.T) {
 			want:     false,
 		},
 		{
-			name:     "substring string case 2",
+			name:     "absolute path case 2",
 			search:   "/a",
 			inserted: []string{"a/b", "a/b/c"},
 			want:     false,
@@ -274,6 +274,18 @@ func TestTrieLongestPrefix(t *testing.T) {
 			},
 			input: "/opt/homebrew/Cellar/cjson/1.7.18/include/cJSON/cJSON.h",
 			want:  "/opt/homebrew/Cellar/cjson/1.7.18/include",
+		},
+		{
+			name:     "absolute path case 1",
+			inserted: []string{"/usr", "usr", "/usr/include"},
+			input:    "/usr",
+			want:     "",
+		},
+		{
+			name:     "absolute path case 2",
+			inserted: []string{"usr/share", "/usr", "usr/include"},
+			input:    "usr/include/share",
+			want:     "usr",
 		},
 	}
 
