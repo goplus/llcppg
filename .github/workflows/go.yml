@@ -15,10 +15,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-13
           - macos-latest
           - ubuntu-24.04
-          - ubuntu-24.04-arm
         llvm: [19]
         llgo: [fc86634e29c86b879d1bc489329ad7442ff9bbe3]
         go: [1.23]
