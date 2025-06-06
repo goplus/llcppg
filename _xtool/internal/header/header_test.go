@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/goplus/llcppg/_xtool/internal/header"
-	config "github.com/goplus/llcppg/_xtool/internal/header"
 	llconfig "github.com/goplus/llcppg/config"
 )
 
