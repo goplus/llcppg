@@ -28,7 +28,6 @@ runs:
     if: runner.os == 'macOS'
     shell: bash
     run: |
-      brew update
       brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv lld@${{inputs.llvm}}
       brew install zlib # for llgo test .
       brew link --force zlib # for llgo test .
