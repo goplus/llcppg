@@ -42,9 +42,12 @@ jobs:
 
     - name: Set up Conan
       run: conan profile detect
-    
+
     - name: Setup Log directory
       run: echo "LLCPPG_TEST_LOG_DIR=$(mktemp -d)" >> $GITHUB_ENV
+
+    - name: Turn off filemode diff
+      run: git config --global core.filemode false
 
     - name: Test End2End
       working-directory: _cmptest
