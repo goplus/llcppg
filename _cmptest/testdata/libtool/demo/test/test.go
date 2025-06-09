@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 
+	"libtool"
+
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/_cmptest/testdata/libtool/2.4.7/libtool"
 )
 
 func main() {
