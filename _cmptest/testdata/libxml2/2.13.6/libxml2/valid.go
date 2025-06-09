@@ -19,8 +19,8 @@ type ValidityWarningFunc func(__llgo_arg_0 c.Pointer, __llgo_arg_1 *c.Char, __ll
 
 type X_xmlValidCtxt struct {
 	UserData  c.Pointer
-	Error     c.Pointer
-	Warning   c.Pointer
+	Error     ValidityErrorFunc
+	Warning   ValidityWarningFunc
 	Node      NodePtr
 	NodeNr    c.Int
 	NodeMax   c.Int

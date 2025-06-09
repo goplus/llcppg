@@ -10,7 +10,7 @@ const MAX_SORT = 15
 
 type X_xsltRuntimeExtra struct {
 	Info       c.Pointer
-	Deallocate c.Pointer
+	Deallocate libxml2.FreeFunc
 	Val        struct {
 		Ptr c.Pointer
 	}
@@ -200,9 +200,9 @@ type X_xsltTransformContext struct {
 	Extras              RuntimeExtraPtr
 	StyleList           DocumentPtr
 	Sec                 c.Pointer
-	Error               c.Pointer
+	Error               libxml2.GenericErrorFunc
 	Errctx              c.Pointer
-	Sortfunc            c.Pointer
+	Sortfunc            SortFunc
 	TmpRVT              libxml2.DocPtr
 	PersistRVT          libxml2.DocPtr
 	Ctxtflags           c.Int
@@ -232,9 +232,9 @@ type X_xsltTransformContext struct {
 	OpCount             c.Ulong
 	SourceDocDirty      c.Int
 	CurrentId           c.Ulong
-	NewLocale           c.Pointer
-	FreeLocale          c.Pointer
-	GenSortKey          c.Pointer
+	NewLocale           NewLocaleFunc
+	FreeLocale          FreeLocaleFunc
+	GenSortKey          GenSortKeyFunc
 }
 type TransformContext X_xsltTransformContext
 type TransformContextPtr *TransformContext
@@ -242,9 +242,9 @@ type TransformContextPtr *TransformContext
 type X_xsltElemPreComp struct {
 	Next ElemPreCompPtr
 	Type StyleType
-	Func c.Pointer
+	Func TransformFunction
 	Inst libxml2.NodePtr
-	Free c.Pointer
+	Free ElemPreCompDeallocator
 }
 type ElemPreComp X_xsltElemPreComp
 type ElemPreCompPtr *ElemPreComp
@@ -287,7 +287,7 @@ type ElemPreCompDeallocator func(ElemPreCompPtr)
 type X_xsltStylePreComp struct {
 	Next        ElemPreCompPtr
 	Type        StyleType
-	Func        c.Pointer
+	Func        TransformFunction
 	Inst        libxml2.NodePtr
 	Stype       *libxml2.Char
 	HasStype    c.Int
