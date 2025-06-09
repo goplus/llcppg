@@ -46,6 +46,9 @@ jobs:
     - name: Setup Log directory
       run: echo "LLCPPG_TEST_LOG_DIR=$(mktemp -d)" >> $GITHUB_ENV
 
+    - name: Turn off filemode diff
+      run: git config --global core.fileMode false
+
     - name: Test End2End
       working-directory: _cmptest
       run: |
