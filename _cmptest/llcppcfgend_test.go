@@ -118,7 +118,7 @@ func TestEnd2EndLLCppcfg(t *testing.T) {
 
 			platformCfgDir := filepath.Join(tc.cfgDir, runtime.GOOS, tc.pkg.Version)
 
-			gen := true
+			gen := false
 			// generate config only
 			if gen {
 				os.MkdirAll(platformCfgDir, 0700)
