@@ -60,6 +60,10 @@ var cfgTestCases = []cfgTestCase{
 		cfgDir: "./cfgdata/bzip2",
 		pkg:    upstream.Package{Name: "bzip2", Version: "1.0.8"},
 	},
+	{
+		cfgDir: "./cfgdata/libtool",
+		pkg:    upstream.Package{Name: "libtool", Version: "2.4.7"},
+	},
 }
 
 /*
@@ -114,7 +118,7 @@ func TestEnd2EndLLCppcfg(t *testing.T) {
 
 			platformCfgDir := filepath.Join(tc.cfgDir, runtime.GOOS, tc.pkg.Version)
 
-			gen := false
+			gen := true
 			// generate config only
 			if gen {
 				os.MkdirAll(platformCfgDir, 0700)

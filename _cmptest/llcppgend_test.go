@@ -95,6 +95,13 @@ var testCases = []testCase{
 		pkg:      upstream.Package{Name: "libxslt", Version: "1.1.42"},
 		demosDir: "./testdata/libxslt/demo",
 	},
+
+	{
+		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/libtool/2.4.7/libtool",
+		dir:      "./testdata/libtool/2.4.7",
+		pkg:      upstream.Package{Name: "libtool", Version: "2.4.7"},
+		demosDir: "./testdata/libtool/demo",
+	},
 }
 
 var mkdirTempLazily = sync.OnceValue(func() string {
