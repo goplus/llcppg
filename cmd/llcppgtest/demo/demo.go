@@ -157,20 +157,14 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 		return fmt.Errorf("%s: failed to read demo directory: %v", demoPkgName, err)
 	}
 
-	llgoRunTempDir, err := os.MkdirTemp("", "llgo-run")
-	if err != nil {
-		return err
-	}
-
 	for _, demo := range demos {
 		if demo.IsDir() {
 			fmt.Printf("%s: Running demo: %s\n", demoPkgName, demo.Name())
 
 			// avoid racy
-			if demoErr := runCommandWithTempDir(
+			if demoErr := runCommand(
 				tempLog,
 				filepath.Join(demosPath, demo.Name()),
-				llgoRunTempDir,
 				"llgo", "run", "-v", ".",
 			); demoErr != nil {
 				return fmt.Errorf("%s: failed to run demo: %s: %w", demoPkgName, demo.Name(), demoErr)
@@ -218,27 +212,12 @@ func RunAllGenPkgDemos(baseDir string, confDir string) error {
 		return fmt.Errorf("no directories containing llcppg.cfg found in %s", baseDir)
 	}
 
-	failedDemosCh := make(chan string, len(demos))
+	var failedDemos []string
+
 	// Test each demo
 	for _, demo := range demos {
-		demo := demo
-
-		go func() {
-			if err := RunGenPkgDemo(demo, confDir); err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				failedDemosCh <- demo
-			} else {
-				failedDemosCh <- ""
-			}
-		}()
-	}
-
-	var failedDemos []string
-	for range demos {
-		demoDir := <-failedDemosCh
-
-		if demoDir != "" {
-			failedDemos = append(failedDemos, demoDir)
+		if err := RunGenPkgDemo(demo, confDir); err != nil {
+			failedDemos = append(failedDemos, demo)
 		}
 	}
 
@@ -253,19 +232,5 @@ func runCommand(logFile *os.File, dir, command string, args ...string) error {
 	cmd.Dir = dir
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
-	return cmd.Run()
-}
-
-func runCommandWithTempDir(logFile *os.File, dir, tempDir string, command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Dir = dir
-	cmd.Stdout = logFile
-	cmd.Stderr = logFile
-	cmd.Env = append(os.Environ(), fmt.Sprintf("TMPDIR=%s", tempDir))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("TEMP=%s", tempDir))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("TMP=%s", tempDir))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GOTMPDIR=%s", tempDir))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GOCACHE=%s", tempDir))
-
 	return cmd.Run()
 }
