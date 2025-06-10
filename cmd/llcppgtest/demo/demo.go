@@ -13,8 +13,6 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-var llgoRunMu sync.Mutex
-
 var mkdirTempLazily = sync.OnceValue(func() string {
 	if env := os.Getenv("LLCPPG_TEST_LOG_DIR"); env != "" {
 		return env
@@ -163,6 +161,7 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 	if err != nil {
 		return err
 	}
+	defer os.RemoveAll(llgoRunTempDir)
 
 	for _, demo := range demos {
 		if demo.IsDir() {

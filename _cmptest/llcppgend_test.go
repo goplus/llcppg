@@ -20,8 +20,6 @@ const llcppgGoVersion = "1.20.14"
 var (
 	// avoid conan install race condition
 	conanInstallMutex sync.Mutex
-	// avoid llgo run race condition
-	llgoRunMutex sync.Mutex
 )
 
 type testCase struct {
@@ -234,9 +232,11 @@ func runDemos(t *testing.T, logFile *os.File, demosPath string, pkgname, pkgpath
 		t.Fatal(err)
 	}
 
-	// only can lock out of loop,will got ld64.lld: error: undefined symbol: math.Float32bits
-	llgoRunMutex.Lock()
-	defer llgoRunMutex.Unlock()
+	llgoRunTempDir, err := os.MkdirTemp("", "llgo-run")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(llgoRunTempDir)
 
 	for _, demo := range demos {
 		if !demo.IsDir() {
@@ -246,6 +246,8 @@ func runDemos(t *testing.T, logFile *os.File, demosPath string, pkgname, pkgpath
 		demoCmd := command(logFile, demoPath, "llgo", "run", ".")
 		demoCmd.Env = append(demoCmd.Env, llgoEnv()...)
 		demoCmd.Env = append(demoCmd.Env, pcPathEnv(pcPath)...)
+		demoCmd.Env = append(demoCmd.Env, tempDirEnv(llgoRunTempDir)...)
+
 		err = demoCmd.Run()
 		if err != nil {
 			t.Fatal(err)
@@ -278,6 +280,14 @@ func pcPathEnv(path string) []string {
 // control the go version in output version
 func goVerEnv() string {
 	return fmt.Sprintf("GOTOOLCHAIN=go%s", llcppgGoVersion)
+}
+
+func tempDirEnv(tempDir string) []string {
+	return []string{
+		fmt.Sprintf("TEMP=%s", tempDir),
+		fmt.Sprintf("TMP=%s", tempDir),
+		fmt.Sprintf("GOTMPDIR=%s", tempDir),
+	}
 }
 
 func copyFile(src, dst string) error {
