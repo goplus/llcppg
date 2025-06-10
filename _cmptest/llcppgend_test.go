@@ -236,7 +236,6 @@ func runDemos(t *testing.T, logFile *os.File, demosPath string, pkgname, pkgpath
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(llgoRunTempDir)
 
 	for _, demo := range demos {
 		if !demo.IsDir() {

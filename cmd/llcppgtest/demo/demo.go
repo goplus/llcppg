@@ -161,7 +161,6 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(llgoRunTempDir)
 
 	for _, demo := range demos {
 		if demo.IsDir() {
