@@ -284,6 +284,7 @@ func goVerEnv() string {
 
 func tempDirEnv(tempDir string) []string {
 	return []string{
+		fmt.Sprintf("TMPDIR=%s", tempDir),
 		fmt.Sprintf("TEMP=%s", tempDir),
 		fmt.Sprintf("TMP=%s", tempDir),
 		fmt.Sprintf("GOTMPDIR=%s", tempDir),
