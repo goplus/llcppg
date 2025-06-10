@@ -166,6 +166,7 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 		if demo.IsDir() {
 			fmt.Printf("%s: Running demo: %s\n", demoPkgName, demo.Name())
 
+			// avoid racy
 			if demoErr := runCommandWithTempDir(
 				tempLog,
 				filepath.Join(demosPath, demo.Name()),
