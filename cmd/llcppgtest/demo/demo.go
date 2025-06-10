@@ -265,5 +265,7 @@ func runCommandWithTempDir(logFile *os.File, dir, tempDir string, command string
 	cmd.Env = append(cmd.Env, fmt.Sprintf("TEMP=%s", tempDir))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("TMP=%s", tempDir))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("GOTMPDIR=%s", tempDir))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("GOCACHE=%s", tempDir))
+
 	return cmd.Run()
 }

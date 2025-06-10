@@ -287,6 +287,7 @@ func tempDirEnv(tempDir string) []string {
 		fmt.Sprintf("TEMP=%s", tempDir),
 		fmt.Sprintf("TMP=%s", tempDir),
 		fmt.Sprintf("GOTMPDIR=%s", tempDir),
+		fmt.Sprintf("GOCACHE=%s", tempDir),
 	}
 }
 
