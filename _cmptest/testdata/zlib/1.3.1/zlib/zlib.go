@@ -55,8 +55,8 @@ type ZStreamS struct {
 	TotalOut ULong
 	Msg      *c.Char
 	State    *InternalState
-	Zalloc   AllocFunc
-	Zfree    FreeFunc
+	Zalloc   c.Pointer
+	Zfree    c.Pointer
 	Opaque   Voidpf
 	DataType c.Int
 	Adler    ULong

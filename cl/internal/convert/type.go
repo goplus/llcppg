@@ -130,7 +130,6 @@ func (p *TypeConv) handlePointerType(t *ast.PointerType) (types.Type, error) {
 		}
 	}
 
-	// llgo with a anonymous function type current only support with pointer
 	if baseFuncType, ok := baseType.(*types.Signature); ok {
 		if p.ctx == Record {
 			return p.typeMap.CType("Pointer"), nil
@@ -146,6 +145,13 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		typ, err := p.lookup(name, p.pnc)
 		if err != nil {
 			return nil, err
+		}
+		if p.ctx == Record {
+			if named, ok := typ.(*types.Named); ok {
+				if _, ok := named.Underlying().(*types.Signature); ok {
+					return p.typeMap.CType("Pointer"), nil
+				}
+			}
 		}
 		return typ, nil
 	}

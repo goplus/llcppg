@@ -70,7 +70,7 @@ type X_xmlShellCtxt struct {
 	Pctxt    XPathContextPtr
 	Loaded   c.Int
 	Output   *c.FILE
-	Input    ShellReadlineFunc
+	Input    c.Pointer
 }
 type ShellCtxt X_xmlShellCtxt
 type ShellCtxtPtr *ShellCtxt

@@ -53,8 +53,8 @@ type CharEncodingOutputFunc func(*c.Char, *c.Int, *c.Char, *c.Int) c.Int
 
 type X_xmlCharEncodingHandler struct {
 	Name   *c.Char
-	Input  CharEncodingInputFunc
-	Output CharEncodingOutputFunc
+	Input  c.Pointer
+	Output c.Pointer
 }
 type CharEncodingHandler X_xmlCharEncodingHandler
 type CharEncodingHandlerPtr *CharEncodingHandler

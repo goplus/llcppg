@@ -47,9 +47,9 @@ type XlinkExtendedLinkFunk func(c.Pointer, NodePtr, c.Int, *XlinkHRef, *XlinkRol
 type XlinkExtendedLinkSetFunk func(c.Pointer, NodePtr, c.Int, *XlinkHRef, *XlinkRole, c.Int, *XlinkTitle, **Char)
 
 type X_xlinkHandler struct {
-	Simple   XlinkSimpleLinkFunk
-	Extended XlinkExtendedLinkFunk
-	Set      XlinkExtendedLinkSetFunk
+	Simple   c.Pointer
+	Extended c.Pointer
+	Set      c.Pointer
 }
 type XlinkHandler X_xlinkHandler
 type XlinkHandlerPtr *XlinkHandler

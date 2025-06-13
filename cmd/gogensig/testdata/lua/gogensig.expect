@@ -23,7 +23,7 @@ type Buffer struct {
 
 type Reg struct {
 	Name *c.Char
-	Func CFunction
+	Func c.Pointer
 }
 
 //go:linkname Checkversion C.luaL_checkversion_
@@ -163,7 +163,7 @@ func Buffinitsize(L *State, B *Buffer, sz c.SizeT) *c.Char
 
 type Stream struct {
 	F      *c.FILE
-	Closef CFunction
+	Closef c.Pointer
 }
 
 ===== lua.go =====

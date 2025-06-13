@@ -29,7 +29,7 @@ type Hooks struct {
 
 type Stream struct {
 	F  *c.FILE
-	Cb CallBack
+	Cb c.Pointer
 }
 
 // llgo:type C
