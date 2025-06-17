@@ -47,7 +47,6 @@ jobs:
         pkg-config --cflags --libs sqlite3
         pkg-config --cflags --libs libxslt
         df -lh
-        lsblk
         llcppgtest -demos ./_llcppgtest
 
     - name: Test demos with generated pkgs
