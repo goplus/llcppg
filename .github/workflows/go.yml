@@ -31,6 +31,14 @@ jobs:
         llvm: ${{ matrix.llvm }}
         llgo: ${{ matrix.llgo }}
 
+    - name: Setup Test Dependencies
+      if: startsWith(matrix.os, 'macos')
+      run: brew install cjson
+
+    - name: Setup Test Dependencies
+      if: startsWith(matrix.os, 'ubuntu')
+      run: sudo apt install libcjson-dev
+
     - name: Test xtool
       run: |
         # llgo test ./_xtool/internal/parser/...
