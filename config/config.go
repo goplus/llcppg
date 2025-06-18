@@ -25,12 +25,12 @@ type Config struct {
 	CFlags         string            `json:"cflags"`
 	Libs           string            `json:"libs"`
 	Include        []string          `json:"include"`
-	TrimPrefixes   []string          `json:"trimPrefixes"`
-	Cplusplus      bool              `json:"cplusplus"`
-	Deps           []string          `json:"deps"`
-	KeepUnderScore bool              `json:"keepUnderScore"`
-	Impl           []ImplFiles       `json:"impl"`
-	Mix            bool              `json:"mix"`
+	TrimPrefixes   []string          `json:"trimPrefixes,omitempty"`
+	Cplusplus      bool              `json:"cplusplus,omitempty"`
+	Deps           []string          `json:"deps,omitempty"`
+	KeepUnderScore bool              `json:"keepUnderScore,omitempty"`
+	Impl           []ImplFiles       `json:"impl,omitempty"`
+	Mix            bool              `json:"mix,omitempty"`
 	SymMap         map[string]string `json:"symMap,omitempty"`
 	TypeMap        map[string]string `json:"typeMap,omitempty"`
 }
