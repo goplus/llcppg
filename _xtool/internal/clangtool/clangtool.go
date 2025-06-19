@@ -15,25 +15,6 @@ var _sysRootDirOnce = sync.OnceValues(sysRoot)
 
 var _matchISysrootRegex = regexp.MustCompile(`-(resource-dir|internal-isystem|isysroot|internal-externc-isystem)\s(\S+)`)
 
-type PreprocessConfig struct {
-	File    string
-	IsCpp   bool
-	Args    []string
-	OutFile string
-}
-
-func Preprocess(cfg *PreprocessConfig) error {
-	args := []string{"-E"}
-	args = append(args, defaultArgs(cfg.IsCpp)...)
-	args = append(args, cfg.Args...)
-	args = append(args, cfg.File)
-	args = append(args, "-o", cfg.OutFile)
-	cmd := exec.Command("clang", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
 // ComposeIncludes create Include list
 // #include <file1.h>
 // #include <file2.h>

@@ -18,7 +18,7 @@ jobs:
           - macos-latest
           - ubuntu-24.04
         llvm: [19]
-        llgo: [87c7b65223eea16ade3ad1de4079bf2a20d20b1b]
+        llgo: [26aaa65c1d58449fc5de1d7004df92c9e45a6136]
         go: [1.23]
       fail-fast: false
     runs-on: ${{matrix.os}}
@@ -30,6 +30,14 @@ jobs:
         go: ${{ matrix.go }}
         llvm: ${{ matrix.llvm }}
         llgo: ${{ matrix.llgo }}
+
+    - name: Setup Test Dependencies
+      if: startsWith(matrix.os, 'macos')
+      run: brew install cjson
+
+    - name: Setup Test Dependencies
+      if: startsWith(matrix.os, 'ubuntu')
+      run: sudo apt install libcjson-dev
 
     - name: Test xtool
       run: |

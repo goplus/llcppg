@@ -13,8 +13,6 @@ import (
 	llcppg "github.com/goplus/llcppg/config"
 )
 
-var llgoRunMu sync.Mutex
-
 var mkdirTempLazily = sync.OnceValue(func() string {
 	if env := os.Getenv("LLCPPG_TEST_LOG_DIR"); env != "" {
 		return env
@@ -137,11 +135,6 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 		return fmt.Errorf("%s: go fmt failed in %s: %w", demoPkgName, genPkgDir, err)
 	}
 
-	if err = runCommand(tempLog, genPkgDir, "llgo", "build", "."); err != nil {
-		return fmt.Errorf("%s: llgo build failed in %s: %w", demoPkgName, genPkgDir, err)
-	}
-	fmt.Printf("%s: llgo build success\n", demoPkgName)
-
 	demosPath := filepath.Join(demoRoot, "demo")
 	// init mods to test package,because the demo is dependent on the gen pkg
 	if err = runCommand(tempLog, demoRoot, "go", "mod", "init", "demo"); err != nil {
@@ -164,15 +157,22 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 		return fmt.Errorf("%s: failed to read demo directory: %v", demoPkgName, err)
 	}
 
-	// start to test demos via llgo run
-	// to avoid potential racy, we must grab the lock
-	llgoRunMu.Lock()
-	defer llgoRunMu.Unlock()
+	llgoRunTempDir, err := os.MkdirTemp("", "llgo-run")
+	if err != nil {
+		return err
+	}
 
 	for _, demo := range demos {
 		if demo.IsDir() {
 			fmt.Printf("%s: Running demo: %s\n", demoPkgName, demo.Name())
-			if demoErr := runCommand(tempLog, filepath.Join(demosPath, demo.Name()), "llgo", "run", "."); demoErr != nil {
+
+			// avoid racy
+			if demoErr := runCommandWithTempDir(
+				tempLog,
+				filepath.Join(demosPath, demo.Name()),
+				llgoRunTempDir,
+				"llgo", "run", "-v", ".",
+			); demoErr != nil {
 				return fmt.Errorf("%s: failed to run demo: %s: %w", demoPkgName, demo.Name(), demoErr)
 			}
 		}
@@ -253,5 +253,19 @@ func runCommand(logFile *os.File, dir, command string, args ...string) error {
 	cmd.Dir = dir
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
+	return cmd.Run()
+}
+
+func runCommandWithTempDir(logFile *os.File, dir, tempDir string, command string, args ...string) error {
+	cmd := exec.Command(command, args...)
+	cmd.Dir = dir
+	cmd.Stdout = logFile
+	cmd.Stderr = logFile
+	cmd.Env = append(os.Environ(), fmt.Sprintf("TMPDIR=%s", tempDir))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("TEMP=%s", tempDir))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("TMP=%s", tempDir))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("GOTMPDIR=%s", tempDir))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("GOCACHE=%s", tempDir))
+
 	return cmd.Run()
 }

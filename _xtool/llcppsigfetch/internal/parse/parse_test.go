@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
 	"github.com/goplus/llcppg/_xtool/llcppsigfetch/internal/parse"
 	llcppg "github.com/goplus/llcppg/config"
@@ -27,7 +28,11 @@ func TestInclusionMap(t *testing.T) {
 			t.Fatalf("sys/types.h not found")
 		}
 	}
+
+	combinedFile := createCombineFile([]string{"sys.h"})
+	defer os.Remove(combinedFile)
 	err := parse.Do(&parse.Config{
+		CombinedFile: combinedFile,
 		Conf: &llcppg.Config{
 			Include: []string{"sys.h"},
 			CFlags:  "-I./testdata/sysinc/hfile",
@@ -48,7 +53,10 @@ func TestSystemHeader(t *testing.T) {
 			}
 		}
 	}
+	combinedFile := createCombineFile([]string{"inc.h"})
+	defer os.Remove(combinedFile)
 	err := parse.Do(&parse.Config{
+		CombinedFile: combinedFile,
 		Conf: &llcppg.Config{
 			Include: []string{"inc.h"},
 			CFlags:  "-I./testdata/sysinc/hfile",
@@ -61,7 +69,10 @@ func TestSystemHeader(t *testing.T) {
 }
 
 func TestMacroExpansionOtherFile(t *testing.T) {
+	combinedFile := createCombineFile([]string{"ref.h"})
+	defer os.Remove(combinedFile)
 	conf := &parse.Config{
+		CombinedFile: combinedFile,
 		Conf: &llcppg.Config{
 			Include: []string{"ref.h"},
 			CFlags:  "-I./testdata/macroexpan/hfile",
@@ -124,4 +135,16 @@ func marshalFileMap(fmap map[string]*llcppg.FileInfo) map[string]any {
 		root[path] = parse.MarshalFileInfo(fmap[path])
 	}
 	return root
+}
+
+func createCombineFile(includes []string) string {
+	combinedFile, err := os.CreateTemp("./", "compose_*.h")
+	if err != nil {
+		panic(err)
+	}
+	err = clangtool.ComposeIncludes(includes, combinedFile.Name())
+	if err != nil {
+		panic(err)
+	}
+	return combinedFile.Name()
 }

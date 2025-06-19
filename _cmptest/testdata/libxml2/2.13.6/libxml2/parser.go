@@ -172,33 +172,33 @@ type StartElementNsSAX2Func func(c.Pointer, *Char, *Char, *Char, c.Int, **Char, 
 type EndElementNsSAX2Func func(c.Pointer, *Char, *Char, *Char)
 
 type X_xmlSAXHandlerV1 struct {
-	InternalSubset        c.Pointer
-	IsStandalone          c.Pointer
-	HasInternalSubset     c.Pointer
-	HasExternalSubset     c.Pointer
-	ResolveEntity         c.Pointer
-	GetEntity             c.Pointer
-	EntityDecl            c.Pointer
-	NotationDecl          c.Pointer
-	AttributeDecl         c.Pointer
-	ElementDecl           c.Pointer
-	UnparsedEntityDecl    c.Pointer
-	SetDocumentLocator    c.Pointer
-	StartDocument         c.Pointer
-	EndDocument           c.Pointer
-	StartElement          c.Pointer
-	EndElement            c.Pointer
-	Reference             c.Pointer
-	Characters            c.Pointer
-	IgnorableWhitespace   c.Pointer
-	ProcessingInstruction c.Pointer
-	Comment               c.Pointer
-	Warning               c.Pointer
-	Error                 c.Pointer
-	FatalError            c.Pointer
-	GetParameterEntity    c.Pointer
-	CdataBlock            c.Pointer
-	ExternalSubset        c.Pointer
+	InternalSubset        InternalSubsetSAXFunc
+	IsStandalone          IsStandaloneSAXFunc
+	HasInternalSubset     HasInternalSubsetSAXFunc
+	HasExternalSubset     HasExternalSubsetSAXFunc
+	ResolveEntity         ResolveEntitySAXFunc
+	GetEntity             GetEntitySAXFunc
+	EntityDecl            EntityDeclSAXFunc
+	NotationDecl          NotationDeclSAXFunc
+	AttributeDecl         AttributeDeclSAXFunc
+	ElementDecl           ElementDeclSAXFunc
+	UnparsedEntityDecl    UnparsedEntityDeclSAXFunc
+	SetDocumentLocator    SetDocumentLocatorSAXFunc
+	StartDocument         StartDocumentSAXFunc
+	EndDocument           EndDocumentSAXFunc
+	StartElement          StartElementSAXFunc
+	EndElement            EndElementSAXFunc
+	Reference             ReferenceSAXFunc
+	Characters            CharactersSAXFunc
+	IgnorableWhitespace   IgnorableWhitespaceSAXFunc
+	ProcessingInstruction ProcessingInstructionSAXFunc
+	Comment               CommentSAXFunc
+	Warning               WarningSAXFunc
+	Error                 ErrorSAXFunc
+	FatalError            FatalErrorSAXFunc
+	GetParameterEntity    GetParameterEntitySAXFunc
+	CdataBlock            CdataBlockSAXFunc
+	ExternalSubset        ExternalSubsetSAXFunc
 	Initialized           c.Uint
 }
 type SAXHandlerV1 X_xmlSAXHandlerV1

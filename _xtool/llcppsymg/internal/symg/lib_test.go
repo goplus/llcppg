@@ -1,4 +1,4 @@
-package flag_test
+package symg_test
 
 import (
 	"fmt"
@@ -8,19 +8,20 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/flag"
+	"github.com/goplus/llcppg/_xtool/internal/symbol"
+	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/symg"
 )
 
 func TestParseLibs(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  string
-		expect *flag.Libs
+		expect *symg.Libs
 	}{
 		{
 			name:  "Lua library",
 			input: "-L/opt/homebrew/lib -llua -lm",
-			expect: &flag.Libs{
+			expect: &symg.Libs{
 				Paths: []string{"/opt/homebrew/lib"},
 				Names: []string{"lua", "m"},
 			},
@@ -28,7 +29,7 @@ func TestParseLibs(t *testing.T) {
 		{
 			name:  "SQLite library",
 			input: "-L/opt/homebrew/opt/sqlite/lib -lsqlite3",
-			expect: &flag.Libs{
+			expect: &symg.Libs{
 				Paths: []string{"/opt/homebrew/opt/sqlite/lib"},
 				Names: []string{"sqlite3"},
 			},
@@ -36,7 +37,7 @@ func TestParseLibs(t *testing.T) {
 		{
 			name:  "INIReader library",
 			input: "-L/opt/homebrew/Cellar/inih/58/lib -lINIReader",
-			expect: &flag.Libs{
+			expect: &symg.Libs{
 				Paths: []string{"/opt/homebrew/Cellar/inih/58/lib"},
 				Names: []string{"INIReader"},
 			},
@@ -44,7 +45,7 @@ func TestParseLibs(t *testing.T) {
 		{
 			name:  "Multiple library paths",
 			input: "-L/opt/homebrew/lib -L/usr/lib -llua",
-			expect: &flag.Libs{
+			expect: &symg.Libs{
 				Paths: []string{"/opt/homebrew/lib", "/usr/lib"},
 				Names: []string{"lua"},
 			},
@@ -52,7 +53,7 @@ func TestParseLibs(t *testing.T) {
 		{
 			name:  "No valid library",
 			input: "-L/opt/homebrew/lib",
-			expect: &flag.Libs{
+			expect: &symg.Libs{
 				Paths: []string{"/opt/homebrew/lib"},
 			},
 		},
@@ -60,7 +61,7 @@ func TestParseLibs(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			conf := flag.ParseLibs(tc.input)
+			conf := symg.ParseLibs(tc.input)
 			if !reflect.DeepEqual(conf, tc.expect) {
 				t.Errorf("expected %#v, got %#v", tc.expect, conf)
 			}
@@ -95,7 +96,7 @@ func TestGenDylibPaths(t *testing.T) {
 
 	testCase := []struct {
 		name         string
-		conf         *flag.Libs
+		conf         *symg.Libs
 		defaultPaths []string
 		expectErr    bool
 		want         []string
@@ -103,7 +104,7 @@ func TestGenDylibPaths(t *testing.T) {
 	}{
 		{
 			name: "existing dylib",
-			conf: &flag.Libs{
+			conf: &symg.Libs{
 				Names: []string{"symb1"},
 				Paths: []string{tempDir},
 			},
@@ -113,7 +114,7 @@ func TestGenDylibPaths(t *testing.T) {
 		},
 		{
 			name: "existing dylibs",
-			conf: &flag.Libs{
+			conf: &symg.Libs{
 				Names: []string{"symb1", "symb2"},
 				Paths: []string{tempDir},
 			},
@@ -123,7 +124,7 @@ func TestGenDylibPaths(t *testing.T) {
 		},
 		{
 			name: "existint default paths",
-			conf: &flag.Libs{
+			conf: &symg.Libs{
 				Names: []string{"symb1", "symb3"},
 				Paths: []string{tempDir},
 			},
@@ -133,7 +134,7 @@ func TestGenDylibPaths(t *testing.T) {
 		},
 		{
 			name: "existint default paths & not found",
-			conf: &flag.Libs{
+			conf: &symg.Libs{
 				Names: []string{"symb1", "symb3", "math"},
 				Paths: []string{tempDir},
 			},
@@ -144,7 +145,7 @@ func TestGenDylibPaths(t *testing.T) {
 		},
 		{
 			name: "no existing dylib",
-			conf: &flag.Libs{
+			conf: &symg.Libs{
 				Names: []string{"notexist"},
 				Paths: []string{tempDir},
 			},
@@ -155,7 +156,7 @@ func TestGenDylibPaths(t *testing.T) {
 	}
 	for _, tc := range testCase {
 		t.Run(tc.name, func(t *testing.T) {
-			paths, notFounds, err := tc.conf.GenDylibPaths(tc.defaultPaths)
+			paths, notFounds, err := tc.conf.Files(tc.defaultPaths, symbol.ModeDynamic)
 			if tc.expectErr {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
@@ -185,126 +186,5 @@ func TestGenDylibPaths(t *testing.T) {
 			}
 		})
 
-	}
-}
-
-func TestParseCFlags(t *testing.T) {
-	testCases := []struct {
-		name   string
-		input  string
-		expect []string
-	}{
-		{
-			name:   "Single include path",
-			input:  "-I/usr/include",
-			expect: []string{"/usr/include"},
-		},
-		{
-			name:   "Multiple include paths",
-			input:  "-I/usr/include -I/opt/homebrew/include",
-			expect: []string{"/usr/include", "/opt/homebrew/include"},
-		},
-		{
-			name:   "Include paths mixed with other flags",
-			input:  "-I/usr/include -DDEBUG -I/opt/local/include -Wall",
-			expect: []string{"/usr/include", "/opt/local/include"},
-		},
-		{
-			name:  "Empty input",
-			input: "",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			conf := flag.ParseCFlags(tc.input)
-			if !reflect.DeepEqual(conf.Paths, tc.expect) {
-				t.Fatalf("expected paths %v, got %v", tc.expect, conf.Paths)
-			}
-		})
-	}
-}
-
-func TestGenHeaderFilePath(t *testing.T) {
-	tempDir := os.TempDir()
-	temDir2 := filepath.Join(tempDir, "include")
-	tempFile1 := filepath.Join(tempDir, "test1.h")
-	tempFile2 := filepath.Join(tempDir, "test2.h")
-	tempFile3 := filepath.Join(temDir2, "test3.h")
-	os.MkdirAll(temDir2, 0755)
-	os.Create(tempFile1)
-	os.Create(tempFile2)
-	os.Create(tempFile3)
-	defer os.Remove(tempFile1)
-	defer os.Remove(tempFile2)
-	defer os.Remove(tempFile3)
-	defer os.Remove(temDir2)
-
-	testCases := []struct {
-		name      string
-		cflags    string
-		files     []string
-		notFounds []string
-		expect    []string
-		expectErr bool
-	}{
-		{
-			name:   "Valid files",
-			cflags: "-I" + tempDir,
-			files:  []string{"test1.h", "test2.h"},
-			expect: []string{"test1.h", "test2.h"},
-		},
-		{
-			name:      "Mixed existing and non-existing files",
-			cflags:    "-I" + tempDir,
-			files:     []string{"test1.h", "nonexistent.h"},
-			notFounds: []string{"nonexistent.h"},
-			expect:    []string{"test1.h"},
-		},
-		{
-			name:   "Multiple include paths",
-			cflags: "-I" + tempDir + " -I" + temDir2,
-			files:  []string{"test1.h", "test2.h", "test3.h"},
-			expect: []string{"test1.h", "test2.h", "test3.h"},
-		},
-		{
-			name:      "No existing files",
-			cflags:    "-I" + tempDir,
-			files:     []string{"nonexistent1.h", "nonexistent2.h"},
-			notFounds: []string{"nonexistent1.h", "nonexistent2.h"},
-			expectErr: true,
-		},
-		{
-			name:      "Empty file list",
-			cflags:    "-I/usr/include",
-			expectErr: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			cflag := flag.ParseCFlags(tc.cflags)
-			result, notFounds, err := cflag.GenHeaderFilePaths(tc.files, []string{})
-			if !reflect.DeepEqual(notFounds, tc.notFounds) {
-				t.Fatalf("expected notFounds %v, got %v", tc.notFounds, notFounds)
-			}
-			if tc.expectErr {
-				if err == nil {
-					t.Fatalf("expected error, got nil")
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("expected no error, got %w", err)
-			}
-
-			relativeResult := make([]string, len(result))
-			for i, path := range result {
-				relativeResult[i] = filepath.Base(path)
-			}
-			if !reflect.DeepEqual(relativeResult, tc.expect) {
-				t.Fatalf("expected files %v, got %v", tc.expect, relativeResult)
-			}
-		})
 	}
 }

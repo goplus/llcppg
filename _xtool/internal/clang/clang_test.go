@@ -3,15 +3,11 @@ package clang_test
 import (
 	"fmt"
 	"os"
-	"path"
-	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
-	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 )
 
 func TestClangUtil(t *testing.T) {
@@ -177,75 +173,6 @@ cursorRange 11:1 -> 11:11
 --------------------------------`
 
 	compareOutput(t, expect, str.String())
-}
-
-func TestPreprocess(t *testing.T) {
-	outfile, err := os.CreateTemp("", "compose_*.h")
-	if err != nil {
-		panic(err)
-	}
-	absPath, err := filepath.Abs("./testdata/hfile")
-	if err != nil {
-		panic(err)
-	}
-	clangtool.ComposeIncludes([]string{"main.h", "compat.h"}, outfile.Name())
-
-	efile, err := os.CreateTemp("", "temp_*.i")
-	if err != nil {
-		panic(err)
-	}
-	defer os.Remove(efile.Name())
-
-	cfg := &clangtool.PreprocessConfig{
-		File:    outfile.Name(),
-		IsCpp:   true,
-		Args:    []string{"-I" + absPath},
-		OutFile: efile.Name(),
-	}
-	err = clangtool.Preprocess(cfg)
-	if err != nil {
-		panic(err)
-	}
-	config := &clangutils.Config{
-		File:  efile.Name(),
-		Temp:  false,
-		IsCpp: false,
-	}
-
-	var str strings.Builder
-
-	visit(config, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
-		switch cursor.Kind {
-		case clang.CursorEnumDecl, clang.CursorStructDecl, clang.CursorUnionDecl, clang.CursorTypedefDecl:
-			var filename clang.String
-			var line, column c.Uint
-			cursor.Location().PresumedLocation(&filename, &line, &column)
-			str.WriteString("TypeKind: ")
-			str.WriteString(clang.GoString(cursor.Kind.String()))
-			str.WriteString(" Name: ")
-			str.WriteString(clang.GoString(cursor.String()))
-			str.WriteString("\n")
-			str.WriteString("Location: ")
-			str.WriteString(fmt.Sprintf("%s:%d:%d\n", path.Base(c.GoString(filename.CStr())), line, column))
-		}
-		return clang.ChildVisit_Continue
-	})
-
-	expect := `
-TypeKind: StructDecl Name: A
-Location: main.h:3:16
-TypeKind: TypedefDecl Name: A
-Location: main.h:6:3
-TypeKind: TypedefDecl Name: B
-Location: compat.h:3:11
-TypeKind: TypedefDecl Name: C
-Location: main.h:8:11
-`
-
-	compareOutput(t, expect, str.String())
-
-	outfile.Close()
-	os.Remove(outfile.Name())
 }
 
 func visit(config *clangutils.Config, visitFunc func(cursor, parent clang.Cursor) clang.ChildVisitResult) {

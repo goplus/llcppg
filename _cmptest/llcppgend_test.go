@@ -1,7 +1,8 @@
-package main
+package _cmptest
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,8 +20,6 @@ const llcppgGoVersion = "1.20.14"
 var (
 	// avoid conan install race condition
 	conanInstallMutex sync.Mutex
-	// avoid llgo run race condition
-	llgoRunMutex sync.Mutex
 )
 
 type testCase struct {
@@ -89,6 +88,19 @@ var testCases = []testCase{
 		pkg:      upstream.Package{Name: "bzip2", Version: "1.0.8"},
 		demosDir: "./testdata/bzip2/demo",
 	},
+	{
+		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/libxslt/1.1.42/libxslt",
+		dir:      "./testdata/libxslt/1.1.42",
+		pkg:      upstream.Package{Name: "libxslt", Version: "1.1.42"},
+		demosDir: "./testdata/libxslt/demo",
+	},
+
+	{
+		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/libtool/2.4.7/libtool",
+		dir:      "./testdata/libtool/2.4.7",
+		pkg:      upstream.Package{Name: "libtool", Version: "2.4.7"},
+		demosDir: "./testdata/libtool/demo",
+	},
 }
 
 var mkdirTempLazily = sync.OnceValue(func() string {
@@ -146,13 +158,9 @@ func testFrom(t *testing.T, tc testCase, gen bool) {
 	}
 	defer os.RemoveAll(resultDir)
 
-	cfgPath := filepath.Join(wd, tc.dir, config.LLCPPG_CFG)
-	cfg, err := os.ReadFile(cfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	os.WriteFile(filepath.Join(resultDir, config.LLCPPG_CFG), cfg, os.ModePerm)
+	cfgPath := filepath.Join(wd, tc.dir, tc.pkg.Name, config.LLCPPG_CFG)
+	processCfgPath := filepath.Join(resultDir, config.LLCPPG_CFG)
+	copyFile(cfgPath, processCfgPath)
 
 	conanInstallMutex.Lock()
 	_, err = conan.NewConanInstaller(tc.config).Install(tc.pkg, conanDir)
@@ -172,6 +180,7 @@ func testFrom(t *testing.T, tc testCase, gen bool) {
 
 	// llcppg.symb.json is a middle file
 	os.Remove(filepath.Join(resultDir, config.LLCPPG_SYMB))
+	copyFile(processCfgPath, filepath.Join(resultDir, tc.pkg.Name, config.LLCPPG_CFG))
 
 	if gen {
 		os.RemoveAll(dir)
@@ -179,7 +188,7 @@ func testFrom(t *testing.T, tc testCase, gen bool) {
 	} else {
 		// check the result is the same as the expected result
 		// when have diff,will got exit code 1
-		diffCmd := command(logFile, wd, "git", "diff", "--no-index", dir, resultDir)
+		diffCmd := command(logFile, wd, "git", "diff", "--no-index", filepath.Join(dir, tc.pkg.Name), filepath.Join(resultDir, tc.pkg.Name))
 		err = diffCmd.Run()
 		if err != nil {
 			t.Fatal(err)
@@ -223,9 +232,10 @@ func runDemos(t *testing.T, logFile *os.File, demosPath string, pkgname, pkgpath
 		t.Fatal(err)
 	}
 
-	// only can lock out of loop,will got ld64.lld: error: undefined symbol: math.Float32bits
-	llgoRunMutex.Lock()
-	defer llgoRunMutex.Unlock()
+	llgoRunTempDir, err := os.MkdirTemp("", "llgo-run")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	for _, demo := range demos {
 		if !demo.IsDir() {
@@ -235,6 +245,8 @@ func runDemos(t *testing.T, logFile *os.File, demosPath string, pkgname, pkgpath
 		demoCmd := command(logFile, demoPath, "llgo", "run", ".")
 		demoCmd.Env = append(demoCmd.Env, llgoEnv()...)
 		demoCmd.Env = append(demoCmd.Env, pcPathEnv(pcPath)...)
+		demoCmd.Env = append(demoCmd.Env, tempDirEnv(llgoRunTempDir)...)
+
 		err = demoCmd.Run()
 		if err != nil {
 			t.Fatal(err)
@@ -267,6 +279,37 @@ func pcPathEnv(path string) []string {
 // control the go version in output version
 func goVerEnv() string {
 	return fmt.Sprintf("GOTOOLCHAIN=go%s", llcppgGoVersion)
+}
+
+func tempDirEnv(tempDir string) []string {
+	return []string{
+		fmt.Sprintf("TMPDIR=%s", tempDir),
+		fmt.Sprintf("TEMP=%s", tempDir),
+		fmt.Sprintf("TMP=%s", tempDir),
+		fmt.Sprintf("GOTMPDIR=%s", tempDir),
+		fmt.Sprintf("GOCACHE=%s", tempDir),
+	}
+}
+
+func copyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	fi, err := srcFile.Stat()
+	if err != nil {
+		return err
+	}
+	dstFile, err := os.OpenFile(dst, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, fi.Mode())
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }
 
 func command(logFile *os.File, dir string, app string, args ...string) *exec.Cmd {

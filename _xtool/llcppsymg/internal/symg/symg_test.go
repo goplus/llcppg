@@ -7,28 +7,22 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
 
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/symg"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/internal/name"
 	"github.com/goplus/llgo/xtool/nm"
 )
 
-func TestNewSymbolProcessor(t *testing.T) {
-	process := symg.NewSymbolProcessor([]string{}, []string{"lua_", "luaL_"}, nil)
-	expect := []string{"lua_", "luaL_"}
-	if !reflect.DeepEqual(process.Prefixes, expect) {
-		t.Fatalf("expect %v, but got %v", expect, process.Prefixes)
-	}
-}
-
 func TestAddSuffix(t *testing.T) {
-	process := symg.NewSymbolProcessor([]string{}, []string{"INI"}, nil)
+	prefix := []string{"INI"}
+	process := symg.NewSymbolProcessor([]string{}, prefix, nil)
 	methods := []struct {
 		method string
 		expect string
@@ -40,8 +34,8 @@ func TestAddSuffix(t *testing.T) {
 	}
 	for _, tc := range methods {
 		t.Run(tc.method, func(t *testing.T) {
-			goName := name.GoName(tc.method, process.Prefixes, true)
-			className := name.GoName("INIReader", process.Prefixes, true)
+			goName := name.GoName(tc.method, prefix, true)
+			className := name.GoName("INIReader", prefix, true)
 			methodName := process.GenMethodName(className, goName, false, true)
 			actual := process.AddSuffix(methodName)
 			if actual != tc.expect {
@@ -84,11 +78,11 @@ func TestGetCommonSymbols(t *testing.T) {
 		{
 			name: "Lua symbols",
 			dylibSymbols: []*nm.Symbol{
-				{Name: symg.AddSymbolPrefixUnder("lua_absindex", false)},
-				{Name: symg.AddSymbolPrefixUnder("lua_arith", false)},
-				{Name: symg.AddSymbolPrefixUnder("lua_atpanic", false)},
-				{Name: symg.AddSymbolPrefixUnder("lua_callk", false)},
-				{Name: symg.AddSymbolPrefixUnder("lua_lib_nonexistent", false)},
+				{Name: addSymbolPrefixUnder("lua_absindex", false)},
+				{Name: addSymbolPrefixUnder("lua_arith", false)},
+				{Name: addSymbolPrefixUnder("lua_atpanic", false)},
+				{Name: addSymbolPrefixUnder("lua_callk", false)},
+				{Name: addSymbolPrefixUnder("lua_lib_nonexistent", false)},
 			},
 			headerSymbols: map[string]*symg.SymbolInfo{
 				"lua_absindex":           {ProtoName: "lua_absindex(lua_State *, int)", GoName: "Absindex"},
@@ -107,9 +101,9 @@ func TestGetCommonSymbols(t *testing.T) {
 		{
 			name: "INIReader and Std library symbols",
 			dylibSymbols: []*nm.Symbol{
-				{Name: symg.AddSymbolPrefixUnder("ZNK9INIReader12GetInteger64ERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_x", true)},
-				{Name: symg.AddSymbolPrefixUnder("ZNK9INIReader7GetRealERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_d", true)},
-				{Name: symg.AddSymbolPrefixUnder("ZNK9INIReader10ParseErrorEv", true)},
+				{Name: addSymbolPrefixUnder("ZNK9INIReader12GetInteger64ERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_x", true)},
+				{Name: addSymbolPrefixUnder("ZNK9INIReader7GetRealERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_d", true)},
+				{Name: addSymbolPrefixUnder("ZNK9INIReader10ParseErrorEv", true)},
 			},
 			headerSymbols: map[string]*symg.SymbolInfo{
 				"_ZNK9INIReader12GetInteger64ERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_x":  {GoName: "(*Reader).GetInteger64", ProtoName: "INIReader::GetInteger64(const std::string &, const std::string &, int64_t)"},
@@ -493,7 +487,7 @@ func TestGen(t *testing.T) {
 			defer os.Remove(tempFile.Name())
 			clangtool.ComposeIncludes(cfg.Include, tempFile.Name())
 
-			pkgHfileInfo := config.PkgHfileInfo(cfg.Include, strings.Fields(cfg.CFlags), false)
+			pkgHfileInfo := header.PkgHfileInfo(cfg.Include, strings.Fields(cfg.CFlags), false)
 			headerSymbolMap, err := symg.ParseHeaderFile(tempFile.Name(), pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.SymMap, cfg.Cplusplus)
 			if err != nil {
 				t.Fatal(err)
@@ -502,7 +496,7 @@ func TestGen(t *testing.T) {
 			// trim to nm symbols
 			var dylibsymbs []*nm.Symbol
 			for _, symb := range tc.dylibSymbols {
-				dylibsymbs = append(dylibsymbs, &nm.Symbol{Name: symg.AddSymbolPrefixUnder(symb, cfg.Cplusplus)})
+				dylibsymbs = append(dylibsymbs, &nm.Symbol{Name: addSymbolPrefixUnder(symb, cfg.Cplusplus)})
 			}
 			symbols := symg.GetCommonSymbols(dylibsymbs, headerSymbolMap)
 			if err != nil {
@@ -526,4 +520,16 @@ func TestGen(t *testing.T) {
 			}
 		})
 	}
+}
+
+// For mutiple os test,the nm output's symbol name is different.
+func addSymbolPrefixUnder(name string, isCpp bool) string {
+	prefix := ""
+	if runtime.GOOS == "darwin" {
+		prefix = prefix + "_"
+	}
+	if isCpp {
+		prefix = prefix + "_"
+	}
+	return prefix + name
 }

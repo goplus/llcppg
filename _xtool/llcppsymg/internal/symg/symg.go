@@ -1,7 +1,6 @@
 package symg
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"runtime"
@@ -9,9 +8,8 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/config"
+	"github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/internal/ld"
-	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/flag"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/nm"
 )
@@ -19,19 +17,16 @@ import (
 type dbgFlags = int
 
 var (
-	dbgSymbol        bool
-	dbgParseIsMethod bool
+	dbgSymbol bool
 )
 
 const (
-	DbgSymbol        dbgFlags = 1 << iota
-	DbgParseIsMethod          //print parse.go isMethod debug log info
-	DbgFlagAll       = DbgSymbol | DbgParseIsMethod
+	DbgSymbol  dbgFlags = 1 << iota
+	DbgFlagAll          = DbgSymbol
 )
 
 func SetDebug(flags dbgFlags) {
 	dbgSymbol = (flags & DbgSymbol) != 0
-	dbgParseIsMethod = (flags & DbgParseIsMethod) != 0
 }
 
 type Config struct {
@@ -42,15 +37,16 @@ type Config struct {
 	TrimPrefixes []string
 	SymMap       map[string]string
 	IsCpp        bool
+	libMode      LibMode
 }
 
-func Do(conf *Config) error {
-	symbols, err := ParseDylibSymbols(conf.Libs)
+func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
+	symbols, err := fetchSymbols(conf.Libs, conf.libMode)
 	if err != nil {
-		return err
+		return
 	}
 
-	pkgHfiles := config.PkgHfileInfo(conf.Includes, strings.Fields(conf.CFlags), conf.Mix)
+	pkgHfiles := header.PkgHfileInfo(conf.Includes, strings.Fields(conf.CFlags), conf.Mix)
 	if dbgSymbol {
 		fmt.Println("interfaces", pkgHfiles.Inters)
 		fmt.Println("implements", pkgHfiles.Impls)
@@ -59,88 +55,71 @@ func Do(conf *Config) error {
 
 	tempFile, err := os.CreateTemp("", "combine*.h")
 	if err != nil {
-		return err
+		return
 	}
 	defer os.Remove(tempFile.Name())
 	err = clangtool.ComposeIncludes(conf.Includes, tempFile.Name())
 	if err != nil {
-		return err
+		return
 	}
 
 	headerInfos, err := ParseHeaderFile(tempFile.Name(), pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.SymMap, conf.IsCpp)
 	if err != nil {
-		return err
+		return
 	}
 
-	commonSymbols := GetCommonSymbols(symbols, headerInfos)
-
-	jsonData, err := json.MarshalIndent(commonSymbols, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(llcppg.LLCPPG_SYMB, jsonData, os.ModePerm)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	symbolTable = GetCommonSymbols(symbols, headerInfos)
+	return
 }
 
-// ParseDylibSymbols parses symbols from dynamic libraries specified in the lib string.
+// fetchSymbols parses symbols from dynamic libraries specified in the lib string.
 // It handles multiple libraries (e.g., -L/opt/homebrew/lib -llua -lm) and returns
 // symbols if at least one library is successfully parsed. Errors from inaccessible
 // libraries (like standard libs) are logged as warnings.
 //
 // Returns symbols and nil error if any symbols are found, or nil and error if none found.
-func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
+func fetchSymbols(lib string, mode LibMode) ([]*nm.Symbol, error) {
 	if dbgSymbol {
-		fmt.Println("ParseDylibSymbols:from", lib)
+		fmt.Println("fetchSymbols:from", lib)
 	}
 	sysPaths := ld.GetLibSearchPaths()
 	if dbgSymbol {
-		fmt.Println("ParseDylibSymbols:sysPaths", sysPaths)
+		fmt.Println("fetchSymbols:sysPaths", sysPaths)
 	}
 
-	lbs := flag.ParseLibs(lib)
+	lbs := ParseLibs(lib)
 	if dbgSymbol {
-		fmt.Println("ParseDylibSymbols:LibConfig Parse To")
+		fmt.Println("fetchSymbols:LibConfig Parse To")
 		fmt.Println("libs.Names: ", lbs.Names)
 		fmt.Println("libs.Paths: ", lbs.Paths)
 	}
-	dylibPaths, notFounds, err := lbs.GenDylibPaths(sysPaths)
+
+	libFiles, notFounds, err := lbs.Files(sysPaths, mode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate some dylib paths: %v", err)
 	}
 
 	if dbgSymbol {
-		fmt.Println("ParseDylibSymbols:dylibPaths", dylibPaths)
+		fmt.Println("fetchSymbols:libFiles", libFiles)
 		if len(notFounds) > 0 {
-			fmt.Println("ParseDylibSymbols:not found libname", notFounds)
+			fmt.Println("fetchSymbols:not found libname", notFounds)
 		} else {
-			fmt.Println("ParseDylibSymbols:every library is found")
+			fmt.Println("fetchSymbols:every library is found")
 		}
 	}
 
 	var symbols []*nm.Symbol
 	var parseErrors []string
 
-	for _, dylibPath := range dylibPaths {
-		if _, err := os.Stat(dylibPath); err != nil {
-			if dbgSymbol {
-				fmt.Printf("ParseDylibSymbols:Failed to access dylib %s: %v\n", dylibPath, err)
-			}
-			continue
-		}
-
-		args := []string{}
+	for _, libFile := range libFiles {
+		args := []string{"-g"}
 		if runtime.GOOS == "linux" {
 			args = append(args, "-D")
 		}
 
-		files, err := nm.New("llvm-nm").List(dylibPath, args...)
+		files, err := nm.New("llvm-nm").List(libFile, args...)
 		if err != nil {
-			parseErrors = append(parseErrors, fmt.Sprintf("ParseDylibSymbols:Failed to list symbols in dylib %s: %v", dylibPath, err))
+			parseErrors = append(parseErrors, fmt.Sprintf("fetchSymbols:Failed to list symbols in dylib %s: %v", libFile, err))
 			continue
 		}
 
@@ -152,24 +131,25 @@ func ParseDylibSymbols(lib string) ([]*nm.Symbol, error) {
 	if len(symbols) > 0 {
 		if dbgSymbol {
 			if len(parseErrors) > 0 {
-				fmt.Printf("ParseDylibSymbols:Some libraries could not be parsed: %v\n", parseErrors)
+				fmt.Printf("fetchSymbols:Some libraries could not be parsed: %v\n", parseErrors)
 			}
-			fmt.Println("ParseDylibSymbols:", len(symbols), "symbols")
+			fmt.Println("fetchSymbols:", len(symbols), "symbols")
 		}
 		return symbols, nil
 	}
 
-	return nil, fmt.Errorf("no symbols found in any dylib. Errors: %v", parseErrors)
+	return nil, fmt.Errorf("no symbols found in any lib. Errors: %v", parseErrors)
 }
 
-// finds the intersection of symbols from the dynamic library's symbol table and the symbols parsed from header files.
+// todo(zzy):only public for test,when llgo test support private package test,this function should be private
+// GetCommonSymbols finds the intersection of symbols from the library symbol table and the symbols parsed from header files.
 // It returns a list of symbols that can be externally linked.
-func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*SymbolInfo) []*llcppg.SymbolInfo {
+func GetCommonSymbols(syms []*nm.Symbol, headerSymbols map[string]*SymbolInfo) []*llcppg.SymbolInfo {
 	var commonSymbols []*llcppg.SymbolInfo
 	processedSymbols := make(map[string]bool)
 
-	for _, dylibSym := range dylibSymbols {
-		symName := dylibSym.Name
+	for _, sym := range syms {
+		symName := sym.Name
 		if runtime.GOOS == "darwin" {
 			symName = strings.TrimPrefix(symName, "_")
 		}
@@ -192,16 +172,4 @@ func GetCommonSymbols(dylibSymbols []*nm.Symbol, headerSymbols map[string]*Symbo
 	})
 
 	return commonSymbols
-}
-
-// For mutiple os test,the nm output's symbol name is different.
-func AddSymbolPrefixUnder(name string, isCpp bool) string {
-	prefix := ""
-	if runtime.GOOS == "darwin" {
-		prefix = prefix + "_"
-	}
-	if isCpp {
-		prefix = prefix + "_"
-	}
-	return prefix + name
 }

@@ -33,17 +33,17 @@ type X_xmlXPathContext struct {
 	Here               NodePtr
 	Origin             NodePtr
 	NsHash             HashTablePtr
-	VarLookupFunc      c.Pointer
+	VarLookupFunc      XPathVariableLookupFunc
 	VarLookupData      c.Pointer
 	Extra              c.Pointer
 	Function           *Char
 	FunctionURI        *Char
-	FuncLookupFunc     c.Pointer
+	FuncLookupFunc     XPathFuncLookupFunc
 	FuncLookupData     c.Pointer
 	TmpNsList          *NsPtr
 	TmpNsNr            c.Int
 	UserData           c.Pointer
-	Error              c.Pointer
+	Error              StructuredErrorFunc
 	LastError          Error
 	DebugNode          NodePtr
 	Dict               DictPtr
@@ -142,7 +142,7 @@ type XPathConvertFunc func(XPathObjectPtr, c.Int) c.Int
 
 type X_xmlXPathType struct {
 	Name *Char
-	Func c.Pointer
+	Func XPathConvertFunc
 }
 type XPathType X_xmlXPathType
 type XPathTypePtr *XPathType
@@ -159,7 +159,7 @@ type XPathEvalFunc func(XPathParserContextPtr, c.Int)
 
 type X_xmlXPathFunct struct {
 	Name *Char
-	Func c.Pointer
+	Func XPathEvalFunc
 }
 type XPathFunct X_xmlXPathFunct
 type XPathFuncPtr *XPathFunct
@@ -169,7 +169,7 @@ type XPathAxisFunc func(XPathParserContextPtr, XPathObjectPtr) XPathObjectPtr
 
 type X_xmlXPathAxis struct {
 	Name *Char
-	Func c.Pointer
+	Func XPathAxisFunc
 }
 type XPathAxis X_xmlXPathAxis
 type XPathAxisPtr *XPathAxis

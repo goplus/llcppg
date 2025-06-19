@@ -12,10 +12,12 @@ jobs:
     strategy:
       matrix:
         os:
+          - macos-13
           - macos-latest
           - ubuntu-24.04
+          - ubuntu-24.04-arm
         llvm: [19]
-        llgo: [87c7b65223eea16ade3ad1de4079bf2a20d20b1b]
+        llgo: [26aaa65c1d58449fc5de1d7004df92c9e45a6136]
         go: [1.23]
       fail-fast: false
     runs-on: ${{matrix.os}}
@@ -40,14 +42,18 @@ jobs:
 
     - name: Set up Conan
       run: conan profile detect
-    
+
     - name: Setup Log directory
       run: echo "LLCPPG_TEST_LOG_DIR=$(mktemp -d)" >> $GITHUB_ENV
+
+    - name: Turn off filemode diff
+      run: git config --global core.fileMode false
 
     - name: Test End2End
       working-directory: _cmptest
       run: |
-        go test -v .
+        # increase the test timeout to avoid conan installation timeout occasionally
+        go test -v -timeout 30m .
 
     - name: Upload Logs to Artifacts
       uses: actions/upload-artifact@v4

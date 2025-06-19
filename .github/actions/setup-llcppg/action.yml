@@ -9,7 +9,7 @@ inputs:
     default: "19"
   llgo:
     description: "LLGo git ref or tag"
-    default: "87c7b65223eea16ade3ad1de4079bf2a20d20b1b"
+    default: "26aaa65c1d58449fc5de1d7004df92c9e45a6136"
 runs:
   using: "composite"
   steps:
@@ -28,15 +28,12 @@ runs:
     if: runner.os == 'macOS'
     shell: bash
     run: |
-      brew update
       brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv lld@${{inputs.llvm}}
       brew install zlib # for llgo test .
       brew link --force zlib # for llgo test .
       brew link --force libffi
       echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
       echo "$(brew --prefix lld@${{inputs.llvm}})/bin" >> $GITHUB_PATH
-      # llcppg dependencies
-      brew install cjson
   - name: Install dependencies
     shell: bash
     if: runner.os == 'Linux'
@@ -44,7 +41,7 @@ runs:
       echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{inputs.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
       wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       sudo apt-get update
-      sudo apt-get install -y llvm-${{inputs.llvm}}-dev clang-${{inputs.llvm}} libunwind-dev libclang-${{inputs.llvm}}-dev lld-${{inputs.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libcjson-dev libuv1-dev
+      sudo apt-get install -y llvm-${{inputs.llvm}}-dev clang-${{inputs.llvm}} libclang-${{inputs.llvm}}-dev lld-${{inputs.llvm}} libunwind-${{inputs.llvm}}-dev libc++-${{inputs.llvm}}-dev pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
       echo "/usr/lib/llvm-${{inputs.llvm}}/bin" >> $GITHUB_PATH
   - name: Install LLGo
     shell: bash

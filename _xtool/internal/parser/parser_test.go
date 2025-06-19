@@ -4,16 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
+	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	"github.com/goplus/llcppg/_xtool/internal/parser"
-
 	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llgo/xtool/clang/preprocessor"
 )
 
 func TestParser(t *testing.T) {
@@ -532,4 +535,86 @@ func getComplexType(flag ast.TypeFlag) clang.Type {
 	})
 
 	return typ
+}
+
+func TestPreprocess(t *testing.T) {
+	combinedFile, err := os.CreateTemp("./", "compose_*.h")
+	if err != nil {
+		panic(err)
+	}
+	defer os.Remove(combinedFile.Name())
+
+	clangtool.ComposeIncludes([]string{"main.h", "compat.h"}, combinedFile.Name())
+
+	efile, err := os.CreateTemp("", "temp_*.i")
+	if err != nil {
+		panic(err)
+	}
+	defer os.Remove(efile.Name())
+
+	ppconf := &preprocessor.Config{
+		Compiler: "clang",
+		Flags:    []string{"-I./_testdata/hfile"},
+	}
+	err = preprocessor.Do(combinedFile.Name(), efile.Name(), ppconf)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	config := &clangutils.Config{
+		File:  efile.Name(),
+		Temp:  false,
+		IsCpp: false,
+	}
+
+	var str strings.Builder
+
+	visit(config, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+		switch cursor.Kind {
+		case clang.CursorEnumDecl, clang.CursorStructDecl, clang.CursorUnionDecl, clang.CursorTypedefDecl:
+			var filename clang.String
+			var line, column c.Uint
+			cursor.Location().PresumedLocation(&filename, &line, &column)
+			str.WriteString("TypeKind: ")
+			str.WriteString(clang.GoString(cursor.Kind.String()))
+			str.WriteString(" Name: ")
+			str.WriteString(clang.GoString(cursor.String()))
+			str.WriteString("\n")
+			str.WriteString("Location: ")
+			str.WriteString(fmt.Sprintf("%s:%d:%d\n", path.Base(c.GoString(filename.CStr())), line, column))
+		}
+		return clang.ChildVisit_Continue
+	})
+
+	expect := `
+TypeKind: StructDecl Name: A
+Location: main.h:3:16
+TypeKind: TypedefDecl Name: A
+Location: main.h:6:3
+TypeKind: TypedefDecl Name: B
+Location: compat.h:3:11
+TypeKind: TypedefDecl Name: C
+Location: main.h:8:11
+`
+
+	compareOutput(t, expect, str.String())
+}
+
+func visit(config *clangutils.Config, visitFunc func(cursor, parent clang.Cursor) clang.ChildVisitResult) {
+	index, unit, err := clangutils.CreateTranslationUnit(config)
+	if err != nil {
+		panic(err)
+	}
+	cursor := unit.Cursor()
+	clangutils.VisitChildren(cursor, visitFunc)
+	index.Dispose()
+	unit.Dispose()
+}
+
+func compareOutput(t *testing.T, expected, actual string) {
+	expected = strings.TrimSpace(expected)
+	actual = strings.TrimSpace(actual)
+	if expected != actual {
+		t.Fatalf("Test failed: expected \n%s \ngot \n%s", expected, actual)
+	}
 }

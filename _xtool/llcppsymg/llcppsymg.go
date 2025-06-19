@@ -17,6 +17,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -63,7 +64,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Failed to parse config file:", ags.CfgFile)
 	}
 
-	err = symg.Do(&symg.Config{
+	symbolTable, err := symg.Do(&symg.Config{
 		Libs:         conf.Libs,
 		CFlags:       conf.CFlags,
 		Includes:     conf.Include,
@@ -72,6 +73,12 @@ func main() {
 		SymMap:       conf.SymMap,
 		IsCpp:        conf.Cplusplus,
 	})
+	check(err)
+
+	jsonData, err := json.MarshalIndent(symbolTable, "", "  ")
+	check(err)
+
+	err = os.WriteFile(llcppg.LLCPPG_SYMB, jsonData, os.ModePerm)
 	check(err)
 }
 
