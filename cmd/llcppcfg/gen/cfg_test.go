@@ -442,7 +442,7 @@ func Test_sortIncludes(t *testing.T) {
 				[]string{".h"},
 				[]string{},
 			},
-			[]string{},
+			nil,
 		},
 		{
 			"deps/case4_recircle",
@@ -464,7 +464,8 @@ func Test_sortIncludes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sortIncludes(tt.args.expandCflags, tt.args.cfg, tt.args.exts, tt.args.excludeSubdirs)
+			c := &Config{Exts: tt.args.exts, ExcludeSubdirs: tt.args.excludeSubdirs}
+			tt.args.cfg.Include = c.sortIncludes(tt.args.expandCflags, tt.args.exts, tt.args.excludeSubdirs)
 			if !reflect.DeepEqual(tt.args.cfg.Include, tt.wantInclude) {
 				t.Errorf("sortIncludes() = %v, want %v", tt.args.cfg.Include, tt.wantInclude)
 			}
@@ -474,8 +475,8 @@ func Test_sortIncludes(t *testing.T) {
 
 func TestNewLLCppConfig(t *testing.T) {
 	type args struct {
-		name string
-		flag FlagMode
+		name  string
+		isCpp bool
 	}
 	tests := []struct {
 		name string
@@ -486,7 +487,7 @@ func TestNewLLCppConfig(t *testing.T) {
 			"libcjson",
 			args{
 				"libcjson",
-				WithTab,
+				false,
 			},
 			&llcppg.Config{
 				Name:           "libcjson",
@@ -499,8 +500,9 @@ func TestNewLLCppConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := newLLCppgConfig(tt.args.name, tt.args.flag); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewLLCppgConfig() = %v, want %v", got, tt.want)
+			c := &Config{Name: tt.args.name, IsCpp: tt.args.isCpp}
+			if got := c.toLLCppg(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewLLCppgConfig() = %#v, want %#v", got, tt.want)
 			}
 		})
 	}
