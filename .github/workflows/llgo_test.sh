@@ -5,8 +5,7 @@ root_dir=$(pwd)
 
 for dir in "$@"; do
     echo "Testing $dir"
-    cd "$root_dir/$dir"
-    llgo test .
+    llgo test "$root_dir/$dir"
 done
 
 echo "All tests passed!"
