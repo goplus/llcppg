@@ -1,8 +1,5 @@
 # Abstract
-The LLCppg core configuration file, llcppg.cfg, can be complex and error-prone to configure. This is because it requires a deep understanding of the project structure and compilation details. We have designed llcppcfg to automatically generate the basic llcppg.cfg configuration file for users. It greatly simplifies the configuration process, allowing users to simply provide the target library's name as input. The tool then generates corresponding configuration content based on established rules or templates.
-
-# Installation
-`go install github.com/goplus/llcppg/cmd/llcppcfg`
+The llcppg core configuration file, llcppg.cfg, can be complex and error-prone to configure. This is because it requires a deep understanding of the project structure and compilation details. We have designed llcppcfg to automatically generate the basic llcppg.cfg configuration file for users. It greatly simplifies the configuration process, allowing users to simply provide the target library's name as input. The tool then generates corresponding configuration content based on established rules or templates.
 
 # Basic Usage
 `llcppcfg [options] <library actual PC name>`
