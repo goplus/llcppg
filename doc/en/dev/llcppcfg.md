@@ -57,10 +57,26 @@ The generated llcppg.cfg content will be similar to:
 
 # Design
 
-## Header File Acquisition
+## Header File
 
-Based on the user-provided PC name, we can obtain its `cflags` information
+1. **Extract Include Paths**
+   Parse the `cflags` from pkg-config to identify include paths (`-I` flags)
 
-Subsequently, based on the `cflags` information, we find the header file storage path and scan all files that meet the requirements
+2. **Discover Header Files**
+   Scan each include path for files:
+   - Matching specified extensions (`.h`, `.hpp`, etc.)
+   - Excluding specified subdirectories (`internal`, `impl`, etc.)
 
-Then, by calling the `clang` preprocessor, we obtain its dependency graph and sort the header files based on the dependency graph information
+3. **Analyze Dependencies**
+   For each valid header file:
+   - Execute `clang -MM [header_path]`
+   - Capture dependency output in Makefile format:
+     ```
+     header.o: header.cpp \
+         dependency1.h \
+         dependency2.h
+     ```
+
+4. **Sort by Dependency Weight**
+   Prioritize headers based on:
+   - Dependency count (files with more dependencies rank higher)
