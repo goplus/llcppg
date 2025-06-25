@@ -55,7 +55,7 @@ The generated llcppg.cfg content will be similar to:
 }
 ```
 
-# Design
+# Process Design
 
 ## Header File
 
