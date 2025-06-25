@@ -1,18 +1,28 @@
 [
   {
-    "mangle": "_ZN9INIReaderC1EPKc",
-    "c++": "INIReader::INIReader(const char *)",
-    "go": "(*Reader).Init"
-  },
-  {
-    "mangle": "_ZN9INIReaderC1EPKcl",
-    "c++": "INIReader::INIReader(const char *, long)",
+    "mangle": "_ZN9INIReaderC1EPKcm",
+    "c++": "INIReader::INIReader(const char *, size_t)",
     "go": "(*Reader).Init__1"
   },
   {
-    "mangle": "_ZN9INIReaderD1Ev",
-    "c++": "INIReader::~INIReader()",
-    "go": "(*Reader).Dispose"
+    "mangle": "_ZN9INIReaderC1ERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE",
+    "c++": "INIReader::INIReader(const std::string \u0026)",
+    "go": "(*Reader).Init"
+  },
+  {
+    "mangle": "_ZNK9INIReader10GetBooleanERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_b",
+    "c++": "INIReader::GetBoolean(const std::string \u0026, const std::string \u0026, bool)",
+    "go": "(*Reader).GetBoolean"
+  },
+  {
+    "mangle": "_ZNK9INIReader10GetIntegerERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_l",
+    "c++": "INIReader::GetInteger(const std::string \u0026, const std::string \u0026, long)",
+    "go": "(*Reader).GetInteger"
+  },
+  {
+    "mangle": "_ZNK9INIReader10HasSectionERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE",
+    "c++": "INIReader::HasSection(const std::string \u0026)",
+    "go": "(*Reader).HasSection"
   },
   {
     "mangle": "_ZNK9INIReader10ParseErrorEv",
@@ -20,8 +30,38 @@
     "go": "(*Reader).ModifyedParseError"
   },
   {
-    "mangle": "_ZNK9INIReader3GetEPKcS1_S1_",
-    "c++": "INIReader::Get(const char *, const char *, const char *)",
+    "mangle": "_ZNK9INIReader11GetUnsignedERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_m",
+    "c++": "INIReader::GetUnsigned(const std::string \u0026, const std::string \u0026, unsigned long)",
+    "go": "(*Reader).GetUnsigned"
+  },
+  {
+    "mangle": "_ZNK9INIReader12GetInteger64ERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_x",
+    "c++": "INIReader::GetInteger64(const std::string \u0026, const std::string \u0026, int64_t)",
+    "go": "(*Reader).GetInteger64"
+  },
+  {
+    "mangle": "_ZNK9INIReader13GetUnsigned64ERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_y",
+    "c++": "INIReader::GetUnsigned64(const std::string \u0026, const std::string \u0026, uint64_t)",
+    "go": "(*Reader).GetUnsigned64"
+  },
+  {
+    "mangle": "_ZNK9INIReader3GetERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_S8_",
+    "c++": "INIReader::Get(const std::string \u0026, const std::string \u0026, const std::string \u0026)",
     "go": "(*Reader).Get"
+  },
+  {
+    "mangle": "_ZNK9INIReader7GetRealERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_d",
+    "c++": "INIReader::GetReal(const std::string \u0026, const std::string \u0026, double)",
+    "go": "(*Reader).GetReal"
+  },
+  {
+    "mangle": "_ZNK9INIReader8HasValueERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_",
+    "c++": "INIReader::HasValue(const std::string \u0026, const std::string \u0026)",
+    "go": "(*Reader).HasValue"
+  },
+  {
+    "mangle": "_ZNK9INIReader9GetStringERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES8_S8_",
+    "c++": "INIReader::GetString(const std::string \u0026, const std::string \u0026, const std::string \u0026)",
+    "go": "(*Reader).GetString"
   }
 ]
