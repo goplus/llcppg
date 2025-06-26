@@ -17,7 +17,7 @@ jobs:
           - ubuntu-24.04
           - ubuntu-24.04-arm
         llvm: [19]
-        llgo: [132e240e87828a8575dd5ad7978f74014142583c]
+        llgo: [f0728c4fe028fbc72455c1242cef638ebdf60454]
         go: [1.23]
       fail-fast: false
     runs-on: ${{matrix.os}}
