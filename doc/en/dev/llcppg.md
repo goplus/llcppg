@@ -200,14 +200,38 @@ func (recv_ *Sqlite3) Close() c.Int {
 }
 ```
 
-#### Name Mapping Rules
+### Type Name Mapping
 
-The llcppg system converts C/C++ type names to Go-compatible identifiers following specific transformation rules. These rules ensure generated Go code follows Go naming conventions while maintaining clarity and avoiding conflicts.
+The llcppg name mapping system follows three core principles:
 
-##### Public Name Processing
-Names starting with underscore or digit are prefixed with "X" to create valid Go identifiers.
+1. **Go Naming Conventions Compliance**: All generated names must be valid Go identifiers that follow Go's naming conventions (PascalCase for exported names, camelCase for unexported)
+2. **C Compatibility Preservation**: Maintain clear traceability between C symbols and their Go counterparts
+3. **Conflict Resolution**: Provide deterministic rules for handling naming conflicts and edge cases
 
-##### Type Name Conversion (struct, union, typedef, enum)
+#### Mapping Hierarchy
+
+The name mapping system applies transformations in a strict priority order:
+
+##### 1. Custom Mappings (Highest Priority)
+
+Custom mappings in configuration files override all automatic transformations:
+
+```json
+{
+  "typeMap": {
+    "cJSON": "JSON"
+  },
+  "symMap": {
+    "cJSON_PrintUnformatted": "PrintUnformatted"
+  }
+}
+```
+
+##### 2. Context-Based Mapping
+
+Different naming contexts require different transformation strategies:
+
+###### Type Name (struct, union, typedef, enum)
 
 1. Remove configured prefixes from `trimPrefixes`
 2. Convert to PascalCase if the name starts with a letter
@@ -228,33 +252,16 @@ Examples which is start with underscore:
 
 * C: `_gmp_err` → Go: `X_gmpErr`
 
+###### Function Name
+Follow the same rules as type names, with additional method conversion logic based on symbol table configuration.
 
-##### Macro and Enum Special Rules
-For macros and enums after prefix removal:
-
-Letter-starting names: Capitalize first letter only, preserve original format
-Underscore/digit-starting names: Apply public name processing,preserve original format
-
-##### Custom Type Mappings
-
-Types with explicit mappings in typeMap configuration bypass all other processing rules:
-```json
-{  
-  "typeMap": {  
-    "cJSON": "JSON"  
-  }  
-}
-```
-Example: C: `cJSON` → Go: `JSON`
-
-##### Field Name Conversion
-
+###### Field Name
 Field names must be exportable (public) in Go to allow external access. The conversion rules:
 
 1. Letter-starting fields: Convert to PascalCase
 2. Underscore/digit-starting fields: Apply public processing, then convert to PascalCase while preserving case after underscores
 
-##### Param Name Conversion
+###### Parameter Name
 
 Parameter names are preserved in their original style without conversion, with only the following special cases being handled:
 
@@ -302,6 +309,31 @@ char *mprintf(const char*,...);
 func Mprintf(__llgo_arg_0 *c.Char, __llgo_va_list ...interface{}) *c.Char
 ```
 
+##### 3. Automatic Transformations (Lowest Priority)
+
+###### Public Name Processing
+Names starting with underscore or digit are prefixed with "X" to create valid Go identifiers.
+
+- `_gmp_err` → `X_gmpErr`
+
+###### Prefix Trimming
+Remove configured prefixes before other transformations:
+```json
+{
+  "trimPrefixes": ["cJSON_", "sqlite3_", "xml"]
+}
+```
+
+###### Case Conversion
+- **PascalCase**: For exported types and fields
+- **Original preservation**: For parameters and special contexts
+
+#####  Special Cases
+######  Macros and Enums
+For macros and enums after prefix removal:
+
+Letter-starting names: Capitalize first letter only, preserve original format
+Underscore/digit-starting names: Apply public name processing,preserve original format
 
 ### File Generation Rules
 
