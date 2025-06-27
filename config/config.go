@@ -33,6 +33,7 @@ type Config struct {
 	Mix            bool              `json:"mix,omitempty"`
 	SymMap         map[string]string `json:"symMap,omitempty"`
 	TypeMap        map[string]string `json:"typeMap,omitempty"`
+	LibStatic      bool              `json:"libstatic,omitempty"`
 }
 
 func NewDefault() *Config {
