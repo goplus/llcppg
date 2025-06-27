@@ -165,7 +165,7 @@ func TestGenDylibPaths(t *testing.T) {
 			}
 
 			if err != nil {
-				t.Fatalf("expected no error, got %w", err)
+				t.Fatalf("expected no error, got %v", err)
 			}
 
 			if !reflect.DeepEqual(notFounds, tc.wantNotFound) {

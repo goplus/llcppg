@@ -1,6 +1,7 @@
 package demo
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"os"
@@ -95,6 +96,27 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 
 	if _, err = os.Stat(configFile); os.IsNotExist(err) {
 		return fmt.Errorf("config file not found: %s", configFile)
+	}
+
+	configFileContent, err := os.ReadFile(configFile)
+	if err != nil {
+		return fmt.Errorf("failed to read config file: %w", err)
+	}
+
+	configFileMap := make(map[string]interface{})
+	err = json.Unmarshal(configFileContent, &configFileMap)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal config file: %w", err)
+	}
+	// write libstatic to config file
+	configFileMap["libstatic"] = true
+	configFileContent, err = json.Marshal(configFileMap)
+	if err != nil {
+		return fmt.Errorf("failed to marshal config file: %w", err)
+	}
+	err = os.WriteFile(configFile, configFileContent, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
 	llcppgArgs := []string{"-v", "-mod", demoPkgName}
