@@ -41,7 +41,7 @@ type Config struct {
 }
 
 func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
-	symbols, err := fetchSymbols(conf.Libs, conf.libMode)
+	symbols, err := FetchSymbols(conf.Libs, conf.libMode)
 	if err != nil {
 		return
 	}
@@ -82,7 +82,7 @@ func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
 // libraries (like standard libs) are logged as warnings.
 //
 // Returns symbols and nil error if any symbols are found, or nil and error if none found.
-func fetchSymbols(lib string, mode LibMode) ([]*nm.Symbol, error) {
+func FetchSymbols(lib string, mode LibMode) ([]*nm.Symbol, error) {
 	if dbgSymbol {
 		fmt.Println("fetchSymbols:from", lib)
 	}

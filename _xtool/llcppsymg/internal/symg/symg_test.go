@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	"github.com/goplus/llcppg/_xtool/internal/header"
+	"github.com/goplus/llcppg/_xtool/internal/symbol"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/symg"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/internal/name"
@@ -536,4 +538,90 @@ func addSymbolPrefixUnder(name string, isCpp bool) string {
 		prefix = prefix + "_"
 	}
 	return prefix + name
+}
+
+func TestFetchSymbols(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "test_fetch_symbols_*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// todo(zzy): remove this after test,need llgo support
+	// defer os.RemoveAll(tempDir)
+
+	cSource := `
+#include <stdio.h>
+
+void test_function_1(void) {
+    printf("test function 1\n");
+}
+
+int test_function_2(int x) {
+    return x * 2;
+}
+
+const char* test_function_3(void) {
+    return "hello world";
+}
+`
+
+	cSourcePath := filepath.Join(tempDir, "test.c")
+	err = os.WriteFile(cSourcePath, []byte(cSource), os.ModePerm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(cSourcePath)
+
+	var dylibPath string
+	var compileCmd []string
+	if runtime.GOOS == "darwin" {
+		dylibPath = filepath.Join(tempDir, "libtest.dylib")
+		compileCmd = []string{"clang", "-shared", "-fPIC", "-o", dylibPath, cSourcePath}
+	} else if runtime.GOOS == "linux" {
+		dylibPath = filepath.Join(tempDir, "libtest.so")
+		compileCmd = []string{"gcc", "-shared", "-fPIC", "-o", dylibPath, cSourcePath}
+	} else {
+		t.Skip("Unsupported platform for this test")
+	}
+
+	cmd := exec.Command(compileCmd[0], compileCmd[1:]...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("Failed to compile test library: %v\nOutput: %s", err, output)
+	}
+
+	if _, err := os.Stat(dylibPath); os.IsNotExist(err) {
+		t.Fatal("Dynamic library was not created")
+	}
+
+	libDir := tempDir
+	libFlag := fmt.Sprintf("-L%s -ltest", libDir)
+
+	symbols, err := symg.FetchSymbols(libFlag, symbol.ModeDynamic)
+	if err != nil {
+		t.Fatalf("FetchSymbols failed: %v", err)
+	}
+
+	if len(symbols) == 0 {
+		t.Fatal("No symbols found")
+	}
+
+	expectedSymbols := []string{"test_function_1", "test_function_2", "test_function_3"}
+	foundSymbols := make(map[string]bool)
+
+	for _, sym := range symbols {
+		// On Darwin, symbols have '_' prefix, so trim it
+		symName := sym.Name
+		if runtime.GOOS == "darwin" {
+			symName = strings.TrimPrefix(symName, "_")
+		}
+		foundSymbols[symName] = true
+	}
+
+	for _, expected := range expectedSymbols {
+		if !foundSymbols[expected] {
+			t.Errorf("Expected symbol %s not found in library symbols", expected)
+		}
+	}
+
+	t.Logf("Successfully found %d symbols including expected test functions", len(symbols))
 }
