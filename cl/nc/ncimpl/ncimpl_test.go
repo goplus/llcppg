@@ -169,8 +169,8 @@ func TestConverterConvFile(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			goFile, ok := converter.convFile(tc.file, nil)
 
-			if goFile != tc.expected {
-				t.Errorf("Expected file %s, got %s", tc.expected, goFile)
+			if goFile.FileName != tc.expected {
+				t.Errorf("Expected file %s, got %s", tc.expected, goFile.FileName)
 			}
 
 			if ok != tc.ok {
@@ -226,7 +226,7 @@ func TestConv(t *testing.T) {
 		trimPrefixes []string
 		expectFile   string
 		expectName   string
-		exec         func(conv *Converter, convNode ast.Node) (string, string, error)
+		exec         func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error)
 		expectErr    error
 	}{
 		{
@@ -235,7 +235,7 @@ func TestConv(t *testing.T) {
 				Name: "MACRO_NAME",
 				Loc:  &ast.Location{File: interFile},
 			},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvMacro(interFile, convNode.(*ast.Macro))
 			},
 			expectFile: "inter.go",
@@ -248,7 +248,7 @@ func TestConv(t *testing.T) {
 				Name: "MACRO_NAME",
 				Loc:  &ast.Location{File: interFile},
 			},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvMacro(interFile, convNode.(*ast.Macro))
 			},
 			trimPrefixes: []string{"MACRO_"},
@@ -263,7 +263,7 @@ func TestConv(t *testing.T) {
 				Loc:  &ast.Location{File: interFile},
 			},
 			pubs: map[string]string{"MACRO_CONST": "CustomMacro"},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvMacro(interFile, convNode.(*ast.Macro))
 			},
 			expectFile: "inter.go",
@@ -276,7 +276,7 @@ func TestConv(t *testing.T) {
 				Name: "MACRO_NAME",
 				Loc:  &ast.Location{File: thirdFile},
 			},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvMacro(thirdFile, convNode.(*ast.Macro))
 			},
 			expectFile: "testpkg_autogen.go",
@@ -292,7 +292,7 @@ func TestConv(t *testing.T) {
 				MangledName: "validFunc",
 			},
 			convSym: mockSymConv,
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvDecl(interFile, convNode.(*ast.FuncDecl))
 			},
 			expectFile: "inter.go",
@@ -307,7 +307,7 @@ func TestConv(t *testing.T) {
 					Loc:  &ast.Location{File: thirdFile},
 				},
 			},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvDecl(thirdFile, convNode.(*ast.FuncDecl))
 			},
 			expectFile: "testpkg_autogen.go",
@@ -322,7 +322,7 @@ func TestConv(t *testing.T) {
 				},
 				MangledName: "noSymbolFunc",
 			},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvDecl(interFile, convNode.(*ast.FuncDecl))
 			},
 			convSym:    mockSymConv,
@@ -337,7 +337,7 @@ func TestConv(t *testing.T) {
 					Loc:  &ast.Location{File: interFile},
 				},
 			},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvDecl(interFile, convNode.(*ast.EnumTypeDecl))
 			},
 			expectFile: "inter.go",
@@ -352,7 +352,7 @@ func TestConv(t *testing.T) {
 					Loc:  &ast.Location{File: interFile},
 				},
 			},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvDecl(interFile, convNode.(*ast.EnumTypeDecl))
 			},
 			expectFile: "inter.go",
@@ -366,7 +366,7 @@ func TestConv(t *testing.T) {
 					Loc:  &ast.Location{File: interFile},
 				},
 			},
-			exec: func(conv *Converter, convNode ast.Node) (string, string, error) {
+			exec: func(conv *Converter, convNode ast.Node) (string, *nc.GoFile, error) {
 				return conv.ConvDecl(interFile, convNode.(*ast.TypeDecl))
 			},
 			expectFile: "inter.go",
@@ -388,8 +388,8 @@ func TestConv(t *testing.T) {
 			if goName != tc.expectName {
 				t.Errorf("Expected %s, got %s", tc.expectName, goName)
 			}
-			if goFile != tc.expectFile {
-				t.Errorf("Expected %s, got %s", tc.expectFile, goFile)
+			if goFile.FileName != tc.expectFile {
+				t.Errorf("Expected %s, got %s", tc.expectFile, goFile.FileName)
 			}
 			if err != tc.expectErr {
 				t.Errorf("Expected %v, got %v", tc.expectErr, err)

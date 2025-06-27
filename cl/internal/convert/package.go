@@ -126,8 +126,10 @@ func (p *Package) LookupFunc(goName string, fn *ast.FuncDecl) (*GoFuncSpec, erro
 	return NewGoFuncSpec(goName), nil
 }
 
+// If not have goFile in current package,it will create a new file,and the init function will be execute
 // to keep the unsafe package load to use go:linkname command
-func (p *Package) setGoFile(goFile string) {
+func (p *Package) setGoFile(goFile string, init func()) {
+	// todo(zzy):support write build condition to file
 	p.p.SetCurFile(goFile, true)
 	// todo(zzy):avoid remark
 	p.p.Unsafe().MarkForceUsed(p.p)

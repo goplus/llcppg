@@ -108,7 +108,16 @@ func (p *Converter) Process() error {
 			}
 			return fmt.Errorf("ConvMacro: %w", err)
 		}
-		ctx.setGoFile(goFile)
+
+		ctx.setGoFile(goFile.FileName, func() {
+			// todo(zzy):write build condition to file
+			// var os, arch string
+			// if goFile.Condition != nil {
+			// 	os = goFile.Condition.OS
+			// 	arch = goFile.Condition.Arch
+			// }
+		})
+
 		err = ctx.NewMacro(goName, macro)
 		if err != nil {
 			return err
@@ -124,7 +133,9 @@ func (p *Converter) Process() error {
 			}
 			return fmt.Errorf("ConvDecl: %w", err)
 		}
-		ctx.setGoFile(goFile)
+		ctx.setGoFile(goFile.FileName, func() {
+			// todo(zzy):write build condition to file
+		})
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
 			err = ctx.NewTypeDecl(goName, decl, pnc)

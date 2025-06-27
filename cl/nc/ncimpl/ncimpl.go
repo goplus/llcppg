@@ -44,7 +44,7 @@ type Converter struct {
 	KeepUnderScore bool
 }
 
-func (p *Converter) convFile(file string, obj *ast.Object) (goFile string, ok bool) {
+func (p *Converter) convFile(file string, obj *ast.Object) (goFile *nc.GoFile, ok bool) {
 	info, exist := p.FileMap[file]
 	if !exist {
 		var availableFiles []string
@@ -58,10 +58,13 @@ func (p *Converter) convFile(file string, obj *ast.Object) (goFile string, ok bo
 	if obj != nil && obj.Name != nil && hf.FileType == llconfig.Third {
 		p.locMap.Add(obj.Name, obj.Loc)
 	}
-	return hf.ToGoFileName(p.PkgName), hf.InCurPkg()
+	return &nc.GoFile{
+		FileName: hf.ToGoFileName(p.PkgName),
+		// todo(zzy):support condition
+	}, hf.InCurPkg()
 }
 
-func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string, err error) {
+func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName string, goFile *nc.GoFile, err error) {
 	obj := ast.ObjectOf(decl)
 	goFile, ok := p.convFile(file, obj)
 	if !ok {
@@ -88,7 +91,7 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 	return
 }
 
-func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName, goFile string, err error) {
+func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName string, goFile *nc.GoFile, err error) {
 	goFile, ok := p.convFile(file, nil)
 	if !ok {
 		err = nc.ErrSkip
