@@ -2,6 +2,7 @@ package clang
 
 import (
 	"errors"
+	"path/filepath"
 	"unsafe"
 
 	"github.com/goplus/lib/c"
@@ -80,8 +81,10 @@ func GetLocation(loc clang.SourceLocation) (file clang.File, line c.Uint, column
 	return
 }
 
-func GetPresumedLocation(loc clang.SourceLocation) (file clang.String, line c.Uint, column c.Uint) {
+func GetPresumedLocation(loc clang.SourceLocation) (fileGo string, line c.Uint, column c.Uint) {
+	var file clang.String
 	loc.PresumedLocation(&file, &line, &column)
+	fileGo = filepath.Clean(clang.GoString(file))
 	return
 }
 

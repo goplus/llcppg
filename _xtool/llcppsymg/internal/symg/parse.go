@@ -51,6 +51,9 @@ func NewSymbolProcessor(curPkgFiles []string, prefixes []string, symMap map[stri
 
 func (p *SymbolProcessor) isSelfFile(filename string) bool {
 	_, ok := p.curPkgFiles[filename]
+	if !ok {
+		fmt.Println("not in file", filename)
+	}
 	return ok
 }
 
@@ -259,8 +262,8 @@ func underCursor(arg clang.Cursor) clang.Cursor {
 // cursor.Location() in llvm@19 cannot get the fileinfo for a macro expansion,so we dirrect use PresumedLocation
 func cursorFileName(cursor clang.Cursor) string {
 	loc := cursor.Location()
-	file, _, _ := clangutils.GetPresumedLocation(loc)
-	return clang.GoString(file)
+	filePath, _, _ := clangutils.GetPresumedLocation(loc)
+	return filePath
 }
 
 func ParseHeaderFile(combileFile string, curPkgFiles []string, prefixes []string, cflags []string, symMap map[string]string, isCpp bool) (map[string]*SymbolInfo, error) {

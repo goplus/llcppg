@@ -139,8 +139,7 @@ func (ct *Converter) logln(args ...interface{}) {
 
 func (ct *Converter) InFile(cursor clang.Cursor) bool {
 	loc := cursor.Location()
-	file, _, _ := clangutils.GetPresumedLocation(loc)
-	filePath := clang.GoString(file)
+	filePath, _, _ := clangutils.GetPresumedLocation(loc)
 	ct.logf("GetCurFile: PresumedLocation %s cursor.Location() %s\n", filePath, clang.GoString(loc.File().FileName()))
 	if filePath == "<built-in>" || filePath == "<command line>" {
 		//todo(zzy): For some built-in macros, there is no file.
