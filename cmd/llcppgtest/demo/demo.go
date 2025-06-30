@@ -97,13 +97,15 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 		return fmt.Errorf("config file not found: %s", configFile)
 	}
 
-	llcppgArgs := []string{"-v", "-mod", demoPkgName}
-
-	outDir := filepath.Join(absPath, "out")
-	if err = os.MkdirAll(outDir, 0755); err != nil {
-		return fmt.Errorf("failed to create output directory: %w", err)
+	outDir, err := os.MkdirTemp("", "llcppgtest")
+	if err != nil {
+		return err
 	}
 	defer os.RemoveAll(outDir)
+
+	fmt.Printf("Generate %s to %s\n", demoPkgName, outDir)
+
+	llcppgArgs := []string{"-v", "-mod", demoPkgName}
 
 	// copy configs to out dir
 	cfgFiles := []string{llcppg.LLCPPG_CFG, llcppg.LLCPPG_PUB, llcppg.LLCPPG_SYMB}
@@ -135,19 +137,28 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 		return fmt.Errorf("%s: go fmt failed in %s: %w", demoPkgName, genPkgDir, err)
 	}
 
-	demosPath := filepath.Join(demoRoot, "demo")
+	demosPath, err := os.MkdirTemp("", "llcppgtest-demo")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(demosPath)
+
+	templateDemosPath := filepath.Join(demoRoot, "demo")
+	err = os.CopyFS(demosPath, os.DirFS(templateDemosPath))
+	if err != nil {
+		return err
+	}
+
 	// init mods to test package,because the demo is dependent on the gen pkg
-	if err = runCommand(tempLog, demoRoot, "go", "mod", "init", "demo"); err != nil {
-		return fmt.Errorf("go mod init failed in %s: %w", demoRoot, err)
+	if err = runCommand(tempLog, demosPath, "go", "mod", "init", "demo"); err != nil {
+		return fmt.Errorf("go mod init failed in %s: %w", demosPath, err)
 	}
-	if err = runCommand(tempLog, demoRoot, "go", "mod", "edit", "-replace", demoPkgName+"="+"./out/"+demoPkgName); err != nil {
-		return fmt.Errorf("go mod edit failed in %s: %w", demoRoot, err)
+	if err = runCommand(tempLog, demosPath, "go", "mod", "edit", "-replace", demoPkgName+"="+genPkgDir); err != nil {
+		return fmt.Errorf("go mod edit failed in %s: %w", demosPath, err)
 	}
-	if err = runCommand(tempLog, demoRoot, "go", "mod", "tidy"); err != nil {
-		return fmt.Errorf("go mod tidy failed in %s: %w", demoRoot, err)
+	if err = runCommand(tempLog, demosPath, "go", "mod", "tidy"); err != nil {
+		return fmt.Errorf("go mod tidy failed in %s: %w", demosPath, err)
 	}
-	defer os.Remove(filepath.Join(absPath, "go.mod"))
-	defer os.Remove(filepath.Join(absPath, "go.sum"))
 
 	fmt.Printf("testing demos in %s\n", demosPath)
 	// run the demo
