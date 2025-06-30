@@ -121,6 +121,25 @@ func TestGetConfByByte(t *testing.T) {
 		},
 
 		{
+			name: "Static library configuration",
+			input: `{
+		  "name": "mylib",
+		  "cflags": "-I/opt/homebrew/include",
+		  "include": ["mylib.h"],
+		  "libs": "-L/opt/homebrew/lib -lmylib",
+		  "libstatic": true
+		}`,
+			expect: llconfig.Config{
+				Name:      "mylib",
+				CFlags:    "-I/opt/homebrew/include",
+				Include:   []string{"mylib.h"},
+				Libs:      "-L/opt/homebrew/lib -lmylib",
+				LibStatic: true,
+			},
+			mode: useFile,
+		},
+
+		{
 			name:      "Invalid JSON",
 			input:     `{invalid json}`,
 			expectErr: true,

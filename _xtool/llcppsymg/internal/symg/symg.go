@@ -10,6 +10,7 @@ import (
 	"github.com/goplus/llcppg/_xtool/internal/clangtool"
 	"github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/internal/ld"
+	"github.com/goplus/llcppg/_xtool/internal/symbol"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/nm"
 )
@@ -37,11 +38,11 @@ type Config struct {
 	TrimPrefixes []string
 	SymMap       map[string]string
 	IsCpp        bool
-	libMode      LibMode
+	LibMode      LibMode
 }
 
 func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
-	symbols, err := fetchSymbols(conf.Libs, conf.libMode)
+	symbols, err := fetchSymbols(conf.Libs, conf.LibMode)
 	if err != nil {
 		return
 	}
@@ -117,7 +118,7 @@ func fetchSymbols(lib string, mode LibMode) ([]*nm.Symbol, error) {
 
 	for _, libFile := range libFiles {
 		args := []string{"-g"}
-		if runtime.GOOS == "linux" {
+		if runtime.GOOS == "linux" && mode == symbol.ModeDynamic {
 			args = append(args, "-D")
 		}
 
