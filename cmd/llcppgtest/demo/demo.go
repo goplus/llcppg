@@ -101,6 +101,7 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 	if err != nil {
 		return err
 	}
+	defer os.RemoveAll(outDir)
 
 	fmt.Printf("Generate %s to %s\n", demoPkgName, outDir)
 
@@ -140,6 +141,7 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 	if err != nil {
 		return err
 	}
+	defer os.RemoveAll(demosPath)
 
 	templateDemosPath := filepath.Join(demoRoot, "demo")
 	err = os.CopyFS(demosPath, os.DirFS(templateDemosPath))
