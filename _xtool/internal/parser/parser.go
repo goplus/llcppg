@@ -163,10 +163,7 @@ func (ct *Converter) CreateObject(cursor clang.Cursor, name *ast.Ident) ast.Obje
 }
 
 func createLoc(cursor clang.Cursor) *ast.Location {
-	var file clang.String
-	loc := cursor.Location()
-	loc.PresumedLocation(&file, nil, nil)
-	filename := filepath.Clean(clang.GoString(file))
+	filename, _, _ := clangutils.GetPresumedLocation(cursor.Location())
 	return &ast.Location{
 		File: filename,
 	}
