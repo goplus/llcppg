@@ -465,6 +465,15 @@ func TestGen(t *testing.T) {
 				"gpg_strerror",
 			},
 		},
+		{
+			name: "include",
+			path: "./testdata/include",
+			dylibSymbols: []string{
+				"Foo",
+				"Foo_Bar",
+				"Foo_Conf",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
