@@ -1,0 +1,42 @@
+===== include.go =====
+package include
+
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
+
+type MainA struct {
+	A c.Int
+	B c.Int
+}
+
+===== include_autogen.go =====
+package include
+
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
+
+type ConfA struct {
+	A c.Int
+	B c.Int
+}
+
+type CoreA struct {
+	A c.Int
+	B c.Int
+}
+
+===== include_autogen_link.go =====
+package include
+
+import _ "github.com/goplus/lib/c"
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+
+===== llcppg.pub =====
+ConfA
+CoreA
+MainA

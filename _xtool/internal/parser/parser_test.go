@@ -20,7 +20,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2"}
+	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2", "include"}
 	// https://github.com/goplus/llgo/issues/1114
 	// todo(zzy):use os.ReadDir
 	for _, folder := range cases {
@@ -538,28 +538,12 @@ func getComplexType(flag ast.TypeFlag) clang.Type {
 }
 
 func TestPreprocess(t *testing.T) {
-	combinedFile, err := os.CreateTemp("./", "compose_*.h")
-	if err != nil {
-		panic(err)
-	}
-	defer os.Remove(combinedFile.Name())
-
-	clangtool.ComposeIncludes([]string{"main.h", "compat.h"}, combinedFile.Name())
-
-	efile, err := os.CreateTemp("", "temp_*.i")
-	if err != nil {
-		panic(err)
-	}
-	defer os.Remove(efile.Name())
-
-	ppconf := &preprocessor.Config{
-		Compiler: "clang",
-		Flags:    []string{"-I./_testdata/hfile"},
-	}
-	err = preprocessor.Do(combinedFile.Name(), efile.Name(), ppconf)
+	combinedFile, efile, err := preprocess([]string{"main.h", "compat.h"}, "-I./_testdata/hfile")
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer os.Remove(combinedFile.Name())
+	defer os.Remove(efile.Name())
 
 	config := &clangutils.Config{
 		File:  efile.Name(),
@@ -598,6 +582,59 @@ Location: main.h:8:11
 `
 
 	compareOutput(t, expect, str.String())
+}
+
+func TestRelativePath(t *testing.T) {
+	combinedFile, efile, err := preprocess([]string{"core.h"}, "-I./_testdata/hfile/src/core")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(combinedFile.Name())
+	defer os.Remove(efile.Name())
+
+	var loc string
+
+	config := &clangutils.Config{
+		File:  efile.Name(),
+		Temp:  false,
+		IsCpp: false,
+	}
+
+	visit(config, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+		switch cursor.Kind {
+		case clang.CursorTypedefDecl:
+			var filename clang.String
+			var line, column c.Uint
+			cursor.Location().PresumedLocation(&filename, &line, &column)
+			loc = filepath.Clean(c.GoString(filename.CStr()))
+			return clang.ChildVisit_Break
+		}
+		return clang.ChildVisit_Continue
+	})
+
+	compareOutput(t, "_testdata/hfile/src/conf.h", loc)
+}
+
+func preprocess(includes []string, flags string) (combinedFile *os.File, efile *os.File, err error) {
+	combinedFile, err = os.CreateTemp("./", "compose_*.h")
+	if err != nil {
+		return
+	}
+
+	clangtool.ComposeIncludes(includes, combinedFile.Name())
+
+	efile, err = os.CreateTemp("", "temp_*.i")
+	if err != nil {
+		return
+	}
+
+	ppconf := &preprocessor.Config{
+		Compiler: "clang",
+		Flags:    []string{flags},
+	}
+
+	err = preprocessor.Do(combinedFile.Name(), efile.Name(), ppconf)
+	return
 }
 
 func visit(config *clangutils.Config, visitFunc func(cursor, parent clang.Cursor) clang.ChildVisitResult) {

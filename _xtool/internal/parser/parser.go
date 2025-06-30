@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"unsafe"
@@ -166,7 +167,7 @@ func createLoc(cursor clang.Cursor) *ast.Location {
 	var file clang.String
 	loc := cursor.Location()
 	loc.PresumedLocation(&file, nil, nil)
-	filename := clang.GoString(file)
+	filename := filepath.Clean(clang.GoString(file))
 	return &ast.Location{
 		File: filename,
 	}
@@ -676,7 +677,7 @@ func (ct *Converter) ProcessInclude(cursor clang.Cursor) (*ast.Include, error) {
 	if includedPath == "" {
 		return nil, fmt.Errorf("%s: failed to get included file", name)
 	}
-	return &ast.Include{Path: includedPath}, nil
+	return &ast.Include{Path: filepath.Clean(includedPath)}, nil
 }
 
 func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
