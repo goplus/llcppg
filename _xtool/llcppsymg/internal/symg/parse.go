@@ -51,8 +51,8 @@ func NewSymbolProcessor(curPkgFiles []string, prefixes []string, symMap map[stri
 
 func (p *SymbolProcessor) isSelfFile(filename string) bool {
 	_, ok := p.curPkgFiles[filename]
-	if !ok {
-		fmt.Println("not in file", filename)
+	if !ok && dbgSymbol {
+		fmt.Println("not in file: ", filename)
 	}
 	return ok
 }
