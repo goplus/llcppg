@@ -428,6 +428,9 @@ func TestGen(t *testing.T) {
 				"ZN9INIReaderD1Ev",
 				"ZNK9INIReader10ParseErrorEv",
 				"ZNK9INIReader3GetEPKcS1_S1_",
+				// Check whether private fields are filtered.
+				// If not, the result will certainly not match expect.json.
+				// NOTE(MeteorsLiu): Symbols below this comment must be removed during regeneration.
 				"ZN9INIReader7MakeKeyERKiS1_",
 			},
 		},
@@ -475,6 +478,8 @@ func TestGen(t *testing.T) {
 				"Foo",
 				"Foo_Bar",
 				"Foo_Conf",
+				// only for checking the result of private fields filtering
+				// NOTE(MeteorsLiu): Symbols below this comment must be removed during regeneration.
 				"Foo_Bar_Private",
 				"Foo_Bar_Private2",
 			},
