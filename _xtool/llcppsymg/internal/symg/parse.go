@@ -226,8 +226,15 @@ func (p *SymbolProcessor) visitTop(cursor, parent clang.Cursor) clang.ChildVisit
 	case clang.CursorNamespace, clang.CursorClassDecl:
 		clangutils.VisitChildren(cursor, p.visitTop)
 	case clang.CursorCXXMethod, clang.CursorFunctionDecl, clang.CursorConstructor, clang.CursorDestructor:
-		isPublicMethod := (cursor.CXXAccessSpecifier() == clang.CXXPublic) && cursor.Kind == clang.CursorCXXMethod || cursor.Kind == clang.CursorConstructor || cursor.Kind == clang.CursorDestructor
-		if p.isSelfFile(filename) && (cursor.Kind == clang.CursorFunctionDecl || isPublicMethod) {
+		isPublicFunc := cursor.Kind == clang.CursorFunctionDecl &&
+			cursor.StorageClass() != clang.SCStatic
+
+		isPublicMethod := cursor.CXXAccessSpecifier() == clang.CXXPublic &&
+			cursor.Kind == clang.CursorCXXMethod ||
+			cursor.Kind == clang.CursorConstructor ||
+			cursor.Kind == clang.CursorDestructor
+
+		if p.isSelfFile(filename) && (isPublicFunc || isPublicMethod) {
 			p.collectFuncInfo(cursor)
 		}
 	}

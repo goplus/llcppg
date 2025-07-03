@@ -428,6 +428,7 @@ func TestGen(t *testing.T) {
 				"ZN9INIReaderD1Ev",
 				"ZNK9INIReader10ParseErrorEv",
 				"ZNK9INIReader3GetEPKcS1_S1_",
+				"ZN9INIReader7MakeKeyERKiS1_",
 			},
 		},
 		{
@@ -474,6 +475,8 @@ func TestGen(t *testing.T) {
 				"Foo",
 				"Foo_Bar",
 				"Foo_Conf",
+				"Foo_Bar_Private",
+				"Foo_Bar_Private2",
 			},
 		},
 	}
