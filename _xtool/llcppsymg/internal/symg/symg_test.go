@@ -452,7 +452,7 @@ func TestGen(t *testing.T) {
 			cfg.Libs = fmt.Sprintf("-L%s -l%s", projPath, libName)
 			cfg.CFlags = "-I" + projPath
 
-			gen := false
+			gen := true
 
 			if gen {
 				cFiles, hasCpp := scanCFiles(projPath)
