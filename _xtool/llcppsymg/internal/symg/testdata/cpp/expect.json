@@ -1,10 +1,5 @@
 [
   {
-    "mangle": "_ZN3Foo6HasBarEv",
-    "c++": "Foo::HasBar()",
-    "go": "(*Foo).HasBar"
-  },
-  {
     "mangle": "_ZN3FooC1EPKc",
     "c++": "Foo::Foo(const char *)",
     "go": "(*Foo).Init"

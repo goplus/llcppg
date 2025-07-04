@@ -1,6 +1,7 @@
 package symg_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,8 +14,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/header"
 	"github.com/goplus/llcppg/_xtool/internal/symbol"
 	"github.com/goplus/llcppg/_xtool/llcppsymg/internal/symg"
 	llcppg "github.com/goplus/llcppg/config"
@@ -272,6 +271,27 @@ class INIReader {
 				},
 			},
 		},
+
+		{
+			name: "Non-exported functions",
+			content: `
+				void Foo_Bar();
+				#define private static
+				static void Foo_Bar_Private();
+				private
+				void Foo_Bar_Private2();
+
+			`,
+			isCpp: false,
+			expect: []*llcppg.SymbolInfo{
+				{
+					Go:     "FooBar",
+					CPP:    "Foo_Bar()",
+					Mangle: "Foo_Bar",
+				},
+			},
+		},
+
 		{
 			name: "InvalidReceiver PointerLevel > 1",
 			content: `
@@ -379,110 +399,41 @@ class INIReader {
 }
 
 func TestGen(t *testing.T) {
-	gen := false
 	testCases := []struct {
-		name       string
-		path       string
-		libSymbols []string
+		name string
+		path string
 	}{
 		{
 			name: "c",
 			path: "./testdata/c",
-			libSymbols: []string{
-				"Foo_Print",
-				"Foo_ParseWithLength",
-				"Foo_Delete",
-				"Foo_ParseWithSize",
-				"Foo_ignoreFunc",
-				"Foo_Bar",
-				"Foo_ForBar",
-				"Foo_Bar2",
-				"Foo_ForBar2",
-				"Foo_Prefix_BarMethod",
-				"Foo_BarMethod",
-				"Foo_ForBarMethod",
-				"Foo_ReceiverParse",
-				"Foo_FunctionParse",
-				"Foo_ReceiverParse2",
-				"Foo_Receiver2Parse2",
-			},
 		},
 		{
 			name: "cpp",
 			path: "./testdata/cpp",
-			libSymbols: []string{
-				"ZN3FooC1EPKc",
-				"ZN3FooC1EPKcl",
-				"ZN3FooD1Ev",
-				"ZNK3Foo8ParseBarEv",
-				"ZNK3Foo3GetEPKcS1_S1_",
-				"ZN3Foo6HasBarEv",
-			},
 		},
 		{
 			name: "inireader",
 			path: "./testdata/inireader",
-			libSymbols: []string{
-				"ZN9INIReaderC1EPKc",
-				"ZN9INIReaderC1EPKcl",
-				"ZN9INIReaderD1Ev",
-				"ZNK9INIReader10ParseErrorEv",
-				"ZNK9INIReader3GetEPKcS1_S1_",
-				// Check whether private fields are filtered.
-				// If not, the result will certainly not match expect.json.
-				// NOTE(MeteorsLiu): Symbols below this comment must be removed during regeneration.
-				"ZN9INIReader7MakeKeyERKiS1_",
-			},
 		},
 		{
 			name: "lua",
 			path: "./testdata/lua",
-			libSymbols: []string{
-				"lua_error",
-				"lua_next",
-				"lua_concat",
-				"lua_stringtonumber",
-			},
 		},
 		{
 			name: "cjson",
 			path: "./testdata/cjson",
-			libSymbols: []string{
-				"cJSON_Print",
-				"cJSON_ParseWithLength",
-				"cJSON_Delete",
-				// mock multiple symbols
-				"cJSON_Delete",
-			},
 		},
 		{
 			name: "isl",
 			path: "./testdata/isl",
-			libSymbols: []string{
-				"isl_pw_qpolynomial_get_ctx",
-			},
 		},
 		{
 			name: "gpgerror",
 			path: "./testdata/gpgerror",
-			libSymbols: []string{
-				"gpg_strsource",
-				"gpg_strerror_r",
-				"gpg_strerror",
-			},
 		},
 		{
 			name: "include",
 			path: "./testdata/include",
-			libSymbols: []string{
-				"Foo",
-				"Foo_Bar",
-				"Foo_Conf",
-				// only for checking the result of private fields filtering
-				// NOTE(MeteorsLiu): Symbols below this comment must be removed during regeneration.
-				"Foo_Bar_Private",
-				"Foo_Bar_Private2",
-			},
 		},
 	}
 
@@ -496,50 +447,64 @@ func TestGen(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			libName := filepath.Base(projPath)
 
+			cfg.Libs = fmt.Sprintf("-L%s -l%s", projPath, libName)
 			cfg.CFlags = "-I" + projPath
 
-			tempFile, err := os.CreateTemp("", "combine*.h")
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer os.Remove(tempFile.Name())
-			clangtool.ComposeIncludes(cfg.Include, tempFile.Name())
+			gen := false
 
-			pkgHfileInfo := header.PkgHfileInfo(&header.Config{
-				Includes: cfg.Include,
-				Args:     strings.Fields(cfg.CFlags),
-				Mix:      false,
+			if gen {
+				cFiles, hasCpp := scanCFiles(projPath)
+				staticLibFile := filepath.Join(projPath, "lib"+filepath.Base(projPath)+".a")
+
+				compileCommand := []string{cfg.CFlags, "-o", staticLibFile, "-c"}
+				if !hasCpp {
+					compileCommand = append(compileCommand, "-x", "c")
+				}
+				compileCommand = append(compileCommand, cFiles...)
+
+				cmd := exec.Command("clang++", compileCommand...)
+				res, err := cmd.CombinedOutput()
+				if err != nil {
+					t.Fatal(string(res))
+					return
+				}
+			}
+
+			symbolTable, err := symg.Do(&symg.Config{
+				Libs:         cfg.Libs,
+				CFlags:       cfg.CFlags,
+				Includes:     cfg.Include,
+				Mix:          cfg.Mix,
+				TrimPrefixes: cfg.TrimPrefixes,
+				SymMap:       cfg.SymMap,
+				IsCpp:        cfg.Cplusplus,
+				LibMode:      symbol.ModeStatic,
 			})
-			headerSymbolMap, err := symg.ParseHeaderFile(tempFile.Name(), pkgHfileInfo.CurPkgFiles(), cfg.TrimPrefixes, strings.Fields(cfg.CFlags), cfg.SymMap, cfg.Cplusplus)
-			if err != nil {
-				t.Fatal(err)
-			}
 
-			// trim to nm symbols
-			var libSymbols []*nm.Symbol
-			for _, symb := range tc.libSymbols {
-				libSymbols = append(libSymbols, &nm.Symbol{Name: addSymbolPrefixUnder(symb, cfg.Cplusplus)})
-			}
-			symbols := symg.GetCommonSymbols(libSymbols, headerSymbolMap)
 			if err != nil {
 				t.Fatal(err)
-			}
-			symbolData, err := json.MarshalIndent(symbols, "", "  ")
-			if err != nil {
-				t.Fatal(err)
+				return
 			}
 			expectFile := filepath.Join(projPath, "expect.json")
+
+			symbolData, err := json.MarshalIndent(&symbolTable, "", "  ")
+			if err != nil {
+				t.Fatal(err)
+			}
 			if gen {
 				os.WriteFile(expectFile, symbolData, 0644)
-			} else {
-				expectData, err := os.ReadFile(expectFile)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if string(symbolData) != string(expectData) {
-					t.Fatalf("expect %s, but got %s", expectData, symbolData)
-				}
+				return
+			}
+			// expectFile := filepath.Join(projPath, "expect.json")
+
+			expectData, err := os.ReadFile(expectFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(expectData, symbolData) {
+				t.Fatalf("expect %s, but got %s", string(expectData), string(symbolData))
 			}
 		})
 	}
@@ -685,4 +650,22 @@ func getDynamicLibExt() string {
 		return ".dylib"
 	}
 	return ".so"
+}
+
+// the reason why this function appears here is that llgo dones't support os.ReadDir() currently
+func scanCFiles(dir string) (ret []string, hasCpp bool) {
+	cmd := exec.Command("ls")
+	cmd.Dir = dir
+	res, _ := cmd.Output()
+
+	for _, fileName := range strings.Fields(string(res)) {
+		if strings.HasSuffix(fileName, ".c") || strings.HasSuffix(fileName, ".cpp") {
+			if strings.HasSuffix(fileName, ".cpp") {
+				hasCpp = true
+			}
+			ret = append(ret, filepath.Join(dir, fileName))
+		}
+	}
+
+	return
 }

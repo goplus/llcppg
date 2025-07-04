@@ -1,5 +1,10 @@
 [
   {
+    "mangle": "lua_closeslot",
+    "c++": "lua_closeslot(lua_State *, int)",
+    "go": "(*State).Closeslot"
+  },
+  {
     "mangle": "lua_concat",
     "c++": "lua_concat(lua_State *, int)",
     "go": "(*State).Concat"
@@ -10,13 +15,28 @@
     "go": "(*State).Error"
   },
   {
+    "mangle": "lua_len",
+    "c++": "lua_len(lua_State *, int)",
+    "go": "(*State).Len"
+  },
+  {
     "mangle": "lua_next",
     "c++": "lua_next(lua_State *, int)",
     "go": "(*State).Next"
   },
   {
+    "mangle": "lua_setallocf",
+    "c++": "lua_setallocf(lua_State *, lua_Alloc, void *)",
+    "go": "(*State).Setallocf"
+  },
+  {
     "mangle": "lua_stringtonumber",
     "c++": "lua_stringtonumber(lua_State *, const char *)",
     "go": "(*State).Stringtonumber"
+  },
+  {
+    "mangle": "lua_toclose",
+    "c++": "lua_toclose(lua_State *, int)",
+    "go": "(*State).Toclose"
   }
 ]

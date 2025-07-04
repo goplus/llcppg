@@ -11,11 +11,9 @@ public:
     int ParseBar() const;
     // not in llcppg.cfg/symMap,generate automatically
     const char *Get(const char *section, const char *name,
-                            const char *default_value) const;
+                    const char *default_value) const;
+
 private:
     // not in output symbol table
     static const char *MakeBar(const char *section, const char *name);
 };
-
-// method out of class decl
-bool Foo::HasBar();
