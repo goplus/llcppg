@@ -448,15 +448,19 @@ func TestGen(t *testing.T) {
 				t.Fatal(err)
 			}
 			libName := filepath.Base(projPath)
+			libDir := filepath.Join(projPath, runtime.GOOS)
 
-			cfg.Libs = fmt.Sprintf("-L%s -l%s", projPath, libName)
+			cfg.Libs = fmt.Sprintf("-L%s -l%s", libDir, libName)
 			cfg.CFlags = "-I" + projPath
 
 			gen := false
 
 			if gen {
 				cFiles, hasCpp := scanCFiles(projPath)
-				staticLibFile := filepath.Join(projPath, "lib"+filepath.Base(projPath)+".a")
+
+				// make sure we have this dir
+				os.MkdirAll(libDir, 0700)
+				staticLibFile := filepath.Join(libDir, "lib"+filepath.Base(projPath)+".a")
 
 				compileCommand := []string{cfg.CFlags, "-o", staticLibFile, "-c"}
 				if !hasCpp {

@@ -161,7 +161,6 @@ func GetCommonSymbols(syms []*nm.Symbol, headerSymbols map[string]*SymbolInfo) [
 		if _, ok := processedSymbols[symName]; ok {
 			continue
 		}
-
 		if symInfo, ok := headerSymbols[symName]; ok {
 			symbolInfo := &llcppg.SymbolInfo{
 				Mangle: symName,
