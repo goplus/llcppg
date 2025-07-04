@@ -38,15 +38,11 @@ type Config struct {
 	TrimPrefixes []string
 	SymMap       map[string]string
 	IsCpp        bool
+	HeaderOnly   bool
 	LibMode      LibMode
 }
 
 func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
-	symbols, err := FetchSymbols(conf.Libs, conf.LibMode)
-	if err != nil {
-		return
-	}
-
 	pkgHfiles := header.PkgHfileInfo(&header.Config{
 		Includes: conf.Includes,
 		Args:     strings.Fields(conf.CFlags),
@@ -69,6 +65,22 @@ func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
 	}
 
 	headerInfos, err := ParseHeaderFile(tempFile.Name(), pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.SymMap, conf.IsCpp)
+	if err != nil {
+		return
+	}
+
+	if conf.HeaderOnly {
+		for name, info := range headerInfos {
+			symbolTable = append(symbolTable, &llcppg.SymbolInfo{
+				Go:     info.GoName,
+				CPP:    info.ProtoName,
+				Mangle: name,
+			})
+		}
+		return
+	}
+
+	symbols, err := FetchSymbols(conf.Libs, conf.LibMode)
 	if err != nil {
 		return
 	}

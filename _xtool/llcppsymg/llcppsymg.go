@@ -78,6 +78,7 @@ func main() {
 		TrimPrefixes: conf.TrimPrefixes,
 		SymMap:       conf.SymMap,
 		IsCpp:        conf.Cplusplus,
+		HeaderOnly:   conf.HeaderOnly,
 		LibMode:      libMode,
 	})
 	check(err)

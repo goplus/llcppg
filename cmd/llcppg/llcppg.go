@@ -167,7 +167,9 @@ func do(cfgFile string, mode modeFlags, verbose verboseFlags, modulePath string)
 	defer f.Close()
 
 	var conf llcppg.Config
-	json.NewDecoder(f).Decode(&conf)
+	err = json.NewDecoder(f).Decode(&conf)
+	check(err)
+
 	conf.CFlags = env.ExpandEnv(conf.CFlags)
 	conf.Libs = env.ExpandEnv(conf.Libs)
 

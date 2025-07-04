@@ -140,6 +140,33 @@ func TestGetConfByByte(t *testing.T) {
 		},
 
 		{
+			name: "HeaderOnly configuration",
+			input: `{
+		  "name": "mylib",
+		  "cflags": "-I/opt/homebrew/include",
+		  "include": ["mylib.h"],
+		  "headerOnly": true
+		}`,
+			expect: llconfig.Config{
+				Name:       "mylib",
+				CFlags:     "-I/opt/homebrew/include",
+				Include:    []string{"mylib.h"},
+				HeaderOnly: true,
+			},
+			mode: useFile,
+		},
+		{
+			name: "Empty libs",
+			input: `{
+		  "name": "mylib",
+		  "cflags": "-I/opt/homebrew/include",
+		  "include": ["mylib.h"]
+		}`,
+			expectErr: true,
+			mode:      useFile,
+		},
+
+		{
 			name:      "Invalid JSON",
 			input:     `{invalid json}`,
 			expectErr: true,
