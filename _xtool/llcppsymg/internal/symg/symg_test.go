@@ -501,7 +501,6 @@ func TestGen(t *testing.T) {
 				os.WriteFile(expectFile, symbolData, 0644)
 				return
 			}
-			// expectFile := filepath.Join(projPath, "expect.json")
 
 			expectData, err := os.ReadFile(expectFile)
 			if err != nil {

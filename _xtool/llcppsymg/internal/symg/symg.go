@@ -171,6 +171,7 @@ func GetCommonSymbols(syms []*nm.Symbol, headerSymbols map[string]*SymbolInfo) [
 			processedSymbols[symName] = true
 		}
 	}
+
 	sort.Slice(commonSymbols, func(i, j int) bool {
 		return commonSymbols[i].Mangle < commonSymbols[j].Mangle
 	})
