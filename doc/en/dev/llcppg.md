@@ -130,9 +130,9 @@ func Foo(a *c.Uint, b *c.Double)
 Arrays in struct fields maintain their fixed-length array form to preserve memory layout compatibility with the original C struct.
 
 ```c
-typedef struct Foo {  
-    char a[4];  
-    int b[3][4];  
+typedef struct Foo {
+    char a[4];
+    int b[3][4];
 } Foo;
 ```
 ```go
@@ -146,7 +146,7 @@ type Foo struct {
 Multi-dimensional arrays are supported in both contexts, with the same conversion rules applying:
 
 ```c
-char matrix[3][4];  // In function parameter becomes **c.Char  
+char matrix[3][4];  // In function parameter becomes **c.Char
 char field[3][4];   // In struct field becomes [3][4]c.Char
 ```
 
@@ -239,10 +239,10 @@ Underscore/digit-starting names: Apply public name processing,preserve original 
 
 Types with explicit mappings in typeMap configuration bypass all other processing rules:
 ```json
-{  
-  "typeMap": {  
-    "cJSON": "JSON"  
-  }  
+{
+  "typeMap": {
+    "cJSON": "JSON"
+  }
 }
 ```
 Example: C: `cJSON` → Go: `JSON`
@@ -366,7 +366,7 @@ For cases where package header files are mixed with other header files in the sa
 }
 ```
 
-In this case, only header files explicitly declared in the `include` field are considered package header files, and all others are treated as third-party header files. Note that in this mode, implementation header files of the package also need to be explicitly declared in `include`, otherwise they will be treated as third-party header files and won't be processed. 
+In this case, only header files explicitly declared in the `include` field are considered package header files, and all others are treated as third-party header files. Note that in this mode, implementation header files of the package also need to be explicitly declared in `include`, otherwise they will be treated as third-party header files and won't be processed.
 
 This is particularly useful in scenarios like Linux systems where library headers might be installed in common directories (e.g., `/usr/include/sqlite3.h` alongside system headers like `/usr/include/stdio.h`).
 
@@ -478,7 +478,7 @@ Consider a simple C library header file that adapts to different platforms:
 // mock_platform.h - Simple cross-platform example
 typedef struct PlatformData {
     int common_field;
-#ifdef __APPLE__ 
+#ifdef __APPLE__
     int mac_field;
 #elif defined(__linux__)
     int linux_field;
@@ -487,7 +487,7 @@ typedef struct PlatformData {
 
 #ifdef __APPLE__
 void mac_function(int x);
-#else  
+#else
 void other_function(int x);
 #endif
 ```
@@ -648,13 +648,13 @@ for example: `llcppg -mod github.com/author/cjson` will generate a go.mod file w
 Using the cjson configuration as an example, the generated directory structure would be:
 
 ```bash
-cjson/  
-├── cJSON.go                    # Bindings generated from cJSON.h  
-├── cJSON_Utils.go             # Bindings generated from cJSON_Utils.h    
-├── cjson_autogen_link.go      # Auto-generated link file  
-├── llcppg.pub                 # Type mapping information  
-├── go.mod                     # Go module file (when using -mod flag)  
-└── go.sum                     # Dependency checksums (when using -mod flag)  
+cjson/
+├── cJSON.go                    # Bindings generated from cJSON.h
+├── cJSON_Utils.go             # Bindings generated from cJSON_Utils.h
+├── cjson_autogen_link.go      # Auto-generated link file
+├── llcppg.pub                 # Type mapping information
+├── go.mod                     # Go module file (when using -mod flag)
+└── go.sum                     # Dependency checksums (when using -mod flag)
 ```
 
 ## Process Steps
@@ -720,7 +720,7 @@ Specify function mapping behavior in `llcppg.cfg` by config the `symMap` field:
   1. `goFuncName` - generates a regular function named `goFuncName`
   2. `.goMethodName` - generates a method named `goMethodName` (if it doesn't meet the rules for generating a method, it will be generated as a regular function)
   3. `-` - completely ignore this function
-  
+
 For example, to convert `(*CJSON).PrintUnformatted` from a method to a function, you can use follow config:
 
 ```json
