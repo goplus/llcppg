@@ -691,7 +691,7 @@ When `staticLib: true` is configured in `llcppg.cfg`, llcppsymg switches to stat
 
 When `headerOnly: true` is configured in llcppg.cfg, llcppg operates in header-only processing mode.
 
-In header-only processing mode, instead of matching library symbols with header declarations, it will generate the symbol table  based solely on header files specified in cflags.
+In header-only processing mode, instead of matching library symbols with header declarations, it will generate the symbol table based solely on header files specified in cflags.
 
 #### Symbol Table
 
