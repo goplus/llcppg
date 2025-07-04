@@ -2035,7 +2035,7 @@ func TestUnkownHfile(t *testing.T) {
 	ncimpl.NewHeaderFile("/path/to/foo.h", 0).ToGoFileName("Pkg")
 }
 
-func TestNewPackageLinkFail(t *testing.T) {
+func TestNewPackageLinkWithoutLibCommand(t *testing.T) {
 	_, err := convert.NewPackage(nil, &convert.PackageConfig{
 		PkgBase: convert.PkgBase{
 			PkgPath: ".",
@@ -2043,7 +2043,7 @@ func TestNewPackageLinkFail(t *testing.T) {
 		Name:    pkgname,
 		GenConf: &gogen.Config{},
 	})
-	if err == nil {
-		t.Fatal("Expect Error")
+	if err != nil {
+		t.Fatal("Unexpect Error")
 	}
 }

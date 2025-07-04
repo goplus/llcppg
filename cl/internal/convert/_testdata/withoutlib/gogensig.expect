@@ -1,0 +1,20 @@
+===== temp.go =====
+package withoutlib
+
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
+
+type Temp struct {
+	A c.Int
+	B c.Int
+}
+
+===== withoutlib_autogen_link.go =====
+package withoutlib
+
+import _ "github.com/goplus/lib/c"
+
+===== llcppg.pub =====
+temp Temp
