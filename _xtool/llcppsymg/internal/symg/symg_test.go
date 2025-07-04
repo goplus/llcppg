@@ -378,7 +378,7 @@ class INIReader {
 	}
 }
 
-func TestGen(t *testing.T) {
+func TestHeader(t *testing.T) {
 	gen := false
 	testCases := []struct {
 		name       string
