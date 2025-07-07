@@ -59,7 +59,7 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 
 	// when headeronly mode is disabled, libs must not be empty.
 	if c.Libs == "" && !c.HeaderOnly {
-		return fmt.Errorf("failed to unmarshal config: libs must not be empty")
+		return fmt.Errorf("%w libs must not be empty", ConfigError)
 	}
 
 	return nil
