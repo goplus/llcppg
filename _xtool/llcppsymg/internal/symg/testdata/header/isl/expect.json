@@ -1,7 +1,0 @@
-[
-  {
-    "mangle": "isl_pw_qpolynomial_get_ctx",
-    "c++": "isl_pw_qpolynomial_get_ctx(isl_pw_qpolynomial *)",
-    "go": "(*IslPwQpolynomial).IslPwQpolynomialGetCtx"
-  }
-]
