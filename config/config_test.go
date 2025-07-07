@@ -353,3 +353,11 @@ stdio`
 		t.Fatalf("expect file %s, got error %v", notExistFile, err)
 	}
 }
+
+func TestSymbolInfo(t *testing.T) {
+	info := &llconfig.SymbolInfo{Mangle: "aaaa", Go: "bbbb", CPP: "cccc"}
+
+	if info.String() != "Go: bbbb CPP: cccc Mangle: aaaa" {
+		t.Errorf("unexpected content: want: %s got: %s", "Go: bbbb CPP: cccc Mangle: aaaa", info.String())
+	}
+}
