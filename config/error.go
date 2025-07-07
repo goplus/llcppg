@@ -2,4 +2,4 @@ package config
 
 import "fmt"
 
-var ErrErrConfigError = fmt.Errorf("failed to unmarshal config")
+var ErrConfigError = fmt.Errorf("failed to unmarshal config")

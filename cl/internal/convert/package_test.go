@@ -13,7 +13,6 @@ import (
 	"github.com/goplus/llcppg/cl/internal/convert"
 	"github.com/goplus/llcppg/cl/nc"
 	"github.com/goplus/llcppg/cl/nc/ncimpl"
-	"github.com/goplus/llcppg/config"
 	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llcppg/internal/name"
 	"github.com/goplus/llcppg/token"
@@ -1978,7 +1977,7 @@ func TestImport(t *testing.T) {
 		loader := convert.NewPkgDepLoader(mod, genPkg)
 		depPkgs, err := loader.LoadDeps(p.PkgInfo)
 		p.PkgInfo.Deps = depPkgs
-		if err != nil && !errors.Is(err, config.ErrConfigError) {
+		if err != nil && !errors.Is(err, llcppg.ErrConfigError) {
 			t.Fatal(err)
 		}
 		_, err = loader.Import("github.com/goplus/invalidpkg")
@@ -2022,7 +2021,7 @@ func TestImport(t *testing.T) {
 				},
 			},
 		})
-		if err != nil && !errors.Is(err, config.ErrConfigError) {
+		if err != nil && !errors.Is(err, llcppg.ErrConfigError) {
 			t.Fatal("NewPackage failed:", err)
 		}
 	})
