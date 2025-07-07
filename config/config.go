@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/goplus/llcppg/ast"
@@ -38,6 +39,30 @@ type Config struct {
 	TypeMap        map[string]string `json:"typeMap,omitempty"`
 	StaticLib      bool              `json:"staticLib,omitempty"`
 	HeaderOnly     bool              `json:"headerOnly,omitempty"`
+}
+
+// json middleware for validating
+func (c *Config) UnmarshalJSON(data []byte) error {
+	// create a new type here to avoid unmarshalling infinite loop.
+	type newConfig Config
+
+	var config newConfig
+	err := json.Unmarshal(data, &config)
+
+	if err != nil {
+		return err
+	}
+
+	*c = Config(config)
+
+	// do some check
+
+	// when headeronly mode is disabled, libs must not be empty.
+	if c.Libs == "" && !c.HeaderOnly {
+		return fmt.Errorf("failed to unmarshal config: libs must not be empty")
+	}
+
+	return nil
 }
 
 func NewDefault() *Config {
