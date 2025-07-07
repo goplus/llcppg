@@ -10,7 +10,22 @@ import (
 	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
 	"github.com/goplus/llcppg/internal/name"
+
+	llcppg "github.com/goplus/llcppg/config"
 )
+
+type HeaderSymbols map[string]*SymbolInfo
+
+func (h HeaderSymbols) ToSymbolTable() (table []*llcppg.SymbolInfo) {
+	for name, info := range h {
+		table = append(table, &llcppg.SymbolInfo{
+			Go:     info.GoName,
+			CPP:    info.ProtoName,
+			Mangle: name,
+		})
+	}
+	return
+}
 
 type SymbolInfo struct {
 	GoName    string
@@ -273,7 +288,7 @@ func cursorFileName(cursor clang.Cursor) string {
 	return filePath
 }
 
-func ParseHeaderFile(combileFile string, curPkgFiles []string, prefixes []string, cflags []string, symMap map[string]string, isCpp bool) (map[string]*SymbolInfo, error) {
+func ParseHeaderFile(combileFile string, curPkgFiles []string, prefixes []string, cflags []string, symMap map[string]string, isCpp bool) (HeaderSymbols, error) {
 	index, unit, err := clangutils.CreateTranslationUnit(&clangutils.Config{
 		File:    combileFile,
 		IsCpp:   isCpp,
@@ -290,5 +305,5 @@ func ParseHeaderFile(combileFile string, curPkgFiles []string, prefixes []string
 	processer := NewSymbolProcessor(curPkgFiles, prefixes, symMap)
 	clangutils.VisitChildren(cursor, processer.visitTop)
 	processer.processCollect()
-	return processer.symbolMap, nil
+	return HeaderSymbols(processer.symbolMap), nil
 }
