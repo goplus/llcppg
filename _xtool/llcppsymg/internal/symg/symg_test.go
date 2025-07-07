@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"sort"
 	"strings"
 	"testing"
 
@@ -122,6 +123,9 @@ func TestGetCommonSymbols(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			commonSymbols := symg.GetCommonSymbols(tc.libSymbols, tc.headerSymbols)
+			sort.Slice(commonSymbols, func(i, j int) bool {
+				return commonSymbols[i].Mangle < commonSymbols[j].Mangle
+			})
 			if !reflect.DeepEqual(commonSymbols, tc.expect) {
 				t.Fatalf("expect %v, but got %v", tc.expect, commonSymbols)
 			}
