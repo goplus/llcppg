@@ -1,0 +1,17 @@
+[
+  {
+    "mangle": "gpg_strerror",
+    "c++": "gpg_strerror(gpg_error_t)",
+    "go": "ErrorT.Strerror"
+  },
+  {
+    "mangle": "gpg_strerror_r",
+    "c++": "gpg_strerror_r(gpg_error_t, char *, size_t)",
+    "go": "ErrorT.StrerrorR"
+  },
+  {
+    "mangle": "gpg_strsource",
+    "c++": "gpg_strsource(gpg_error_t)",
+    "go": "ErrorT.Strsource"
+  }
+]

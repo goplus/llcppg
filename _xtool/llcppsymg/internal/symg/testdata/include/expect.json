@@ -1,0 +1,17 @@
+[
+  {
+    "mangle": "Foo",
+    "c++": "Foo()",
+    "go": "Foo"
+  },
+  {
+    "mangle": "Foo_Bar",
+    "c++": "Foo_Bar()",
+    "go": "FooBar"
+  },
+  {
+    "mangle": "Foo_Conf",
+    "c++": "Foo_Conf()",
+    "go": "FooConf"
+  }
+]
