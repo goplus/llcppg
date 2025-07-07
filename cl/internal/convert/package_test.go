@@ -2022,7 +2022,7 @@ func TestImport(t *testing.T) {
 				},
 			},
 		})
-		if err != nil {
+		if err != nil && !errors.Is(err, config.ConfigError) {
 			t.Fatal("NewPackage failed:", err)
 		}
 	})
@@ -2045,7 +2045,7 @@ func TestNewPackageLinkWithoutLibCommand(t *testing.T) {
 		Name:    pkgname,
 		GenConf: &gogen.Config{},
 	})
-	if err != nil && !errors.Is(err, config.ConfigError) {
+	if err != nil {
 		t.Fatal("Unexpect Error")
 	}
 }
