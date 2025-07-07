@@ -77,6 +77,10 @@ func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
 				Mangle: name,
 			})
 		}
+
+		sort.Slice(symbolTable, func(i, j int) bool {
+			return symbolTable[i].Mangle < symbolTable[j].Mangle
+		})
 		return
 	}
 

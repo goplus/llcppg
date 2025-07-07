@@ -4,13 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime"
-	"sort"
 	"strings"
 	"testing"
 
@@ -371,28 +369,21 @@ class INIReader {
 				t.Fatal(err)
 			}
 			defer os.Remove(f.Name())
-			symbolMap, err := symg.ParseHeaderFile(f.Name(), []string{f.Name()}, tc.prefixes, []string{}, nil, tc.isCpp)
+
+			result, err := symg.Do(&symg.Config{
+				IsCpp:        tc.isCpp,
+				CFlags:       "-I" + f.Name(),
+				Includes:     []string{f.Name()},
+				HeaderOnly:   true,
+				TrimPrefixes: tc.prefixes,
+			})
 			if err != nil {
-				log.Fatal(err)
+				t.Fatal(err)
+				return
 			}
 
-			var keys []string
-			for key := range symbolMap {
-				keys = append(keys, key)
-			}
-			sort.Strings(keys)
-
-			result := make([]*llcppg.SymbolInfo, 0, len(keys))
-			for _, key := range keys {
-				info := symbolMap[key]
-				result = append(result, &llcppg.SymbolInfo{
-					Go:     info.GoName,
-					CPP:    info.ProtoName,
-					Mangle: key,
-				})
-			}
 			if !reflect.DeepEqual(result, tc.expect) {
-				t.Fatalf("expect %#v, but got %#v", tc.expect, result)
+				t.Fatalf("expect %v, but got %v", tc.expect, result)
 			}
 		})
 	}
@@ -500,6 +491,47 @@ func TestGen(t *testing.T) {
 			if gen {
 				os.WriteFile(expectFile, symbolData, 0644)
 				return
+			}
+
+			expectData, err := os.ReadFile(expectFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(expectData, symbolData) {
+				t.Fatalf("expect %s, but got %s", string(expectData), string(symbolData))
+			}
+		})
+
+		t.Run(fmt.Sprintf("%s-header-only", tc.name), func(t *testing.T) {
+			projPath, err := filepath.Abs(tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			cfg, err := llcppg.GetConfFromFile(filepath.Join(projPath, llcppg.LLCPPG_CFG))
+			if err != nil {
+				t.Fatal(err)
+			}
+			cfg.CFlags = "-I" + projPath
+
+			symbolTable, err := symg.Do(&symg.Config{
+				CFlags:       cfg.CFlags,
+				Includes:     cfg.Include,
+				Mix:          cfg.Mix,
+				TrimPrefixes: cfg.TrimPrefixes,
+				SymMap:       cfg.SymMap,
+				IsCpp:        cfg.Cplusplus,
+				HeaderOnly:   true,
+			})
+
+			if err != nil {
+				t.Fatal(err)
+				return
+			}
+			expectFile := filepath.Join(projPath, "expect.json")
+
+			symbolData, err := json.MarshalIndent(&symbolTable, "", "  ")
+			if err != nil {
+				t.Fatal(err)
 			}
 
 			expectData, err := os.ReadFile(expectFile)
