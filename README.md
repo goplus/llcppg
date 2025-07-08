@@ -8,7 +8,7 @@ llcppg - LLGo autogen tool for C/C++ libraries
 [![Language](https://img.shields.io/badge/language-XGo-blue.svg)](https://github.com/goplus/gop)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/goplus/llcppg)
 
-llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, enhancing the experience of integrating LLGo with C! It is worth mentioning that several core components of llcppg are built using LLGo, fully leveraging its core capability of "better integrating with the C ecosystem" for development. 
+llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, enhancing the experience of integrating LLGo with C! It is worth mentioning that several core components of llcppg are built using LLGo, fully leveraging its core capability of "better integrating with the C ecosystem" for development.
 
 ## How to install
 
@@ -34,7 +34,7 @@ llcppg.cfg file is a configure file used by llcppg. Once llcppg.cfg is generated
 llcppg [config-file]
 ```
 
-If `config-file` is not specified, a `llcppg.cfg` file is used in current directory. 
+If `config-file` is not specified, a `llcppg.cfg` file is used in current directory.
 Here's a demo configuration to generate LLGo bindings for cjson library:
 
 ```json
@@ -114,7 +114,7 @@ Run the demo with `llgo run .`, you will see the following output:
 
 ### Generated Bindings
 
-You can see that functions from the C header files have been automatically mapped and converted to corresponding LLGo binding functions. 
+You can see that functions from the C header files have been automatically mapped and converted to corresponding LLGo binding functions.
 
 Original C function:
 ```c
@@ -124,7 +124,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateObject(void);
 Converted to LLGo binding function:
 ```go
 //go:linkname CreateObject C.cJSON_CreateObject
-func CreateObject() *CJSON 
+func CreateObject() *CJSON
 ```
 
 The types defined in the header file are also converted, for example the cJSON struct:
@@ -210,7 +210,7 @@ You can specify function mapping behavior in `llcppg.cfg` by config the `symMap`
   1. `goFuncName` - generates a regular function named `goFuncName`
   2. `.goMethodName` - generates a method named `goMethodName` (if it doesn't meet the rules for generating a method, it will be generated as a regular function)
   3. `-` - completely ignore this function
-  
+
 For example, to convert `(*CJSON).PrintUnformatted` from a method to a function, you can use follow config:
 
 ```json
@@ -295,7 +295,7 @@ For cases where package header files are mixed with other header files in the sa
 }
 ```
 
-In this case, only header files explicitly declared in the `include` field are considered package header files, and all others are treated as third-party header files. Note that in this mode, implementation header files of the package also need to be explicitly declared in `include`, otherwise they will be treated as third-party header files and won't be processed. 
+In this case, only header files explicitly declared in the `include` field are considered package header files, and all others are treated as third-party header files. Note that in this mode, implementation header files of the package also need to be explicitly declared in `include`, otherwise they will be treated as third-party header files and won't be processed.
 
 This is particularly useful in scenarios like Linux systems where library headers might be installed in common directories (e.g., `/usr/include/sqlite3.h` alongside system headers like `/usr/include/stdio.h`).
 
