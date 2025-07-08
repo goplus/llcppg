@@ -1,6 +1,9 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/goplus/llcppg/ast"
 )
 
@@ -21,9 +24,10 @@ type ImplFiles struct {
 
 // Config represents a configuration for the llcppg tool.
 type Config struct {
-	Name           string            `json:"name"`
-	CFlags         string            `json:"cflags"`
-	Libs           string            `json:"libs"`
+	Name   string `json:"name"`
+	CFlags string `json:"cflags"`
+	// NOTE(MeterosLiu): libs can be empty when we're in headerOnly mode
+	Libs           string            `json:"libs,omitempty"`
 	Include        []string          `json:"include"`
 	TrimPrefixes   []string          `json:"trimPrefixes,omitempty"`
 	Cplusplus      bool              `json:"cplusplus,omitempty"`
@@ -34,6 +38,31 @@ type Config struct {
 	SymMap         map[string]string `json:"symMap,omitempty"`
 	TypeMap        map[string]string `json:"typeMap,omitempty"`
 	StaticLib      bool              `json:"staticLib,omitempty"`
+	HeaderOnly     bool              `json:"headerOnly,omitempty"`
+}
+
+// json middleware for validating
+func (c *Config) UnmarshalJSON(data []byte) error {
+	// create a new type here to avoid unmarshalling infinite loop.
+	type newConfig Config
+
+	var config newConfig
+	err := json.Unmarshal(data, &config)
+
+	if err != nil {
+		return err
+	}
+
+	*c = Config(config)
+
+	// do some check
+
+	// when headeronly mode is disabled, libs must not be empty.
+	if c.Libs == "" && !c.HeaderOnly {
+		return fmt.Errorf("%w: libs must not be empty", ErrConfigError)
+	}
+
+	return nil
 }
 
 func NewDefault() *Config {
@@ -44,6 +73,14 @@ type SymbolInfo struct {
 	Mangle string `json:"mangle"` // C++ Symbol
 	CPP    string `json:"c++"`    // C++ function name
 	Go     string `json:"go"`     // Go function name
+}
+
+// for better debug
+func (s *SymbolInfo) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("Go: %s CPP: %s Mangle: %s", s.Go, s.CPP, s.Mangle)
 }
 
 type FileType uint

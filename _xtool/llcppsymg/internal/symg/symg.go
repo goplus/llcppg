@@ -38,15 +38,11 @@ type Config struct {
 	TrimPrefixes []string
 	SymMap       map[string]string
 	IsCpp        bool
+	HeaderOnly   bool
 	LibMode      LibMode
 }
 
 func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
-	symbols, err := FetchSymbols(conf.Libs, conf.LibMode)
-	if err != nil {
-		return
-	}
-
 	pkgHfiles := header.PkgHfileInfo(&header.Config{
 		Includes: conf.Includes,
 		Args:     strings.Fields(conf.CFlags),
@@ -68,12 +64,31 @@ func Do(conf *Config) (symbolTable []*llcppg.SymbolInfo, err error) {
 		return
 	}
 
-	headerInfos, err := ParseHeaderFile(tempFile.Name(), pkgHfiles.CurPkgFiles(), conf.TrimPrefixes, strings.Fields(conf.CFlags), conf.SymMap, conf.IsCpp)
+	headerInfos, err := ParseHeaderFile(
+		tempFile.Name(),
+		pkgHfiles.CurPkgFiles(),
+		conf.TrimPrefixes,
+		strings.Fields(conf.CFlags),
+		conf.SymMap, conf.IsCpp,
+	)
 	if err != nil {
 		return
 	}
 
-	symbolTable = GetCommonSymbols(symbols, headerInfos)
+	if conf.HeaderOnly {
+		symbolTable = headerInfos.ToSymbolTable()
+	} else {
+		var symbols []*nm.Symbol
+		symbols, err = FetchSymbols(conf.Libs, conf.LibMode)
+		if err != nil {
+			return
+		}
+		symbolTable = GetCommonSymbols(symbols, headerInfos)
+	}
+
+	sort.Slice(symbolTable, func(i, j int) bool {
+		return symbolTable[i].Mangle < symbolTable[j].Mangle
+	})
 	return
 }
 
@@ -149,7 +164,7 @@ func FetchSymbols(lib string, mode LibMode) ([]*nm.Symbol, error) {
 // todo(zzy):only public for test,when llgo test support private package test,this function should be private
 // GetCommonSymbols finds the intersection of symbols from the library symbol table and the symbols parsed from header files.
 // It returns a list of symbols that can be externally linked.
-func GetCommonSymbols(syms []*nm.Symbol, headerSymbols map[string]*SymbolInfo) []*llcppg.SymbolInfo {
+func GetCommonSymbols(syms []*nm.Symbol, headerSymbols HeaderSymbols) []*llcppg.SymbolInfo {
 	var commonSymbols []*llcppg.SymbolInfo
 	processedSymbols := make(map[string]bool)
 
@@ -171,10 +186,6 @@ func GetCommonSymbols(syms []*nm.Symbol, headerSymbols map[string]*SymbolInfo) [
 			processedSymbols[symName] = true
 		}
 	}
-
-	sort.Slice(commonSymbols, func(i, j int) bool {
-		return commonSymbols[i].Mangle < commonSymbols[j].Mangle
-	})
 
 	return commonSymbols
 }

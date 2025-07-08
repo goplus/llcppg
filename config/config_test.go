@@ -140,6 +140,33 @@ func TestGetConfByByte(t *testing.T) {
 		},
 
 		{
+			name: "HeaderOnly configuration",
+			input: `{
+		  "name": "mylib",
+		  "cflags": "-I/opt/homebrew/include",
+		  "include": ["mylib.h"],
+		  "headerOnly": true
+		}`,
+			expect: llconfig.Config{
+				Name:       "mylib",
+				CFlags:     "-I/opt/homebrew/include",
+				Include:    []string{"mylib.h"},
+				HeaderOnly: true,
+			},
+			mode: useFile,
+		},
+		{
+			name: "Empty libs",
+			input: `{
+		  "name": "mylib",
+		  "cflags": "-I/opt/homebrew/include",
+		  "include": ["mylib.h"]
+		}`,
+			expectErr: true,
+			mode:      useFile,
+		},
+
+		{
 			name:      "Invalid JSON",
 			input:     `{invalid json}`,
 			expectErr: true,
@@ -324,5 +351,13 @@ stdio`
 	_, err = os.Stat(notExistFile)
 	if err != nil && !os.IsNotExist(err) {
 		t.Fatalf("expect file %s, got error %v", notExistFile, err)
+	}
+}
+
+func TestSymbolInfo(t *testing.T) {
+	info := &llconfig.SymbolInfo{Mangle: "aaaa", Go: "bbbb", CPP: "cccc"}
+
+	if info.String() != "Go: bbbb CPP: cccc Mangle: aaaa" {
+		t.Errorf("unexpected content: want: %s got: %s", "Go: bbbb CPP: cccc Mangle: aaaa", info.String())
 	}
 }

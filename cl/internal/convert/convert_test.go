@@ -101,7 +101,7 @@ func TestDepPkg(t *testing.T) {
 
 		cfg, err := llcppg.GetConfFromFile(cfgPath)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal(err, cfgPath)
 		}
 		cfg.CFlags = cfg.CFlags + incFlag
 		err = createJSONFile(cfgPath, cfg)

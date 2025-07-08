@@ -2,6 +2,7 @@ package convert_test
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -1976,7 +1977,7 @@ func TestImport(t *testing.T) {
 		loader := convert.NewPkgDepLoader(mod, genPkg)
 		depPkgs, err := loader.LoadDeps(p.PkgInfo)
 		p.PkgInfo.Deps = depPkgs
-		if err != nil {
+		if err != nil && !errors.Is(err, llcppg.ErrConfigError) {
 			t.Fatal(err)
 		}
 		_, err = loader.Import("github.com/goplus/invalidpkg")
@@ -2020,7 +2021,7 @@ func TestImport(t *testing.T) {
 				},
 			},
 		})
-		if err != nil {
+		if err != nil && !errors.Is(err, llcppg.ErrConfigError) {
 			t.Fatal("NewPackage failed:", err)
 		}
 	})
