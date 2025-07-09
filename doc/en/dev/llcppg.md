@@ -687,7 +687,7 @@ When `staticLib: true` is configured in `llcppg.cfg`, llcppsymg switches to stat
 - **Dynamic Library Mode (default)**: Uses nm tool to extract symbols from .so/.dylib files
 - **Static Library Mode**: Uses nm tool to extract symbols from .a files
 
-### Header-Only Mode
+#### Header-Only Mode
 
 When `headerOnly: true` is configured in llcppg.cfg, llcppg operates in header-only processing mode.
 
