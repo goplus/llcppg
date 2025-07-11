@@ -260,6 +260,7 @@ func (p *Package) NewFuncDecl(goName string, funcDecl *ast.FuncDecl) error {
 	if debugLog {
 		log.Printf("NewFuncDecl: %v\n", funcDecl.Name)
 	}
+	// not need check , symbol not found will not generate
 
 	fnSpec, err := p.LookupFunc(goName, funcDecl)
 	if err != nil {
@@ -366,6 +367,10 @@ func (p *Package) NewTypeDecl(goName string, typeDecl *ast.TypeDecl, pnc nc.Node
 		log.Printf("NewTypeDecl: %s\n", typeDecl.Name.Name)
 	}
 
+	if p.lookupOrigin(typeDecl.Name.Name, goName) != nil {
+		return nil
+	}
+
 	cname := typeDecl.Name.Name
 	isForward := p.cvt.inComplete(typeDecl.Type)
 	name, changed, exist, err := p.RegisterNode(Node{name: cname, kind: TypeDecl}, goName, p.lookupOrigin)
@@ -467,6 +472,18 @@ func (p *Package) NewTypedefDecl(goName string, typedefDecl *ast.TypedefDecl, pn
 		log.Printf("NewTypedefDecl: %s\n", typedefDecl.Name.Name)
 	}
 
+	if typedefDecl.Name.Name == "__darwin_va_list" || typedefDecl.Name.Name == "__gnuc_va_list" {
+		typedefDecl.Type = &ast.PointerType{
+			X: &ast.BuiltinType{
+				Kind: ast.Void,
+			},
+		}
+	}
+
+	if p.lookupOrigin(typedefDecl.Name.Name, goName) != nil {
+		return nil
+	}
+
 	node := Node{name: typedefDecl.Name.Name, kind: TypedefDecl}
 	name, changed, exist, err := p.RegisterNode(node, goName, p.lookupOrigin)
 	if err != nil {
@@ -558,6 +575,11 @@ func (p *Package) NewEnumTypeDecl(goName string, enumTypeDecl *ast.EnumTypeDecl,
 	if debugLog {
 		log.Printf("NewEnumTypeDecl: %v\n", enumTypeDecl.Name)
 	}
+
+	if enumTypeDecl.Name != nil && p.lookupOrigin(enumTypeDecl.Name.Name, goName) != nil {
+		return nil
+	}
+
 	enumType, exist, err := p.createEnumType(goName, enumTypeDecl.Name, pnc)
 	if err != nil {
 		return fmt.Errorf("NewEnumTypeDecl: %v fail: %w", enumTypeDecl.Name, err)
