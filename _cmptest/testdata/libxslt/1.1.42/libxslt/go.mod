@@ -1,6 +1,6 @@
 module github.com/goplus/llcppg/_cmptest/testdata/libxslt/1.1.42/libxslt
 
-go 1.20
+go 1.23.4
 
 require (
 	github.com/goplus/lib v0.2.0

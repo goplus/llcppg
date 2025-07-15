@@ -96,10 +96,8 @@ func (recv_ *Char) StrncatNew(str2 *Char, len c.Int) *Char {
 	return nil
 }
 
-// llgo:link (*Char).StrPrintf C.xmlStrPrintf
-func (recv_ *Char) StrPrintf(len c.Int, msg *c.Char, __llgo_va_list ...interface{}) c.Int {
-	return 0
-}
+//go:linkname StrPrintf C.xmlStrPrintf
+func StrPrintf(buf *Char, len c.Int, msg *c.Char, __llgo_va_list ...interface{}) c.Int
 
 // llgo:link (*Char).StrVPrintf C.xmlStrVPrintf
 func (recv_ *Char) StrVPrintf(len c.Int, msg *c.Char, ap c.VaList) c.Int {

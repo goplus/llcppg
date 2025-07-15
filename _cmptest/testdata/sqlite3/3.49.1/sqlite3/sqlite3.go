@@ -1084,10 +1084,8 @@ func Config(__llgo_arg_0 c.Int, __llgo_va_list ...interface{}) c.Int
 ** ^Calls to sqlite3_db_config() return SQLITE_OK if and only if
 ** the call is considered successful.
  */
-// llgo:link (*Sqlite3).DbConfig C.sqlite3_db_config
-func (recv_ *Sqlite3) DbConfig(op c.Int, __llgo_va_list ...interface{}) c.Int {
-	return 0
-}
+//go:linkname DbConfig C.sqlite3_db_config
+func DbConfig(__llgo_arg_0 *Sqlite3, op c.Int, __llgo_va_list ...interface{}) c.Int
 
 type MemMethods struct {
 	XMalloc   c.Pointer
@@ -6449,9 +6447,8 @@ func (recv_ *Str) StrFinish() *c.Char {
 ** is recorded in the [sqlite3_str] object and can be recovered by a
 ** subsequent call to [sqlite3_str_errcode(X)].
  */
-// llgo:link (*Str).StrAppendf C.sqlite3_str_appendf
-func (recv_ *Str) StrAppendf(zFormat *c.Char, __llgo_va_list ...interface{}) {
-}
+//go:linkname StrAppendf C.sqlite3_str_appendf
+func StrAppendf(__llgo_arg_0 *Str, zFormat *c.Char, __llgo_va_list ...interface{})
 
 // llgo:link (*Str).StrVappendf C.sqlite3_str_vappendf
 func (recv_ *Str) StrVappendf(zFormat *c.Char, __llgo_arg_1 c.VaList) {
@@ -7284,10 +7281,8 @@ func (recv_ *Sqlite3) WalCheckpointV2(zDb *c.Char, eMode c.Int, pnLog *c.Int, pn
 ** of parameters after C depend on which [virtual table configuration option]
 ** is used.
  */
-// llgo:link (*Sqlite3).VtabConfig C.sqlite3_vtab_config
-func (recv_ *Sqlite3) VtabConfig(op c.Int, __llgo_va_list ...interface{}) c.Int {
-	return 0
-}
+//go:linkname VtabConfig C.sqlite3_vtab_config
+func VtabConfig(__llgo_arg_0 *Sqlite3, op c.Int, __llgo_va_list ...interface{}) c.Int
 
 /*
 ** CAPI3REF: Determine The Virtual Table Conflict Policy
