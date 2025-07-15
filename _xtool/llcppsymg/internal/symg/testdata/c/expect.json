@@ -65,6 +65,11 @@
     "go": "(*Foo).Parse__1"
   },
   {
+    "mangle": "Foo_Valist",
+    "c++": "Foo_Valist(Foo2 *, ...)",
+    "go": "Valist"
+  },
+  {
     "mangle": "Foo_ignoreFunc",
     "c++": "Foo_ignoreFunc()",
     "go": "-"

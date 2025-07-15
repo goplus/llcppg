@@ -162,8 +162,10 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor, symbolName string) stri
 
 	// 2. check if can gen method name
 	numArgs := cursor.NumArguments()
+	// 3. Don't attempt to convert a variadic function to a method
+	isValist := cursor.Type().IsFunctionTypeVariadic() > 0
 	// also config to gen method name,if can't gen method,use the origin function type
-	if numArgs > 0 {
+	if numArgs > 0 && !isValist {
 		// also can gen method name,but not want to be method,output func not method
 		if isCustom && !toMethod {
 			return p.AddSuffix(customGoName)

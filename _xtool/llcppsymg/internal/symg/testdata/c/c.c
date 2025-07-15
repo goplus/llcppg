@@ -1,4 +1,5 @@
 #include "c.h"
+#include <stdarg.h>
 
 char *Foo_Print(const Foo *item) {}
 // config not be a method in llcppg.cfg/symMap
@@ -26,3 +27,9 @@ void Foo_FunctionParse() {}
 void Foo_ReceiverParse2(Foo *item) {}
 // not same receiver,but same function name,we don't need add suffix
 void Foo_Receiver2Parse2(Foo2 *item) {}
+
+void Foo_Valist(Foo2 *item, ...)
+{
+    va_list pp;
+    va_start(pp, item);
+}
