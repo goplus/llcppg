@@ -25,7 +25,7 @@ func init() {
 }
 
 func TestFromTestdata(t *testing.T) {
-	testFromDir(t, "./_testdata", false)
+	testFromDir(t, "./_testdata", true)
 }
 
 func TestDepWithVersion(t *testing.T) {

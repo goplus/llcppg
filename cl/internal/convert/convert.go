@@ -125,6 +125,7 @@ func (p *Converter) Process() error {
 			return fmt.Errorf("ConvDecl: %w", err)
 		}
 		ctx.setGoFile(goFile)
+
 		switch decl := decl.(type) {
 		case *ast.TypeDecl:
 			err = ctx.NewTypeDecl(goName, decl, pnc)

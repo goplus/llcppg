@@ -646,7 +646,7 @@ func (ct *Converter) ProcessEnumDecl(cursor clang.Cursor) *ast.EnumTypeDecl {
 		decl.Name = &ast.Ident{Name: cursorName}
 		ct.logln("ProcessEnumDecl: has name", cursorName)
 	} else {
-		ct.logln("ProcessRecordDecl: is anonymous")
+		ct.logln("ProcessEnumDecl: is anonymous")
 	}
 
 	return decl
@@ -679,6 +679,7 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 	fieldName := toStr(cursor.String())
 
 	typ := cursor.Type()
+
 	typeName, typeKind := getTypeDesc(typ)
 
 	ct.logf("createBaseField: ProcessType %s TypeKind: %s", typeName, typeKind)
@@ -758,31 +759,53 @@ func (ct *Converter) ProcessRecordDecl(cursor clang.Cursor) []ast.Decl {
 	ct.logln("ProcessRecordDecl: CursorName:", cursorName, "CursorKind:", cursorKind)
 
 	childs := PostOrderVisitChildren(cursor, func(child, parent clang.Cursor) bool {
+		// if we found a nested enum, handle it like nested struct
+		if child.Kind == clang.CursorEnumDecl {
+			return true
+		}
 		return (child.Kind == clang.CursorStructDecl || child.Kind == clang.CursorUnionDecl) && child.IsAnonymous() == 0
 	})
 
 	for _, child := range childs {
-		// Check if this is a named nested struct/union
-		typ := ct.ProcessRecordType(child)
-		// note(zzy):use len(typ.Fields.List) to ensure it has fields not a forward declaration
-		// but maybe make the forward decl in to AST is also good.
-		if child.IsAnonymous() == 0 && len(typ.Fields.List) > 0 {
+		switch child.Kind {
+		case clang.CursorStructDecl, clang.CursorUnionDecl:
 			childName := clang.GoString(child.String())
 			ct.logln("ProcessRecordDecl: Found named nested struct:", childName)
-			decls = append(decls, &ast.TypeDecl{
-				Object: ct.CreateObject(child, &ast.Ident{Name: childName}),
-				Type:   ct.ProcessRecordType(child),
-			})
+			// Check if this is a named nested struct/union
+			typ := ct.ProcessRecordType(child)
+			// note(zzy):use len(typ.Fields.List) to ensure it has fields not a forward declaration
+			// but maybe make the forward decl in to AST is also good.
+			if child.IsAnonymous() == 0 && len(typ.Fields.List) > 0 {
+				decls = append(decls, &ast.TypeDecl{
+					Object: ct.CreateObject(child, &ast.Ident{Name: childName}),
+					Type:   ct.ProcessRecordType(child),
+				})
+			}
+		case clang.CursorEnumDecl:
+			childName := clang.GoString(child.String())
+
+			ct.logln("ProcessRecordDecl: Found named nested enum:", childName)
+
+			ct.incIndent()
+			decls = append(decls, ct.ProcessEnumDecl(child))
+			ct.decIndent()
 		}
 	}
+	ct.logln("ProcessRecordDecl: process record: ", cursorName)
 
 	decl := &ast.TypeDecl{
 		Object: ct.CreateObject(cursor, nil),
 		Type:   ct.ProcessRecordType(cursor),
 	}
 
-	anony := cursor.IsAnonymousRecordDecl()
-	if anony == 0 {
+	// NOTE(MeteorsLiu): IsAnonymousRecordDecl() cannot recognize these anonymous struct:
+	// 	struct
+	// {
+	//     int a;
+	// };
+	isAnonymousRecord := cursor.IsAnonymousRecordDecl() > 0 || cursor.IsAnonymous() > 0
+
+	if !isAnonymousRecord {
 		decl.Name = &ast.Ident{Name: cursorName}
 		ct.logln("ProcessRecordDecl: has name", cursorName)
 	} else {
@@ -857,17 +880,14 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 
 	decl := t.TypeDeclaration()
 
-	if decl.IsAnonymous() != 0 {
-		// anonymous type refer (except anonymous RecordType&EnumType in TypedefDecl)
-		if decl.Kind == clang.CursorEnumDecl {
-			return ct.ProcessEnumType(decl)
-		}
+	if decl.IsAnonymous() != 0 && decl.Kind != clang.CursorEnumDecl {
 		return ct.ProcessRecordType(decl)
 	}
 
 	// for elaborated type, it could have a tag description
 	// like struct A, union B, class C, enum D
 	parts := strings.SplitN(typeName, " ", 2)
+
 	if len(parts) == 2 {
 		if tagValue, ok := tagMap[parts[0]]; ok {
 			return &ast.TagExpr{

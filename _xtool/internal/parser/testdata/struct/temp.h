@@ -1,23 +1,29 @@
-struct {
+struct
+{
     int a;
 };
 
-struct Foo1 {
+struct Foo1
+{
     int a;
     int b;
 };
-struct Foo2 {
+struct Foo2
+{
     int a, b;
 };
 
-struct Foo3 {
+struct Foo3
+{
     int a;
     int (*Foo)(int, int);
 };
 
-struct Person {
+struct Person
+{
     int age;
-    struct {
+    struct
+    {
         int year;
         int day;
         int month;
