@@ -2,7 +2,6 @@ package parser_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,20 +27,13 @@ func TestParserCppMode(t *testing.T) {
 	// }
 }
 
-func TestPure(t *testing.T) {
-	config := &clangutils.Config{
-		File:  "./testdata/struct/temp.h",
-		Temp:  false,
-		IsCpp: false,
+func TestParserCMode(t *testing.T) {
+	cases := []string{"enum", "struct", "union", "macro", "include", "typeof", "named_nested_struct"}
+	for _, folder := range cases {
+		t.Run(folder, func(t *testing.T) {
+			testFrom(t, filepath.Join("testdata", folder), "temp.h", false, false)
+		})
 	}
-
-	visit(config, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
-		name := clang.GoString(cursor.String())
-		typ := clang.GoString(cursor.Kind.String())
-		fmt.Println(name, typ)
-		return clang.ChildVisit_Recurse
-	})
-
 }
 
 // func TestParserCMode(t *testing.T) {
