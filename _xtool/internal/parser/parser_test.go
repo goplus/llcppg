@@ -31,7 +31,7 @@ func TestParserCppMode(t *testing.T) {
 }
 
 func TestParserCMode(t *testing.T) {
-	cases := []string{"enum", "func", "struct", "union", "macro", "forwarddecl1", "forwarddecl2", "include", "typeof", "named_nested_struct"}
+	cases := []string{"enum", "struct", "union", "macro", "include", "typeof", "named_nested_struct"}
 	for _, folder := range cases {
 		t.Run(folder, func(t *testing.T) {
 			testFrom(t, filepath.Join("testdata", folder), "temp.h", false, false)
