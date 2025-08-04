@@ -695,7 +695,7 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 			field.Comment = commentGroup
 		}
 	}
-	if fieldName != "" {
+	if cursor.IsAnonymous() == 0 {
 		field.Names = []*ast.Ident{{Name: fieldName}}
 	}
 	return field
@@ -781,8 +781,14 @@ func (ct *Converter) ProcessRecordDecl(cursor clang.Cursor) []ast.Decl {
 		Type:   ct.ProcessRecordType(cursor),
 	}
 
-	anony := cursor.IsAnonymousRecordDecl()
-	if anony == 0 {
+	// NOTE(MeteorsLiu): IsAnonymousRecordDecl may return fake results for some special struct, like
+	// 	struct {
+	//     int a;
+	// };
+	// to avoid that case, we have to check the IsAnonymous result
+	isAnonymousRecord := cursor.IsAnonymousRecordDecl() > 0 || cursor.IsAnonymous() > 0
+
+	if !isAnonymousRecord {
 		decl.Name = &ast.Ident{Name: cursorName}
 		ct.logln("ProcessRecordDecl: has name", cursorName)
 	} else {
