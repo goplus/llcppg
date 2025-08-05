@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goplus/lib/c/clang"
 	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
+	clang "github.com/goplus/llcppg/_xtool/internal/libclang"
 	"github.com/goplus/llcppg/internal/name"
 
 	llcppg "github.com/goplus/llcppg/config"
@@ -152,7 +152,7 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor, symbolName string) stri
 	}
 
 	customGoName, toMethod, isIgnore, isCustom := p.customGoName(symbolName)
-	
+
 	// Early return if symbol should be ignored
 	if isIgnore {
 		return customGoName
