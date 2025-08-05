@@ -165,8 +165,6 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 		switch nameType := t.Name.(type) {
 		case *ast.Ident:
 			return lookup(nameType.Name)
-		case *ast.BuiltinType:
-			return p.typeMap.FindBuiltinType(*nameType)
 		}
 	}
 	return nil, fmt.Errorf("unsupported refer type %T", t)
