@@ -897,10 +897,7 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 		// case 2: anonymous enum, nested
 		if isAnonymousDecl {
 			// by default, the type of an anonymous enum is int
-			return &ast.TagExpr{
-				Tag:  ast.Enum,
-				Name: &ast.BuiltinType{Kind: ast.Int},
-			}
+			return &ast.BuiltinType{Kind: ast.Int}
 		}
 		// case3: named enum, nested
 		return &ast.TagExpr{
