@@ -1,64 +1,28 @@
-enum
-{
-    enum1,
-    enum2
-};
+enum { enum1, enum2 };
 
-enum
-{
-    COLOR_DEFAULT = -1
-};
+enum { COLOR_DEFAULT = -1 };
 
-enum spectrum
-{
-    red,
-    orange,
-    yello,
-    green,
-    blue,
-    violet
-};
+enum spectrum { red, orange, yello, green, blue, violet };
 
-enum kids
-{
-    nippy,
-    slats,
-    skippy,
-    nina,
-    liz
-};
+enum kids { nippy, slats, skippy, nina, liz };
 
-enum levels
-{
-    low = 100,
-    medium = 500,
-    high = 2000
-};
+enum levels { low = 100, medium = 500, high = 2000 };
 
-enum feline
-{
-    cat,
-    lynx = 10,
-    puma,
-    tiger
-};
+enum feline { cat, lynx = 10, puma, tiger };
 
-typedef enum algorithm
-{
+typedef enum algorithm {
     UNKNOWN = 0,
     NULL = 1,
 } algorithm_t;
 
-typedef enum
-{
+typedef enum {
     UNKNOWN2 = 0,
     NULL2 = 1,
 } algorithm_t2;
 
 typedef algorithm_t algorithm;
 
-typedef enum
-{
+typedef enum {
     GPG_ERR_NO_ERROR = 0,
     GPG_ERR_GENERAL = 1,
     GPG_ERR_UNKNOWN_PACKET = 2,

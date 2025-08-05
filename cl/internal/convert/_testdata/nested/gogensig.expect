@@ -83,12 +83,7 @@ type A struct {
 	EField E
 }
 
-type NestedEnum struct {
-	Unused [8]uint8
-}
-
 ===== llcppg.pub =====
-NestedEnum
 a A
 b B
 c C

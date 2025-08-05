@@ -882,21 +882,39 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 	if decl.IsAnonymous() != 0 && decl.Kind != clang.CursorEnumDecl {
 		return ct.ProcessRecordType(decl)
 	}
+	parts := clangutils.BuildScopingParts(decl)
+
+	// NOTE(MeteorsLiu): nested enum behaves different from nested struct, for example, we can find its semantic parent
+	// however, it will cause we misidentified it as a class method expr, so take it out
+	if decl.Kind == clang.CursorEnumDecl {
+		// by default, the type of an anonymous enum is int
+		if decl.IsAnonymous() > 0 {
+			return &ast.TagExpr{
+				Tag:  ast.Enum,
+				Name: &ast.BuiltinType{Kind: ast.Int},
+			}
+		}
+		return &ast.TagExpr{
+			Tag: ast.Enum,
+			// for typedef enum
+			Name: &ast.Ident{Name: parts[0]},
+		}
+	}
 
 	// for elaborated type, it could have a tag description
 	// like struct A, union B, class C, enum D
-	parts := strings.SplitN(typeName, " ", 2)
+	typeParts := strings.SplitN(typeName, " ", 2)
 
-	if len(parts) == 2 {
-		if tagValue, ok := tagMap[parts[0]]; ok {
+	if len(typeParts) == 2 {
+		if tagValue, ok := tagMap[typeParts[0]]; ok {
 			return &ast.TagExpr{
 				Tag:  tagValue,
-				Name: ct.BuildScopingExpr(decl),
+				Name: buildScopingFromParts(parts),
 			}
 		}
 	}
 
-	return ct.BuildScopingExpr(decl)
+	return buildScopingFromParts(parts)
 }
 
 func (ct *Converter) ProcessTypeDefType(t clang.Type) ast.Expr {
@@ -1042,7 +1060,6 @@ func buildScopingFromParts(parts []string) ast.Expr {
 	if len(parts) == 0 {
 		return nil
 	}
-
 	var expr ast.Expr = &ast.Ident{Name: parts[0]}
 	for _, part := range parts[1:] {
 		expr = &ast.ScopingExpr{

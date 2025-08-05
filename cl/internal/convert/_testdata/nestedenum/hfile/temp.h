@@ -8,7 +8,11 @@ struct NestedEnum
 
     struct a
     {
-        int b;
+        enum
+        {
+            APR_BUCKET_DATA_A1 = 0,
+            APR_BUCKET_METADATA_A2 = 1
+        } is_metadata1_t;
     } a_t;
 };
 

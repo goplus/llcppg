@@ -1,0 +1,82 @@
+===== nestedenum_autogen_link.go =====
+package nestedenum
+
+import _ "github.com/goplus/lib/c"
+
+const LLGoPackage string = "link: $(pkg-config --libs xxx);"
+
+===== temp.go =====
+package nestedenum
+
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
+
+const (
+	APR_BUCKET_DATA1     c.Int = 0
+	APR_BUCKET_METADATA2 c.Int = 1
+)
+const (
+	APR_BUCKET_DATA_A1     c.Int = 0
+	APR_BUCKET_METADATA_A2 c.Int = 1
+)
+
+type A struct {
+	IsMetadata1T c.Int
+}
+
+type NestedEnum struct {
+	IsMetadata1T c.Int
+	AT           A
+}
+
+const (
+	APR_BUCKET_DATA3     c.Int = 0
+	APR_BUCKET_METADATA4 c.Int = 1
+)
+
+type NestedEnum2 struct {
+	Unused [8]uint8
+}
+type IsMetadata3 c.Int
+
+const (
+	APR_BUCKET_DATA5     IsMetadata3 = 0
+	APR_BUCKET_METADATA6 IsMetadata3 = 1
+)
+
+type NestedEnum3 struct {
+	Unused [8]uint8
+}
+type IsMetadata4 c.Int
+
+const (
+	APR_BUCKET_DATA7     IsMetadata4 = 0
+	APR_BUCKET_METADATA8 IsMetadata4 = 1
+)
+
+type NestedEnum4 struct {
+	Key IsMetadata4
+}
+type OuterEnum c.Int
+
+const (
+	APR_BUCKET_DATA9      OuterEnum = 0
+	APR_BUCKET_METADATA10 OuterEnum = 1
+)
+
+type Enum struct {
+	K OuterEnum
+}
+
+===== llcppg.pub =====
+Enum
+NestedEnum
+NestedEnum2
+NestedEnum3
+NestedEnum4
+OuterEnum
+a A
+is_metadata3 IsMetadata3
+is_metadata4 IsMetadata4
