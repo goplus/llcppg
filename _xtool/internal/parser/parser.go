@@ -878,27 +878,37 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 	ct.logln("ProcessElaboratedType: TypeName:", typeName, "TypeKind:", typeKind)
 
 	decl := t.TypeDeclaration()
+	isAnonymousDecl := decl.IsAnonymous() > 0
 
-	if decl.IsAnonymous() != 0 && decl.Kind != clang.CursorEnumDecl {
+	if isAnonymousDecl && decl.Kind != clang.CursorEnumDecl {
 		return ct.ProcessRecordType(decl)
 	}
 	parts := clangutils.BuildScopingParts(decl)
+	hasParent := len(parts) > 1
 
 	// NOTE(MeteorsLiu): nested enum behaves different from nested struct, for example, we can find its semantic parent
 	// however, it will cause we misidentified it as a class method expr, so take it out
-	if decl.Kind == clang.CursorEnumDecl {
-		// by default, the type of an anonymous enum is int
-		if decl.IsAnonymous() > 0 {
+	if (hasParent || isAnonymousDecl) && decl.Kind == clang.CursorEnumDecl {
+		// case 1: anonymous enum, but not nested
+		if !hasParent {
+			// this is not a nested enum, handle it normally
+			return ct.ProcessEnumType(decl)
+		}
+		// case 2: anonymous enum, nested
+		if isAnonymousDecl {
+			// by default, the type of an anonymous enum is int
 			return &ast.TagExpr{
 				Tag:  ast.Enum,
 				Name: &ast.BuiltinType{Kind: ast.Int},
 			}
 		}
+		// case3: named enum, nested
 		return &ast.TagExpr{
 			Tag: ast.Enum,
 			// for typedef enum
 			Name: &ast.Ident{Name: parts[0]},
 		}
+		// case 4: named enum, non-nested, fallback to process as a ElaboratedType normally.
 	}
 
 	// for elaborated type, it could have a tag description
