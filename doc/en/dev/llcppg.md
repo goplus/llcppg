@@ -215,6 +215,86 @@ struct struct2 {
 };
 ```
 
+##### Nested Enum
+
+Similar to nested structs, nested enums can also be accessed in the global scope. llcppg handles named nested enums by creating separate type declarations that are accessible globally.
+
+###### Anonymous Nested Enum
+
+Anonymous nested enums are converted to inline enum constants within the parent struct context, with the enum values defaulting to `c.Int` type.
+
+```c
+typedef struct Config {
+    int version;
+    enum {
+        MODE_DEBUG = 0,
+        MODE_RELEASE = 1
+    } mode;
+} Config;
+```
+
+**Generated Go code**:
+```go
+type Config struct {
+    Version c.Int
+    Mode    c.Int
+}
+
+const (
+    MODE_DEBUG  c.Int = 0
+    MODE_RELEASE c.Int = 1
+)
+```
+
+###### Named Nested Enum
+
+Named nested enums in C are accessible in the global scope, not just within the context of the outer struct. llcppg handles this by creating separate enum type declarations.
+
+**Reason**: In C, named nested enums are declared in the global scope and can be used independently. This means the enum type can be used anywhere in the code, not just within the context of the outer struct.
+
+```c
+typedef struct Config {
+    int version;
+    enum LogLevel {
+        LOG_DEBUG = 0,
+        LOG_INFO = 1,
+        LOG_ERROR = 2
+    } level;
+} Config;
+
+// This is valid C - LogLevel is in global scope
+enum LogLevel current_level = LOG_INFO;
+```
+
+**Generated Go code**:
+```go
+type LogLevel c.Int
+
+const (
+    LOG_DEBUG LogLevel = 0
+    LOG_INFO  LogLevel = 1
+    LOG_ERROR LogLevel = 2
+)
+
+type Config struct {
+    Version c.Int
+    Level   LogLevel
+}
+```
+
+This is equivalent to:
+```c
+enum LogLevel {
+    LOG_DEBUG = 0,
+    LOG_INFO = 1,
+    LOG_ERROR = 2
+};
+struct Config {
+    int version;
+    enum LogLevel level;
+};
+```
+
 ##### Function
 
 ###### To Normal Function
