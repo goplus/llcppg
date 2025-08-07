@@ -695,7 +695,7 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 			field.Comment = commentGroup
 		}
 	}
-	// NOTE(MeteorsLiu): In non cpp mode, an anonymous field name may be `unname struct` instead of empty string
+	// NOTE(MeteorsLiu): In non C++ mode, an anonymous field name may be `unname struct` instead of empty string
 	// so check it via IsAnonymous()
 	if cursor.IsAnonymous() == 0 {
 		field.Names = []*ast.Ident{{Name: fieldName}}

@@ -28,7 +28,7 @@ go install .
 
 ## Usage
 
-llcppg.cfg file is a configure file used by llcppg. Once llcppg.cfg is generated then you can run llcppg command to generate go pacakge for the c/c++ lib.
+llcppg.cfg file is a configure file used by llcppg. Once llcppg.cfg is generated then you can run llcppg command to generate go pacakge for the C/C++ lib.
 
 ```sh
 llcppg [config-file]
