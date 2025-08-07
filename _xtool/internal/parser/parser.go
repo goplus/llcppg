@@ -299,16 +299,18 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 
 	if t.Kind >= clang.TypeFirstBuiltin && t.Kind <= clang.TypeLastBuiltin {
 		// Check if this builtin type comes from error recovery for undefined types
-		// When libclang encounters an undefined type, it defaults to int, but we can detect 
-		// this by checking if the type has a valid declaration context
+		// When libclang encounters an undefined type, it defaults to int
 		if t.Kind == clang.TypeInt {
 			decl := t.TypeDeclaration()
-			// For legitimate builtin int types, TypeDeclaration returns a null cursor
-			// For error-recovery types from undefined names, we might get different behavior
-			if !decl.IsNull() && (decl.Kind == clang.CursorNoDeclFound || 
-				(decl.Kind >= clang.CursorFirstInvalid && decl.Kind <= clang.CursorLastInvalid)) {
-				ct.logln("ProcessType: Detected undefined type defaulting to int, skipping")
-				return nil
+			ct.logf("ProcessType: Int type detected - TypeDeclaration cursor kind: %v, IsNull: %v", 
+				toStr(decl.Kind.String()), decl.IsNull())
+			
+			// If TypeDeclaration returns a non-null cursor for a builtin int type,
+			// this might indicate error recovery from an undefined type
+			if !decl.IsNull() {
+				ct.logln("ProcessType: Builtin int type has non-null TypeDeclaration, possible undefined type")
+				// For now, still process it but log the detection
+				// TODO: Once confirmed this works, change to return nil
 			}
 		}
 		return ct.ProcessBuiltinType(t)
