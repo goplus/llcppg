@@ -305,12 +305,12 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 			ct.logf("ProcessType: Int type detected - TypeDeclaration cursor kind: %v, IsNull: %v", 
 				toStr(decl.Kind.String()), decl.IsNull())
 			
-			// If TypeDeclaration returns a non-null cursor for a builtin int type,
-			// this might indicate error recovery from an undefined type
+			// For builtin types, TypeDeclaration typically returns a null cursor
+			// If we get a non-null cursor, it might indicate error recovery
 			if !decl.IsNull() {
-				ct.logln("ProcessType: Builtin int type has non-null TypeDeclaration, possible undefined type")
-				// For now, still process it but log the detection
-				// TODO: Once confirmed this works, change to return nil
+				ct.logln("ProcessType: Detected potential undefined type (non-null TypeDeclaration for int)")
+				// Skip this type to prevent invalid function declarations
+				return nil
 			}
 		}
 		return ct.ProcessBuiltinType(t)
