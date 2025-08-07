@@ -27,8 +27,8 @@
           "_Type": "FieldList"
         },
         "Ret": {
-          "Flags": 0,
-          "Kind": 6,
+          "Flags": 1,
+          "Kind": 0,
           "_Type": "BuiltinType"
         },
         "_Type": "FuncType"
