@@ -40,7 +40,7 @@ llcppg requires LLGo (Low Level Go) and specific LLVM version. Follow these exac
   **Timing**: 15 seconds. Build always succeeds without LLGo dependencies.
 
 ### Install llcppg Tools
-Execute install script for complete setup:
+Execute install script for complete setup (**REQUIRED FOR ALL TESTING**):
 ```bash
 bash ./install.sh
 ```
@@ -126,7 +126,7 @@ go test -timeout=10m ./...
 ### Manual Testing Requirements
 **CRITICAL**: After code changes, always perform these validation steps:
 1. Build all components: `go build -v ./...`
-2. Install tools: `bash ./install.sh` 
+2. Install tools: `bash ./install.sh` (**ESSENTIAL FOR TESTING**) 
 3. Generate a test config: `llcppcfg sqlite`
 4. Edit config to add proper headers (check examples in `_llcppgtest/` directories)
 5. Run binding generation: `llcppg llcppg.cfg`
@@ -177,12 +177,12 @@ Each contains working `llcppg.cfg` with proper `include`, `cflags`, `libs`, and 
 
 ### Build Failures
 - **"llgo: command not found"**: LLGo not installed or not in PATH
-- **"llcppsymg: executable file not found"**: Run `bash ./install.sh` (CRITICAL - required for complete functionality)
+- **"llcppsymg: executable file not found"**: **MUST RUN** `bash ./install.sh` (ABSOLUTELY CRITICAL - required for testing and complete functionality)
 - **"BitReader.h: No such file or directory"**: Install LLVM development packages
 - **Link errors with LLVM**: Ensure LLVM 19 is installed, not other versions
 
 ### Test Failures  
-- Tests requiring `llcppsigfetch` or `llcppsymg`: Install LLGo tools via `install.sh`
+- Tests requiring `llcppsigfetch` or `llcppsymg`: **MUST INSTALL** LLGo tools via `install.sh` (essential for testing)
 - Parser tests failing: Install `llclang` with `llgo install ./_xtool/llclang`
 - Demo tests failing: Verify library dependencies (libcjson-dev, etc.) are installed
 
