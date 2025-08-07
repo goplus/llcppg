@@ -5,7 +5,7 @@ Always reference these instructions first and fallback to search or bash command
 ## Working Effectively
 
 ### Bootstrap Dependencies and Build
-llcppg requires LLGo (Low Level Go) and specific LLVM version. Follow these exact steps:
+llcppg requires LLGo (https://github.com/goplus/llgo) and specific LLVM version. Follow these exact steps:
 
 - Install system dependencies (Ubuntu/Linux):
   ```bash
