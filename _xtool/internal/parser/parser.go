@@ -258,8 +258,12 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		// Handle functions and class methods (including out-of-class method)
 		// Example: void MyClass::myMethod() { ... } out-of-class method
 		funcDecl := ct.ProcessFuncDecl(cursor)
-		ct.file.Decls = append(ct.file.Decls, funcDecl)
-		ct.logln("visitTop: ProcessFuncDecl END", funcDecl.Name.Name, funcDecl.MangledName, "isStatic:", funcDecl.IsStatic, "isInline:", funcDecl.IsInline)
+		if funcDecl != nil {
+			ct.file.Decls = append(ct.file.Decls, funcDecl)
+			ct.logln("visitTop: ProcessFuncDecl END", funcDecl.Name.Name, funcDecl.MangledName, "isStatic:", funcDecl.IsStatic, "isInline:", funcDecl.IsInline)
+		} else {
+			ct.logln("visitTop: ProcessFuncDecl returned nil, skipping function")
+		}
 	case clang.CursorTypedefDecl:
 		typedefDecl := ct.ProcessTypeDefDecl(cursor)
 		if typedefDecl == nil {
@@ -294,6 +298,19 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 	}
 
 	if t.Kind >= clang.TypeFirstBuiltin && t.Kind <= clang.TypeLastBuiltin {
+		// Check if this builtin type comes from error recovery for undefined types
+		// When libclang encounters an undefined type, it defaults to int, but we can detect 
+		// this by checking if the type has a valid declaration context
+		if t.Kind == clang.TypeInt {
+			decl := t.TypeDeclaration()
+			// For legitimate builtin int types, TypeDeclaration returns a null cursor
+			// For error-recovery types from undefined names, we might get different behavior
+			if !decl.IsNull() && (decl.Kind == clang.CursorNoDeclFound || 
+				(decl.Kind >= clang.CursorFirstInvalid && decl.Kind <= clang.CursorLastInvalid)) {
+				ct.logln("ProcessType: Detected undefined type defaulting to int, skipping")
+				return nil
+			}
+		}
 		return ct.ProcessBuiltinType(t)
 	}
 
@@ -310,11 +327,18 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 	case clang.TypePointer:
 		name, kind := getTypeDesc(t.PointeeType())
 		ct.logln("ProcessType: PointerType  Pointee TypeName:", name, "TypeKind:", kind)
-		expr = &ast.PointerType{X: ct.ProcessType(t.PointeeType())}
+		pointeeType := ct.ProcessType(t.PointeeType())
+		if pointeeType == nil {
+			return nil
+		}
+		expr = &ast.PointerType{X: pointeeType}
 	case clang.TypeBlockPointer:
 		name, kind := getTypeDesc(t)
 		ct.logln("ProcessType: BlockPointerType  TypeName:", name, "TypeKind:", kind)
 		typ := ct.ProcessType(t.PointeeType())
+		if typ == nil {
+			return nil
+		}
 		fnType, ok := typ.(*ast.FuncType)
 		if !ok {
 			panic("BlockPointerType: not FuncType")
@@ -323,11 +347,19 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 	case clang.TypeLValueReference:
 		name, kind := getTypeDesc(t.NonReferenceType())
 		ct.logln("ProcessType: LvalueRefType  NonReference TypeName:", name, "TypeKind:", kind)
-		expr = &ast.LvalueRefType{X: ct.ProcessType(t.NonReferenceType())}
+		refType := ct.ProcessType(t.NonReferenceType())
+		if refType == nil {
+			return nil
+		}
+		expr = &ast.LvalueRefType{X: refType}
 	case clang.TypeRValueReference:
 		name, kind := getTypeDesc(t.NonReferenceType())
 		ct.logln("ProcessType: RvalueRefType  NonReference TypeName:", name, "TypeKind:", kind)
-		expr = &ast.RvalueRefType{X: ct.ProcessType(t.NonReferenceType())}
+		refType := ct.ProcessType(t.NonReferenceType())
+		if refType == nil {
+			return nil
+		}
+		expr = &ast.RvalueRefType{X: refType}
 	case clang.TypeFunctionProto, clang.TypeFunctionNoProto:
 		// treating TypeFunctionNoProto as a general function without parameters
 		// function type will only collect return type, params will be collected in ProcessFuncDecl
@@ -336,17 +368,25 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 		expr = ct.ProcessFunctionType(t)
 	case clang.TypeConstantArray, clang.TypeIncompleteArray, clang.TypeVariableArray, clang.TypeDependentSizedArray:
 		if t.Kind == clang.TypeConstantArray {
+			elemType := ct.ProcessType(t.ArrayElementType())
+			if elemType == nil {
+				return nil
+			}
 			len := (*c.Char)(c.Malloc(unsafe.Sizeof(c.Char(0)) * 20))
 			c.Sprintf(len, c.Str("%lld"), t.ArraySize())
 			defer c.Free(unsafe.Pointer(len))
 			expr = &ast.ArrayType{
-				Elt: ct.ProcessType(t.ArrayElementType()),
+				Elt: elemType,
 				Len: &ast.BasicLit{Kind: ast.IntLit, Value: c.GoString(len)},
 			}
 		} else if t.Kind == clang.TypeIncompleteArray {
+			elemType := ct.ProcessType(t.ArrayElementType())
+			if elemType == nil {
+				return nil
+			}
 			// incomplete array havent len expr
 			expr = &ast.ArrayType{
-				Elt: ct.ProcessType(t.ArrayElementType()),
+				Elt: elemType,
 			}
 		}
 	default:
@@ -373,12 +413,21 @@ func (ct *Converter) ProcessFunctionType(t clang.Type) *ast.FuncType {
 	ct.logln("ProcessFunctionType: ResultType TypeName:", name, "TypeKind:", kind)
 
 	ret := ct.ProcessType(resType)
+	if ret == nil {
+		ct.logln("ProcessFunctionType: Result type is invalid (undefined type), skipping function")
+		return nil
+	}
 	params := &ast.FieldList{}
 	numArgs := t.NumArgTypes()
 	for i := 0; i < int(numArgs); i++ {
 		argType := t.ArgType(c.Uint(i))
+		processedArgType := ct.ProcessType(argType)
+		if processedArgType == nil {
+			ct.logln("ProcessFunctionType: Parameter type is invalid (undefined type), skipping function")
+			return nil
+		}
 		params.List = append(params.List, &ast.Field{
-			Type: ct.ProcessType(argType),
+			Type: processedArgType,
 		})
 	}
 	if t.IsFunctionTypeVariadic() != 0 {
@@ -686,6 +735,10 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 	field := &ast.Field{
 		Type: ct.ProcessType(typ),
 	}
+	if field.Type == nil {
+		ct.logln("createBaseField: Field type is invalid (undefined type), skipping field")
+		return nil
+	}
 
 	commentGroup, isDoc := ct.ParseCommentGroup(cursor)
 	if commentGroup != nil {
@@ -721,15 +774,19 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 			// };
 			ct.logln("ProcessFieldList: CursorFieldDecl")
 			field := ct.createBaseField(subcsr)
-			field.Access = ast.AccessSpecifier(subcsr.CXXAccessSpecifier())
-			flds.List = append(flds.List, field)
+			if field != nil {
+				field.Access = ast.AccessSpecifier(subcsr.CXXAccessSpecifier())
+				flds.List = append(flds.List, field)
+			}
 		case clang.CursorVarDecl:
 			if subcsr.StorageClass() == clang.SCStatic {
 				// static member variable
 				field := ct.createBaseField(subcsr)
-				field.Access = ast.AccessSpecifier(subcsr.CXXAccessSpecifier())
-				field.IsStatic = true
-				flds.List = append(flds.List, field)
+				if field != nil {
+					field.Access = ast.AccessSpecifier(subcsr.CXXAccessSpecifier())
+					field.IsStatic = true
+					flds.List = append(flds.List, field)
+				}
 			}
 		}
 		return clang.ChildVisit_Continue
