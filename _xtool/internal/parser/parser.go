@@ -307,10 +307,14 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 			
 			// For builtin types, TypeDeclaration typically returns a null cursor
 			// If we get a non-null cursor, it might indicate error recovery
-			if !decl.IsNull() {
+			if decl.IsNull() == 0 {
 				ct.logln("ProcessType: Detected potential undefined type (non-null TypeDeclaration for int)")
-				// Skip this type to prevent invalid function declarations
-				return nil
+				// Return a BuiltinType with TypeFlag 0 to mark this as undefined type
+				// instead of returning nil which would skip the function entirely
+				return &ast.BuiltinType{
+					Kind:  ast.Int,
+					Flags: 0, // TypeFlag 0 indicates undefined type
+				}
 			}
 		}
 		return ct.ProcessBuiltinType(t)
@@ -416,7 +420,7 @@ func (ct *Converter) ProcessFunctionType(t clang.Type) *ast.FuncType {
 
 	ret := ct.ProcessType(resType)
 	if ret == nil {
-		ct.logln("ProcessFunctionType: Result type is invalid (undefined type), skipping function")
+		ct.logln("ProcessFunctionType: Result type processing failed, skipping function")
 		return nil
 	}
 	params := &ast.FieldList{}
@@ -425,7 +429,7 @@ func (ct *Converter) ProcessFunctionType(t clang.Type) *ast.FuncType {
 		argType := t.ArgType(c.Uint(i))
 		processedArgType := ct.ProcessType(argType)
 		if processedArgType == nil {
-			ct.logln("ProcessFunctionType: Parameter type is invalid (undefined type), skipping function")
+			ct.logln("ProcessFunctionType: Parameter type processing failed, skipping function")
 			return nil
 		}
 		params.List = append(params.List, &ast.Field{
@@ -738,7 +742,7 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 		Type: ct.ProcessType(typ),
 	}
 	if field.Type == nil {
-		ct.logln("createBaseField: Field type is invalid (undefined type), skipping field")
+		ct.logln("createBaseField: Field type processing failed, skipping field")
 		return nil
 	}
 

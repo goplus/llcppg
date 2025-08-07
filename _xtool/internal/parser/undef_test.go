@@ -2,8 +2,6 @@ package parser_test
 
 import (
 	"testing"
-
-	"github.com/goplus/llcppg/_xtool/internal/parser"
 )
 
 func TestUndefType(t *testing.T) {

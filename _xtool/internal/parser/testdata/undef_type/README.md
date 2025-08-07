@@ -14,31 +14,33 @@ When libclang encounters undefined types like `undef fn();`, it performs error r
 This is misleading because `undef` is not actually an `int` type.
 
 ## Solution
-The fix detects when a builtin `int` type comes from error recovery and skips the invalid function declaration.
+The fix detects when a builtin `int` type comes from error recovery and marks it appropriately instead of skipping the function entirely.
 
 ### Detection Method
 1. Check if we're processing a builtin `int` type (`t.Kind == clang.TypeInt`)
 2. Call `t.TypeDeclaration()` to get the type's declaration cursor
 3. For legitimate builtin types, this should return a null cursor
 4. For error-recovery types, this might return a non-null cursor
-5. If non-null cursor detected, skip the type (return nil)
+5. If non-null cursor detected, return a BuiltinType with TypeFlag 0 to mark as undefined type
 
-### Error Handling
-The fix includes proper nil handling throughout the type processing pipeline:
-- `ProcessFunctionType`: Check if return type or parameter types are nil
-- `ProcessType`: Check pointer, reference, and array element types for nil
-- `createBaseField`: Check if field type is nil
-- `ProcessFieldList`: Skip nil fields
-- `visitTop`: Skip nil function declarations
+### New Behavior
+Instead of completely skipping functions with undefined types (which was too aggressive), the function is still included in the AST but with a recognizable pattern:
+- `Kind`: 6 (int)
+- `Flags`: 0 (no type modifiers)
+
+This allows downstream processing to:
+- Identify potentially problematic functions
+- Handle undefined types appropriately without losing the function declaration
+- Distinguish from completely missing functions
 
 ## Test Cases
 - `testdata/undef_type/temp.h`: Contains `undef fn();` 
-- `testdata/undef_type/expect.json`: Expected empty output (no declarations)
+- `testdata/undef_type/expect.json`: Expected output includes the function with int/flags=0
 
 ## Expected Behavior
-- Functions with undefined types: Skipped (no output)
+- Functions with undefined types: Processed with TypeFlag 0 marking
 - Legitimate functions: Processed normally
-- Related issue #109: Method conversion should work correctly without interference from undefined types
+- Related issue #109: Method conversion should work correctly with undefined types marked but not hidden
 
 ## Validation
 Use clang AST dump to see the difference:
