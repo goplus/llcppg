@@ -73,7 +73,7 @@ This installs:
   ```bash
   go test -v ./...
   ```
-  **Timing**: 5-8 minutes. Some tests require LLGo tools to pass.
+  **Timing**: 8-12 minutes. Some tests require LLGo tools to pass.
 
 ### Demo Validation
 Test real functionality with demos:
@@ -104,7 +104,7 @@ Examples:
 - `llcppcfg -deps "c,github.com/author/pkg" libname` - with dependencies
 
 ### Generate Bindings
-Process configuration file to generate Go bindings:
+Process configuration file to generate LLGo bindings:
 ```bash
 llcppg [config-file]
 ```
@@ -177,7 +177,7 @@ Each contains working `llcppg.cfg` with proper `include`, `cflags`, `libs`, and 
 
 ### Build Failures
 - **"llgo: command not found"**: LLGo not installed or not in PATH
-- **"llcppsymg: executable file not found"**: Run `bash ./install.sh`
+- **"llcppsymg: executable file not found"**: Run `bash ./install.sh` (CRITICAL - required for complete functionality)
 - **"BitReader.h: No such file or directory"**: Install LLVM development packages
 - **Link errors with LLVM**: Ensure LLVM 19 is installed, not other versions
 
