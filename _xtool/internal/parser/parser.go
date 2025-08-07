@@ -258,12 +258,8 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 		// Handle functions and class methods (including out-of-class method)
 		// Example: void MyClass::myMethod() { ... } out-of-class method
 		funcDecl := ct.ProcessFuncDecl(cursor)
-		if funcDecl != nil {
-			ct.file.Decls = append(ct.file.Decls, funcDecl)
-			ct.logln("visitTop: ProcessFuncDecl END", funcDecl.Name.Name, funcDecl.MangledName, "isStatic:", funcDecl.IsStatic, "isInline:", funcDecl.IsInline)
-		} else {
-			ct.logln("visitTop: ProcessFuncDecl returned nil, skipping function")
-		}
+		ct.file.Decls = append(ct.file.Decls, funcDecl)
+		ct.logln("visitTop: ProcessFuncDecl END", funcDecl.Name.Name, funcDecl.MangledName, "isStatic:", funcDecl.IsStatic, "isInline:", funcDecl.IsInline)
 	case clang.CursorTypedefDecl:
 		typedefDecl := ct.ProcessTypeDefDecl(cursor)
 		if typedefDecl == nil {
@@ -334,9 +330,6 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 		name, kind := getTypeDesc(t.PointeeType())
 		ct.logln("ProcessType: PointerType  Pointee TypeName:", name, "TypeKind:", kind)
 		pointeeType := ct.ProcessType(t.PointeeType())
-		if pointeeType == nil {
-			return nil
-		}
 		expr = &ast.PointerType{X: pointeeType}
 	case clang.TypeBlockPointer:
 		name, kind := getTypeDesc(t)
