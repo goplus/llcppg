@@ -101,7 +101,7 @@ llcppcfg [options] libname
 Examples:
 - `llcppcfg cjson` - generates basic cjson config
 - `llcppcfg -cpp libname` - for C++ libraries
-- `llcppcfg -deps "c,github.com/author/pkg" libname` - with dependencies
+- `llcppcfg -deps "c/os,github.com/author/llpkg" libname` - with dependencies
 
 ### Generate Bindings
 Process configuration file to generate LLGo bindings:
