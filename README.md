@@ -28,7 +28,7 @@ go install .
 
 ## Usage
 
-llcppg.cfg file is a configure file used by llcppg. Once llcppg.cfg is generated then you can run llcppg command to generate go pacakge for the C/C++ lib.
+llcppg.cfg file is a configure file used by llcppg. Once llcppg.cfg is generated then you can run llcppg command to generate Go package for the C/C++ lib.
 
 ```sh
 llcppg [config-file]
@@ -333,7 +333,7 @@ For example:
 * The alias `c/os` → `github.com/goplus/lib/c/os`
 * The alias `c/time` → `github.com/goplus/lib/c/time`
 
-> Note: Standard library type conversion in llgo is not comprehensive. For standard library types that cannot be found in llgo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
+> Note: Standard library type conversion in LLGo is not comprehensive. For standard library types that cannot be found in LLGo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
 
 #### Example
 You can specify dependent package paths in the `deps` field of `llcppg.cfg` . For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:

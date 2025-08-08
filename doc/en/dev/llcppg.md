@@ -44,7 +44,7 @@ func LuaLTestudata(L *State, ud c.Int, tname *c.Char) c.Pointer
 
 ##### Function pointer
 
-C function pointer types are converted to Go function types with corresponding parameter and return type mappings,And llgo need to add `llgo:type C` tag to the function type.
+C function pointer types are converted to Go function types with corresponding parameter and return type mappings, and LLGo needs to add `llgo:type C` tag to the function type.
 
 
 ```c
@@ -219,7 +219,7 @@ struct struct2 {
 
 ###### To Normal Function
 
-llgo need to add `//go:linkname <funcName> C.<mangleName>` tag to the function type.
+LLGo needs to add `//go:linkname <funcName> C.<mangleName>` tag to the function type.
 
 ```c
 void foo(int a, int b);
@@ -233,7 +233,7 @@ func Foo(a c.Int, b c.Int)
 
 When a C function could be a Go method, llcppg automatically converts the function to a Go method, moving the first parameter to the receiver position, and using recv_ as the receiver name.
 
-Since Go's `//go:linkname` directive doesn't support methods, llgo uses `// llgo:link` to mark the connection between methods and C symbols.And generated methods return zero values of their return types as placeholders.
+Since Go's `//go:linkname` directive doesn't support methods, LLGo uses `// llgo:link` to mark the connection between methods and C symbols. And generated methods return zero values of their return types as placeholders.
 
 And LLGo should not treat C functions with variable parameters as methods. Variadic functions (those using ... in their parameter list) will be generated as regular Go functions rather than methods, even if they otherwise meet the criteria for method conversion.
 
@@ -359,7 +359,7 @@ int OSSL_PROVIDER_add_builtin(OSSL_LIB_CTX *, const char *name);
 func OSSLProviderAddBuiltin(__llgo_arg_0 *OSSLLIBCTX, name *c.Char) c.Int
 ```
 
-And for cases where only variadic parameters appear, llgo requires ` __llgo_va_list ...interface{}` to describe variadic parameters, and the same placeholder name generation processing is needed for this case.
+And for cases where only variadic parameters appear, LLGo requires ` __llgo_va_list ...interface{}` to describe variadic parameters, and the same placeholder name generation processing is needed for this case.
 
 ```c
 char *mprintf(const char*,...);
@@ -488,7 +488,7 @@ For example:
 * The alias `c/os` → `github.com/goplus/lib/c/os`
 * The alias `c/time` → `github.com/goplus/lib/c/time`
 
-> Note: Standard library type conversion in llgo is not comprehensive. For standard library types that cannot be found in llgo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
+> Note: Standard library type conversion in LLGo is not comprehensive. For standard library types that cannot be found in LLGo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
 
 #### Example
 You can specify dependent package paths in the `deps` field of `llcppg.cfg` . For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
