@@ -50,7 +50,7 @@ jobs:
         llgo test ./_xtool/llcppsigfetch/internal/...
         llgo test ./_xtool/llcppsymg/internal/...
 
-    - name: Test For llgo and go
+    - name: Test For LLGo and Go
       run: |
         llgo test ./config
         llgo test ./internal/arg
