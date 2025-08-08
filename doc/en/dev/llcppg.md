@@ -645,7 +645,7 @@ The configuration file supports the following options:
 - `typeMap`: Custom name mapping from C types to Go types.
 - `symMap`: Custom name mapping from C function names to Go function names.
 - `staticLib`: Set to true to enable static library symbol reading instead of dynamic library linking. When enabled, llcppg will read symbols from static libraries (.a files) rather than dynamic libraries (.so/.dylib files).
-- `headerOnly`: Set to true to ​​skip the symbol intersection process​​ described in [step 3](#llcppsymg).
+- `headerOnly`: Set to true to skip the symbol intersection process described in [step 3](#llcppsymg).
 
 ## Output
 

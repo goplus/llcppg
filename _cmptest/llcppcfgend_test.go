@@ -67,7 +67,7 @@ var cfgTestCases = []cfgTestCase{
 }
 
 /*
-​​The cfgdata directory is used by llcppcfg to generate end-to-end tests. Its directory structure is as follows.
+The cfgdata directory is used by llcppcfg to generate end-to-end tests. Its directory structure is as follows.
 
 	cfgdata
 	├── libxml2
@@ -77,7 +77,7 @@ var cfgTestCases = []cfgTestCase{
 	    └── {{OS}}
 	        └── 1.7.18
 
-Due to inconsistencies in header file paths across different systems, the expected test files are platform-based.​​
+Due to inconsistencies in header file paths across different systems, the expected test files are platform-based.
 */
 func TestEnd2EndLLCppcfg(t *testing.T) {
 	null, err := os.OpenFile(os.DevNull, os.O_RDWR, 0644)
