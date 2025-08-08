@@ -24,7 +24,7 @@ func main() {
 	extsString := ""
 	flag.StringVar(&extsString, "exts", ".h", "extra include file extensions for example -exts=\".h .hpp .hh\"")
 	excludes := ""
-	flag.StringVar(&excludes, "excludes", "", "exclude all header files in subdir of include expamle -excludes=\"internal impl\"")
+	flag.StringVar(&excludes, "excludes", "", "exclude all header files in subdir of include example -excludes=\"internal impl\"")
 	flag.StringVar(&dependencies, "deps", "", "deps for autofilling dependencies")
 	flag.Usage = printHelp
 	flag.Parse()
