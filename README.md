@@ -336,7 +336,7 @@ For example:
 > Note: Standard library type conversion in LLGo is not comprehensive. For standard library types that cannot be found in LLGo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
 
 #### Example
-You can specify dependent package paths in the `deps` field of `llcppg.cfg` . For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
+You can specify dependent package paths in the `deps` field of `llcppg.cfg`. For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
 ```json
 {
   "name": "libxslt",

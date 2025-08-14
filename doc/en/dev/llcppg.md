@@ -300,7 +300,7 @@ Examples which is start with underscore:
 For macros and enums after prefix removal:
 
 Letter-starting names: Capitalize first letter only, preserve original format
-Underscore/digit-starting names: Apply public name processing,preserve original format
+Underscore/digit-starting names: Apply public name processing, preserve original format
 
 ##### Custom Type Mappings
 
@@ -375,7 +375,7 @@ func Mprintf(__llgo_arg_0 *c.Char, __llgo_va_list ...interface{}) *c.Char
 #### Generated File Types
 * Interface header files: Each header file generates a corresponding .go file
 * Implementation files: All generated in a single libname_autogen.go file
-* Third-party header files: Skip generation,only as a dependency
+* Third-party header files: Skip generation, only as a dependency
 
 #### Header File Concepts
 In the `llcppg.cfg`, the `include` field specifies the list of interface header files to be converted. These header files are the primary source for generating Go code, and each listed header file will generate a corresponding .go file.
@@ -457,7 +457,7 @@ Each dependency package follows a unified file organization structure (using xml
 ##### TypeMapping Examples (`llcppg.pub`)
 
 * C types on the left and corresponding Go type names on the right
-* If the Go Name is same with C type name,only need keep one column
+* If the Go Name is same with C type name, only need keep one column
 
 Standard Library Type Mapping
 `github.com/goplus/lib/c/llcppg.pub`
@@ -491,7 +491,7 @@ For example:
 > Note: Standard library type conversion in LLGo is not comprehensive. For standard library types that cannot be found in LLGo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
 
 #### Example
-You can specify dependent package paths in the `deps` field of `llcppg.cfg` . For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
+You can specify dependent package paths in the `deps` field of `llcppg.cfg`. For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
 ```json
 {
   "name": "libxslt",
@@ -649,7 +649,7 @@ The configuration file supports the following options:
 
 ## Output
 
-After running llcppg, LLGo bindings will be generated in a directory named by `name` field in `llcppg.cfg`,and the `name` field is also the package name of all Go files. The generated file structure is as follows:
+After running llcppg, LLGo bindings will be generated in a directory named by `name` field in `llcppg.cfg`, and the `name` field is also the package name of all Go files. The generated file structure is as follows:
 
 ### Go Source Files
 
@@ -657,7 +657,7 @@ After running llcppg, LLGo bindings will be generated in a directory named by `n
 
 * A corresponding .go file is generated for each header file listed in the `include` field in `llcppg.cfg`.
 * File names are based on header file names, e.g., cJSON.h generates cJSON.go, cJSON_Utils.h generates cJSON_Utils.go
-* Implementation files are all generated at `{name}_autogen.go` file,determined file type by [Package Header File Determination](#Package-Header-File-Determination)
+* Implementation files are all generated at `{name}_autogen.go` file, determined file type by [Package Header File Determination](#Package-Header-File-Determination)
 
 #### Auto generated Link File
 
