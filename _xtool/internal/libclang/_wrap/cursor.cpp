@@ -37,6 +37,8 @@ void wrap_clang_getCursorSemanticParent(CXCursor *C, CXCursor *parent) { *parent
 
 void wrap_clang_getCursorDefinition(CXCursor *C, CXCursor *def) { *def = clang_getCursorDefinition(*C); }
 
+int wrap_clang_isCursorDefinition(CXCursor *cursor) { return clang_isCursorDefinition(*cursor); }
+
 void wrap_clang_getCursorLexicalParent(CXCursor *C, CXCursor *parent) { *parent = clang_getCursorLexicalParent(*C); }
 
 void wrap_clang_getOverriddenCursors(CXCursor *cursor, CXCursor **overridden, unsigned *num_overridden) {

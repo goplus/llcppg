@@ -94,3 +94,7 @@ struct _xmlParserCtxt;
 typedef struct _xmlParserCtxt xmlParserCtxt;
 
 typedef xmlParserCtxt htmlParserCtxt;
+
+// https://github.com/goplus/llcppg/issues/526
+struct ForwardOnly;
+struct EmptyStruct {};

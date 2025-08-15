@@ -18,7 +18,7 @@ usage: llcppcfg [-cpp|-tab|-excludes|-exts|-help] libname`)
 func main() {
 	var dependencies string
 	var cpp, help, tab bool
-	flag.BoolVar(&cpp, "cpp", false, "if it is c++ lib")
+	flag.BoolVar(&cpp, "cpp", false, "if it is C++ lib")
 	flag.BoolVar(&help, "help", false, "print help message")
 	flag.BoolVar(&tab, "tab", true, "generate .cfg config file with tab indent")
 	extsString := ""

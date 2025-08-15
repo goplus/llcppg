@@ -93,7 +93,7 @@ func (p *TypeConv) handleArrayType(t *ast.ArrayType) (types.Type, error) {
 		return nil, fmt.Errorf("error convert elem type: %w", err)
 	}
 	if p.ctx == Param {
-		// array in the parameter,ignore the len,convert as pointer
+		// array in the parameter, ignore the len, convert as pointer
 		return types.NewPointer(elemType), nil
 	}
 
@@ -334,7 +334,7 @@ func (p *TypeConv) ToDefaultEnumType() types.Type {
 // by only checking if Fields.List is empty
 // Should use recordType == nil to identify forward declarations, which requires llcppsigfetch support
 func (p *TypeConv) inComplete(recordType *ast.RecordType) bool {
-	return recordType.Fields != nil && len(recordType.Fields.List) == 0
+	return recordType.Fields == nil
 }
 
 // The field name should be public if it's a record field

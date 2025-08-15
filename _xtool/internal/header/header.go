@@ -25,7 +25,7 @@ type Config struct {
 	// - "zlib.h"
 	// - "openssl/ssl.h"
 	Includes []string
-	// PlatDiff specifies header file include paths that differ between platforms,these are include paths in Includes.
+	// PlatDiff specifies header file include paths that differ between platforms, these are include paths in Includes.
 	PlatDiff []string
 	Args     []string
 	Mix      bool

@@ -176,6 +176,9 @@ func XMarshalASTExpr(t ast.Expr) map[string]any {
 		root["Ret"] = XMarshalASTExpr(d.Ret)
 	case *ast.FieldList:
 		root["_Type"] = "FieldList"
+		if d == nil {
+			return nil
+		}
 		root["List"] = XMarshalFieldList(d.List)
 	case *ast.Field:
 		root["_Type"] = "Field"

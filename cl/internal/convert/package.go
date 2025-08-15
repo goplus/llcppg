@@ -51,7 +51,7 @@ type PackageConfig struct {
 	GenConf   *gogen.Config
 
 	// use to gen link command like $(pkg-config --libs xxx)
-	// if have this field,will generate a const named LLGoPackage,and it's not necessary
+	// if have this field, will generate a const named LLGoPackage, and it's not necessary
 	LibCommand string
 }
 
@@ -160,8 +160,8 @@ func (p *Package) bodyStart(decl *gogen.Func, ret ast.Expr) error {
 		}
 
 		if asStruct(retType) {
-			// use empty named struct type to return,without this solution,we will get a anonymous struct type
-			// and it will cause a compile error,like following:
+			// use empty named struct type to return, without this solution, we will get a anonymous struct type
+			// and it will cause a compile error, like following:
 			// func (recv *Vector3) Vector3Barycenter(p Vector3, a Vector3, b Vector3, c Vector3) Vector3 {
 			// 	return struct {
 			// 		x c.Int
@@ -169,7 +169,7 @@ func (p *Package) bodyStart(decl *gogen.Func, ret ast.Expr) error {
 			// 		z c.Int
 			// 	}{}
 			// }
-			// this result will cause the `c` in the return type is use the `c` in the parameter,which is not have the `Int`
+			// this result will cause the `c` in the return type is use the `c` in the parameter, which is not have the `Int`
 			decl.BodyStart(p.p).StructLit(retType, 0, true).Return(1).End()
 			return nil
 		}
@@ -286,7 +286,7 @@ func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (rec
 		name: funcDecl.Name.Name,
 		kind: FuncDecl,
 	}
-	// if already processed,return
+	// if already processed, return
 	_, exist = p.symbols.Lookup(node)
 	if exist {
 		return nil, true, nil
@@ -299,7 +299,7 @@ func (p *Package) funcIsDefined(fnSpec *GoFuncSpec, funcDecl *ast.FuncDecl) (rec
 		var namedType = getNamedType(recv.Type())
 		methodName := fnSpec.FnName
 		for i := 0; i < namedType.NumMethods(); i++ {
-			if namedType.Method(i).Name() == methodName { // unreachable,because if have the same method name,will return in p.symbols.Lookup(node)
+			if namedType.Method(i).Name() == methodName { // unreachable, because if have the same method name, will return in p.symbols.Lookup(node)
 				return nil, true, fmt.Errorf("NewFuncDecl: %s already defined", fnSpec.GoSymbName)
 			}
 		}
@@ -364,8 +364,8 @@ func (p *Package) NewTypeDecl(goName string, typeDecl *ast.TypeDecl, pnc nc.Node
 		return fmt.Errorf("NewTypeDecl: %s fail: %w", typeDecl.Name.Name, err)
 	}
 
-	// if the type is already defined,we don't need to process again
-	// but if the previous processed node is a forward declaration,we need to complete the type
+	// if the type is already defined, we don't need to process again
+	// but if the previous processed node is a forward declaration, we need to complete the type
 	_, isIncom := p.incompleteTypes.Lookup(typeDecl.Name.Name)
 	if exist && (isForward || !isIncom) {
 		if debugLog {
@@ -837,7 +837,7 @@ type Node struct {
 }
 
 type ProcessSymbol struct {
-	// not same node can have same name,so use the Node as key
+	// not same node can have same name, so use the Node as key
 	info  map[Node]string
 	count map[string]int
 }

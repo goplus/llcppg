@@ -158,7 +158,7 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor, symbolName string) stri
 		return customGoName
 	}
 
-	// 1. for class method,gen method name
+	// 1. for class method, gen method name
 	if parent := cursor.SemanticParent(); parent.Kind == clang.CursorClassDecl {
 		class := name.GoName(clang.GoString(parent.String()), p.prefixes, p.inCurPkg(cursor))
 		// concat method name
@@ -172,9 +172,9 @@ func (p *SymbolProcessor) genGoName(cursor clang.Cursor, symbolName string) stri
 	numArgs := cursor.NumArguments()
 	// 3. Don't attempt to convert a variadic function to a method
 	isValist := cursor.Type().IsFunctionTypeVariadic() > 0
-	// also config to gen method name,if can't gen method,use the origin function type
+	// also config to gen method name, if can't gen method, use the origin function type
 	if numArgs > 0 && !isValist {
-		// also can gen method name,but not want to be method,output func not method
+		// also can gen method name, but not want to be method, output func not method
 		if isCustom && !toMethod {
 			return p.AddSuffix(customGoName)
 		}
@@ -281,7 +281,7 @@ func (p *SymbolProcessor) processCollect() {
 }
 
 // Get the underlying cursor of the cursor
-// if cur is a pointer,return the underlying cursor
+// if cur is a pointer, return the underlying cursor
 func underCursor(arg clang.Cursor) clang.Cursor {
 	typ := arg.Type()
 	if typ.Kind == clang.TypePointer {
@@ -291,7 +291,7 @@ func underCursor(arg clang.Cursor) clang.Cursor {
 }
 
 // https://releases.llvm.org/19.1.0/tools/clang/docs/ReleaseNotes.html#libclang
-// cursor.Location() in llvm@19 cannot get the fileinfo for a macro expansion,so we dirrect use PresumedLocation
+// cursor.Location() in llvm@19 cannot get the fileinfo for a macro expansion, so we dirrect use PresumedLocation
 func cursorFileName(cursor clang.Cursor) string {
 	loc := cursor.Location()
 	filePath, _, _ := clangutils.GetPresumedLocation(loc)

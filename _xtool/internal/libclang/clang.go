@@ -1644,6 +1644,17 @@ func (c Cursor) Definition() (def Cursor) {
 }
 
 /**
+ * Determine whether the declaration pointed to by this cursor
+ * is also a definition of that entity.
+ */
+// llgo:link (*Cursor).wrapIsCursorDefinition C.wrap_clang_isCursorDefinition
+func (c *Cursor) wrapIsCursorDefinition() c.Int { return 0 }
+
+func (c Cursor) IsCursorDefinition() c.Int {
+	return c.wrapIsCursorDefinition()
+}
+
+/**
  * Determine the lexical parent of the given cursor.
  *
  * The lexical parent of a cursor is the cursor in which the given \p cursor

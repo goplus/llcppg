@@ -1,0 +1,2 @@
+struct ForwardOnly;
+struct EmptyStruct {};

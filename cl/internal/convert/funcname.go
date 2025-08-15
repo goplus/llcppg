@@ -14,7 +14,7 @@ import (
 type GoFuncSpec struct {
 	GoSymbName string // original full name from input
 	FnName     string // function name without receiver
-	IsMethod   bool   // if the function canbe a method
+	IsMethod   bool   // if the function can be a method
 	RecvName   string // receiver name
 	PtrRecv    bool   // if the receiver is a pointer
 }
@@ -35,7 +35,7 @@ func NewGoFuncSpec(name string, field []*ast.Field) *GoFuncSpec {
 		recvName = strings.TrimSuffix(recvName, ")")
 	}
 
-	// if the function cant be a method, we use the function name as the Go symbol name
+	// if the function can't be a method, we use the function name as the Go symbol name
 	// not use the receiver style to link
 	fnName := l[1]
 	goSymbName := name

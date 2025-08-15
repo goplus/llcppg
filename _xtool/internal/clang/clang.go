@@ -26,7 +26,7 @@ type InclusionVisitor func(included_file clang.File, inclusions []clang.SourceLo
 const TEMP_FILE = "temp.h"
 
 func CreateTranslationUnit(config *Config) (*clang.Index, *clang.TranslationUnit, error) {
-	// default use the c/c++ standard of clang; c:gnu17 c++:gnu++17
+	// default use the C/C++ standard of clang; c:gnu17 C++:gnu++17
 	// https://clang.llvm.org/docs/CommandGuide/clang.html
 	allArgs := clangtool.WithSysRoot(append(defaultArgs(config.IsCpp), config.Args...))
 

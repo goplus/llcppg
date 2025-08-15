@@ -20,7 +20,7 @@ import (
 )
 
 func TestParserCppMode(t *testing.T) {
-	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2", "include", "typeof"}
+	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2", "include", "typeof", "forward_vs_empty"}
 	// https://github.com/goplus/llgo/issues/1114
 	// todo(zzy):use os.ReadDir
 	for _, folder := range cases {
@@ -31,7 +31,7 @@ func TestParserCppMode(t *testing.T) {
 }
 
 func TestParserCMode(t *testing.T) {
-	cases := []string{"enum", "struct", "union", "macro", "include", "typeof", "named_nested_struct"}
+	cases := []string{"enum", "struct", "union", "macro", "include", "typeof", "named_nested_struct", "forward_vs_empty"}
 	for _, folder := range cases {
 		t.Run(folder, func(t *testing.T) {
 			testFrom(t, filepath.Join("testdata", folder), "temp.h", false, false)
@@ -665,4 +665,32 @@ func TestPostOrderVisitChildren(t *testing.T) {
 	if !reflect.DeepEqual(expect, childStr) {
 		fmt.Println("Unexpected child order:", childStr)
 	}
+}
+
+func TestEmptyDeclVsForwardDecl(t *testing.T) {
+	config := &clangutils.Config{
+		File:  "./testdata/forward_vs_empty/temp.h",
+		Temp:  false,
+		IsCpp: false,
+	}
+
+	type isDefinition = bool
+	var decl map[string]isDefinition = map[string]isDefinition{
+		"ForwardOnly": false,
+		"EmptyStruct": true,
+	}
+
+	visit(config, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
+		if cursor.Kind == clang.CursorStructDecl {
+			sdecl := clang.GoString(cursor.String())
+			if _, ok := decl[sdecl]; ok {
+				isDefine := cursor.IsCursorDefinition() != 0
+				if isDefine != decl[sdecl] {
+					t.Fatalf("StructDecl %s isDefinition expect %v, got %v", sdecl, decl[sdecl], isDefine)
+				}
+			}
+			fmt.Println("StructDecl Name:", clang.GoString(cursor.String()), "isDefinition:", cursor.IsCursorDefinition() != 0)
+		}
+		return clang.ChildVisit_Recurse
+	})
 }

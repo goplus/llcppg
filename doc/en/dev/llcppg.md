@@ -44,7 +44,7 @@ func LuaLTestudata(L *State, ud c.Int, tname *c.Char) c.Pointer
 
 ##### Function pointer
 
-C function pointer types are converted to Go function types with corresponding parameter and return type mappings,And llgo need to add `llgo:type C` tag to the function type.
+C function pointer types are converted to Go function types with corresponding parameter and return type mappings, and LLGo needs to add `llgo:type C` tag to the function type.
 
 
 ```c
@@ -299,7 +299,7 @@ struct Config {
 
 ###### To Normal Function
 
-llgo need to add `//go:linkname <funcName> C.<mangleName>` tag to the function type.
+LLGo needs to add `//go:linkname <funcName> C.<mangleName>` tag to the function type.
 
 ```c
 void foo(int a, int b);
@@ -313,7 +313,7 @@ func Foo(a c.Int, b c.Int)
 
 When a C function could be a Go method, llcppg automatically converts the function to a Go method, moving the first parameter to the receiver position, and using recv_ as the receiver name.
 
-Since Go's `//go:linkname` directive doesn't support methods, llgo uses `// llgo:link` to mark the connection between methods and C symbols.And generated methods return zero values of their return types as placeholders.
+Since Go's `//go:linkname` directive doesn't support methods, LLGo uses `// llgo:link` to mark the connection between methods and C symbols. And generated methods return zero values of their return types as placeholders.
 
 And LLGo should not treat C functions with variable parameters as methods. Variadic functions (those using ... in their parameter list) will be generated as regular Go functions rather than methods, even if they otherwise meet the criteria for method conversion.
 
@@ -380,7 +380,7 @@ Examples which is start with underscore:
 For macros and enums after prefix removal:
 
 Letter-starting names: Capitalize first letter only, preserve original format
-Underscore/digit-starting names: Apply public name processing,preserve original format
+Underscore/digit-starting names: Apply public name processing, preserve original format
 
 ##### Custom Type Mappings
 
@@ -439,7 +439,7 @@ int OSSL_PROVIDER_add_builtin(OSSL_LIB_CTX *, const char *name);
 func OSSLProviderAddBuiltin(__llgo_arg_0 *OSSLLIBCTX, name *c.Char) c.Int
 ```
 
-And for cases where only variadic parameters appear, llgo requires ` __llgo_va_list ...interface{}` to describe variadic parameters, and the same placeholder name generation processing is needed for this case.
+And for cases where only variadic parameters appear, LLGo requires ` __llgo_va_list ...interface{}` to describe variadic parameters, and the same placeholder name generation processing is needed for this case.
 
 ```c
 char *mprintf(const char*,...);
@@ -455,7 +455,7 @@ func Mprintf(__llgo_arg_0 *c.Char, __llgo_va_list ...interface{}) *c.Char
 #### Generated File Types
 * Interface header files: Each header file generates a corresponding .go file
 * Implementation files: All generated in a single libname_autogen.go file
-* Third-party header files: Skip generation,only as a dependency
+* Third-party header files: Skip generation, only as a dependency
 
 #### Header File Concepts
 In the `llcppg.cfg`, the `include` field specifies the list of interface header files to be converted. These header files are the primary source for generating Go code, and each listed header file will generate a corresponding .go file.
@@ -531,13 +531,13 @@ Each dependency package follows a unified file organization structure (using xml
 1. HTMLtree.go (generated from HTMLtree.h)
 2. HTMLparser.go (generated from HTMLparser.h)
 * Configuration files
-1. llcppg.cfg (dependency information)
-2. llcppg.pub (type mapping information)
+1. `llcppg.cfg` (dependency information)
+2. `llcppg.pub` (type mapping information)
 
-##### TypeMapping Examples (llcppg.pub)
+##### TypeMapping Examples (`llcppg.pub`)
 
 * C types on the left and corresponding Go type names on the right
-* If the Go Name is same with C type name,only need keep one column
+* If the Go Name is same with C type name, only need keep one column
 
 Standard Library Type Mapping
 `github.com/goplus/lib/c/llcppg.pub`
@@ -568,10 +568,10 @@ For example:
 * The alias `c/os` → `github.com/goplus/lib/c/os`
 * The alias `c/time` → `github.com/goplus/lib/c/time`
 
-> Note: Standard library type conversion in llgo is not comprehensive. For standard library types that cannot be found in llgo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
+> Note: Standard library type conversion in LLGo is not comprehensive. For standard library types that cannot be found in LLGo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
 
 #### Example
-You can specify dependent package paths in the `deps` field of `llcppg.cfg` . For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
+You can specify dependent package paths in the `deps` field of `llcppg.cfg`. For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
 ```json
 {
   "name": "libxslt",
@@ -579,7 +579,7 @@ You can specify dependent package paths in the `deps` field of `llcppg.cfg` . Fo
   "libs": "$(pkg-config --libs libxslt)",
   "trimPrefixes": ["xslt"],
   "deps": ["c/os","github.com/goplus/llpkg/libxml2"],
-  "includes":["libxslt/xsltutils.h","libxslt/templates.h"]
+  "include":["libxslt/xsltutils.h","libxslt/templates.h"]
 }
 ```
 
@@ -593,8 +593,8 @@ xmlChar * xsltGetNsProp(xmlNodePtr node, const xmlChar *name, const xmlChar *nam
 If `xmlChar` and `xmlNodePtr` mappings are not found (not declare `llcppg-libxml` in `deps`), llcppg will notify the user of these missing types and indicate they are from `libxml2` header files.
 The corresponding notification would be:
 ```bash
-convert /path/to/include/libxml2/libxml/xmlstring.h first, declare its converted package in llcppg.cfg deps for load [xmlChar].
-convert /path/to/libxml2/libxml/tree.h first, declare its converted package in llcppg.cfg deps for load [xmlNodePtr].
+convert /path/to/include/libxml2/libxml/xmlstring.h first, declare its converted package in `llcppg.cfg` deps for load [xmlChar].
+convert /path/to/libxml2/libxml/tree.h first, declare its converted package in `llcppg.cfg` deps for load [xmlNodePtr].
 ```
 
 For this project, `llcppg` will automatically handle type references to libxml2. During the process, `llcppg` uses the `llcppg.pub` file from the generated libxml2 package to ensure type consistency.
@@ -729,7 +729,7 @@ The configuration file supports the following options:
 
 ## Output
 
-After running llcppg, LLGo bindings will be generated in a directory named by `name` field in `llcppg.cfg`,and the `name` field is also the package name of all Go files. The generated file structure is as follows:
+After running llcppg, LLGo bindings will be generated in a directory named by `name` field in `llcppg.cfg`, and the `name` field is also the package name of all Go files. The generated file structure is as follows:
 
 ### Go Source Files
 
@@ -737,7 +737,7 @@ After running llcppg, LLGo bindings will be generated in a directory named by `n
 
 * A corresponding .go file is generated for each header file listed in the `include` field in `llcppg.cfg`.
 * File names are based on header file names, e.g., cJSON.h generates cJSON.go, cJSON_Utils.h generates cJSON_Utils.go
-* Implementation files are all generated at `{name}_autogen.go` file,determined file type by [Package Header File Determination](#Package-Header-File-Determination)
+* Implementation files are all generated at `{name}_autogen.go` file, determined file type by [Package Header File Determination](#Package-Header-File-Determination)
 
 #### Auto generated Link File
 
@@ -770,7 +770,7 @@ import (
 
 ### Type Mapping File
 
-* Generates an llcppg.pub file containing a mapping table from C types to Go type names, is used for package dependency handling, example and concept see [Dependency](#Dependency)
+* Generates an `llcppg.pub` file containing a mapping table from C types to Go type names, is used for package dependency handling, example and concept see [Dependency](#Dependency)
 
 ### Go Module Files (Optional)
 
@@ -836,7 +836,7 @@ When `staticLib: true` is configured in `llcppg.cfg`, llcppsymg switches to stat
 
 #### Header-Only Mode
 
-When `headerOnly: true` is configured in llcppg.cfg, llcppg operates in header-only processing mode.
+When `headerOnly: true` is configured in `llcppg.cfg`, llcppg operates in header-only processing mode.
 
 In header-only processing mode, instead of matching library symbols with header declarations, it will generate the symbol table based solely on header files specified in cflags.
 
@@ -919,7 +919,7 @@ The output is a `pkg-info` structure that contains comprehensive package informa
 {
     "File": {
         "decls": [],
-        "includes": [],
+        "include": [],
         "macros": []
     },
     "FileMap": {
@@ -946,7 +946,7 @@ gogensig -  # read pkg-info-file from stdin
 ```
 
 #### Function Generation
-During execution, gogensig only generates functions whose corresponding mangle exists in llcppg.symb.json, determining whether to generate functions/methods with specified Go names by parsing the go field corresponding to the mangle.
+During execution, gogensig only generates functions whose corresponding mangle exists in `llcppg.symb.json`, determining whether to generate functions/methods with specified Go names by parsing the go field corresponding to the mangle.
 
 1. Regular function format: "FunctionName"
   * Generates regular functions, using `//go:linkname` annotation
