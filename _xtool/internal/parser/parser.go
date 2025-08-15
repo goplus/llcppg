@@ -769,18 +769,17 @@ func (ct *Converter) ProcessRecordDecl(cursor clang.Cursor) []ast.Decl {
 	})
 
 	for _, child := range childs {
-		// Check if this is a named nested struct/union
-		typ := ct.ProcessRecordType(child)
-		// note(zzy):use len(typ.Fields.List) to ensure it has fields not a forward declaration
-		// but maybe make the forward decl in to AST is also good.
-		if child.IsAnonymous() == 0 && typ.Fields != nil {
+		switch child.Kind {
+		case clang.CursorStructDecl, clang.CursorUnionDecl:
+			// note(zzy):use len(typ.Fields.List) to ensure it has fields not a forward declaration
+			// but maybe make the forward decl in to AST is also good.
 			childName := clang.GoString(child.String())
 			ct.logln("ProcessRecordDecl: Found named nested struct:", childName)
 			// Check if this is a named nested struct/union
 			typ := ct.ProcessRecordType(child)
 			// note(zzy):use len(typ.Fields.List) to ensure it has fields not a forward declaration
 			// but maybe make the forward decl in to AST is also good.
-			if child.IsAnonymous() == 0 && len(typ.Fields.List) > 0 {
+			if child.IsAnonymous() == 0 && typ.Fields != nil {
 				decls = append(decls, &ast.TypeDecl{
 					Object: ct.CreateObject(child, &ast.Ident{Name: childName}),
 					Type:   ct.ProcessRecordType(child),
