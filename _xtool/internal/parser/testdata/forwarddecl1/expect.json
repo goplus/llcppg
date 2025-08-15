@@ -101,10 +101,7 @@
       },
       "Parent": null,
       "Type": {
-        "Fields": {
-          "List": null,
-          "_Type": "FieldList"
-        },
+        "Fields": null,
         "Methods": null,
         "Tag": 0,
         "_Type": "RecordType"
@@ -167,10 +164,7 @@
       },
       "Parent": null,
       "Type": {
-        "Fields": {
-          "List": null,
-          "_Type": "FieldList"
-        },
+        "Fields": null,
         "Methods": null,
         "Tag": 0,
         "_Type": "RecordType"
@@ -189,10 +183,7 @@
       },
       "Parent": null,
       "Type": {
-        "Fields": {
-          "List": null,
-          "_Type": "FieldList"
-        },
+        "Fields": null,
         "Methods": null,
         "Tag": 0,
         "_Type": "RecordType"
@@ -367,10 +358,7 @@
       },
       "Parent": null,
       "Type": {
-        "Fields": {
-          "List": null,
-          "_Type": "FieldList"
-        },
+        "Fields": null,
         "Methods": null,
         "Tag": 0,
         "_Type": "RecordType"
@@ -536,10 +524,7 @@
       },
       "Parent": null,
       "Type": {
-        "Fields": {
-          "List": null,
-          "_Type": "FieldList"
-        },
+        "Fields": null,
         "Methods": null,
         "Tag": 0,
         "_Type": "RecordType"
@@ -558,10 +543,7 @@
       },
       "Parent": null,
       "Type": {
-        "Fields": {
-          "List": null,
-          "_Type": "FieldList"
-        },
+        "Fields": null,
         "Methods": null,
         "Tag": 0,
         "_Type": "RecordType"

@@ -31,7 +31,7 @@ import (
 type Mode int
 
 const (
-	ParseC           Mode = 1 << iota // default parser with c++
+	ParseC           Mode = 1 << iota // default parser with C++
 	ParseAllComments                  // clang -fparse-all-comments
 )
 

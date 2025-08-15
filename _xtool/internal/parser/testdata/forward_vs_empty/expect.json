@@ -1,0 +1,48 @@
+{
+  "_Type": "File",
+  "decls": [
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/forward_vs_empty/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "ForwardOnly",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": null,
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/forward_vs_empty/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "EmptyStruct",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    }
+  ],
+  "includes": null,
+  "macros": null
+}

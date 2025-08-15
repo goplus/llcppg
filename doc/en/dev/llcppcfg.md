@@ -1,5 +1,5 @@
 # Abstract
-The llcppg core configuration file, llcppg.cfg, can be complex and error-prone to configure. This is because it requires a deep understanding of the project structure and compilation details. We have designed llcppcfg to automatically generate the basic llcppg.cfg configuration file for users. It greatly simplifies the configuration process, allowing users to simply provide the target library's name as input. The tool then generates corresponding configuration content based on established rules or templates.
+The llcppg core configuration file, `llcppg.cfg`, can be complex and error-prone to configure. This is because it requires a deep understanding of the project structure and compilation details. We have designed llcppcfg to automatically generate the basic `llcppg.cfg` configuration file for users. It greatly simplifies the configuration process, allowing users to simply provide the target library's name as input. The tool then generates corresponding configuration content based on established rules or templates.
 
 # Basic Usage
 `llcppcfg [options] <library actual PC name>`
@@ -7,7 +7,7 @@ The llcppg core configuration file, llcppg.cfg, can be complex and error-prone t
 ## Example of Generating Configuration File
 `llcppcfg cjson`
 
-This command will generate the llcppg.cfg configuration file in the current directory.
+This command will generate the `llcppg.cfg` configuration file in the current directory.
 
 ## Command Line Option Details
 
@@ -38,7 +38,7 @@ After executing the following command:
 
 `llcppcfg -cpp -deps="github.com/goplus/llpkg/zlib@v1.0.2" -exts=".h .hpp" openssl`
 
-The generated llcppg.cfg content will be similar to:
+The generated `llcppg.cfg` content will be similar to:
 
 ```json
 {
@@ -79,4 +79,4 @@ The generated llcppg.cfg content will be similar to:
 
 4. **Sort by Dependency Weight**
    Prioritize headers based on:
-   - Dependency count (files with more dependencies rank higher)
+   - Dependency count (files with more dependencies rank higher).

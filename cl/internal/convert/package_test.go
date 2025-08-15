@@ -719,7 +719,7 @@ func TestStructDecl(t *testing.T) {
 				},
 				Type: &ast.RecordType{
 					Tag:    ast.Struct,
-					Fields: nil,
+					Fields: &ast.FieldList{},
 				},
 			},
 			expected: `
@@ -1667,7 +1667,7 @@ func TestForwardDecl(t *testing.T) {
 		},
 		Type: &ast.RecordType{
 			Tag:    ast.Struct,
-			Fields: &ast.FieldList{},
+			Fields: nil,
 		},
 	}
 	// forward decl
@@ -1871,7 +1871,9 @@ func TestTypeClean(t *testing.T) {
 					Object: ast.Object{
 						Name: &ast.Ident{Name: "Foo1"},
 					},
-					Type: &ast.RecordType{Tag: ast.Struct},
+					Type: &ast.RecordType{
+						Tag:    ast.Struct,
+						Fields: &ast.FieldList{}},
 				}, nc)
 			},
 			headerFile: "/path/to/file1.h",

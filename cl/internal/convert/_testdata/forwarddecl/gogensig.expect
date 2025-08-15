@@ -129,7 +129,17 @@ type X_xmlParserCtxt struct {
 type XmlParserCtxt X_xmlParserCtxt
 type HtmlParserCtxt XmlParserCtxt
 
+// https://github.com/goplus/llcppg/issues/526
+type ForwardOnly struct {
+	Unused [8]uint8
+}
+
+type EmptyStruct struct {
+}
+
 ===== llcppg.pub =====
+EmptyStruct
+ForwardOnly
 Fts5Context
 Fts5ExtensionApi
 Fts5PhraseIter

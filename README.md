@@ -28,7 +28,7 @@ go install .
 
 ## Usage
 
-llcppg.cfg file is a configure file used by llcppg. Once llcppg.cfg is generated then you can run llcppg command to generate go pacakge for the c/c++ lib.
+`llcppg.cfg` file is a configure file used by llcppg. Once `llcppg.cfg` is generated then you can run llcppg command to generate Go package for the C/C++ lib.
 
 ```sh
 llcppg [config-file]
@@ -58,13 +58,13 @@ The configuration file supports the following options:
 - `include`: Header files to include in the binding generation
 - `libs`: Library flags for linking
 - `trimPrefixes`: Prefixes to remove from function names & type names
-- `cplusplus`: Set to true for C++ libraries(not support)
+- `cplusplus`: Set to true for C++ libraries (not supported)
 - `deps`: Dependencies (other packages & standard libraries)
 - `mix`: Set to true when package header files are mixed with other header files in the same directory. In this mode, only files explicitly listed in `include` are processed as package files.
 - `typeMap`: Custom name mapping from C types to Go types.
 - `symMap`: Custom name mapping from C function names to Go function names.
 - `staticLib`: Set to true to enable static library symbol reading instead of dynamic library linking. When enabled, llcppg will read symbols from static libraries (.a files) rather than dynamic libraries (.so/.dylib files).
-- `headerOnly`: Set to true to ​​enable header-only mode. In header-only processing mode, instead of matching library symbols with header declarations, it will generate the symbol table based solely on header files specified in cflags.
+- `headerOnly`: Set to true to enable header-only mode. In header-only processing mode, instead of matching library symbols with header declarations, it will generate the symbol table based solely on header files specified in cflags.
 
 After creating the configuration file, run:
 
@@ -78,7 +78,7 @@ If you're not in a Go module or want to create a separate module, you can use th
 llcppg -mod github.com/author/cjson llcppg.cfg
 ```
 
-After execution,LLGo Binding will be generated in a directory named after the config name (which is also the package name). For example, with the cjson configuration above, you'll see:
+After execution, LLGo Binding will be generated in a directory named after the config name (which is also the package name). For example, with the cjson configuration above, you'll see:
 
 ```bash
 cjson/
@@ -333,10 +333,10 @@ For example:
 * The alias `c/os` → `github.com/goplus/lib/c/os`
 * The alias `c/time` → `github.com/goplus/lib/c/time`
 
-> Note: Standard library type conversion in llgo is not comprehensive. For standard library types that cannot be found in llgo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
+> Note: Standard library type conversion in LLGo is not comprehensive. For standard library types that cannot be found in LLGo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
 
 #### Example
-You can specify dependent package paths in the `deps` field of `llcppg.cfg` . For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
+You can specify dependent package paths in the `deps` field of `llcppg.cfg`. For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:
 ```json
 {
   "name": "libxslt",
@@ -344,7 +344,7 @@ You can specify dependent package paths in the `deps` field of `llcppg.cfg` . Fo
   "libs": "$(pkg-config --libs libxslt)",
   "trimPrefixes": ["xslt"],
   "deps": ["c/os","github.com/goplus/llpkg/libxml2"],
-  "includes":["libxslt/xsltutils.h","libxslt/templates.h"]
+  "include":["libxslt/xsltutils.h","libxslt/templates.h"]
 }
 ```
 
@@ -382,7 +382,7 @@ func GetNsProp(node libxml2.NodePtr, name *libxml2.Char, nameSpace *libxml2.Char
 
 ### Important Note on Header File Ordering
 
-llcppg follows C language's dependency resolution order when processing header files. The order of files in the `includes` configuration determines the processing sequence, and incorrect ordering can lead to type resolution failures. Here's an example from the LZMA library that demonstrates the dependency relationships:
+llcppg follows C language's dependency resolution order when processing header files. The order of files in the `include` configuration determines the processing sequence, and incorrect ordering can lead to type resolution failures. Here's an example from the LZMA library that demonstrates the dependency relationships:
 
 `lzma/vli.h`:
 ```c
@@ -417,14 +417,14 @@ Since llcppg processes headers in the order specified in the configuration, you 
 ✅ Correct ordering:
 ```json
 {
-   "includes": ["lzma.h", "lzma/vli.h", "lzma/filter.h"]
+   "include": ["lzma.h", "lzma/vli.h", "lzma/filter.h"]
 }
 ```
 
 ❌ Incorrect ordering:
 ```json
 {
-   "includes": ["lzma/filter.h", "lzma.h", "lzma/vli.h"]
+   "include": ["lzma/filter.h", "lzma.h", "lzma/vli.h"]
 }
 ```
 
@@ -453,7 +453,7 @@ This caching strategy ensures that type references are properly maintained when 
 llcppcfg [libname]
 ```
 
-llcppcfg tool is used to generate llcppg.cfg file.
+llcppcfg tool is used to generate `llcppg.cfg` file.
 
 ## Design
 

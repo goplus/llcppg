@@ -63,7 +63,7 @@ func ToCamelCase(s string, firstPartUpper bool) string {
 	return strings.Join(result, "")
 }
 
-// Only Make it Public,no turn to other camel method
+// Only Make it Public, no turn to other camel method
 func ExportName(name string) string {
 	fChar := name[0]
 	if fChar == '_' || unicode.IsDigit(rune(fChar)) {

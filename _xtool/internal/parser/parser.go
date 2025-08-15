@@ -201,7 +201,7 @@ func (ct *Converter) ParseComment(rawComment string) *ast.CommentGroup {
 	return commentGroup
 }
 
-// visit top decls (struct,class,function,enum & macro,include)
+// visit top decls (struct, class, function, enum & macro, include)
 func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResult {
 	ct.incIndent()
 	defer ct.decIndent()
@@ -273,7 +273,7 @@ func (ct *Converter) visitTop(cursor, parent clang.Cursor) clang.ChildVisitResul
 	return clang.ChildVisit_Continue
 }
 
-// for flatten ast,keep type order
+// for flatten ast, keep type order
 // input is clang -E 's result
 func (ct *Converter) Convert() (*ast.File, error) {
 	cursor := ct.unit.Cursor()
@@ -508,7 +508,7 @@ func (ct *Converter) ProcessFuncDecl(cursor clang.Cursor) *ast.FuncDecl {
 	ct.logln("ProcessFuncDecl: CursorName:", name, "CursorKind:", kind, "mangledName:", mangledName)
 
 	// function type will only collect return type
-	// ProcessType can't get the field names,will collect in follows
+	// ProcessType can't get the field names, will collect in follows
 	fnType := cursor.Type()
 	typName, typKind := getTypeDesc(fnType)
 	ct.logln("ProcessFuncDecl: TypeName:", typName, "TypeKind:", typKind)
@@ -696,7 +696,7 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 			field.Comment = commentGroup
 		}
 	}
-	// NOTE(MeteorsLiu): In non cpp mode, an anonymous field name may be `unname struct` instead of empty string
+	// NOTE(MeteorsLiu): In non C++ mode, an anonymous field name may be `unname struct` instead of empty string
 	// so check it via IsAnonymous()
 	if cursor.IsAnonymous() == 0 {
 		field.Names = []*ast.Ident{{Name: fieldName}}
@@ -704,7 +704,7 @@ func (ct *Converter) createBaseField(cursor clang.Cursor) *ast.Field {
 	return field
 }
 
-// For Record Type(struct,union ...)'s FieldList
+// For Record Type(struct, union ...)'s FieldList
 func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 	ct.incIndent()
 	defer ct.decIndent()
@@ -769,8 +769,11 @@ func (ct *Converter) ProcessRecordDecl(cursor clang.Cursor) []ast.Decl {
 	})
 
 	for _, child := range childs {
-		switch child.Kind {
-		case clang.CursorStructDecl, clang.CursorUnionDecl:
+		// Check if this is a named nested struct/union
+		typ := ct.ProcessRecordType(child)
+		// note(zzy):use len(typ.Fields.List) to ensure it has fields not a forward declaration
+		// but maybe make the forward decl in to AST is also good.
+		if child.IsAnonymous() == 0 && typ.Fields != nil {
 			childName := clang.GoString(child.String())
 			ct.logln("ProcessRecordDecl: Found named nested struct:", childName)
 			// Check if this is a named nested struct/union
@@ -843,23 +846,26 @@ func (ct *Converter) ProcessRecordType(cursor clang.Cursor) *ast.RecordType {
 	ct.incIndent()
 	defer ct.decIndent()
 
+	typ := &ast.RecordType{}
+
 	cursorName, cursorKind := getCursorDesc(cursor)
 	ct.logln("ProcessRecordType: CursorName:", cursorName, "CursorKind:", cursorKind)
 
-	tag := toTag(cursor.Kind)
-	ct.logln("ProcessRecordType: toTag", tag)
+	typ.Tag = toTag(cursor.Kind)
+	ct.logln("ProcessRecordType: toTag", typ.Tag)
+
+	if cursor.IsCursorDefinition() == 0 {
+		ct.logln("ProcessRecordType: forward declaration, no definition")
+		return typ
+	}
 
 	ct.logln("ProcessRecordType: ProcessFieldList")
-	fields := ct.ProcessFieldList(cursor)
+	typ.Fields = ct.ProcessFieldList(cursor)
 
 	ct.logln("ProcessRecordType: ProcessMethods")
-	methods := ct.ProcessMethods(cursor)
+	typ.Methods = ct.ProcessMethods(cursor)
 
-	return &ast.RecordType{
-		Tag:     tag,
-		Fields:  fields,
-		Methods: methods,
-	}
+	return typ
 }
 
 // process ElaboratedType Reference
