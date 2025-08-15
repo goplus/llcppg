@@ -251,6 +251,15 @@ func TestNonBuiltinTypes(t *testing.T) {
 			},
 		},
 		{
+			TypeCode: `struct Foo { enum Bar {} k; };
+						enum Bar`,
+			ExpectTypeStr: "enum Bar",
+			expr: &ast.TagExpr{
+				Tag:  ast.Enum,
+				Name: &ast.Ident{Name: "Bar"},
+			},
+		},
+		{
 			TypeCode:      `enum { x = 42 }`,
 			ExpectTypeStr: "enum (unnamed enum at temp.h:1:1)",
 			expr: &ast.EnumType{
