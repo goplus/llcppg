@@ -41,5 +41,6 @@ func NC(cfg *llcppg.Config, fileMap map[string]*llcppg.FileInfo, convSym func(na
 		ConvSym:        convSym,
 		TrimPrefixes:   cfg.TrimPrefixes,
 		KeepUnderScore: cfg.KeepUnderScore,
+		GenThird:       cfg.GenThird,
 	}
 }
