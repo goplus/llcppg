@@ -182,7 +182,7 @@ func RunGenPkgDemo(demoRoot string, confDir string) error {
 				tempLog,
 				filepath.Join(demosPath, demo.Name()),
 				llgoRunTempDir,
-				"llgo", "run", "-v", ".",
+				"llgo", "run", "-abi=0", "-v", ".",
 			); demoErr != nil {
 				return fmt.Errorf("%s: failed to run demo: %s: %w", demoPkgName, demo.Name(), demoErr)
 			}

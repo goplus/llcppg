@@ -289,7 +289,7 @@ func runDemos(t *testing.T, logFile *os.File, demosPath string, pkgname, pkgpath
 			continue
 		}
 		demoPath := filepath.Join(tempDemosPath, demo.Name())
-		demoCmd := command(logFile, demoPath, "llgo", "run", ".")
+		demoCmd := command(logFile, demoPath, "llgo", "run", "-abi=0", ".")
 		demoCmd.Env = append(demoCmd.Env, llgoEnv()...)
 		demoCmd.Env = append(demoCmd.Env, pcPathEnv(pcPath)...)
 		demoCmd.Env = append(demoCmd.Env, tempDirEnv(llgoRunTempDir)...)

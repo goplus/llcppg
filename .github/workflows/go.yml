@@ -5,12 +5,11 @@ name: Go
 
 on:
   push:
-    branches: [ "**" ]
+    branches: ["**"]
   pull_request:
-    branches: [ "**" ]
+    branches: ["**"]
 
 jobs:
-
   test:
     strategy:
       matrix:
@@ -23,62 +22,62 @@ jobs:
       fail-fast: false
     runs-on: ${{matrix.os}}
     steps:
-    - uses: actions/checkout@v5
-    - name: Setup llcppg environment
-      uses: ./.github/actions/setup-llcppg
-      with:
-        go: ${{ matrix.go }}
-        llvm: ${{ matrix.llvm }}
-        llgo: ${{ matrix.llgo }}
+      - uses: actions/checkout@v5
+      - name: Setup llcppg environment
+        uses: ./.github/actions/setup-llcppg
+        with:
+          go: ${{ matrix.go }}
+          llvm: ${{ matrix.llvm }}
+          llgo: ${{ matrix.llgo }}
 
-    - name: Setup Test Dependencies
-      if: startsWith(matrix.os, 'macos')
-      run: brew install cjson
+      - name: Setup Test Dependencies
+        if: startsWith(matrix.os, 'macos')
+        run: brew install cjson
 
-    - name: Setup Test Dependencies
-      if: startsWith(matrix.os, 'ubuntu')
-      run: sudo apt install libcjson-dev
+      - name: Setup Test Dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt install libcjson-dev
 
-    # only can compile with llgo
-    - name: Test xtool
-      run: |
-        llgo test ./_xtool/internal/...
+      # only can compile with llgo
+      - name: Test xtool
+        run: |
+          llgo test -abi=0 ./_xtool/internal/...
 
-    # only can compile with llgo
-    - name: Test llcppsymg & llcppsigfetch
-      run: |
-        llgo test ./_xtool/llcppsigfetch/internal/...
-        llgo test ./_xtool/llcppsymg/internal/...
+      # only can compile with llgo
+      - name: Test llcppsymg & llcppsigfetch
+        run: |
+          llgo test -abi=0 ./_xtool/llcppsigfetch/internal/...
+          llgo test -abi=0 ./_xtool/llcppsymg/internal/...
 
-    - name: Test For LLGo and Go
-      run: |
-        llgo test ./config
-        llgo test ./internal/arg
-        llgo test ./internal/name
+      - name: Test For LLGo and Go
+        run: |
+          llgo test -abi=0 ./config
+          llgo test -abi=0 ./internal/arg
+          llgo test -abi=0 ./internal/name
 
-    - name: Test
-      if: ${{!startsWith(matrix.os, 'macos')}}
-      run: go test -v ./...
+      - name: Test
+        if: ${{!startsWith(matrix.os, 'macos')}}
+        run: go test -v ./...
 
-    - name: Test with coverage
-      if: startsWith(matrix.os, 'macos')
-      run: go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
+      - name: Test with coverage
+        if: startsWith(matrix.os, 'macos')
+        run: go test -v -coverprofile="coverage.txt" -covermode=atomic ./...
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{secrets.CODECOV_TOKEN}}
-        slug: goplus/llcppg
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          slug: goplus/llcppg
 
-    - name: Test demos
-      run: |
-        # TODO(lijie): force python3-embed to be linked with python-3.12-embed
-        # Currently, python3-embed is python-3.13-embed, doesn't work with pytorch
-        # Will remove this after pytorch is fixed.
-        pcdir=$HOME/pc
-        mkdir -p $pcdir
-        libdir=$(pkg-config --variable=libdir python-3.12-embed)
-        echo "libdir: $libdir"
-        ln -s $libdir/pkgconfig/python-3.12-embed.pc $pcdir/python3-embed.pc
-        export PKG_CONFIG_PATH=$pcdir
-        bash .github/workflows/test_demo.sh
+      - name: Test demos
+        run: |
+          # TODO(lijie): force python3-embed to be linked with python-3.12-embed
+          # Currently, python3-embed is python-3.13-embed, doesn't work with pytorch
+          # Will remove this after pytorch is fixed.
+          pcdir=$HOME/pc
+          mkdir -p $pcdir
+          libdir=$(pkg-config --variable=libdir python-3.12-embed)
+          echo "libdir: $libdir"
+          ln -s $libdir/pkgconfig/python-3.12-embed.pc $pcdir/python3-embed.pc
+          export PKG_CONFIG_PATH=$pcdir
+          bash .github/workflows/test_demo.sh
