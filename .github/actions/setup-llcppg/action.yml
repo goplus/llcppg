@@ -47,7 +47,7 @@ runs:
     shell: bash
     working-directory: .llgo
     run: |
-      go install -v ./cmd/llgo/...
+      go install -tags=dev -v ./cmd/llgo/...
       export LLGO_ROOT=$GITHUB_WORKSPACE/.llgo
       echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
   - name: Build

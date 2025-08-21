@@ -18,7 +18,7 @@ jobs:
           - macos-latest
           - ubuntu-24.04
         llvm: [19]
-        llgo: [f0728c4fe028fbc72455c1242cef638ebdf60454]
+        llgo: [6de3bdcdd9b3959d244e7b3b7e97fc4e3408cd78]
         go: [1.23]
       fail-fast: false
     runs-on: ${{matrix.os}}
@@ -42,19 +42,19 @@ jobs:
     # only can compile with llgo
     - name: Test xtool
       run: |
-        llgo test ./_xtool/internal/...
+        llgo test -abi=0 ./_xtool/internal/...
 
     # only can compile with llgo
     - name: Test llcppsymg & llcppsigfetch
       run: |
-        llgo test ./_xtool/llcppsigfetch/internal/...
-        llgo test ./_xtool/llcppsymg/internal/...
+        llgo test -abi=0 ./_xtool/llcppsigfetch/internal/...
+        llgo test -abi=0 ./_xtool/llcppsymg/internal/...
 
     - name: Test For LLGo and Go
       run: |
-        llgo test ./config
-        llgo test ./internal/arg
-        llgo test ./internal/name
+        llgo test -abi=0 ./config
+        llgo test -abi=0 ./internal/arg
+        llgo test -abi=0 ./internal/name
 
     - name: Test
       if: ${{!startsWith(matrix.os, 'macos')}}
