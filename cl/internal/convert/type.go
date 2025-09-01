@@ -159,15 +159,13 @@ func (p *TypeConv) handleIdentRefer(t ast.Expr) (types.Type, error) {
 	case *ast.ScopingExpr:
 		// todo(zzy)
 	case *ast.TagExpr:
-		// todo(zzy):scoping
-		if ident, ok := t.Name.(*ast.Ident); ok {
-			typ, err := lookup(ident.Name)
-			if err != nil {
-				return nil, err
-			}
-			return typ, nil
-		}
 		// todo(zzy):scoping expr
+		// FIXME(MeteorsLiu): when we support more tag type in the future,
+		//  we need to split this logic into a function for readability
+		switch nameType := t.Name.(type) {
+		case *ast.Ident:
+			return lookup(nameType.Name)
+		}
 	}
 	return nil, fmt.Errorf("unsupported refer type %T", t)
 }
