@@ -596,8 +596,8 @@ xmlChar * xsltGetNsProp(xmlNodePtr node, const xmlChar *name, const xmlChar *nam
 If `xmlChar` and `xmlNodePtr` mappings are not found (not declare `llcppg-libxml` in `deps`), llcppg will notify the user of these missing types and indicate they are from `libxml2` header files.
 The corresponding notification would be:
 ```bash
-convert /path/to/include/libxml2/libxml/xmlstring.h first, declare its converted package in `llcppg.cfg` deps for load [xmlChar].
-convert /path/to/libxml2/libxml/tree.h first, declare its converted package in `llcppg.cfg` deps for load [xmlNodePtr].
+convert /path/to/include/libxml2/libxml/xmlstring.h first, declare its converted package in `llcppg.cfg` deps to load [xmlChar].
+convert /path/to/libxml2/libxml/tree.h first, declare its converted package in `llcppg.cfg` deps to load [xmlNodePtr].
 ```
 
 For this project, `llcppg` will automatically handle type references to libxml2. During the process, `llcppg` uses the `llcppg.pub` file from the generated libxml2 package to ensure type consistency.
@@ -728,7 +728,7 @@ The configuration file supports the following options:
 - `typeMap`: Custom name mapping from C types to Go types.
 - `symMap`: Custom name mapping from C function names to Go function names.
 - `staticLib`: Set to true to enable static library symbol reading instead of dynamic library linking. When enabled, llcppg will read symbols from static libraries (.a files) rather than dynamic libraries (.so/.dylib files).
-- `headerOnly`: Set to true to ​​skip the symbol intersection process​​ described in [step 3](#llcppsymg).
+- `headerOnly`: Set to true to skip the symbol intersection process described in [step 3](#llcppsymg).
 
 ## Output
 
