@@ -103,14 +103,14 @@ import (
 func main() {
 	mod := cjson.CreateObject()
 	mod.AddItemToObject(c.Str("hello"), cjson.CreateString(c.Str("llgo")))
-	mod.AddItemToObject(c.Str("hello"), cjson.CreateString(c.Str("llcppg")))
+	mod.AddItemToObject(c.Str("world"), cjson.CreateString(c.Str("llcppg")))
 	cstr := mod.PrintUnformatted()
 	c.Printf(c.Str("%s\n"), cstr)
 }
 ```
 Run the demo with `llgo run .`, you will see the following output:
 ```
-{"hello":"llgo","hello":"llcppg"}
+{"hello":"llgo","world":"llcppg"}
 ```
 
 ### Generated Bindings
@@ -180,7 +180,7 @@ cJSON CJSON
 cJSON_Hooks Hooks
 cJSON_bool Bool
 ```
- You can customize these type mappings by editing this file (see [Customizing Bindings](#type-customization)).
+You can customize these type mappings by editing this file (see [Customizing Bindings](#type-customization)).
 
 ### Customizing Bindings
 #### Function Customization
