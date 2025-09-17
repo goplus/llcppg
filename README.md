@@ -103,14 +103,14 @@ import (
 func main() {
 	mod := cjson.CreateObject()
 	mod.AddItemToObject(c.Str("hello"), cjson.CreateString(c.Str("llgo")))
-	mod.AddItemToObject(c.Str("world"), cjson.CreateString(c.Str("llcppg")))
+	mod.AddItemToObject(c.Str("hello"), cjson.CreateString(c.Str("llcppg")))
 	cstr := mod.PrintUnformatted()
 	c.Printf(c.Str("%s\n"), cstr)
 }
 ```
 Run the demo with `llgo run .`, you will see the following output:
 ```
-{"hello":"llgo","world":"llcppg"}
+{"hello":"llgo","hello":"llcppg"}
 ```
 
 ### Generated Bindings
