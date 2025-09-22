@@ -16,7 +16,7 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-24.04
+          - ubuntu-latest
         llvm: [19]
         llgo: [e4218f90d7926d31c1ffae3965a4e36228d38fd2]
         go: [1.23]
