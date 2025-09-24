@@ -101,6 +101,25 @@ func BuildScopingParts(cursor clang.Cursor) []string {
 	return parts
 }
 
+func HasParent(cursor clang.Cursor) bool {
+	semanticParentsNum := 0
+	node := cursor
+	for node.IsNull() != 1 && node.Kind != clang.CursorTranslationUnit {
+		semanticParentsNum++
+		node = node.SemanticParent()
+	}
+	if semanticParentsNum > 1 {
+		return true
+	}
+	node = cursor
+	lexicalParentsNum := 0
+	for node.IsNull() != 1 && node.Kind != clang.CursorTranslationUnit {
+		lexicalParentsNum++
+		node = node.LexicalParent()
+	}
+	return lexicalParentsNum > 1
+}
+
 func VisitChildren(cursor clang.Cursor, fn Visitor) c.Uint {
 	return clang.VisitChildren(cursor, func(cursor, parent clang.Cursor, clientData unsafe.Pointer) clang.ChildVisitResult {
 		cfn := *(*Visitor)(clientData)

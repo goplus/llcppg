@@ -4,7 +4,7 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": null,
@@ -46,13 +46,20 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": null,
       "Parent": {
-        "Name": "a",
-        "_Type": "Ident"
+        "Parent": {
+          "Name": "NestedEnum",
+          "_Type": "Ident"
+        },
+        "X": {
+          "Name": "a",
+          "_Type": "Ident"
+        },
+        "_Type": "ScopingExpr"
       },
       "Type": {
         "Items": [
@@ -88,14 +95,17 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {
         "Name": "a",
         "_Type": "Ident"
       },
-      "Parent": null,
+      "Parent": {
+        "Name": "NestedEnum",
+        "_Type": "Ident"
+      },
       "Type": {
         "Fields": {
           "List": [
@@ -129,7 +139,7 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {
@@ -171,8 +181,15 @@
               ],
               "Type": {
                 "Name": {
-                  "Name": "a",
-                  "_Type": "Ident"
+                  "Parent": {
+                    "Name": "NestedEnum",
+                    "_Type": "Ident"
+                  },
+                  "X": {
+                    "Name": "a",
+                    "_Type": "Ident"
+                  },
+                  "_Type": "ScopingExpr"
                 },
                 "Tag": 0,
                 "_Type": "TagExpr"
@@ -191,7 +208,7 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": null,
@@ -233,7 +250,7 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {
@@ -255,14 +272,17 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {
         "Name": "is_metadata3",
         "_Type": "Ident"
       },
-      "Parent": null,
+      "Parent": {
+        "Name": "NestedEnum3",
+        "_Type": "Ident"
+      },
       "Type": {
         "Items": [
           {
@@ -297,7 +317,7 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {
@@ -319,14 +339,17 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {
         "Name": "is_metadata4",
         "_Type": "Ident"
       },
-      "Parent": null,
+      "Parent": {
+        "Name": "NestedEnum4",
+        "_Type": "Ident"
+      },
       "Type": {
         "Items": [
           {
@@ -361,7 +384,7 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {
@@ -405,7 +428,7 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {
@@ -447,7 +470,7 @@
     {
       "Doc": null,
       "Loc": {
-        "File": "testdata/nestedenum/temp.h",
+        "File": "testdata/nestedenum_cpp/temp.h",
         "_Type": "Location"
       },
       "Name": {

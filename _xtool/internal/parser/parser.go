@@ -889,8 +889,7 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 		return ct.ProcessRecordType(decl)
 	}
 	parts := clangutils.BuildScopingParts(decl)
-	hasParent := len(parts) > 1
-
+	hasParent := clangutils.HasParent(decl)
 	// NOTE(MeteorsLiu): nested enum behaves different from nested struct, for example, we can find its semantic parent
 	// however, it will cause we misidentified it as a class method expr, so take it out
 	if (hasParent || isAnonymousDecl) && decl.Kind == clang.CursorEnumDecl {
@@ -908,7 +907,7 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 		return &ast.TagExpr{
 			Tag: ast.Enum,
 			// for typedef enum
-			Name: &ast.Ident{Name: parts[0]},
+			Name: &ast.Ident{Name: parts[len(parts)-1]},
 		}
 		// case 4: named enum, non-nested, fallback to process as a ElaboratedType normally.
 	}

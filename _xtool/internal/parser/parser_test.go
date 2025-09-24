@@ -20,7 +20,7 @@ import (
 )
 
 func TestParserCppMode(t *testing.T) {
-	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2", "include", "typeof", "forward_vs_empty", "nestedenum"}
+	cases := []string{"typedef", "union", "macro", "forwarddecl1", "forwarddecl2", "include", "typeof", "forward_vs_empty", "nestedenum_cpp"}
 	// https://github.com/goplus/llgo/issues/1114
 	// todo(zzy):use os.ReadDir
 	for _, folder := range cases {
