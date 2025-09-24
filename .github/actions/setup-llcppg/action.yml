@@ -9,7 +9,7 @@ inputs:
     default: "19"
   llgo:
     description: "LLGo git ref or tag"
-    default: "f0728c4fe028fbc72455c1242cef638ebdf60454"
+    default: "e4218f90d7926d31c1ffae3965a4e36228d38fd2"
 runs:
   using: "composite"
   steps:

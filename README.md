@@ -180,7 +180,7 @@ cJSON CJSON
 cJSON_Hooks Hooks
 cJSON_bool Bool
 ```
- You can customize these type mappings by editing this file (see [Customizing Bindings](#type-customization)).
+You can customize these type mappings by editing this file (see [Customizing Bindings](#type-customization)).
 
 ### Customizing Bindings
 #### Function Customization

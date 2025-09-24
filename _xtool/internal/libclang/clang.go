@@ -17,13 +17,12 @@
 package libclang
 
 import (
-	"unsafe"
+	_ "unsafe"
 
 	"github.com/goplus/lib/c"
 )
 
 const (
-	LLGoFiles   = "$(llvm-config --cflags): _wrap/cursor.cpp"
 	LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
 )
 
@@ -1161,11 +1160,8 @@ type UnsavedFile struct {
  * Retrieves the source location associated with a given file/line/column
  * in a particular translation unit.
  */
-// llgo:link (*TranslationUnit).wrapGetLocation C.wrap_clang_getLocation
-func (t *TranslationUnit) wrapGetLocation(file File, line, column c.Uint, loc *SourceLocation) {}
-
+// llgo:link (*TranslationUnit).GetLocation C.clang_getLocation
 func (t *TranslationUnit) GetLocation(file File, line, column c.Uint) (ret SourceLocation) {
-	t.wrapGetLocation(file, line, column, &ret)
 	return
 }
 
@@ -1173,11 +1169,8 @@ func (t *TranslationUnit) GetLocation(file File, line, column c.Uint) (ret Sourc
  * Retrieves the source location associated with a given character offset
  * in a particular translation unit.
  */
-// llgo:link (*TranslationUnit).wrapGetLocationForOffset C.wrap_clang_getLocationForOffset
-func (t *TranslationUnit) wrapGetLocationForOffset(file File, offset c.Uint, loc *SourceLocation) {}
-
+// llgo:link (*TranslationUnit).GetLocationForOffset C.clang_getLocationForOffset
 func (t *TranslationUnit) GetLocationForOffset(file File, offset c.Uint) (ret SourceLocation) {
-	t.wrapGetLocationForOffset(file, offset, &ret)
 	return
 }
 
@@ -1299,12 +1292,8 @@ func (*TranslationUnit) Dispose() {}
  * The translation unit cursor can be used to start traversing the
  * various declarations within the given translation unit.
  */
-
-//llgo:link (*TranslationUnit).wrapCursor C.wrap_clang_getTranslationUnitCursor
-func (t *TranslationUnit) wrapCursor(cursor *Cursor) {}
-
+//llgo:link (*TranslationUnit).Cursor C.clang_getTranslationUnitCursor
 func (t *TranslationUnit) Cursor() (ret Cursor) {
-	t.wrapCursor(&ret)
 	return
 }
 
@@ -1579,20 +1568,18 @@ type Token struct {
 /**
  * Determine whether two cursors are equivalent.
  */
-// llgo:link (*Cursor).wrapEqual C.wrap_clang_equalCursors
-func (*Cursor) wrapEqual(cursor *Cursor) c.Uint { return 0 }
-
-func (c Cursor) Equal(cursor Cursor) c.Uint {
-	return c.wrapEqual(&cursor)
+// llgo:link Cursor.Equal C.clang_equalCursors
+func (c Cursor) Equal(cursor Cursor) (ret c.Uint) {
+	return
 }
 
 /**
  * Returns non-zero if \p cursor is null.
  */
-// llgo:link (*Cursor).wrapIsNull C.wrap_clang_Cursor_isNull
-func (*Cursor) wrapIsNull() c.Int { return 0 }
-
-func (c Cursor) IsNull() c.Int { return c.wrapIsNull() }
+// llgo:link Cursor.IsNull C.clang_Cursor_isNull
+func (c Cursor) IsNull() (ret c.Int) {
+	return
+}
 
 /**
  * Determine the semantic parent of the given cursor.
@@ -1627,19 +1614,13 @@ func (c Cursor) IsNull() c.Int { return c.wrapIsNull() }
  *
  * For global declarations, the semantic parent is the translation unit.
  */
-// llgo:link (*Cursor).wrapSemanticParent C.wrap_clang_getCursorSemanticParent
-func (*Cursor) wrapSemanticParent(parent *Cursor) {}
-
+// llgo:link Cursor.SemanticParent C.clang_getCursorSemanticParent
 func (c Cursor) SemanticParent() (parent Cursor) {
-	c.wrapSemanticParent(&parent)
 	return
 }
 
-// llgo:link (*Cursor).wrapDefinition C.wrap_clang_getCursorDefinition
-func (*Cursor) wrapDefinition(def *Cursor) {}
-
+// llgo:link Cursor.Definition C.clang_getCursorDefinition
 func (c Cursor) Definition() (def Cursor) {
-	c.wrapDefinition(&def)
 	return
 }
 
@@ -1647,11 +1628,9 @@ func (c Cursor) Definition() (def Cursor) {
  * Determine whether the declaration pointed to by this cursor
  * is also a definition of that entity.
  */
-// llgo:link (*Cursor).wrapIsCursorDefinition C.wrap_clang_isCursorDefinition
-func (c *Cursor) wrapIsCursorDefinition() c.Int { return 0 }
-
+// llgo:link Cursor.IsCursorDefinition C.clang_isCursorDefinition
 func (c Cursor) IsCursorDefinition() c.Int {
-	return c.wrapIsCursorDefinition()
+	return 0
 }
 
 /**
@@ -1688,11 +1667,8 @@ func (c Cursor) IsCursorDefinition() c.Int {
  * For declarations written in the global scope, the lexical parent is
  * the translation unit.
  */
-// llgo:link (*Cursor).wrapLexicalParent C.wrap_clang_getCursorLexicalParent
-func (*Cursor) wrapLexicalParent(parent *Cursor) {}
-
+// llgo:link Cursor.LexicalParent C.clang_getCursorLexicalParent
 func (c Cursor) LexicalParent() (parent Cursor) {
-	c.wrapLexicalParent(&parent)
 	return
 }
 
@@ -1739,11 +1715,8 @@ func (c Cursor) LexicalParent() (parent Cursor) {
  * functions, will be set to the number of overridden functions in the
  * array pointed to by \p overridden.
  */
-// llgo:link (*Cursor).wrapOverriddenCursors C.wrap_clang_getOverriddenCursors
-func (c *Cursor) wrapOverriddenCursors(overridden **Cursor, numOverridden *c.Uint) {}
-
+// llgo:link Cursor.OverriddenCursors C.clang_getOverriddenCursors
 func (c Cursor) OverriddenCursors(overridden **Cursor, numOverridden *c.Uint) {
-	c.wrapOverriddenCursors(overridden, numOverridden)
 }
 
 /**
@@ -1757,13 +1730,9 @@ func (c *Cursor) DisposeOverriddenCursors() {}
  * Retrieve the file that is included by the given inclusion directive
  * cursor.
  */
-// llgo:link (*Cursor).wrapIncludedFile C.wrap_clang_getIncludedFile
-func (c *Cursor) wrapIncludedFile() File {
-	return 0
-}
-
+// llgo:link Cursor.IncludedFile C.clang_getIncludedFile
 func (c Cursor) IncludedFile() (file File) {
-	return c.wrapIncludedFile()
+	return
 }
 
 /**
@@ -1781,12 +1750,8 @@ func (c Cursor) IncludedFile() (file File) {
  * \returns a cursor representing the entity at the given source location, or
  * a NULL cursor if no such entity can be found.
  */
-
-// llgo:link (*TranslationUnit).wrapGetCursor C.wrap_clang_getCursor
-func (l *TranslationUnit) wrapGetCursor(loc *SourceLocation, cur *Cursor) {}
-
+// llgo:link (*TranslationUnit).GetCursor C.clang_getCursor
 func (l *TranslationUnit) GetCursor(loc *SourceLocation) (cur Cursor) {
-	l.wrapGetCursor(loc, &cur)
 	return
 }
 
@@ -1800,11 +1765,8 @@ func (l *TranslationUnit) GetCursor(loc *SourceLocation) (cur Cursor) {
  * The location of a reference is where that reference occurs within the
  * source code.
  */
-// llgo:link (*Cursor).wrapLocation C.wrap_clang_getCursorLocation
-func (c *Cursor) wrapLocation(loc *SourceLocation) {}
-
+// llgo:link Cursor.Location C.clang_getCursorLocation
 func (c Cursor) Location() (loc SourceLocation) {
-	c.wrapLocation(&loc)
 	return
 }
 
@@ -1819,22 +1781,16 @@ func (c Cursor) Location() (loc SourceLocation) {
  * the extent covers the location of the reference (e.g., where the referenced
  * entity was actually used).
  */
-// llgo:link (*Cursor).wrapExtent C.wrap_clang_getCursorExtent
-func (c *Cursor) wrapExtent(loc *SourceRange) {}
-
+// llgo:link Cursor.Extent C.clang_getCursorExtent
 func (c Cursor) Extent() (loc SourceRange) {
-	c.wrapExtent(&loc)
 	return
 }
 
 /**
  * Retrieve the type of a CXCursor (if any).
  */
-// llgo:link (*Cursor).wrapType C.wrap_clang_getCursorType
-func (c *Cursor) wrapType(ret *Type) {}
-
+// llgo:link Cursor.Type C.clang_getCursorType
 func (c Cursor) Type() (ret Type) {
-	c.wrapType(&ret)
 	return
 }
 
@@ -1844,13 +1800,9 @@ func (c Cursor) Type() (ret Type) {
  *
  * If the type is invalid, an empty string is returned.
  */
-// llgo:link (*Type).wrapString C.wrap_clang_getTypeSpelling
-func (t *Type) wrapString() (ret String) {
-	return
-}
-
+// llgo:link Type.String C.clang_getTypeSpelling
 func (t Type) String() (ret String) {
-	return t.wrapString()
+	return
 }
 
 /**
@@ -1859,11 +1811,8 @@ func (t Type) String() (ret String) {
  * If the cursor does not reference a typedef declaration, an invalid type is
  * returned.
  */
-// llgo:link (*Cursor).wrapTypedefDeclUnderlyingType C.wrap_clang_getTypedefDeclUnderlyingType
-func (c *Cursor) wrapTypedefDeclUnderlyingType(ret *Type) { return }
-
+// llgo:link Cursor.TypedefDeclUnderlyingType C.clang_getTypedefDeclUnderlyingType
 func (c Cursor) TypedefDeclUnderlyingType() (ret Type) {
-	c.wrapTypedefDeclUnderlyingType(&ret)
 	return
 }
 
@@ -1875,12 +1824,9 @@ func (c Cursor) TypedefDeclUnderlyingType() (ret Type) {
  * returned. Since this is also potentially a valid constant value, the kind of
  * the cursor must be verified before calling this function.
  */
-// llgo:link (*Cursor).wrapEnumConstantDeclValue C.wrap_clang_getEnumConstantDeclValue
-func (*Cursor) wrapEnumConstantDeclValue() (ret c.LongLong) {
-	return 0
-}
+// llgo:link Cursor.EnumConstantDeclValue C.clang_getEnumConstantDeclValue
 func (c Cursor) EnumConstantDeclValue() (ret c.LongLong) {
-	return c.wrapEnumConstantDeclValue()
+	return
 }
 
 /**
@@ -1890,13 +1836,9 @@ func (c Cursor) EnumConstantDeclValue() (ret c.LongLong) {
  * The number of arguments can be determined for calls as well as for
  * declarations of functions or methods. For other cursors -1 is returned.
  */
-// llgo:link (*Cursor).wrapNumArguments C.wrap_clang_Cursor_getNumArguments
-func (*Cursor) wrapNumArguments() (num c.Int) {
-	return 0
-}
-
+// llgo:link Cursor.NumArguments C.clang_Cursor_getNumArguments
 func (c Cursor) NumArguments() (num c.Int) {
-	return c.wrapNumArguments()
+	return
 }
 
 /**
@@ -1906,11 +1848,8 @@ func (c Cursor) NumArguments() (num c.Int) {
  * of functions or methods. For other cursors and for invalid indices, an
  * invalid cursor is returned.
  */
-// llgo:link (*Cursor).wrapArgument C.wrap_clang_Cursor_getArgument
-func (*Cursor) wrapArgument(index c.Uint, arg *Cursor) {}
-
+// llgo:link Cursor.Argument C.clang_Cursor_getArgument
 func (c Cursor) Argument(index c.Uint) (arg Cursor) {
-	c.wrapArgument(index, &arg)
 	return
 }
 
@@ -1922,11 +1861,8 @@ func (c Cursor) Argument(index c.Uint) (arg Cursor) {
  * type with all the "sugar" removed.  For example, if 'T' is a typedef
  * for 'int', the canonical type for 'T' would be 'int'.
  */
-// llgo:link (*Type).wrapCanonicalType C.wrap_clang_getCanonicalType
-func (t *Type) wrapCanonicalType(ret *Type) { return }
-
+// llgo:link Type.CanonicalType C.clang_getCanonicalType
 func (t Type) CanonicalType() (ret Type) {
-	t.wrapCanonicalType(&ret)
 	return
 }
 
@@ -1935,44 +1871,36 @@ func (t Type) CanonicalType() (ret Type) {
  * without looking through typedefs that may have added "const" at a
  * different level.
  */
-// llgo:link (*Type).wrapIsConstQualifiedType C.wrap_clang_isConstQualifiedType
-func (t *Type) wrapIsConstQualifiedType() (ret c.Uint) { return 0 }
-
+// llgo:link Type.IsConstQualifiedType C.clang_isConstQualifiedType
 func (t Type) IsConstQualifiedType() (ret c.Uint) {
-	return t.wrapIsConstQualifiedType()
+	return
 }
 
 /**
  * Determine whether a  CXCursor that is a macro, is
  * function like.
  */
-// llgo:link (*Cursor).wrapIsMacroFunctionLike C.wrap_clang_Cursor_isMacroFunctionLike
-func (c *Cursor) wrapIsMacroFunctionLike() (ret c.Uint) { return 0 }
-
+// llgo:link Cursor.IsMacroFunctionLike C.clang_Cursor_isMacroFunctionLike
 func (c Cursor) IsMacroFunctionLike() (ret c.Uint) {
-	return c.wrapIsMacroFunctionLike()
+	return
 }
 
 /**
  * Determine whether a  CXCursor that is a macro, is a
  * builtin one.
  */
-// llgo:link (*Cursor).wrapIsMacroBuiltin C.wrap_clang_Cursor_isMacroBuiltin
-func (c *Cursor) wrapIsMacroBuiltin() (ret c.Uint) { return 0 }
-
+// llgo:link Cursor.IsMacroBuiltin C.clang_Cursor_isMacroBuiltin
 func (c Cursor) IsMacroBuiltin() (ret c.Uint) {
-	return c.wrapIsMacroBuiltin()
+	return
 }
 
 /**
  * Determine whether a  CXCursor that is a function declaration, is an
  * inline declaration.
  */
-// llgo:link (*Cursor).wrapIsFunctionInlined C.wrap_clang_Cursor_isFunctionInlined
-func (c *Cursor) wrapIsFunctionInlined() (ret c.Uint) { return 0 }
-
+// llgo:link Cursor.IsFunctionInlined C.clang_Cursor_isFunctionInlined
 func (c Cursor) IsFunctionInlined() (ret c.Uint) {
-	return c.wrapIsFunctionInlined()
+	return
 }
 
 /**
@@ -1980,11 +1908,9 @@ func (c Cursor) IsFunctionInlined() (ret c.Uint) {
  * without looking through typedefs that may have added "volatile" at
  * a different level.
  */
-// llgo:link (*Type).wrapIsVolatileQualifiedType C.wrap_clang_isVolatileQualifiedType
-func (t *Type) wrapIsVolatileQualifiedType() (ret c.Uint) { return 0 }
-
+// llgo:link Type.IsVolatileQualifiedType C.clang_isVolatileQualifiedType
 func (t Type) IsVolatileQualifiedType() (ret c.Uint) {
-	return t.wrapIsVolatileQualifiedType()
+	return
 }
 
 /**
@@ -1992,21 +1918,16 @@ func (t Type) IsVolatileQualifiedType() (ret c.Uint) {
  * without looking through typedefs that may have added "restrict" at a
  * different level.
  */
-// llgo:link (*Type).wrapIsRestrictQualifiedType C.wrap_clang_isRestrictQualifiedType
-func (t *Type) wrapIsRestrictQualifiedType() (ret c.Uint) { return 0 }
-
+// llgo:link Type.IsRestrictQualifiedType C.clang_isRestrictQualifiedType
 func (t Type) IsRestrictQualifiedType() (ret c.Uint) {
-	return t.wrapIsRestrictQualifiedType()
+	return
 }
 
 /**
  * For pointer types, returns the type of the pointee.
  */
-// llgo:link (*Type).wrapPointeeType C.wrap_clang_getPointeeType
-func (t *Type) wrapPointeeType(ret *Type) { return }
-
+// llgo:link Type.PointeeType C.clang_getPointeeType
 func (t Type) PointeeType() (ret Type) {
-	t.wrapPointeeType(&ret)
 	return
 }
 
@@ -2019,22 +1940,16 @@ func (t Type) PointeeType() (ret Type) {
  * A type that has kind \c CXType_LValueReference or
  * \c CXType_RValueReference is a reference type.
  */
-// llgo:link (*Type).wrapNonReferenceType C.wrap_clang_getNonReferenceType
-func (t *Type) wrapNonReferenceType(ret *Type) { return }
-
+// llgo:link Type.NonReferenceType C.clang_getNonReferenceType
 func (t Type) NonReferenceType() (ret Type) {
-	t.wrapNonReferenceType(&ret)
 	return
 }
 
 /**
  * Return the cursor for the declaration of the given type.
  */
-// llgo:link (*Type).wrapTypeDeclaration C.wrap_clang_getTypeDeclaration
-func (t *Type) wrapTypeDeclaration(ret *Cursor) { return }
-
+// llgo:link Type.TypeDeclaration C.clang_getTypeDeclaration
 func (t Type) TypeDeclaration() (ret Cursor) {
-	t.wrapTypeDeclaration(&ret)
 	return
 }
 
@@ -2051,11 +1966,8 @@ func (TypeKind) String() (ret String) {
  *
  * If a non-function type is passed in, an invalid type is returned.
  */
-// llgo:link (*Type).wrapResultType C.wrap_clang_getResultType
-func (t *Type) wrapResultType(ret *Type) { return }
-
+// llgo:link Type.ResultType C.clang_getResultType
 func (t Type) ResultType() (ret Type) {
-	t.wrapResultType(&ret)
 	return
 }
 
@@ -2065,11 +1977,9 @@ func (t Type) ResultType() (ret Type) {
  *
  * If a non-function type is passed in, -1 is returned.
  */
-// llgo:link (*Type).wrapNumArgTypes C.wrap_clang_getNumArgTypes
-func (t *Type) wrapNumArgTypes() (num c.Int) { return 0 }
-
+// llgo:link Type.NumArgTypes C.clang_getNumArgTypes
 func (t Type) NumArgTypes() (num c.Int) {
-	return t.wrapNumArgTypes()
+	return
 }
 
 /**
@@ -2078,32 +1988,26 @@ func (t Type) NumArgTypes() (num c.Int) {
  * If a non-function type is passed in or the function does not have enough
  * parameters, an invalid type is returned.
  */
-// llgo:link (*Type).wrapArgType C.wrap_clang_getArgType
-func (t *Type) wrapArgType(index c.Uint, argTyp *Type) { return }
-
+// llgo:link Type.ArgType C.clang_getArgType
 func (t Type) ArgType(index c.Uint) (ret Type) {
-	t.wrapArgType(index, &ret)
 	return
 }
 
 /**
  * Return 1 if the CXType is a variadic function type, and 0 otherwise.
  */
-// llgo:link (*Type).wrapIsFunctionTypeVariadic C.wrap_clang_isFunctionTypeVariadic
-func (t *Type) wrapIsFunctionTypeVariadic() (ret c.Uint) { return 0 }
-
-func (t Type) IsFunctionTypeVariadic() (ret c.Uint) { return t.wrapIsFunctionTypeVariadic() }
+// llgo:link Type.IsFunctionTypeVariadic C.clang_isFunctionTypeVariadic
+func (t Type) IsFunctionTypeVariadic() (ret c.Uint) {
+	return
+}
 
 /**
  * Retrieve the return type associated with a given cursor.
  *
  * This only returns a valid type if the cursor refers to a function or method.
  */
-// llgo:link (*Cursor).wrapResultType C.wrap_clang_getCursorResultType
-func (c *Cursor) wrapResultType(ret *Type) {}
-
+// llgo:link Cursor.ResultType C.clang_getCursorResultType
 func (c Cursor) ResultType() (ret Type) {
-	c.wrapResultType(&ret)
 	return
 }
 
@@ -2113,11 +2017,8 @@ func (c Cursor) ResultType() (ret Type) {
  * If a type is passed in that is not an array, complex, or vector type,
  * an invalid type is returned.
  */
-// llgo:link (*Type).wrapElementType C.wrap_clang_getElementType
-func (t *Type) wrapElementType(ret *Type) { return }
-
+// llgo:link Type.ElementType C.clang_getElementType
 func (t Type) ElementType() (ret Type) {
-	t.wrapElementType(&ret)
 	return
 }
 
@@ -2126,11 +2027,8 @@ func (t Type) ElementType() (ret Type) {
  *
  * If a non-array type is passed in, an invalid type is returned.
  */
-// llgo:link (*Type).wrapArrayElementType C.wrap_clang_getArrayElementType
-func (t *Type) wrapArrayElementType(ret *Type) { return }
-
+// llgo:link Type.ArrayElementType C.clang_getArrayElementType
 func (t Type) ArrayElementType() (ret Type) {
-	t.wrapArrayElementType(&ret)
 	return
 }
 
@@ -2139,11 +2037,9 @@ func (t Type) ArrayElementType() (ret Type) {
  *
  * If a non-array type is passed in, -1 is returned.
  */
-// llgo:link (*Type).wrapArraySize C.wrap_clang_getArraySize
-func (t *Type) wrapArraySize() (ret c.LongLong) { return 0 }
-
+// llgo:link Type.ArraySize C.clang_getArraySize
 func (t Type) ArraySize() (ret c.LongLong) {
-	return t.wrapArraySize()
+	return
 }
 
 /**
@@ -2151,11 +2047,8 @@ func (t Type) ArraySize() (ret c.LongLong) {
  *
  * If a non-elaborated type is passed in, an invalid type is returned.
  */
-// llgo:link (*Type).wrapNamedType C.wrap_clang_Type_getNamedType
-func (t *Type) wrapNamedType(ret *Type) { return }
-
+// llgo:link Type.NamedType C.clang_Type_getNamedType
 func (t Type) NamedType() (ret Type) {
-	t.wrapNamedType(&ret)
 	return
 }
 
@@ -2205,39 +2098,27 @@ const (
  * If the type declaration is a dependent type, CXTypeLayoutError_Dependent is
  *   returned.
  */
-// llgo:link (*Type).wrapSizeOf C.wrap_clang_Type_getSizeOf
-func (t *Type) wrapSizeOf() (ret c.LongLong) {
-	return 0
-}
-
+// llgo:link Type.SizeOf C.clang_Type_getSizeOf
 func (t Type) SizeOf() (ret c.LongLong) {
-	return t.wrapSizeOf()
+	return
 }
 
 /**
  * Determine whether the given cursor represents an anonymous
  * tag or namespace
  */
-// llgo:link (*Cursor).wrapIsAnonymous C.wrap_clang_Cursor_isAnonymous
-func (c *Cursor) wrapIsAnonymous() (ret c.Uint) {
-	return 0
-}
-
+// llgo:link Cursor.IsAnonymous C.clang_Cursor_isAnonymous
 func (c Cursor) IsAnonymous() (ret c.Uint) {
-	return c.wrapIsAnonymous()
+	return
 }
 
 /**
  * Determine whether the given cursor represents an anonymous record
  * declaration.
  */
-// llgo:link (*Cursor).wrapIsAnonymousRecordDecl C.wrap_clang_Cursor_isAnonymousRecordDecl
-func (c *Cursor) wrapIsAnonymousRecordDecl() (ret c.Uint) {
-	return 0
-}
-
+// llgo:link Cursor.IsAnonymousRecordDecl C.clang_Cursor_isAnonymousRecordDecl
 func (c Cursor) IsAnonymousRecordDecl() (ret c.Uint) {
-	return c.wrapIsAnonymousRecordDecl()
+	return
 }
 
 /**
@@ -2260,13 +2141,9 @@ const (
  * its parent scope is returned. Otherwise, if the cursor refers to a base
  * specifier or access specifier, the specifier itself is returned.
  */
-// llgo:link (*Cursor).wrapCXXAccessSpecifier C.wrap_clang_getCXXAccessSpecifier
-func (*Cursor) wrapCXXAccessSpecifier() (spec CXXAccessSpecifier) {
-	return 0
-}
-
-func (c Cursor) CXXAccessSpecifier() CXXAccessSpecifier {
-	return c.wrapCXXAccessSpecifier()
+// llgo:link Cursor.CXXAccessSpecifier C.clang_getCXXAccessSpecifier
+func (c Cursor) CXXAccessSpecifier() (ret CXXAccessSpecifier) {
+	return
 }
 
 type StorageClass c.Int
@@ -2292,13 +2169,9 @@ const (
  * If the passed in Cursor is not a function or variable declaration,
  * CX_SC_Invalid is returned else the storage class.
  */
-// llgo:link (*Cursor).wrapStorageClass C.wrap_clang_Cursor_getStorageClass
-func (*Cursor) wrapStorageClass() (ret StorageClass) {
-	return 0
-}
-
+// llgo:link Cursor.StorageClass C.clang_Cursor_getStorageClass
 func (c Cursor) StorageClass() (ret StorageClass) {
-	return c.wrapStorageClass()
+	return
 }
 
 /**
@@ -2310,25 +2183,17 @@ func (c Cursor) StorageClass() (ret StorageClass) {
  * compared across translation units to determine, e.g., when references in
  * one translation refer to an entity defined in another translation unit.
  */
-// llgo:link (*Cursor).wrapUSR C.wrap_clang_getCursorUSR
-func (*Cursor) wrapUSR() (ret String) {
-	return
-}
-
+// llgo:link Cursor.USR C.clang_getCursorUSR
 func (c Cursor) USR() (ret String) {
-	return c.wrapUSR()
+	return
 }
 
 /**
  * Retrieve a name for the entity referenced by this cursor.
  */
-// llgo:link (*Cursor).wrapString C.wrap_clang_getCursorSpelling
-func (*Cursor) wrapString() (ret String) {
-	return
-}
-
+// llgo:link Cursor.String C.clang_getCursorSpelling
 func (c Cursor) String() (ret String) {
-	return c.wrapString()
+	return
 }
 
 /**
@@ -2338,12 +2203,9 @@ func (c Cursor) String() (ret String) {
  * such as the parameters of a function or template or the arguments of a
  * class template specialization.
  */
-// llgo:link (*Cursor).wrapDisplayName C.wrap_clang_getCursorDisplayName
-func (*Cursor) wrapDisplayName() (ret String) {
-	return
-}
+// llgo:link Cursor.DisplayName C.clang_getCursorDisplayName
 func (c Cursor) DisplayName() (ret String) {
-	return c.wrapDisplayName()
+	return
 }
 
 /** For a cursor that is a reference, retrieve a cursor representing the
@@ -2356,32 +2218,26 @@ func (c Cursor) DisplayName() (ret String) {
  * definition, it returns that declaration or definition unchanged.
  * Otherwise, returns the NULL cursor.
  */
-// llgo:link (*Cursor).wrapReferenced C.wrap_clang_getCursorReferenced
-func (*Cursor) wrapReferenced(referenced *Cursor) {}
-
+// llgo:link Cursor.Referenced C.clang_getCursorReferenced
 func (c Cursor) Referenced() (referenced Cursor) {
-	c.wrapReferenced(&referenced)
 	return
 }
 
 /**
  * Returns non-zero if the given cursor is a variadic function or method.
  */
-// llgo:link (*Cursor).wrapIsVariadic C.wrap_clang_Cursor_isVariadic
-func (*Cursor) wrapIsVariadic() (ret c.Uint) { return 0 }
-
-func (c Cursor) IsVariadic() (ret c.Uint) { return c.wrapIsVariadic() }
+// llgo:link Cursor.IsVariadic C.clang_Cursor_isVariadic
+func (c Cursor) IsVariadic() (ret c.Uint) {
+	return
+}
 
 /**
  * Given a cursor that represents a declaration, return the associated
  * comment's source range.  The range may include multiple consecutive comments
  * with whitespace in between.
  */
-// llgo:link (*Cursor).wrapCommentRange C.wrap_clang_Cursor_getCommentRange
-func (c *Cursor) wrapCommentRange(ret *SourceRange) {}
-
+// llgo:link Cursor.CommentRange C.clang_Cursor_getCommentRange
 func (c Cursor) CommentRange() (loc SourceRange) {
-	c.wrapCommentRange(&loc)
 	return
 }
 
@@ -2389,127 +2245,91 @@ func (c Cursor) CommentRange() (loc SourceRange) {
  * Given a cursor that represents a declaration, return the associated
  * comment text, including comment markers.
  */
-// llgo:link (*Cursor).wrapRawCommentText C.wrap_clang_Cursor_getRawCommentText
-func (c *Cursor) wrapRawCommentText() (ret String) {
-	return
-}
-
+// llgo:link Cursor.RawCommentText C.clang_Cursor_getRawCommentText
 func (c Cursor) RawCommentText() (ret String) {
-	return c.wrapRawCommentText()
+	return
 }
 
 /**
  * Retrieve a name for the entity referenced by this cursor.
  */
-// llgo:link (*Cursor).wrapMangling C.wrap_clang_Cursor_getMangling
-func (*Cursor) wrapMangling() (ret String) {
-	return
-}
-
+// llgo:link Cursor.Mangling C.clang_Cursor_getMangling
 func (c Cursor) Mangling() (ret String) {
-	return c.wrapMangling()
+	return
 }
 
 /**
  * Determine if a C++ constructor is a converting constructor.
  */
-// llgo:link (*Cursor).wrapIsConvertingConstructor C.wrap_clang_CXXConstructor_isConvertingConstructor
-func (c *Cursor) wrapIsConvertingConstructor() (ret c.Uint) {
-	return 0
-}
-
+// llgo:link Cursor.IsConvertingConstructor C.clang_CXXConstructor_isConvertingConstructor
 func (c Cursor) IsConvertingConstructor() (ret c.Uint) {
-	return c.wrapIsConvertingConstructor()
+	return
 }
 
 /**
  * Determine if a C++ constructor is a copy constructor.
  */
-// llgo:link (*Cursor).wrapIsCopyConstructor C.wrap_clang_CXXConstructor_isCopyConstructor
-func (c *Cursor) wrapIsCopyConstructor() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsCopyConstructor C.clang_CXXConstructor_isCopyConstructor
 func (c Cursor) IsCopyConstructor() (ret c.Uint) {
-	return c.wrapIsCopyConstructor()
+	return
 }
 
 /**
  * Determine if a C++ constructor is the default constructor.
  */
-// llgo:link (*Cursor).wrapIsDefaultConstructor C.wrap_clang_CXXConstructor_isDefaultConstructor
-func (c *Cursor) wrapIsDefaultConstructor() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsDefaultConstructor C.clang_CXXConstructor_isDefaultConstructor
 func (c Cursor) IsDefaultConstructor() (ret c.Uint) {
-	return c.wrapIsDefaultConstructor()
+	return
 }
 
 /**
  * Determine if a C++ constructor is a move constructor.
  */
-// llgo:link (*Cursor).wrapIsMoveConstructor C.wrap_clang_CXXConstructor_isMoveConstructor
-func (c *Cursor) wrapIsMoveConstructor() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsMoveConstructor C.clang_CXXConstructor_isMoveConstructor
 func (c Cursor) IsMoveConstructor() (ret c.Uint) {
-	return c.wrapIsMoveConstructor()
+	return
 }
 
 /**
  * Determine if a C++ field is declared 'mutable'.
  */
-// llgo:link (*Cursor).wrapIsMutable C.wrap_clang_CXXField_isMutable
-func (c *Cursor) wrapIsMutable() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsMutable C.clang_CXXField_isMutable
 func (c Cursor) IsMutable() (ret c.Uint) {
-	return c.wrapIsMutable()
+	return
 }
 
 /**
  * Determine if a C++ method is declared '= default'.
  */
-// llgo:link (*Cursor).wrapIsDefaulted C.wrap_clang_CXXMethod_isDefaulted
-func (c *Cursor) wrapIsDefaulted() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsDefaulted C.clang_CXXMethod_isDefaulted
 func (c Cursor) IsDefaulted() (ret c.Uint) {
-	return c.wrapIsDefaulted()
+	return
 }
 
 /**
  * Determine if a C++ method is declared '= delete'.
  */
-// llgo:link (*Cursor).wrapIsDeleted C.wrap_clang_CXXMethod_isDeleted
-func (c *Cursor) wrapIsDeleted() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsDeleted C.clang_CXXMethod_isDeleted
 func (c Cursor) IsDeleted() (ret c.Uint) {
-	return c.wrapIsDeleted()
+	return
 }
 
 /**
  * Determine if a C++ member function or member function template is
  * pure virtual.
  */
-// llgo:link (*Cursor).wrapIsPureVirtual C.wrap_clang_CXXMethod_isPureVirtual
-func (c *Cursor) wrapIsPureVirtual() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsPureVirtual C.clang_CXXMethod_isPureVirtual
 func (c Cursor) IsPureVirtual() (ret c.Uint) {
-	return c.wrapIsPureVirtual()
+	return
 }
 
 /**
  * Determine if a C++ member function or member function template is
  * declared 'static'.
  */
-// llgo:link (*Cursor).wrapIsStatic C.wrap_clang_CXXMethod_isStatic
-func (c *Cursor) wrapIsStatic() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsStatic C.clang_CXXMethod_isStatic
 func (c Cursor) IsStatic() (ret c.Uint) {
-	return c.wrapIsStatic()
+	return
 }
 
 /**
@@ -2517,12 +2337,9 @@ func (c Cursor) IsStatic() (ret c.Uint) {
  * explicitly declared 'virtual' or if it overrides a virtual method from
  * one of the base classes.
  */
-// llgo:link (*Cursor).wrapIsVirtual C.wrap_clang_CXXMethod_isVirtual
-func (c *Cursor) wrapIsVirtual() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsVirtual C.clang_CXXMethod_isVirtual
 func (c Cursor) IsVirtual() (ret c.Uint) {
-	return c.wrapIsVirtual()
+	return
 }
 
 /**
@@ -2548,12 +2365,9 @@ func (c Cursor) IsVirtual() (ret c.Uint) {
  *
  * Is not.
  */
-// llgo:link (*Cursor).wrapIsCopyAssignmentOperator C.wrap_clang_CXXMethod_isCopyAssignmentOperator
-func (c *Cursor) wrapIsCopyAssignmentOperator() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsCopyAssignmentOperator C.clang_CXXMethod_isCopyAssignmentOperator
 func (c Cursor) IsCopyAssignmentOperator() (ret c.Uint) {
-	return c.wrapIsCopyAssignmentOperator()
+	return
 }
 
 /**
@@ -2579,12 +2393,9 @@ func (c Cursor) IsCopyAssignmentOperator() (ret c.Uint) {
  *
  * Is not.
  */
-// llgo:link (*Cursor).wrapIsMoveAssignmentOperator C.wrap_clang_CXXMethod_isMoveAssignmentOperator
-func (c *Cursor) wrapIsMoveAssignmentOperator() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsMoveAssignmentOperator C.clang_CXXMethod_isMoveAssignmentOperator
 func (c Cursor) IsMoveAssignmentOperator() (ret c.Uint) {
-	return c.wrapIsMoveAssignmentOperator()
+	return
 }
 
 /**
@@ -2630,59 +2441,43 @@ func (c Cursor) IsMoveAssignmentOperator() (ret c.Uint) {
  * This function will return 0 for the constructor and 1 for
  * the conversion function.
  */
-// llgo:link (*Cursor).wrapIsExplicit C.wrap_clang_CXXMethod_isExplicit
-func (c *Cursor) wrapIsExplicit() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsExplicit C.clang_CXXMethod_isExplicit
 func (c Cursor) IsExplicit() (ret c.Uint) {
-	return c.wrapIsExplicit()
+	return
 }
 
 /**
  * Determine if a C++ record is abstract, i.e. whether a class or struct
  * has a pure virtual member function.
  */
-// llgo:link (*Cursor).wrapIsAbstract C.wrap_clang_CXXRecord_isAbstract
-func (c *Cursor) wrapIsAbstract() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsAbstract C.clang_CXXRecord_isAbstract
 func (c Cursor) IsAbstract() (ret c.Uint) {
-	return c.wrapIsAbstract()
+	return
 }
 
 /**
  * Determine if an enum declaration refers to a scoped enum.
  */
-// llgo:link (*Cursor).wrapIsScoped C.wrap_clang_EnumDecl_isScoped
-func (c *Cursor) wrapIsScoped() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsScoped C.clang_EnumDecl_isScoped
 func (c Cursor) IsScoped() (ret c.Uint) {
-	return c.wrapIsScoped()
+	return
 }
 
 /**
  * Determine if a C++ member function or member function template is
  * declared 'const'.
  */
-// llgo:link (*Cursor).wrapIsConst C.wrap_clang_CXXMethod_isConst
-func (c *Cursor) wrapIsConst() (ret c.Uint) {
-	return 0
-}
+// llgo:link Cursor.IsConst C.clang_CXXMethod_isConst
 func (c Cursor) IsConst() (ret c.Uint) {
-	return c.wrapIsConst()
+	return
 }
 
 /**
  * Determine the kind of the given token.
  */
-// llgo:link (*Token).wrapKind C.wrap_clang_getTokenKind
-func (c *Token) wrapKind() (ret TokenKind) {
-	return
-}
-
+// llgo:link Token.Kind C.clang_getTokenKind
 func (c Token) Kind() (ret TokenKind) {
-	return c.wrapKind()
+	return
 }
 
 /**
@@ -2691,13 +2486,9 @@ func (c Token) Kind() (ret TokenKind) {
  * The spelling of a token is the textual representation of that token, e.g.,
  * the text of an identifier or keyword.
  */
-// llgo:link (*TranslationUnit).wrapToken C.wrap_clang_getTokenSpelling
-func (*TranslationUnit) wrapToken(token *Token) (ret String) {
-	return
-}
-
+// llgo:link (*TranslationUnit).Token C.clang_getTokenSpelling
 func (c *TranslationUnit) Token(token Token) (ret String) {
-	return c.wrapToken(&token)
+	return
 }
 
 /**
@@ -2748,30 +2539,12 @@ const (
  * \returns a non-zero value if the traversal was terminated
  * prematurely by the visitor returning \c CXChildVisit_Break.
  */
-//go:linkname wrapVisitChildren C.wrap_clang_visitChildren
-func wrapVisitChildren(
-	cusor *Cursor,
-	fn wrapVisitor,
-	clientData ClientData) c.Uint {
-	return 0
-}
-
-//llgo:type C
-type wrapVisitor func(cursor, parent *Cursor, clientData ClientData) ChildVisitResult
-
-type wrapData struct {
-	data ClientData
-	fn   Visitor
-}
-
+//go:linkname VisitChildren C.clang_visitChildren
 func VisitChildren(
 	root Cursor,
 	fn Visitor,
-	clientData ClientData) c.Uint {
-	return wrapVisitChildren(&root, func(cursor, parent *Cursor, data ClientData) ChildVisitResult {
-		p := (*wrapData)(data)
-		return p.fn(*cursor, *parent, p.data)
-	}, unsafe.Pointer(&wrapData{clientData, fn}))
+	clientData ClientData) (ret c.Uint) {
+	return
 }
 
 //llgo:type C
@@ -2817,11 +2590,8 @@ func GetInclusions(tu *TranslationUnit, visitor InclusionVisitor, client_data Cl
  * array.
  *
  */
-// llgo:link (*TranslationUnit).wrapTokenize C.wrap_clang_tokenize
-func (t *TranslationUnit) wrapTokenize(ran *SourceRange, tokens **Token, numTokens *c.Uint) {}
-
+// llgo:link (*TranslationUnit).Tokenize C.clang_tokenize
 func (t *TranslationUnit) Tokenize(ran SourceRange, tokens **Token, numTokens *c.Uint) {
-	t.wrapTokenize(&ran, tokens, numTokens)
 }
 
 /**
@@ -2833,11 +2603,9 @@ func (t *TranslationUnit) DisposeTokens(tokens *Token, numTokens c.Uint) {}
 /**
  * Returns non-zero if the given source location is in a system header.
  */
-// llgo:link (*SourceLocation).wrapIsInSystemHeader C.wrap_clang_Location_isInSystemHeader
-func (l *SourceLocation) wrapIsInSystemHeader() (ret c.Uint) { return 0 }
-
+// llgo:link SourceLocation.IsInSystemHeader C.clang_Location_isInSystemHeader
 func (l SourceLocation) IsInSystemHeader() (ret c.Uint) {
-	return l.wrapIsInSystemHeader()
+	return
 }
 
 /**
@@ -2862,30 +2630,27 @@ func (l SourceLocation) IsInSystemHeader() (ret c.Uint) {
  * \param offset [out] if non-NULL, will be set to the offset into the
  * buffer to which the given source location points.
  */
-// llgo:link (*SourceLocation).wrapSpellingLocation C.wrap_clang_getSpellingLocation
-func (l *SourceLocation) wrapSpellingLocation(file *File, line, column, offset *c.Uint) {}
-
+// llgo:link SourceLocation.SpellingLocation C.clang_getSpellingLocation
 func (l SourceLocation) SpellingLocation(file *File, line, column, offset *c.Uint) {
-	l.wrapSpellingLocation(file, line, column, offset)
 }
 
 func (l SourceLocation) File() (ret File) {
-	l.wrapSpellingLocation(&ret, nil, nil, nil)
+	l.SpellingLocation(&ret, nil, nil, nil)
 	return
 }
 
 func (l SourceLocation) Line() (ret c.Uint) {
-	l.wrapSpellingLocation(nil, &ret, nil, nil)
+	l.SpellingLocation(nil, &ret, nil, nil)
 	return
 }
 
 func (l SourceLocation) Column() (ret c.Uint) {
-	l.wrapSpellingLocation(nil, nil, &ret, nil)
+	l.SpellingLocation(nil, nil, &ret, nil)
 	return
 }
 
 func (l SourceLocation) Offset() (ret c.Uint) {
-	l.wrapSpellingLocation(nil, nil, nil, &ret)
+	l.SpellingLocation(nil, nil, nil, &ret)
 	return
 }
 
@@ -2929,22 +2694,16 @@ func (l SourceLocation) Offset() (ret c.Uint) {
  * \param column [out] if non-NULL, will be set to the column number of the
  * source location. For an invalid source location, zero is returned.
  */
-// llgo:link (*SourceLocation).wrapPresumedLocation C.wrap_clang_getPresumedLocation
-func (l *SourceLocation) wrapPresumedLocation(filename *String, line, column *c.Uint) {}
-
+// llgo:link SourceLocation.PresumedLocation C.clang_getPresumedLocation
 func (l SourceLocation) PresumedLocation(filename *String, line, column *c.Uint) {
-	l.wrapPresumedLocation(filename, line, column)
 }
 
 /**
  * Retrieve a source location representing the first character within a
  * source range.
  */
-// llgo:link (*SourceRange).wrapRangeStart C.wrap_clang_getRangeStart
-func (r *SourceRange) wrapRangeStart(loc *SourceLocation) { return }
-
+// llgo:link SourceRange.RangeStart C.clang_getRangeStart
 func (r SourceRange) RangeStart() (loc SourceLocation) {
-	r.wrapRangeStart(&loc)
 	return
 }
 
@@ -2952,11 +2711,8 @@ func (r SourceRange) RangeStart() (loc SourceLocation) {
  * Retrieve a source location representing the last character within a
  * source range.
  */
-// llgo:link (*SourceRange).wrapRangeEnd C.wrap_clang_getRangeEnd
-func (r *SourceRange) wrapRangeEnd(loc *SourceLocation) { return }
-
+// llgo:link SourceRange.RangeEnd C.clang_getRangeEnd
 func (r SourceRange) RangeEnd() (loc SourceLocation) {
-	r.wrapRangeEnd(&loc)
 	return
 }
 
