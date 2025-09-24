@@ -1,0 +1,517 @@
+{
+  "_Type": "File",
+  "decls": [
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": null,
+      "Parent": {
+        "Name": "NestedEnum",
+        "_Type": "Ident"
+      },
+      "Type": {
+        "Items": [
+          {
+            "Name": {
+              "Name": "APR_BUCKET_DATA1",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "0",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          },
+          {
+            "Name": {
+              "Name": "APR_BUCKET_METADATA2",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "1",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          }
+        ],
+        "_Type": "EnumType"
+      },
+      "_Type": "EnumTypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": null,
+      "Parent": {
+        "Parent": {
+          "Name": "NestedEnum",
+          "_Type": "Ident"
+        },
+        "X": {
+          "Name": "a",
+          "_Type": "Ident"
+        },
+        "_Type": "ScopingExpr"
+      },
+      "Type": {
+        "Items": [
+          {
+            "Name": {
+              "Name": "APR_BUCKET_DATA_A1",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "0",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          },
+          {
+            "Name": {
+              "Name": "APR_BUCKET_METADATA_A2",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "1",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          }
+        ],
+        "_Type": "EnumType"
+      },
+      "_Type": "EnumTypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "a",
+        "_Type": "Ident"
+      },
+      "Parent": {
+        "Name": "NestedEnum",
+        "_Type": "Ident"
+      },
+      "Type": {
+        "Fields": {
+          "List": [
+            {
+              "Access": 1,
+              "Comment": null,
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "is_metadata1_t",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            }
+          ],
+          "_Type": "FieldList"
+        },
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "NestedEnum",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": [
+            {
+              "Access": 1,
+              "Comment": null,
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "is_metadata1_t",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Flags": 0,
+                "Kind": 6,
+                "_Type": "BuiltinType"
+              },
+              "_Type": "Field"
+            },
+            {
+              "Access": 1,
+              "Comment": null,
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "a_t",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Name": {
+                  "Parent": {
+                    "Name": "NestedEnum",
+                    "_Type": "Ident"
+                  },
+                  "X": {
+                    "Name": "a",
+                    "_Type": "Ident"
+                  },
+                  "_Type": "ScopingExpr"
+                },
+                "Tag": 0,
+                "_Type": "TagExpr"
+              },
+              "_Type": "Field"
+            }
+          ],
+          "_Type": "FieldList"
+        },
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": null,
+      "Parent": {
+        "Name": "NestedEnum2",
+        "_Type": "Ident"
+      },
+      "Type": {
+        "Items": [
+          {
+            "Name": {
+              "Name": "APR_BUCKET_DATA3",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "0",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          },
+          {
+            "Name": {
+              "Name": "APR_BUCKET_METADATA4",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "1",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          }
+        ],
+        "_Type": "EnumType"
+      },
+      "_Type": "EnumTypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "NestedEnum2",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "is_metadata3",
+        "_Type": "Ident"
+      },
+      "Parent": {
+        "Name": "NestedEnum3",
+        "_Type": "Ident"
+      },
+      "Type": {
+        "Items": [
+          {
+            "Name": {
+              "Name": "APR_BUCKET_DATA5",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "0",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          },
+          {
+            "Name": {
+              "Name": "APR_BUCKET_METADATA6",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "1",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          }
+        ],
+        "_Type": "EnumType"
+      },
+      "_Type": "EnumTypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "NestedEnum3",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": null,
+          "_Type": "FieldList"
+        },
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "is_metadata4",
+        "_Type": "Ident"
+      },
+      "Parent": {
+        "Name": "NestedEnum4",
+        "_Type": "Ident"
+      },
+      "Type": {
+        "Items": [
+          {
+            "Name": {
+              "Name": "APR_BUCKET_DATA7",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "0",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          },
+          {
+            "Name": {
+              "Name": "APR_BUCKET_METADATA8",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "1",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          }
+        ],
+        "_Type": "EnumType"
+      },
+      "_Type": "EnumTypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "NestedEnum4",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": [
+            {
+              "Access": 1,
+              "Comment": null,
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "key",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Name": {
+                  "Name": "NestedEnum4",
+                  "_Type": "Ident"
+                },
+                "Tag": 2,
+                "_Type": "TagExpr"
+              },
+              "_Type": "Field"
+            }
+          ],
+          "_Type": "FieldList"
+        },
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "OuterEnum",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Items": [
+          {
+            "Name": {
+              "Name": "APR_BUCKET_DATA9",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "0",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          },
+          {
+            "Name": {
+              "Name": "APR_BUCKET_METADATA10",
+              "_Type": "Ident"
+            },
+            "Value": {
+              "Kind": 0,
+              "Value": "1",
+              "_Type": "BasicLit"
+            },
+            "_Type": "EnumItem"
+          }
+        ],
+        "_Type": "EnumType"
+      },
+      "_Type": "EnumTypeDecl"
+    },
+    {
+      "Doc": null,
+      "Loc": {
+        "File": "testdata/nestedenum/temp.h",
+        "_Type": "Location"
+      },
+      "Name": {
+        "Name": "Enum",
+        "_Type": "Ident"
+      },
+      "Parent": null,
+      "Type": {
+        "Fields": {
+          "List": [
+            {
+              "Access": 1,
+              "Comment": null,
+              "Doc": null,
+              "IsStatic": false,
+              "Names": [
+                {
+                  "Name": "k",
+                  "_Type": "Ident"
+                }
+              ],
+              "Type": {
+                "Name": {
+                  "Name": "OuterEnum",
+                  "_Type": "Ident"
+                },
+                "Tag": 2,
+                "_Type": "TagExpr"
+              },
+              "_Type": "Field"
+            }
+          ],
+          "_Type": "FieldList"
+        },
+        "Methods": null,
+        "Tag": 0,
+        "_Type": "RecordType"
+      },
+      "_Type": "TypeDecl"
+    }
+  ],
+  "includes": null,
+  "macros": null
+}

@@ -37,7 +37,6 @@ const (
 )
 
 type NestedEnum2 struct {
-	Unused [8]uint8
 }
 type IsMetadata3 c.Int
 
@@ -47,7 +46,6 @@ const (
 )
 
 type NestedEnum3 struct {
-	Unused [8]uint8
 }
 type IsMetadata4 c.Int
 
