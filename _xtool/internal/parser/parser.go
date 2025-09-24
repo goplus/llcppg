@@ -893,7 +893,7 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 	// NOTE(MeteorsLiu): nested enum behaves different from nested struct, for example, we can find its semantic parent
 	// however, it will cause we misidentified it as a class method expr, so take it out
 	if isAnonymousDecl && decl.Kind == clang.CursorEnumDecl {
-		// case 1: anonymous enum, but not nested (typedef enum case)
+		// case 1: anonymous enum, but not nested (anonymous enum decl variable case)
 		if !hasParent {
 			// this is not a nested enum, handle it normally
 			return ct.ProcessEnumType(decl)
