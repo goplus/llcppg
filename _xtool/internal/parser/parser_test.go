@@ -20,19 +20,18 @@ import (
 )
 
 func TestParserCppMode(t *testing.T) {
-	// cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2", "include", "typeof", "forward_vs_empty"}
+	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2", "include", "typeof", "forward_vs_empty", "nestedenum"}
 	// https://github.com/goplus/llgo/issues/1114
 	// todo(zzy):use os.ReadDir
-	cases := []string{"nestedenum"}
 	for _, folder := range cases {
 		t.Run(folder, func(t *testing.T) {
-			testFrom(t, filepath.Join("testdata", folder), "temp.h", true, true)
+			testFrom(t, filepath.Join("testdata", folder), "temp.h", true, false)
 		})
 	}
 }
 
 func TestParserCMode(t *testing.T) {
-	cases := []string{"enum", "struct", "union", "macro", "include", "typeof", "named_nested_struct", "forward_vs_empty"}
+	cases := []string{"enum", "struct", "union", "macro", "include", "typeof", "named_nested_struct", "forward_vs_empty", "nestedenum"}
 	for _, folder := range cases {
 		t.Run(folder, func(t *testing.T) {
 			testFrom(t, filepath.Join("testdata", folder), "temp.h", false, false)
