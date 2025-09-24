@@ -408,8 +408,15 @@
               ],
               "Type": {
                 "Name": {
-                  "Name": "is_metadata4",
-                  "_Type": "Ident"
+                  "Parent": {
+                    "Name": "NestedEnum4",
+                    "_Type": "Ident"
+                  },
+                  "X": {
+                    "Name": "is_metadata4",
+                    "_Type": "Ident"
+                  },
+                  "_Type": "ScopingExpr"
                 },
                 "Tag": 2,
                 "_Type": "TagExpr"
