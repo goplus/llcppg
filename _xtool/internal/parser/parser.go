@@ -901,6 +901,7 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 		// case 2: anonymous enum, nested
 		if isAnonymousDecl {
 			// by default, the type of an anonymous enum is int
+			// NOTE(MeteorsLiu): see disscussion https://github.com/goplus/llcppg/pull/530
 			return &ast.BuiltinType{Kind: ast.Int}
 		}
 		// case3: named enum, nested
