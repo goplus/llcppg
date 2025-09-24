@@ -892,7 +892,7 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 	hasParent := clangutils.HasParent(decl)
 	// NOTE(MeteorsLiu): nested enum behaves different from nested struct, for example, we can find its semantic parent
 	// however, it will cause we misidentified it as a class method expr, so take it out
-	if (hasParent || isAnonymousDecl) && decl.Kind == clang.CursorEnumDecl {
+	if isAnonymousDecl && decl.Kind == clang.CursorEnumDecl {
 		// case 1: anonymous enum, but not nested
 		if !hasParent {
 			// this is not a nested enum, handle it normally
@@ -904,12 +904,7 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 			// NOTE(MeteorsLiu): see disscussion https://github.com/goplus/llcppg/pull/530
 			return &ast.BuiltinType{Kind: ast.Int}
 		}
-		// case3: named enum, nested
-		return &ast.TagExpr{
-			Tag: ast.Enum,
-			// for typedef enum
-			Name: &ast.Ident{Name: parts[len(parts)-1]},
-		}
+		// case3: named enum, nested, fallback to process as a ElaboratedType
 		// case 4: named enum, non-nested, fallback to process as a ElaboratedType normally.
 	}
 
