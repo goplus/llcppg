@@ -19,7 +19,7 @@ llcppg is a binding generator that bridges C/C++ libraries to LLGo (a Go-based c
 - `cmd/` - Main executables (llcppg, llcppcfg, gogensig)
 - `_xtool/` - LLGo-compiled tools (llcppsymg, llcppsigfetch)
 - `cl/` - Core conversion logic and AST processing
-- `parser/` - C/C++ header file parsing
+- `parser/` - C/C++ header file parsing interface. The core C AST to internal AST conversion logic is in `_xtool/internal/parser`, compiled with LLGo
 - `config/` - Configuration file handling
 - `_llcppgtest/` - Real-world binding examples (cjson, sqlite, lua, etc.)
 - `_demo/` - Simple demonstration projects
@@ -69,8 +69,6 @@ llcppg has strict dependencies that MUST be installed in the correct order:
 bash ./install.sh
 ```
 
-**NEVER CANCEL**: This takes 2-3 minutes including LLGo compilation. Set timeouts to 10+ minutes.
-
 This script installs all five core tools. Without it, tests will fail.
 
 ## Building and Testing
@@ -81,21 +79,19 @@ This script installs all five core tools. Without it, tests will fail.
 go build -v ./...
 ```
 
-Timing: ~15 seconds. Build always succeeds without LLGo dependencies.
-
 ### Testing Strategy
 
 #### Quick Tests (Standard Go)
 ```bash
 go test -v ./config ./internal/name ./internal/arg ./internal/unmarshal
 ```
-Timing: ~2 seconds. Always run these first for quick validation.
+Always run these first for quick validation.
 
 #### Full Test Suite
 ```bash
 go test -v ./...
 ```
-Timing: 8-12 minutes. Some tests require LLGo tools installed via `install.sh`.
+Some tests require LLGo tools installed via `install.sh`.
 
 #### LLGo-Dependent Tests
 ```bash
@@ -103,13 +99,11 @@ llgo test ./_xtool/internal/...
 llgo test ./_xtool/llcppsigfetch/internal/...
 llgo test ./_xtool/llcppsymg/internal/...
 ```
-**NEVER CANCEL**: Takes 3-5 minutes. Set timeout to 10+ minutes.
 
 #### Demo Validation
 ```bash
 bash .github/workflows/test_demo.sh
 ```
-**NEVER CANCEL**: Takes 5-10 minutes. Set timeout to 15+ minutes.
 
 ### Pre-Commit Validation
 
@@ -120,8 +114,6 @@ go fmt ./...
 go vet ./...
 go test -timeout=10m ./...
 ```
-
-Timing: 8-12 minutes total. **NEVER CANCEL** - set timeout to 20+ minutes.
 
 ## Usage Workflow
 
@@ -135,8 +127,6 @@ Examples:
 - `llcppcfg cjson` - Basic configuration
 - `llcppcfg -cpp libname` - For C++ libraries
 - `llcppcfg -deps "c/os,github.com/author/llpkg" libname` - With dependencies
-
-Timing: Instant (< 1 second).
 
 ### 2. Edit Configuration
 
@@ -154,8 +144,6 @@ Edit the generated `llcppg.cfg` to specify:
 ```bash
 llcppg [config-file]
 ```
-
-**NEVER CANCEL**: Takes 30 seconds to 5 minutes. Set timeout to 10+ minutes.
 
 ### 4. Validate Output
 
@@ -263,18 +251,8 @@ Example: `c/os` → `github.com/goplus/lib/c/os`
 - MUST install via `bash ./install.sh`
 - Do not skip this step
 
-**Parser tests failing**
-- Install llclang: `llgo install ./_xtool/llclang`
-
 **Demo tests failing**
 - Verify library dependencies (libcjson-dev, etc.) are installed
-
-### Performance Expectations
-
-- Build time: 15 seconds (Go only), 2-3 minutes (with install.sh)
-- Test time: 2 seconds (basic), 8-15 minutes (full suite)
-- Demo time: 5-10 minutes
-- Memory usage: 2-4GB during LLVM compilation
 
 ## Working with Examples
 
@@ -297,13 +275,12 @@ Each contains:
 
 After making changes, ALWAYS:
 
-1. Build: `go build -v ./...`
-2. Install tools: `bash ./install.sh` (**ESSENTIAL**)
-3. Generate test config: `llcppcfg sqlite`
-4. Edit config to add proper headers
-5. Run binding generation: `llcppg llcppg.cfg`
-6. Verify Go files are generated
-7. Test with example from `_demo/` or `_llcppgtest/`
+1. Install tools: `bash ./install.sh` (**ESSENTIAL**)
+2. Generate test config: `llcppcfg sqlite`
+3. Edit config to add proper headers
+4. Run binding generation: `llcppg llcppg.cfg`
+5. Verify Go files are generated
+6. Test with example from `_demo/` or `_llcppgtest/`
 
 ## Important Constraints
 
@@ -313,17 +290,6 @@ After making changes, ALWAYS:
 - LLVM 19 (exact version)
 
 **NEVER** use different versions without updating the entire toolchain.
-
-### Timeout Settings
-
-Many operations are CPU-intensive. Set appropriate timeouts:
-
-- `install.sh`: 10+ minutes
-- Full tests: 20+ minutes
-- Demo tests: 15+ minutes
-- Binding generation: 10+ minutes
-
-**NEVER CANCEL** long-running operations - they will complete successfully with proper timeout settings.
 
 ### Header File Order
 
@@ -350,8 +316,8 @@ Header files in `include` must be in dependency order. If `filter.h` uses types 
 
 The project uses GitHub Actions workflows:
 
-- `.github/workflows/go.yml` - Main test suite (8-15 minutes)
-- `.github/workflows/end2end.yml` - End-to-end validation (15-30 minutes)
+- `.github/workflows/go.yml` - Main test suite
+- `.github/workflows/end2end.yml` - End-to-end validation
 - `.github/workflows/test_demo.sh` - Demo validation script
 
 These run automatically on PR and provide validation feedback.
@@ -361,15 +327,12 @@ These run automatically on PR and provide validation feedback.
 - Check `README.md` for comprehensive usage documentation
 - Review design documentation in `doc/en/dev/`
 - Study working examples in `_llcppgtest/`
-- Reference `.github/copilot-instructions.md` for detailed build instructions
 
 ## Key Principles
 
 1. **Always install tools first** - Run `bash ./install.sh` before testing
-2. **Set generous timeouts** - LLGo compilation takes time
-3. **Follow dependency order** - LLGo requires specific LLVM and commit versions
-4. **Validate thoroughly** - Run full test suite and demos
-5. **Study examples** - Real-world bindings in `_llcppgtest/` are the best reference
-6. **Never cancel long operations** - They complete successfully with proper timeouts
+2. **Follow dependency order** - LLGo requires specific LLVM and commit versions
+3. **Validate thoroughly** - Run full test suite and demos
+4. **Study examples** - Real-world bindings in `_llcppgtest/` are the best reference
 
 This guide provides the foundation for working effectively with llcppg. For detailed technical specifications, always reference the design documentation in `doc/en/dev/`.
