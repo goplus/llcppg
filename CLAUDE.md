@@ -60,6 +60,8 @@ llcppg has strict dependencies that MUST be installed in the correct order:
    export LLGO_ROOT=$(pwd)
    cd ..
    ```
+   
+   **Note**: This LLGo version is a development version. The specific commit is required for compatibility.
 
 ### Installation
 
@@ -81,17 +83,11 @@ go build -v ./...
 
 ### Testing Strategy
 
-#### Quick Tests (Standard Go)
+#### Unit Tests (Priority)
 ```bash
 go test -v ./config ./internal/name ./internal/arg ./internal/unmarshal
 ```
-Always run these first for quick validation.
-
-#### Full Test Suite
-```bash
-go test -v ./...
-```
-Some tests require LLGo tools installed via `install.sh`.
+Always run these unit tests first for quick validation before running the full test suite.
 
 #### LLGo-Dependent Tests
 ```bash
@@ -99,6 +95,12 @@ llgo test ./_xtool/internal/...
 llgo test ./_xtool/llcppsigfetch/internal/...
 llgo test ./_xtool/llcppsymg/internal/...
 ```
+
+#### Full Test Suite
+```bash
+go test -v ./...
+```
+Some tests require LLGo tools installed via `install.sh`.
 
 #### Demo Validation
 ```bash
@@ -281,6 +283,40 @@ After making changes, ALWAYS:
 4. Run binding generation: `llcppg llcppg.cfg`
 5. Verify Go files are generated
 6. Test with example from `_demo/` or `_llcppgtest/`
+
+### Unit Test Verification for New Features
+
+When adding a new feature to llcppg, follow this workflow to verify your changes:
+
+1. **Create a test case** in `cl/internal/convert/_testdata/` with:
+   - A `conf/` directory containing `llcppg.cfg` and `llcppg.symb.json`
+   - An `hfile/` directory with your test header files
+   - Configuration that exercises your new feature
+
+2. **Generate the expected output** using the `testFrom` function:
+   - Temporarily set `gen:true` in the test call to generate `gogensig.expect`
+   - Run the test: `go test -v ./cl/internal/convert -run TestFromTestdata`
+   - This creates the expected output file that future test runs will compare against
+
+3. **Verify the test passes** with `gen:false`:
+   - Change back to `gen:false` (or remove the gen parameter)
+   - Run the test again to ensure it passes
+   - The test compares generated output against `gogensig.expect`
+
+4. **Do NOT commit the test case** to the repository unless it's a permanent regression test
+   - Use test cases for verification during development
+   - Only add to `_testdata/` if it should be part of the test suite
+
+**Example test structure:**
+```
+cl/internal/convert/_testdata/yourfeature/
+├── conf/
+│   ├── llcppg.cfg
+│   └── llcppg.symb.json
+├── hfile/
+│   └── test.h
+└── gogensig.expect  (generated with gen:true)
+```
 
 ## Important Constraints
 
