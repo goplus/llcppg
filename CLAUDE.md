@@ -368,7 +368,7 @@ These run automatically on PR and provide validation feedback.
 
 ## Getting Help
 
-- Check `README.md` for comprehensive usage documentation
+- Check [README.md](README.md) for comprehensive usage documentation
 - Review design documentation in `doc/en/dev/`
 - Study working examples in `_llcppgtest/`
 
