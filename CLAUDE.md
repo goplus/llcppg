@@ -156,9 +156,11 @@ Check the generated Go package:
 
 ## Architecture and Design
 
+For detailed technical specifications, see [llcppg Design Documentation](doc/en/dev/llcppg.md).
+
 ### Type Mapping System
 
-llcppg converts C/C++ types to Go types following strict rules:
+llcppg converts C/C++ types to Go types following strict rules. For complete details, see [Type Mapping](doc/en/dev/llcppg.md#type-mapping).
 
 #### Basic Types
 - `int` → `c.Int`
@@ -203,6 +205,8 @@ func (recv_ *Sqlite3) Close() c.Int {
 
 ### Name Conversion Rules
 
+For complete details, see [Name Mapping Rules](doc/en/dev/llcppg.md#name-mapping-rules).
+
 1. **Type Names**: Convert to PascalCase after removing configured prefixes
    - `cJSON_Hooks` → `CJSONHooks` (or `Hooks` with `trimPrefixes: ["cJSON_"]`)
    - `sqlite3_destructor_type` → `Sqlite3DestructorType`
@@ -216,6 +220,8 @@ func (recv_ *Sqlite3) Close() c.Int {
 
 ### Dependency System
 
+For complete details, see [Dependency](doc/en/dev/llcppg.md#dependency).
+
 llcppg handles cross-package dependencies through:
 
 1. **llcppg.pub** - Type mapping table (C type → Go type name)
@@ -225,6 +231,8 @@ llcppg handles cross-package dependencies through:
 Example: `c/os` → `github.com/goplus/lib/c/os`
 
 ### File Generation Rules
+
+For complete details, see [File Generation Rules](doc/en/dev/llcppg.md#file-generation-rules).
 
 - **Interface headers** (in `include`): Each generates a `.go` file
 - **Implementation headers** (same directory): Content goes in `{name}_autogen.go`
