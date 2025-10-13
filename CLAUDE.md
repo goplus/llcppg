@@ -117,43 +117,6 @@ go vet ./...
 go test -timeout=10m ./...
 ```
 
-## Usage Workflow
-
-### 1. Generate Configuration
-
-```bash
-llcppcfg [options] libname
-```
-
-Examples:
-- `llcppcfg cjson` - Basic configuration
-- `llcppcfg -cpp libname` - For C++ libraries
-- `llcppcfg -deps "c/os,github.com/author/llpkg" libname` - With dependencies
-
-### 2. Edit Configuration
-
-Edit the generated `llcppg.cfg` to specify:
-- `include`: Header files to process
-- `cflags`: Compiler flags
-- `libs`: Library flags
-- `trimPrefixes`: Prefixes to remove from names
-- `deps`: Dependencies on other packages
-- `typeMap`: Custom type name mappings
-- `symMap`: Custom function name mappings
-
-### 3. Generate Bindings
-
-```bash
-llcppg [config-file]
-```
-
-### 4. Validate Output
-
-Check the generated Go package:
-- Type definitions match C structures
-- Functions are correctly mapped
-- Dependencies are properly imported
-
 ## Architecture and Design
 
 For detailed technical specifications, see [llcppg Design Documentation](doc/en/dev/llcppg.md).
