@@ -216,17 +216,6 @@ Each contains:
 - Generated `.go` files
 - `demo/` - Usage examples
 
-### Validation Workflow
-
-After making changes, ALWAYS:
-
-1. Install tools: `bash ./install.sh` (**ESSENTIAL**)
-2. Generate test config: `llcppcfg sqlite`
-3. Edit config to add proper headers
-4. Run binding generation: `llcppg llcppg.cfg`
-5. Verify Go files are generated
-6. Test with example from `_demo/` or `_llcppgtest/`
-
 ### Unit Test Verification for New Features
 
 When adding a new feature to llcppg, follow this workflow to verify your changes:
