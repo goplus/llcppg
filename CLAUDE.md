@@ -160,84 +160,19 @@ For detailed technical specifications, see [llcppg Design Documentation](doc/en/
 
 ### Type Mapping System
 
-llcppg converts C/C++ types to Go types following strict rules. For complete details, see [Type Mapping](doc/en/dev/llcppg.md#type-mapping).
-
-#### Basic Types
-- `int` → `c.Int`
-- `unsigned int` → `c.Uint`
-- `char` → `c.Char`
-- `void*` → `c.Pointer`
-- `float` → `c.Float`
-- `double` → `c.Double`
-
-All basic types are imported from `github.com/goplus/lib/c`.
-
-#### Function Pointers
-C function pointers become Go function types with `llgo:type C` tag:
-
-```c
-typedef int (*CallBack)(void *L);
-```
-
-Becomes:
-
-```go
-// llgo:type C
-type CallBack func(c.Pointer) c.Int
-```
-
-#### Method Generation
-
-When a C function's first parameter matches a converted type, it becomes a Go method:
-
-```c
-int sqlite3_close(sqlite3*);
-```
-
-Becomes:
-
-```go
-// llgo:link (*Sqlite3).Close C.sqlite3_close
-func (recv_ *Sqlite3) Close() c.Int {
-    return 0
-}
-```
+For complete details, see [Type Mapping](doc/en/dev/llcppg.md#type-mapping).
 
 ### Name Conversion Rules
 
 For complete details, see [Name Mapping Rules](doc/en/dev/llcppg.md#name-mapping-rules).
 
-1. **Type Names**: Convert to PascalCase after removing configured prefixes
-   - `cJSON_Hooks` → `CJSONHooks` (or `Hooks` with `trimPrefixes: ["cJSON_"]`)
-   - `sqlite3_destructor_type` → `Sqlite3DestructorType`
-
-2. **Field Names**: Convert to PascalCase for export
-   - `value_string` → `Valuestring`
-
-3. **Parameters**: Preserve original case, add `_` suffix for Go keywords
-   - `func` → `func_`
-   - Variadic params always named `__llgo_va_list`
-
 ### Dependency System
 
 For complete details, see [Dependency](doc/en/dev/llcppg.md#dependency).
 
-llcppg handles cross-package dependencies through:
-
-1. **llcppg.pub** - Type mapping table (C type → Go type name)
-2. **deps field** - List of dependency packages in `llcppg.cfg`
-3. **Special aliases** - `c/` prefix maps to `github.com/goplus/lib/c/`
-
-Example: `c/os` → `github.com/goplus/lib/c/os`
-
 ### File Generation Rules
 
 For complete details, see [File Generation Rules](doc/en/dev/llcppg.md#file-generation-rules).
-
-- **Interface headers** (in `include`): Each generates a `.go` file
-- **Implementation headers** (same directory): Content goes in `{name}_autogen.go`
-- **Link file**: `{name}_autogen_link.go` contains linking info
-- **Type mapping**: `llcppg.pub` for dependency resolution
 
 ## Common Issues and Solutions
 
