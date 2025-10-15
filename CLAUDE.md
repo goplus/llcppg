@@ -27,51 +27,7 @@ llcppg is a binding generator that bridges C/C++ libraries to LLGo (a Go-based c
 
 ## Development Setup
 
-### Prerequisites
-
-llcppg has strict dependencies that MUST be installed in the correct order:
-
-1. **LLVM 19** - Exactly version 19 (not compatible with other versions)
-   ```bash
-   # Ubuntu/Linux
-   sudo apt-get install -y llvm-19-dev clang-19 libclang-19-dev lld-19 libunwind-19-dev libc++-19-dev
-   export PATH="/usr/lib/llvm-19/bin:$PATH"
-   
-   # macOS
-   brew install llvm@19 lld@19
-   echo "$(brew --prefix llvm@19)/bin" >> $GITHUB_PATH
-   ```
-
-2. **System Dependencies**
-   ```bash
-   # Ubuntu/Linux
-   sudo apt-get install -y pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev libcjson-dev
-   
-   # macOS
-   brew install bdw-gc openssl libffi libuv zlib cjson
-   ```
-
-3. **LLGo** - CRITICAL dependency, specific commit required
-   ```bash
-   git clone https://github.com/goplus/llgo.git .llgo
-   cd .llgo
-   git checkout f0728c4fe028fbc72455c1242cef638ebdf60454
-   go install -v ./cmd/llgo/...
-   export LLGO_ROOT=$(pwd)
-   cd ..
-   ```
-   
-   **Note**: This LLGo version is a development version. The specific commit is required for compatibility.
-
-### Installation
-
-**CRITICAL**: Always run the installation script to build all tools:
-
-```bash
-bash ./install.sh
-```
-
-This script installs all five core tools. Without it, tests will fail.
+For detailed setup instructions including prerequisites, dependencies, and installation steps, see [README.md](README.md).
 
 ## Building and Testing
 
