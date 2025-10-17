@@ -172,6 +172,9 @@ cl/internal/convert/_testdata/yourfeature/
 ## Important Constraints
 
 ### Version Requirements
+
+For detailed version requirements and installation instructions, see [README.md](README.md).
+
 - Go 1.23+
 - LLGo commit: `f0728c4fe028fbc72455c1242cef638ebdf60454`
 - LLVM 19 (exact version)
