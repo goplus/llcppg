@@ -828,7 +828,7 @@ llcppsymg is the symbol table generator in the llcppg toolchain, responsible for
 
 1. Parse library symbols: Extract exported symbols from libraries using the nm tool
 2. Parse header file declarations: Analyze C/C++ header files using libclang for function declarations
-3. Find intersection: Match library symbols with header declarations and then generate symbol table named `llcppg.symb.json`.
+3. Find intersection: Match library symbols with header declarations and then generate symbol table named `llcppg.sym.json`.
 
 #### Static Library Support
 
@@ -888,7 +888,7 @@ For example, to convert `(*CJSON).PrintUnformatted` from a method to a function,
   }
 }
 ```
-and the `llcppg.symb.json` will be:
+and the `llcppg.sym.json` will be:
 ```json
 [
   {
@@ -949,7 +949,7 @@ gogensig -  # read pkg-info-file from stdin
 ```
 
 #### Function Generation
-During execution, gogensig only generates functions whose corresponding mangle exists in `llcppg.symb.json`, determining whether to generate functions/methods with specified Go names by parsing the go field corresponding to the mangle.
+During execution, gogensig only generates functions whose corresponding mangle exists in `llcppg.sym.json`, determining whether to generate functions/methods with specified Go names by parsing the go field corresponding to the mangle.
 
 1. Regular function format: "FunctionName"
   * Generates regular functions, using `//go:linkname` annotation
