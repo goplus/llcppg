@@ -175,12 +175,6 @@ cl/internal/convert/_testdata/yourfeature/
 
 For detailed version requirements and installation instructions, see [README.md](README.md).
 
-- Go 1.23+
-- LLGo commit: `f0728c4fe028fbc72455c1242cef638ebdf60454`
-- LLVM 19 (exact version)
-
-**NEVER** use different versions without updating the entire toolchain.
-
 ### Header File Order
 
 Header files in `include` must be in dependency order. If `filter.h` uses types from `vli.h`, then `vli.h` must appear first in the `include` array.
