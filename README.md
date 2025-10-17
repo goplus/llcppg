@@ -8,7 +8,7 @@ llcppg - LLGo autogen tool for C/C++ libraries
 [![Language](https://img.shields.io/badge/language-XGo-blue.svg)](https://github.com/goplus/gop)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/goplus/llcppg)
 
-llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, enhancing the experience of integrating LLGo with C! It is worth mentioning that several core components of llcppg are built using LLGo, fully leveraging its core capability of "better integrating with the C ecosystem" for development.
+llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, and enhancing the experience of integrating LLGo with C! It is worth mentioning that several core components of llcppg are built using LLGo, fully leveraging its core capability of "better integrating with the C ecosystem" for development.
 
 ## How to install
 
@@ -57,9 +57,9 @@ The configuration file supports the following options:
 - `cflags`: Compiler flags for the C/C++ library
 - `include`: Header files to include in the binding generation
 - `libs`: Library flags for linking
-- `trimPrefixes`: Prefixes to remove from function names & type names
+- `trimPrefixes`: Prefixes to remove from function names and type names
 - `cplusplus`: Set to true for C++ libraries (not supported)
-- `deps`: Dependencies (other packages & standard libraries)
+- `deps`: Dependencies (other packages and standard libraries)
 - `mix`: Set to true when package header files are mixed with other header files in the same directory. In this mode, only files explicitly listed in `include` are processed as package files.
 - `typeMap`: Custom name mapping from C types to Go types.
 - `symMap`: Custom name mapping from C function names to Go function names.
@@ -108,7 +108,7 @@ func main() {
 	c.Printf(c.Str("%s\n"), cstr)
 }
 ```
-Run the demo with `llgo run .`, you will see the following output:
+Run the demo with `llgo run .`, and you will see the following output:
 ```
 {"hello":"llgo","hello":"llcppg"}
 ```
@@ -321,7 +321,7 @@ Each dependency package follows a unified file organization structure (using xml
 1. llcppg scans each dependency package's `llcppg.pub` file to obtain type mappings.
 2. If the dependency package's `llcppg.cfg` also contains deps configuration, llcppg will recursively process these dependencies.
 3. Type mappings from all dependency packages are loaded and registered into the conversion project.
-When a header file in the current project references types from third-party packages, it directly searches within the current conversion project scope
+When a header file in the current project references types from third-party packages, it directly searches within the current conversion project scope:
  * If a mapped type is found, it is referenced;
  * Otherwise, the user is notified of the missing type and its source header file for conversion.
 
