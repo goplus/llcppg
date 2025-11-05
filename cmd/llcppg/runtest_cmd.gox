@@ -1,0 +1,11 @@
+import (
+	self "github.com/goplus/llcppg/cmd/internal/runtest"
+)
+
+use "runtest"
+
+short "run test for llcppg"
+
+run args => {
+	self.Cmd.Run self.Cmd, args
+}

@@ -1,0 +1,11 @@
+import (
+	self "github.com/goplus/llcppg/cmd/internal/gencfg"
+)
+
+use "gencfg"
+
+short "generate llcpp.cfg"
+
+run args => {
+	self.Cmd.Run self.Cmd, args
+}

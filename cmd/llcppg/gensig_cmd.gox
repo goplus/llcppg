@@ -1,0 +1,11 @@
+import (
+	self "github.com/goplus/llcppg/cmd/internal/gensig"
+)
+
+use "gensig"
+
+short "generate signature information of C/C++ symbols"
+
+run args => {
+	self.Cmd.Run self.Cmd, args
+}

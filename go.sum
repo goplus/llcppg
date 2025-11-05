@@ -1,3 +1,5 @@
+github.com/goplus/cobra v1.9.12 h1:0F9EdEbeGyITGz+mqoHoJ5KpUw97p1CkxV74IexHw5s=
+github.com/goplus/cobra v1.9.12/go.mod h1:p4LhfNJDKEpiGjGiNn0crUXL5dUPA5DX2ztYpEJR34E=
 github.com/goplus/gogen v1.19.5 h1:YWPwpRA1PusPhptv9jKg/XiN+AQGiAD9r6I86mJ3lR4=
 github.com/goplus/gogen v1.19.5/go.mod h1:owX2e1EyU5WD+Nm6oH2m/GXjLdlBYcwkLO4wN8HHXZI=
 github.com/goplus/lib v0.3.0 h1:y0ZGb5Q/RikW1oMMB4Di7XIZIpuzh/7mlrR8HNbxXCA=

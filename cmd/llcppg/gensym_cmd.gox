@@ -1,0 +1,11 @@
+import (
+	self "github.com/goplus/llcppg/cmd/internal/gensym"
+)
+
+use "gensym"
+
+short "generate symbol table for a C/C++ library"
+
+run args => {
+	self.Cmd.Run self.Cmd, args
+}

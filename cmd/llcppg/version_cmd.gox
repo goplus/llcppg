@@ -1,0 +1,11 @@
+import (
+	self "github.com/goplus/llcppg/cmd/internal/version"
+)
+
+use "version"
+
+short "Print llcppg version"
+
+run args => {
+	self.Cmd.Run self.Cmd, args
+}

@@ -1,0 +1,11 @@
+import (
+	self "github.com/goplus/llcppg/cmd/internal/genpkg"
+)
+
+use "genpkg"
+
+short "generate a go package by signature information of symbols"
+
+run args => {
+	self.Cmd.Run self.Cmd, args
+}
