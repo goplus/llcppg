@@ -16,5 +16,5 @@ func init() {
 }
 
 func runCmd(cmd *base.Command, args []string) {
-	fmt.Printf("todo runtest")
+	fmt.Println("todo runtest")
 }

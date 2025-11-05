@@ -33,17 +33,17 @@ type Command struct {
 	Run func(cmd *Command, args []string)
 
 	// UsageLine is the one-line usage message.
-	// The words between "gop" and the first flag or argument in the line are taken to be the command name.
+	// The words between "llcppg" and the first flag or argument in the line are taken to be the command name.
 	UsageLine string
 
-	// Short is the short description shown in the 'gop help' output.
+	// Short is the short description shown in the 'llcppg help' output.
 	Short string
 
 	// Flag is a set of flags specific to this command.
 	Flag flag.FlagSet
 
 	// Commands lists the available commands and help topics.
-	// The order here is the order in which they are printed by 'gop help'.
+	// The order here is the order in which they are printed by 'llcppg help'.
 	// Note that subcommands are in general best avoided.
 	Commands []*Command
 }
@@ -51,11 +51,12 @@ type Command struct {
 // Llcppg command
 var Llcppg = &Command{
 	UsageLine: "llcppg",
-	Short:     `llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, enhancing the experience of integrating LLGo with C!`,
+	Short: `llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, 
+	enhancing the experience of integrating LLGo with C!`,
 	// Commands initialized in package main
 }
 
-// LongName returns the command's long name: all the words in the usage line between "gop" and a flag or argument,
+// LongName returns the command's long name: all the words in the usage line between "llcppg" and a flag or argument,
 func (c *Command) LongName() string {
 	name := c.UsageLine
 	if i := strings.Index(name, " ["); i >= 0 {
