@@ -6,6 +6,8 @@ use "gensym"
 
 short "generate symbol table for a C/C++ library"
 
+flagOff
+
 run args => {
 	self.Cmd.Run self.Cmd, args
 }

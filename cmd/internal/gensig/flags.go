@@ -1,4 +1,4 @@
-package gensym
+package gensig
 
 import "flag"
 

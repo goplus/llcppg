@@ -6,6 +6,7 @@ import (
 
 	"github.com/goplus/llcppg/cmd/internal/base"
 	"github.com/goplus/llcppg/cmd/llcppcfg/gen"
+	"github.com/goplus/llcppg/config"
 )
 
 var Cmd = &base.Command{
@@ -47,7 +48,7 @@ func runCmd(cmd *base.Command, args []string) {
 	if err != nil {
 		panic(err)
 	}
-	outFile := "./llcppg.cfg"
+	outFile := config.LLCPPG_CFG
 	err = os.WriteFile(outFile, buf, 0600)
 	if err != nil {
 		panic(err)
