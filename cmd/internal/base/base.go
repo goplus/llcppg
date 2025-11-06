@@ -30,8 +30,8 @@ import (
 	"github.com/goplus/llcppg/config"
 )
 
-// A Command is an implementation of a xgo command
-// like xgo export or xgo install.
+// A Command is an implementation of a llcppg command
+// like llcppg gensym or llcppg genpkg.
 type Command struct {
 	// Run runs the command.
 	// The args are the arguments after the command name.
@@ -100,6 +100,35 @@ func (c *Command) Runnable() bool {
 	return c.Run != nil
 }
 
+func RunCmdWithName(cmd *Command, args []string, name string, out *io.PipeWriter) {
+	err := cmd.Flag.Parse(args)
+	Check(err)
+
+	cfgFile := config.LLCPPG_CFG
+
+	bytesOfConf, err := config.MarshalConfigFile(cfgFile)
+	Check(err)
+
+	if cmd.Flag.NArg() == 0 {
+		args = append(args, "-")
+	}
+
+	nameCmd := exec.Command(name, args...)
+	nameCmd.Stdin = bytes.NewReader(bytesOfConf)
+	nameCmd.Stdout = os.Stdout
+	if out != nil {
+		nameCmd.Stdout = out
+	}
+	nameCmd.Stderr = os.Stderr
+	nameCmd.Run()
+}
+
+func Check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Usage is the usage-reporting function, filled in by package main
 // but here for reference by other packages.
 //
@@ -115,29 +144,4 @@ func Main(c *Command, app string, args []string) {
 		c.UsageLine = app + name[i:]
 	}
 	c.Run(c, args)
-}
-
-func RunCmdWithName(cmd *Command, args []string, name string) {
-	err := cmd.Flag.Parse(args)
-	check(err)
-
-	cfgFile := config.LLCPPG_CFG
-	bytesOfConf, err := config.MarshalConfigFile(cfgFile)
-	check(err)
-
-	if cmd.Flag.NArg() == 0 {
-		args = append(args, "-")
-	}
-
-	nameCmd := exec.Command(name, args...)
-	nameCmd.Stdin = bytes.NewReader(bytesOfConf)
-	nameCmd.Stdout = os.Stdout
-	nameCmd.Stderr = os.Stderr
-	nameCmd.Run()
-}
-
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
 }

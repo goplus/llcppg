@@ -15,5 +15,5 @@ func init() {
 }
 
 func runCmd(cmd *base.Command, args []string) {
-	base.RunCmdWithName(cmd, args, "llcppsigfetch")
+	base.RunCmdWithName(cmd, args, "llcppsigfetch", nil)
 }

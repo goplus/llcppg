@@ -60,3 +60,10 @@ func MarshalConfigFile(cfgFile string) ([]byte, error) {
 	}
 	return json.MarshalIndent(&conf, "", "  ")
 }
+
+func HandleMarshalConfigFile(cfgFile string, handle func(b []byte, err error)) {
+	b, err := MarshalConfigFile(cfgFile)
+	if handle != nil {
+		handle(b, err)
+	}
+}

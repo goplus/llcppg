@@ -6,6 +6,8 @@ use "genpkg"
 
 short "generate a go package by signature information of symbols"
 
+flagOff
+
 run args => {
 	self.Cmd.Run self.Cmd, args
 }
