@@ -4,7 +4,7 @@ import (
 
 use "version"
 
-short "Print llcppg version"
+short "Print llcppgx version"
 
 run args => {
 	self.Cmd.Run self.Cmd, args

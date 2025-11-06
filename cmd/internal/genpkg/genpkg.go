@@ -23,9 +23,7 @@ func init() {
 
 func runCmd(cmd *base.Command, args []string) {
 	err := cmd.Flag.Parse(args)
-	if err != nil {
-		panic(err)
-	}
+	base.Check(err)
 
 	cfgFile := config.LLCPPG_CFG
 
@@ -44,7 +42,6 @@ func runCmd(cmd *base.Command, args []string) {
 			if cmd.Flag.NArg() == 0 {
 				llcppsigfetchCmdArgs = append(llcppsigfetchCmdArgs, "-")
 			}
-			fmt.Println(llcppsigfetchCmdArgs)
 			llcppsigfetchCmd := exec.Command("llcppsigfetch", llcppsigfetchCmdArgs...)
 			llcppsigfetchCmd.Stdin = bytes.NewReader(b)
 			llcppsigfetchCmd.Stdout = w

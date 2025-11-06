@@ -1,0 +1,15 @@
+short `	
+llcppgx aims to be a tool for automatically generating LLGo bindings for C/C++ libraries.
+
+In order to convert C/C++ library to go package, you should do the steps as folows:
+
+1、llcppgx init <libname>
+For exampe, run 'llcppgx init libcjson', it will init llcppg.cfg for libcjson library.
+In order to successfully convert the C/C++ library, you should carefully inspect and edit llcppg.cfg.
+
+2、llcppgx gensym
+It will generates and edits the symbol table for the libcjson library.
+
+3、llcppgx genpkg -mod "github.com/goplus/cjson"
+It will enerates a go package for the libcjson library.
+`

@@ -30,47 +30,47 @@ import (
 	"github.com/goplus/llcppg/config"
 )
 
-// A Command is an implementation of a llcppg command
-// like llcppg gensym or llcppg genpkg.
+// A Command is an implementation of a llcppgx command
+// like llcppgx gensym or llcppgx genpkg.
 type Command struct {
 	// Run runs the command.
 	// The args are the arguments after the command name.
 	Run func(cmd *Command, args []string)
 
 	// UsageLine is the one-line usage message.
-	// The words between "llcppg" and the first flag or argument in the line are taken to be the command name.
+	// The words between "llcppgx" and the first flag or argument in the line are taken to be the command name.
 	UsageLine string
 
-	// Short is the short description shown in the 'llcppg help' output.
+	// Short is the short description shown in the 'llcppgx help' output.
 	Short string
 
 	// Flag is a set of flags specific to this command.
 	Flag flag.FlagSet
 
 	// Commands lists the available commands and help topics.
-	// The order here is the order in which they are printed by 'llcppg help'.
+	// The order here is the order in which they are printed by 'llcppgx help'.
 	// Note that subcommands are in general best avoided.
 	Commands []*Command
 }
 
 // Llcppg command
 var Llcppg = &Command{
-	UsageLine: "llcppg",
-	Short: `llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, 
+	UsageLine: "llcppgx",
+	Short: `llcppgx aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, 
 	enhancing the experience of integrating LLGo with C!`,
 	// Commands initialized in package main
 }
 
-// LongName returns the command's long name: all the words in the usage line between "llcppg" and a flag or argument,
+// LongName returns the command's long name: all the words in the usage line between "llcppgx" and a flag or argument,
 func (c *Command) LongName() string {
 	name := c.UsageLine
 	if i := strings.Index(name, " ["); i >= 0 {
 		name = name[:i]
 	}
-	if name == "llcppg" {
+	if name == "llcppgx" {
 		return ""
 	}
-	return strings.TrimPrefix(name, "llcppg ")
+	return strings.TrimPrefix(name, "llcppgx ")
 }
 
 // Name returns the command's short name: the last word in the usage line before a flag or argument.
