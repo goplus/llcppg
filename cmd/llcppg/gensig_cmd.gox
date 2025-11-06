@@ -6,6 +6,8 @@ use "gensig"
 
 short "generate signature information of C/C++ symbols"
 
+flagOff
+
 run args => {
 	self.Cmd.Run self.Cmd, args
 }

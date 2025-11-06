@@ -1,8 +1,6 @@
 package gensig
 
 import (
-	"fmt"
-
 	"github.com/goplus/llcppg/cmd/internal/base"
 )
 
@@ -13,8 +11,9 @@ var Cmd = &base.Command{
 
 func init() {
 	Cmd.Run = runCmd
+	addFlags(&Cmd.Flag)
 }
 
 func runCmd(cmd *base.Command, args []string) {
-	fmt.Println("todo gensig")
+	base.RunCmdWithName(cmd, args, "llcppsigfetch")
 }

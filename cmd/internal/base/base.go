@@ -19,10 +19,15 @@
 package base
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
+	"os"
+	"os/exec"
 	"strings"
+
+	"github.com/goplus/llcppg/config"
 )
 
 // A Command is an implementation of a xgo command
@@ -110,4 +115,29 @@ func Main(c *Command, app string, args []string) {
 		c.UsageLine = app + name[i:]
 	}
 	c.Run(c, args)
+}
+
+func RunCmdWithName(cmd *Command, args []string, name string) {
+	err := cmd.Flag.Parse(args)
+	check(err)
+
+	cfgFile := config.LLCPPG_CFG
+	bytesOfConf, err := config.MarshalConfigFile(cfgFile)
+	check(err)
+
+	if cmd.Flag.NArg() == 0 {
+		args = append(args, "-")
+	}
+
+	nameCmd := exec.Command(name, args...)
+	nameCmd.Stdin = bytes.NewReader(bytesOfConf)
+	nameCmd.Stdout = os.Stdout
+	nameCmd.Stderr = os.Stderr
+	nameCmd.Run()
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
