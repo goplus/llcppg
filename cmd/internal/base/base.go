@@ -56,8 +56,7 @@ type Command struct {
 // Llcppg command
 var Llcppg = &Command{
 	UsageLine: "llcppgx",
-	Short: `llcppgx aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, 
-	enhancing the experience of integrating LLGo with C!`,
+	Short:     `llcppgx aims to be a tool for automatically generating LLGo bindings for C/C++ libraries.`,
 	// Commands initialized in package main
 }
 
@@ -102,7 +101,9 @@ func (c *Command) Runnable() bool {
 
 func RunCmdWithName(cmd *Command, args []string, name string, out *io.PipeWriter) {
 	err := cmd.Flag.Parse(args)
-	Check(err)
+	if err != nil {
+		return
+	}
 
 	cfgFile := config.LLCPPG_CFG
 

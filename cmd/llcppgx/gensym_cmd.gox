@@ -2,7 +2,7 @@ import (
 	self "github.com/goplus/llcppg/cmd/internal/gensym"
 )
 
-use "gensym"
+use "gensym [flags]"
 
 short "generate symbol table for a C/C++ library"
 

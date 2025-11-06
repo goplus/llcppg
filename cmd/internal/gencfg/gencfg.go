@@ -30,6 +30,10 @@ func runCmd(cmd *base.Command, args []string) {
 		name = cmd.Flag.Arg(0)
 	}
 
+	if len(name) == 0 {
+		return
+	}
+
 	exts := strings.Fields(extsString)
 	deps := strings.Fields(dependencies)
 

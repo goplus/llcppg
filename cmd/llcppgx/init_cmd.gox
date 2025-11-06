@@ -2,7 +2,7 @@ import (
 	self "github.com/goplus/llcppg/cmd/internal/gencfg"
 )
 
-use "init"
+use "init [flags] [cpackage]"
 
 short "init llcppg.cfg config file"
 

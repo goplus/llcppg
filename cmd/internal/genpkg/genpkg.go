@@ -23,7 +23,9 @@ func init() {
 
 func runCmd(cmd *base.Command, args []string) {
 	err := cmd.Flag.Parse(args)
-	base.Check(err)
+	if err != nil {
+		return
+	}
 
 	cfgFile := config.LLCPPG_CFG
 

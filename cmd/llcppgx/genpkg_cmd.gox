@@ -2,7 +2,7 @@ import (
 	self "github.com/goplus/llcppg/cmd/internal/genpkg"
 )
 
-use "genpkg"
+use "genpkg [flags]"
 
 short "generate a go package by signature information of symbols"
 
