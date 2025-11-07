@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/goplus/llgo/xtool/env"
 )
@@ -37,7 +39,33 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func isPathWithinCurrentDirectory(targetPath string) (bool, error) {
+	// Get the absolute path of the current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		return false, fmt.Errorf("failed to get current working directory: %w", err)
+	}
+
+	// Get the absolute path of the target path
+	absTargetPath, err := filepath.Abs(targetPath)
+	if err != nil {
+		return false, fmt.Errorf("failed to get absolute path for target: %w", err)
+	}
+
+	// Clean both paths for consistent comparison
+	cleanedCwd := filepath.Clean(cwd)
+	cleanedAbsTargetPath := filepath.Clean(absTargetPath)
+
+	// Check if the cleaned absolute target path starts with the cleaned absolute current directory path
+	return strings.HasPrefix(cleanedAbsTargetPath, cleanedCwd), nil
+}
+
 func ParseConfigFile(cfgFile string) (*Config, error) {
+	ok, _ := isPathWithinCurrentDirectory(cfgFile)
+	if !ok {
+		return nil, fmt.Errorf("ParseConfigFile:%s is not within current directory", cfgFile)
+	}
+
 	openCfgFile, err := os.Open(cfgFile)
 	if err != nil {
 		return nil, err

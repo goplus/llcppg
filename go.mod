@@ -11,4 +11,4 @@ require (
 	github.com/qiniu/x v1.15.1
 )
 
-require golang.org/x/mod v0.27.0 // indirect
+require golang.org/x/mod v0.27.0

@@ -9,6 +9,7 @@ import (
 
 	"github.com/goplus/llcppg/cmd/internal/base"
 	"github.com/goplus/llcppg/config"
+	"golang.org/x/mod/module"
 )
 
 var Cmd = &base.Command{
@@ -27,6 +28,9 @@ func runCmd(cmd *base.Command, args []string) {
 		return
 	}
 
+	err = module.CheckPath(modulePath)
+	base.Check(err)
+
 	cfgFile := config.LLCPPG_CFG
 
 	config.HandleMarshalConfigFile(cfgFile, func(b []byte, err error) {
@@ -35,6 +39,7 @@ func runCmd(cmd *base.Command, args []string) {
 
 		r, w := io.Pipe()
 
+		errCh := make(chan error, 1)
 		go func() {
 			defer w.Close()
 			llcppsigfetchCmdArgs := make([]string, 0)
@@ -48,14 +53,11 @@ func runCmd(cmd *base.Command, args []string) {
 			llcppsigfetchCmd.Stdin = bytes.NewReader(b)
 			llcppsigfetchCmd.Stdout = w
 			llcppsigfetchCmd.Stderr = os.Stderr
-			err = llcppsigfetchCmd.Run()
-			base.Check(err)
+			errCh <- llcppsigfetchCmd.Run()
 		}()
 
 		gogensigCmdArgs := make([]string, 0)
-		if len(modulePath) > 0 {
-			gogensigCmdArgs = append(gogensigCmdArgs, fmt.Sprintf("-mod=%s", modulePath))
-		}
+		gogensigCmdArgs = append(gogensigCmdArgs, fmt.Sprintf("-mod=%s", modulePath))
 		if verbose {
 			gogensigCmdArgs = append(gogensigCmdArgs, "-v")
 		}
@@ -65,5 +67,9 @@ func runCmd(cmd *base.Command, args []string) {
 		gogensigCmd.Stderr = os.Stderr
 		err = gogensigCmd.Run()
 		base.Check(err)
+
+		if fetchErr := <-errCh; fetchErr != nil {
+			base.Check(fetchErr)
+		}
 	})
 }

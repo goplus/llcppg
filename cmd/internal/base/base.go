@@ -121,7 +121,7 @@ func RunCmdWithName(cmd *Command, args []string, name string, out *io.PipeWriter
 		nameCmd.Stdout = out
 	}
 	nameCmd.Stderr = os.Stderr
-	nameCmd.Run()
+	Check(nameCmd.Run())
 }
 
 func Check(err error) {
