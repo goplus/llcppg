@@ -1,0 +1,13 @@
+import (
+	self "github.com/goplus/llcppg/cmd/internal/gencfg"
+)
+
+use "init [flags] [cpackage]"
+
+short "init llcppg.cfg config file"
+
+flagOff
+
+run args => {
+	self.Cmd.Run self.Cmd, args
+}

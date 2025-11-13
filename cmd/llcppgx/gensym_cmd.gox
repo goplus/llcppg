@@ -1,0 +1,13 @@
+import (
+	self "github.com/goplus/llcppg/cmd/internal/gensym"
+)
+
+use "gensym [flags]"
+
+short "generate symbol table for a C/C++ library"
+
+flagOff
+
+run args => {
+	self.Cmd.Run self.Cmd, args
+}
