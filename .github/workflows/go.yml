@@ -21,8 +21,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-        llvm: [19]
-        llgo: [e4218f90d7926d31c1ffae3965a4e36228d38fd2]
+        llgo: [v0.11.6]
         go: [1.23]
       fail-fast: false
     runs-on: ${{matrix.os}}
@@ -32,7 +31,6 @@ jobs:
       uses: ./.github/actions/setup-llcppg
       with:
         go: ${{ matrix.go }}
-        llvm: ${{ matrix.llvm }}
         llgo: ${{ matrix.llgo }}
 
     - name: Setup Test Dependencies
