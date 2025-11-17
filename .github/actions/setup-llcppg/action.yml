@@ -43,6 +43,8 @@ runs:
   - name: Install llcppg modules
     shell: bash
     run: |
-      export PATH="$GITHUB_WORKSPACE/llgo/bin:$PATH"
+      export PATH="$LLGO_ROOT/bin:$PATH"
+      echo "Using LLGO_ROOT: $LLGO_ROOT"
+      echo "PATH: $PATH"
       llgo install ./_xtool/llclang
       bash ./install.sh
