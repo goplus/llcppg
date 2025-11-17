@@ -43,6 +43,7 @@ runs:
   - name: Install llcppg modules
     shell: bash
     run: |
+      export PATH="$LLGO_ROOT/bin:$PATH"
       echo "Using LLGO_ROOT: $LLGO_ROOT"
       llgo install ./_xtool/llclang
       bash ./install.sh
