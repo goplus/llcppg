@@ -38,14 +38,12 @@ URL="https://github.com/goplus/llgo/releases/download/${VERSION}/${FILENAME}"
 echo "Downloading llgo from: $URL"
 wget -q "$URL" -O llgo.tar.gz
 
-# Extract to .llgo directory
-mkdir -p .llgo
-tar -xzf llgo.tar.gz -C .llgo --strip-components=1
+# Extract to llgo directory
+mkdir -p llgo
+tar -xzf llgo.tar.gz -C llgo --strip-components=1
 rm llgo.tar.gz
 
-# Set LLGO_ROOT and add to PATH
-export LLGO_ROOT="$GITHUB_WORKSPACE/.llgo"
-echo "LLGO_ROOT=$LLGO_ROOT" >> "$GITHUB_ENV"
-echo "$LLGO_ROOT/bin" >> "$GITHUB_PATH"
+# Add to PATH
+echo "$GITHUB_WORKSPACE/llgo/bin" >> "$GITHUB_PATH"
 
-echo "LLGo ${VERSION} installed successfully to $LLGO_ROOT"
+echo "LLGo ${VERSION} installed successfully to $GITHUB_WORKSPACE/llgo"
