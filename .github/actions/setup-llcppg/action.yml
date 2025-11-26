@@ -8,48 +8,34 @@ inputs:
     description: "LLVM version to install (e.g. 18)"
     default: "19"
   llgo:
-    description: "LLGo git ref or tag"
-    default: "e4218f90d7926d31c1ffae3965a4e36228d38fd2"
+    description: "LLGo version (e.g., v0.11.6)"
+    default: "v0.11.6"
 runs:
   using: "composite"
   steps:
   - uses: actions/checkout@v4
-  - name: Checkout LLGo
-    uses: actions/checkout@v4
-    with:
-      repository: 'goplus/llgo'
-      path: '.llgo'
-      ref: ${{inputs.llgo}}
   - name: Set up Go
     uses: actions/setup-go@v4
     with:
       go-version: ${{inputs.go}}
-  - name: Install dependencies
+  - name: Install dependencies (macOS)
     if: runner.os == 'macOS'
     shell: bash
     run: |
-      brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv lld@${{inputs.llvm}}
+      brew install bdw-gc openssl libffi libuv
       brew install zlib # for llgo test .
       brew link --force zlib # for llgo test .
       brew link --force libffi
-      echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
-      echo "$(brew --prefix lld@${{inputs.llvm}})/bin" >> $GITHUB_PATH
-  - name: Install dependencies
+  - name: Install dependencies (Linux)
     shell: bash
     if: runner.os == 'Linux'
     run: |
-      echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{inputs.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
-      wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       sudo apt-get update
-      sudo apt-get install -y llvm-${{inputs.llvm}}-dev clang-${{inputs.llvm}} libclang-${{inputs.llvm}}-dev lld-${{inputs.llvm}} libunwind-${{inputs.llvm}}-dev libc++-${{inputs.llvm}}-dev pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
-      echo "/usr/lib/llvm-${{inputs.llvm}}/bin" >> $GITHUB_PATH
-  - name: Install LLGo
+      sudo apt-get install -y pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
+  - name: Download and Install LLGo
     shell: bash
-    working-directory: .llgo
     run: |
-      go install -v ./cmd/llgo/...
-      export LLGO_ROOT=$GITHUB_WORKSPACE/.llgo
-      echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
+      bash $GITHUB_ACTION_PATH/download-llgo.sh "${{inputs.llgo}}"
   - name: Build
     shell: bash
     run: go build -v ./...
@@ -57,6 +43,8 @@ runs:
   - name: Install llcppg modules
     shell: bash
     run: |
+      export PATH="$LLGO_ROOT/bin:$PATH"
       echo "Using LLGO_ROOT: $LLGO_ROOT"
+      echo "PATH: $PATH"
       llgo install ./_xtool/llclang
       bash ./install.sh
