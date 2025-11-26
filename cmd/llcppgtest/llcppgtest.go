@@ -73,7 +73,7 @@ func RunCommand(name string, args ...string) {
 }
 
 func PkgList(r io.Reader) []string {
-	pkgs := make([]string, 0)
+	var pkgs []string
 	scan := bufio.NewScanner(r)
 	for scan.Scan() {
 		lineBuf := bytes.NewBufferString(scan.Text())
@@ -150,7 +150,7 @@ func runPkgs(pkgs []string, cfg *RunConfig) {
 	if cfg.runMode&withSymgVerbose != 0 {
 		llcppgArg = append(llcppgArg, fmt.Sprintf("-%s", VsymgFlagName))
 	}
-	runs := make([]string, 0)
+	var runs []string
 	for _, pkg := range pkgs {
 		dir := "./out/" + pkg
 		RunCommand("mkdir", "-p", dir)
