@@ -59,7 +59,7 @@ jobs:
         sudo apt install libcjson-dev liblua5.4-dev libsqlite3-dev libgmp-dev libgpg-error-dev zlib1g-dev libisl-dev libz3-dev -y
         llcppgtest -demos ./_llcppgtest
     - name: Upload Logs to Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: ${{matrix.os}}-log
