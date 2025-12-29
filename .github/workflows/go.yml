@@ -25,7 +25,7 @@ jobs:
           - macos-latest
           - ubuntu-latest
         llvm: [19]
-        llgo: [e4218f90d7926d31c1ffae3965a4e36228d38fd2]
+        llgo: [c844c7389638488cd287a719362e81fc20ff77e8]
         go: [1.23]
       fail-fast: false
     runs-on: ${{matrix.os}}
