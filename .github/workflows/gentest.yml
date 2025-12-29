@@ -2,7 +2,10 @@ name: Test Demo With Generated Pkgs
 
 on:
   push:
-    branches: [ "**" ]
+    branches:
+      - "**"
+      - "!dependabot/**"
+      - "!xgopilot/**"
   pull_request:
     branches: [ "**" ]
 

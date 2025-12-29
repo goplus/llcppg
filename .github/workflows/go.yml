@@ -5,7 +5,10 @@ name: Go
 
 on:
   push:
-    branches: [ "**" ]
+    branches:
+      - "**"
+      - "!dependabot/**"
+      - "!xgopilot/**"
   pull_request:
     branches: [ "**" ]
 
