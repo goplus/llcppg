@@ -1,5 +1,5 @@
 name: "Setup llcppg"
-description: "Install dependencies, set up Go, set up LLGo, install llcppg"
+description: "Install dependencies, set up Go, download LLGo release, install llcppg"
 inputs:
   go:
     description: "Go version to install"
@@ -8,18 +8,12 @@ inputs:
     description: "LLVM version to install (e.g. 18)"
     default: "19"
   llgo:
-    description: "LLGo git ref or tag"
-    default: "e4218f90d7926d31c1ffae3965a4e36228d38fd2"
+    description: "LLGo version to download (e.g. v0.12.0)"
+    default: "v0.12.0"
 runs:
   using: "composite"
   steps:
   - uses: actions/checkout@v4
-  - name: Checkout LLGo
-    uses: actions/checkout@v4
-    with:
-      repository: 'goplus/llgo'
-      path: '.llgo'
-      ref: ${{inputs.llgo}}
   - name: Set up Go
     uses: actions/setup-go@v4
     with:
@@ -41,15 +35,21 @@ runs:
       echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{inputs.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
       wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       sudo apt-get update
-      sudo apt-get install -y llvm-${{inputs.llvm}}-dev clang-${{inputs.llvm}} libclang-${{inputs.llvm}}-dev lld-${{inputs.llvm}} libunwind-${{inputs.llvm}}-dev libc++-${{inputs.llvm}}-dev pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
+      sudo apt-get install -y clang-${{inputs.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
       echo "/usr/lib/llvm-${{inputs.llvm}}/bin" >> $GITHUB_PATH
-  - name: Install LLGo
+  - name: Download LLGo release
     shell: bash
-    working-directory: .llgo
     run: |
-      go install -v ./cmd/llgo/...
+      bash .github/actions/setup-llcppg/download-llgo.sh ${{inputs.llgo}} .llgo
+      echo "$GITHUB_WORKSPACE/.llgo/bin" >> $GITHUB_PATH
       export LLGO_ROOT=$GITHUB_WORKSPACE/.llgo
       echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
+  - name: Verify LLGo installation
+    shell: bash
+    run: |
+      echo "LLGO_ROOT: $LLGO_ROOT"
+      llgo version
+      clang --version
   - name: Build
     shell: bash
     run: go build -v ./...
