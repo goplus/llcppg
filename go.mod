@@ -7,7 +7,7 @@ require (
 	github.com/goplus/lib v0.3.1
 	github.com/goplus/llgo v0.12.0
 	github.com/goplus/mod v0.18.0
-	github.com/qiniu/x v1.15.3
+	github.com/qiniu/x v1.16.0
 )
 
 require golang.org/x/mod v0.27.0 // indirect
