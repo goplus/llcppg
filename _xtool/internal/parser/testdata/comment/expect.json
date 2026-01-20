@@ -353,19 +353,7 @@
       "Doc": {
         "List": [
           {
-            "Text": "/**\n",
-            "_Type": "Comment"
-          },
-          {
-            "Text": " * doc 1\n",
-            "_Type": "Comment"
-          },
-          {
-            "Text": " * doc 2\n",
-            "_Type": "Comment"
-          },
-          {
-            "Text": " */\n",
+            "Text": "/**\n * doc 1\n * doc 2\n */\n",
             "_Type": "Comment"
           }
         ],
@@ -524,15 +512,7 @@
               "Doc": {
                 "List": [
                   {
-                    "Text": "/**\n",
-                    "_Type": "Comment"
-                  },
-                  {
-                    "Text": "     * static field doc\n",
-                    "_Type": "Comment"
-                  },
-                  {
-                    "Text": "     */\n",
+                    "Text": "/**\n     * static field doc\n     */\n",
                     "_Type": "Comment"
                   }
                 ],
@@ -584,15 +564,7 @@
               "Doc": {
                 "List": [
                   {
-                    "Text": "/**\n",
-                    "_Type": "Comment"
-                  },
-                  {
-                    "Text": "     * field doc\n",
-                    "_Type": "Comment"
-                  },
-                  {
-                    "Text": "     */\n",
+                    "Text": "/**\n     * field doc\n     */\n",
                     "_Type": "Comment"
                   }
                 ],
@@ -672,15 +644,7 @@
             "Doc": {
               "List": [
                 {
-                  "Text": "/**\n",
-                  "_Type": "Comment"
-                },
-                {
-                  "Text": "     * method doc\n",
-                  "_Type": "Comment"
-                },
-                {
-                  "Text": "     */\n",
+                  "Text": "/**\n     * method doc\n     */\n",
                   "_Type": "Comment"
                 }
               ],
