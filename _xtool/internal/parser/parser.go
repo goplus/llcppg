@@ -193,10 +193,28 @@ func (ct *Converter) ParseCommentGroup(cursor clang.Cursor) (comentGroup *ast.Co
 }
 
 func (ct *Converter) ParseComment(rawComment string) *ast.CommentGroup {
-	lines := strings.Split(rawComment, "\n")
 	commentGroup := &ast.CommentGroup{}
+
+	// Check if this is a block comment (/* ... */)
+	trimmed := strings.TrimSpace(rawComment)
+	if strings.HasPrefix(trimmed, "/*") && strings.HasSuffix(trimmed, "*/") {
+		// For block comments, keep the entire comment as a single node
+		// Remove the trailing newline if present to match Go's Comment convention
+		text := rawComment
+		if strings.HasSuffix(text, "\n") {
+			text = text[:len(text)-1]
+		}
+		commentGroup.List = append(commentGroup.List, &ast.Comment{Text: text})
+		return commentGroup
+	}
+
+	// For line comments (// ...) or other formats, split by line
+	lines := strings.Split(rawComment, "\n")
 	for _, line := range lines {
-		commentGroup.List = append(commentGroup.List, &ast.Comment{Text: line + "\n"})
+		if line != "" || len(lines) == 1 {
+			// Preserve empty lines only if it's a single line
+			commentGroup.List = append(commentGroup.List, &ast.Comment{Text: line + "\n"})
+		}
 	}
 	return commentGroup
 }
