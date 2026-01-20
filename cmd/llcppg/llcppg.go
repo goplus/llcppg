@@ -114,7 +114,7 @@ func main() {
 	flag.BoolVar(&vSigfetch, "vfetch", false, "Enable verbose of llcppsigfetch")
 	flag.BoolVar(&vSymg, "vsymg", false, "Enable verbose of llcppsymg")
 	flag.BoolVar(&vGogen, "vgogen", false, "Enable verbose of gogensig")
-	flag.BoolVar(&symbGen, "symbgen", false, "Only use llcppsymg to generate llcppg.symb.json")
+	flag.BoolVar(&symbGen, "symbgen", false, "Only use llcppsymg to generate llcppg.sym.json")
 	flag.BoolVar(&codeGen, "codegen", false, "Only use (llcppsigfetch & gogensig) to generate go code binding")
 	flag.BoolVar(&help, "h", false, "Display help information")
 	flag.BoolVar(&help, "help", false, "Display help information")
