@@ -193,11 +193,28 @@ func (ct *Converter) ParseCommentGroup(cursor clang.Cursor) (comentGroup *ast.Co
 }
 
 func (ct *Converter) ParseComment(rawComment string) *ast.CommentGroup {
-	lines := strings.Split(rawComment, "\n")
 	commentGroup := &ast.CommentGroup{}
-	for _, line := range lines {
-		commentGroup.List = append(commentGroup.List, &ast.Comment{Text: line + "\n"})
+
+	// Block comments (/* ... */ or /** ... */) should be kept as a single Comment node.
+	// Go's ast.Comment documentation states: "A Comment node represents a single //-style or /*-style comment."
+	// This means the entire block comment must be ONE ast.Comment node, not split across multiple nodes.
+	if strings.HasPrefix(rawComment, "/*") {
+		// Ensure the comment ends with newline for proper formatting
+		text := rawComment
+		if !strings.HasSuffix(text, "\n") {
+			text += "\n"
+		}
+		commentGroup.List = append(commentGroup.List, &ast.Comment{Text: text})
+	} else {
+		// Line comments (// or ///) - each line is a separate Comment node
+		lines := strings.Split(rawComment, "\n")
+		for _, line := range lines {
+			if line != "" {
+				commentGroup.List = append(commentGroup.List, &ast.Comment{Text: line + "\n"})
+			}
+		}
 	}
+
 	return commentGroup
 }
 
