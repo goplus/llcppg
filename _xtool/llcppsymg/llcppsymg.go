@@ -86,7 +86,7 @@ func main() {
 	jsonData, err := json.MarshalIndent(symbolTable, "", "  ")
 	check(err)
 
-	err = os.WriteFile(llcppg.LLCPPG_SYMB, jsonData, os.ModePerm)
+	err = os.WriteFile(llcppg.LLCPPG_SYMB, jsonData, 0644)
 	check(err)
 }
 
