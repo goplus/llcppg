@@ -44,12 +44,14 @@ func TestBlockCommentSingleNode(t *testing.T) {
 	assertValidGoCode(t, goDoc, "BlockCommentSingleNode")
 }
 
-func TestBlockCommentSplitByNewlines_Invalid(t *testing.T) {
-	// This test demonstrates the WRONG approach that causes the bug
-	// Splitting a block comment by newlines creates invalid Go code with gogen v1.20.2
+func TestBlockCommentSplitByNewlines_Merged(t *testing.T) {
+	// This test verifies that the conversion layer correctly merges
+	// split block comments back into a single node.
+	// The parser outputs multi-line block comments as separate lines with \n,
+	// and the conversion layer should merge them.
 	blockComment := "/* Create an iterator for traversing a domain\n   The domain NULL denotes the default domain */"
 
-	// WRONG: Split block comment by newlines (old behavior)
+	// Simulate what the parser outputs: split by newlines with \n at end
 	lines := strings.Split(blockComment, "\n")
 	var llcppgComments []*llcppgast.Comment
 	for _, line := range lines {
@@ -57,17 +59,16 @@ func TestBlockCommentSplitByNewlines_Invalid(t *testing.T) {
 	}
 	llcppgDoc := &llcppgast.CommentGroup{List: llcppgComments}
 
-	// Convert to Go AST
+	// Convert to Go AST - should merge into single node
 	goDoc := convert.NewCommentGroupFromC(llcppgDoc)
 
-	// This produces multiple Comment nodes (wrong!)
-	if len(goDoc.List) == 1 {
-		t.Skip("If this passes with 1 node, the test setup may be wrong")
+	// This should now produce 1 Comment node (merged)
+	if len(goDoc.List) != 1 {
+		t.Errorf("Expected 1 Comment node after merging, got %d", len(goDoc.List))
 	}
 
-	// With gogen v1.20.2, this should produce invalid Go code
-	// Skip validation as we expect this to be invalid
-	t.Logf("Created %d Comment nodes (wrong approach, may cause invalid Go code)", len(goDoc.List))
+	// Verify the merged comment is valid Go
+	assertValidGoCode(t, goDoc, "BlockCommentMerged")
 }
 
 func TestLineCommentsSplitByNewlines(t *testing.T) {
