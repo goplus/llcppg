@@ -177,26 +177,34 @@ func createLoc(cursor clang.Cursor) *ast.Location {
 //
 // Note: In cases where both documentation comments and line comments conceptually exist,
 // only the line comment will be preserved.
-func (ct *Converter) ParseCommentGroup(cursor clang.Cursor) (comentGroup *ast.CommentGroup, isDoc bool) {
+func (ct *Converter) ParseCommentGroup(cursor clang.Cursor) (*ast.CommentGroup, bool) {
 	rawComment := toStr(cursor.RawCommentText())
-	commentGroup := &ast.CommentGroup{}
-	if rawComment != "" {
-		commentRange := cursor.CommentRange()
-		cursorRange := cursor.Extent()
-		isDoc := getOffset(commentRange.RangeStart()) < getOffset(cursorRange.RangeStart())
-		commentGroup = ct.ParseComment(rawComment)
-		if len(commentGroup.List) > 0 {
-			return commentGroup, isDoc
-		}
+	if rawComment == "" {
+		return nil, false
+	}
+	commentRange := cursor.CommentRange()
+	cursorRange := cursor.Extent()
+	isDoc := getOffset(commentRange.RangeStart()) < getOffset(cursorRange.RangeStart())
+	commentGroup := ct.ParseComment(rawComment)
+	if len(commentGroup.List) > 0 {
+		return commentGroup, isDoc
 	}
 	return nil, false
 }
 
 func (ct *Converter) ParseComment(rawComment string) *ast.CommentGroup {
-	lines := strings.Split(rawComment, "\n")
 	commentGroup := &ast.CommentGroup{}
-	for _, line := range lines {
-		commentGroup.List = append(commentGroup.List, &ast.Comment{Text: line + "\n"})
+	if strings.HasPrefix(rawComment, "/*") {
+		// Block comments (/* ... */) are kept as a single ast.Comment node.
+		text := strings.TrimRight(rawComment, "\n")
+		commentGroup.List = []*ast.Comment{{Text: text}}
+	} else {
+		// Line comments (// ...) are split into one node per line.
+		for _, line := range strings.Split(rawComment, "\n") {
+			if line != "" {
+				commentGroup.List = append(commentGroup.List, &ast.Comment{Text: line})
+			}
+		}
 	}
 	return commentGroup
 }
