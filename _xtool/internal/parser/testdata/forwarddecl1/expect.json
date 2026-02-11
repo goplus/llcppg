@@ -384,7 +384,7 @@
               "Comment": {
                 "List": [
                   {
-                    "Text": "/* Methods for an open file */\n",
+                    "Text": "/* Methods for an open file */",
                     "_Type": "Comment"
                   }
                 ],
@@ -663,11 +663,11 @@
               "Doc": {
                 "List": [
                   {
-                    "Text": "// char in ast will got unsigned char \u0026 signed char and they are same in go\n",
+                    "Text": "// char in ast will got unsigned char \u0026 signed char and they are same in go",
                     "_Type": "Comment"
                   },
                   {
-                    "Text": "    // but in ast,will have different,but with compare test,we need avoid these senario\n",
+                    "Text": "    // but in ast,will have different,but with compare test,we need avoid these senario",
                     "_Type": "Comment"
                   }
                 ],
@@ -700,7 +700,7 @@
               "Comment": {
                 "List": [
                   {
-                    "Text": "/* active function */\n",
+                    "Text": "/* active function */",
                     "_Type": "Comment"
                   }
                 ],
