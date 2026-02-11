@@ -75,9 +75,18 @@ go test -timeout=10m ./...
 
 ### After Modifying LLGo-Compiled Components
 
-When you modify code under `_xtool/` (e.g., `_xtool/internal/parser`), you **MUST**:
+The following components are built with LLGo and installed via `bash ./install.sh`:
 
-1. **Run `bash ./install.sh`** to rebuild and install the LLGo-compiled tools (`llcppsigfetch`, `llcppsymg`, etc.)
+- **llcppsigfetch** (`_xtool/llcppsigfetch/`) — parses C/C++ headers into JSON AST
+- **llcppsymg** (`_xtool/llcppsymg/`) — extracts symbols from C/C++ libraries
+
+These tools share internal packages under `_xtool/internal/` (e.g., `parser`, `libclang`, `clangtool`).
+
+Tests such as `TestFromTestdata` (`cl/internal/convert`) invoke `llcppsigfetch` as a subprocess, so they depend on the installed binary being up to date.
+
+**When you modify any code under `_xtool/` (including its internal dependencies), you MUST:**
+
+1. **Run `bash ./install.sh`** to rebuild and reinstall the LLGo-compiled tools
 2. **Run `go test -v ./cl/internal/convert -run TestFromTestdata`** to verify the changes
 3. **If test output changes are expected**, temporarily set `gen:true` in the test to regenerate expected output (`gogensig.expect`), verify it is correct, then set back to `gen:false`
 4. **Do NOT skip these tests or mark them as "requires CI"** — they can and should be run locally after `install.sh`
