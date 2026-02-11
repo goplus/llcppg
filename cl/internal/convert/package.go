@@ -197,6 +197,9 @@ func (p *Package) handleFuncDecl(fnSpec *GoFuncSpec, sig *types.Signature, funcD
 	}
 
 	doc := NewCommentGroupFromC(funcDecl.Doc)
+	if hasBlockComment(doc) {
+		doc.List = append(doc.List, &goast.Comment{Slash: token.NoPos, Text: "//"})
+	}
 	doc.List = append(doc.List, NewFuncDocComment(funcDecl.Name.Name, fnPubName))
 	decl.SetComments(p.p, doc)
 	return nil

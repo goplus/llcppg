@@ -168,3 +168,63 @@ func TestMultiLineBlockCommentWithGogen(t *testing.T) {
 		})
 	}
 }
+
+// TestBlockCommentWithLinkname verifies that block comments followed by
+// //go:linkname directives produce valid Go code with the directive on its
+// own line (not concatenated after the block comment closing "*/").
+func TestBlockCommentWithLinkname(t *testing.T) {
+	tests := []struct {
+		name    string
+		comment string
+	}{
+		{
+			name:    "single_line_block",
+			comment: "/* A simple comment */",
+		},
+		{
+			name:    "multi_line_block",
+			comment: "/* Create an iterator for traversing a domain\n   The domain NULL denotes the default domain */",
+		},
+		{
+			name:    "javadoc_style",
+			comment: "/**\nFoo comment\n*/",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pkg := gogen.NewPackage("", "demo", nil)
+
+			commentGroup := &goast.CommentGroup{
+				List: []*goast.Comment{
+					{Slash: token.NoPos, Text: tt.comment},
+					{Slash: token.NoPos, Text: "//"},
+					{Slash: token.NoPos, Text: "//go:linkname Foo C.Foo"},
+				},
+			}
+
+			fn := pkg.NewFunc(nil, "Foo", nil, nil, false)
+			fn.SetComments(pkg, commentGroup)
+			fn.BodyStart(pkg).End()
+
+			var buf strings.Builder
+			err := gogen.WriteTo(&buf, pkg, "")
+			if err != nil {
+				t.Fatalf("gogen.WriteTo error: %v", err)
+			}
+
+			code := buf.String()
+			// The //go:linkname must be on its own line to avoid
+			// "misplaced compiler directive" errors.
+			if strings.Contains(code, "*///go:linkname") {
+				t.Errorf("//go:linkname should not be on the same line as */\nCode:\n%s", code)
+			}
+
+			fset := token.NewFileSet()
+			_, err = parser.ParseFile(fset, "test.go", code, parser.ParseComments)
+			if err != nil {
+				t.Errorf("generated invalid Go code: %v\nCode:\n%s", err, code)
+			}
+		})
+	}
+}

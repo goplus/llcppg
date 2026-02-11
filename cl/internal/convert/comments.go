@@ -59,3 +59,13 @@ func NewCommentGroupFromC(doc *ast.CommentGroup) *goast.CommentGroup {
 	}
 	return goDoc
 }
+
+// hasBlockComment reports whether the comment group contains a block comment (/* ... */).
+func hasBlockComment(doc *goast.CommentGroup) bool {
+	for _, c := range doc.List {
+		if strings.HasPrefix(c.Text, "/*") {
+			return true
+		}
+	}
+	return false
+}
