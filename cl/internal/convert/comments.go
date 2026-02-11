@@ -37,7 +37,7 @@ func NewCommentGroupFromC(doc *ast.CommentGroup) *goast.CommentGroup {
 		for _, comment := range doc.List {
 			goDoc.List = append(goDoc.List,
 				&goast.Comment{
-					Slash: token.NoPos, Text: comment.Text,
+					Slash: token.NoPos, Text: strings.TrimRight(comment.Text, "\n"),
 				},
 			)
 		}

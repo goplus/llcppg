@@ -196,7 +196,10 @@ func (ct *Converter) ParseComment(rawComment string) *ast.CommentGroup {
 	lines := strings.Split(rawComment, "\n")
 	commentGroup := &ast.CommentGroup{}
 	for _, line := range lines {
-		commentGroup.List = append(commentGroup.List, &ast.Comment{Text: line + "\n"})
+		if line == "" {
+			continue
+		}
+		commentGroup.List = append(commentGroup.List, &ast.Comment{Text: line})
 	}
 	return commentGroup
 }

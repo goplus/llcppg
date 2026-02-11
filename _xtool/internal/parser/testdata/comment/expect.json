@@ -5,7 +5,7 @@
       "Doc": {
         "List": [
           {
-            "Text": "// not read doc 1\n",
+            "Text": "// not read doc 1",
             "_Type": "Comment"
           }
         ],
@@ -47,7 +47,7 @@
       "Doc": {
         "List": [
           {
-            "Text": "/* not read doc 2 */\n",
+            "Text": "/* not read doc 2 */",
             "_Type": "Comment"
           }
         ],
@@ -89,7 +89,7 @@
       "Doc": {
         "List": [
           {
-            "Text": "/// doc\n",
+            "Text": "/// doc",
             "_Type": "Comment"
           }
         ],
@@ -131,7 +131,7 @@
       "Doc": {
         "List": [
           {
-            "Text": "/** doc */\n",
+            "Text": "/** doc */",
             "_Type": "Comment"
           }
         ],
@@ -173,7 +173,7 @@
       "Doc": {
         "List": [
           {
-            "Text": "/*! doc */\n",
+            "Text": "/*! doc */",
             "_Type": "Comment"
           }
         ],
@@ -215,11 +215,11 @@
       "Doc": {
         "List": [
           {
-            "Text": "/// doc 1\n",
+            "Text": "/// doc 1",
             "_Type": "Comment"
           },
           {
-            "Text": "/// doc 2\n",
+            "Text": "/// doc 2",
             "_Type": "Comment"
           }
         ],
@@ -261,11 +261,11 @@
       "Doc": {
         "List": [
           {
-            "Text": "/*! doc 1 */\n",
+            "Text": "/*! doc 1 */",
             "_Type": "Comment"
           },
           {
-            "Text": "/*! doc 2 */\n",
+            "Text": "/*! doc 2 */",
             "_Type": "Comment"
           }
         ],
@@ -307,11 +307,11 @@
       "Doc": {
         "List": [
           {
-            "Text": "/** doc 1 */\n",
+            "Text": "/** doc 1 */",
             "_Type": "Comment"
           },
           {
-            "Text": "/** doc 1 */\n",
+            "Text": "/** doc 1 */",
             "_Type": "Comment"
           }
         ],
@@ -353,19 +353,19 @@
       "Doc": {
         "List": [
           {
-            "Text": "/**\n",
+            "Text": "/**",
             "_Type": "Comment"
           },
           {
-            "Text": " * doc 1\n",
+            "Text": " * doc 1",
             "_Type": "Comment"
           },
           {
-            "Text": " * doc 2\n",
+            "Text": " * doc 2",
             "_Type": "Comment"
           },
           {
-            "Text": " */\n",
+            "Text": " */",
             "_Type": "Comment"
           }
         ],
@@ -423,7 +423,7 @@
               "Doc": {
                 "List": [
                   {
-                    "Text": "/// doc\n",
+                    "Text": "/// doc",
                     "_Type": "Comment"
                   }
                 ],
@@ -448,7 +448,7 @@
               "Comment": {
                 "List": [
                   {
-                    "Text": "///\u003c comment\n",
+                    "Text": "///\u003c comment",
                     "_Type": "Comment"
                   }
                 ],
@@ -474,7 +474,7 @@
               "Comment": {
                 "List": [
                   {
-                    "Text": "/*!\u003c comment */\n",
+                    "Text": "/*!\u003c comment */",
                     "_Type": "Comment"
                   }
                 ],
@@ -524,15 +524,15 @@
               "Doc": {
                 "List": [
                   {
-                    "Text": "/**\n",
+                    "Text": "/**",
                     "_Type": "Comment"
                   },
                   {
-                    "Text": "     * static field doc\n",
+                    "Text": "     * static field doc",
                     "_Type": "Comment"
                   },
                   {
-                    "Text": "     */\n",
+                    "Text": "     */",
                     "_Type": "Comment"
                   }
                 ],
@@ -557,7 +557,7 @@
               "Comment": {
                 "List": [
                   {
-                    "Text": "/*!\u003c static field comment */\n",
+                    "Text": "/*!\u003c static field comment */",
                     "_Type": "Comment"
                   }
                 ],
@@ -584,15 +584,15 @@
               "Doc": {
                 "List": [
                   {
-                    "Text": "/**\n",
+                    "Text": "/**",
                     "_Type": "Comment"
                   },
                   {
-                    "Text": "     * field doc\n",
+                    "Text": "     * field doc",
                     "_Type": "Comment"
                   },
                   {
-                    "Text": "     */\n",
+                    "Text": "     */",
                     "_Type": "Comment"
                   }
                 ],
@@ -617,7 +617,7 @@
               "Comment": {
                 "List": [
                   {
-                    "Text": "///\u003c field comment\n",
+                    "Text": "///\u003c field comment",
                     "_Type": "Comment"
                   }
                 ],
@@ -643,7 +643,7 @@
               "Comment": {
                 "List": [
                   {
-                    "Text": "/*!\u003c protected field comment */\n",
+                    "Text": "/*!\u003c protected field comment */",
                     "_Type": "Comment"
                   }
                 ],
@@ -672,15 +672,15 @@
             "Doc": {
               "List": [
                 {
-                  "Text": "/**\n",
+                  "Text": "/**",
                   "_Type": "Comment"
                 },
                 {
-                  "Text": "     * method doc\n",
+                  "Text": "     * method doc",
                   "_Type": "Comment"
                 },
                 {
-                  "Text": "     */\n",
+                  "Text": "     */",
                   "_Type": "Comment"
                 }
               ],
