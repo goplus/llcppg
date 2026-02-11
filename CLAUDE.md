@@ -89,7 +89,6 @@ Tests such as `TestFromTestdata` (`cl/internal/convert`) invoke `llcppsigfetch` 
 1. **Run `bash ./install.sh`** to rebuild and reinstall the LLGo-compiled tools
 2. **Run `go test -v ./cl/internal/convert -run TestFromTestdata`** to verify the changes
 3. **If test output changes are expected**, temporarily set `gen:true` in the test to regenerate expected output (`gogensig.expect`), verify it is correct, then set back to `gen:false`
-4. **Do NOT skip these tests or mark them as "requires CI"** — they can and should be run locally after `install.sh`
 
 ## Architecture and Design
 
