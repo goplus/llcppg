@@ -87,8 +87,9 @@ Tests such as `TestFromTestdata` (`cl/internal/convert`) invoke `llcppsigfetch` 
 **When you modify any code under `_xtool/` (including its internal dependencies), you MUST:**
 
 1. **Run `bash ./install.sh`** to rebuild and reinstall the LLGo-compiled tools
-2. **Run `go test -v ./cl/internal/convert -run TestFromTestdata`** to verify the changes
-3. **If test output changes are expected**, temporarily set `gen:true` in the test to regenerate expected output (`gogensig.expect`), verify it is correct, then set back to `gen:false`
+2. **Run the unit tests first** to verify the modified packages work correctly, and check that any test output changes are expected (e.g., `llgo test ./_xtool/internal/parser`, `llgo test ./_xtool/internal/header`)
+3. **Run `go test -v ./cl/internal/convert -run TestFromTestdata`** to verify the dependent tests pass
+4. **If test output changes are expected**, temporarily set `gen:true` in the test to regenerate expected output (`gogensig.expect`), verify it is correct, then set back to `gen:false`
 
 ## Architecture and Design
 
