@@ -17,7 +17,7 @@ type MessageIteratorType struct {
 type MessageIteratorT *MessageIteratorType
 
 /* Create an iterator for traversing a domain of a PO file in memory.
-   The domain NULL denotes the default domain.  */
+   The domain NULL denotes the default domain.  */ //
 //go:linkname MessageIterator C.po_message_iterator
 func MessageIterator(file FileT, domain *c.Char) MessageIteratorT
 

@@ -31,36 +31,26 @@ type Ip4Addr struct {
 }
 type Ip4AddrT Ip4Addr
 
-/** Args to LWIP_NSC_LINK_CHANGED callback */
-
-type LinkChangedS struct {
+/** Args to LWIP_NSC_LINK_CHANGED callback */ type LinkChangedS struct {
 	State c.Int
 }
 
-/** Args to LWIP_NSC_STATUS_CHANGED callback */
-
-type StatusChangedS struct {
+/** Args to LWIP_NSC_STATUS_CHANGED callback */ type StatusChangedS struct {
 	State c.Int
 }
 
-/** Args to LWIP_NSC_IPV4_ADDRESS_CHANGED|LWIP_NSC_IPV4_GATEWAY_CHANGED|LWIP_NSC_IPV4_NETMASK_CHANGED|LWIP_NSC_IPV4_SETTINGS_CHANGED callback */
-
-type Ipv4ChangedS struct {
+/** Args to LWIP_NSC_IPV4_ADDRESS_CHANGED|LWIP_NSC_IPV4_GATEWAY_CHANGED|LWIP_NSC_IPV4_NETMASK_CHANGED|LWIP_NSC_IPV4_SETTINGS_CHANGED callback */ type Ipv4ChangedS struct {
 	OldAddress *IpAddrT
 	OldNetmask *IpAddrT
 	OldGw      *IpAddrT
 }
 
-/** Args to LWIP_NSC_IPV6_SET callback */
-
-type Ipv6SetS struct {
+/** Args to LWIP_NSC_IPV6_SET callback */ type Ipv6SetS struct {
 	AddrIndex  c.Int
 	OldAddress *IpAddrT
 }
 
-/** Args to LWIP_NSC_IPV6_ADDR_STATE_CHANGED callback */
-
-type Ipv6AddrStateChangedS struct {
+/** Args to LWIP_NSC_IPV6_ADDR_STATE_CHANGED callback */ type Ipv6AddrStateChangedS struct {
 	AddrIndex c.Int
 	OldState  c.Int
 	Address   *IpAddrT
