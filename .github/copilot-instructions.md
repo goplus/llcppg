@@ -27,7 +27,7 @@ llcppg requires LLGo (https://github.com/goplus/llgo) and specific LLVM version.
   ```bash
   git clone https://github.com/goplus/llgo.git .llgo
   cd .llgo
-  git checkout f0728c4fe028fbc72455c1242cef638ebdf60454
+  git checkout 298669b02c41190b2be623fcacace56a01ced3d7
   go install -v ./cmd/llgo/...
   export LLGO_ROOT=$(pwd)
   cd ..
@@ -135,7 +135,7 @@ go test -timeout=10m ./...
 
 ### Build Requirements Checklist
 - [ ] Go 1.23+ installed
-- [ ] LLGo installed with exact commit: `f0728c4fe028fbc72455c1242cef638ebdf60454`
+- [ ] LLGo installed with exact commit: `298669b02c41190b2be623fcacace56a01ced3d7`
 - [ ] LLVM 19 development libraries installed  
 - [ ] System dependencies (libcjson-dev, libgc-dev, etc.) installed
 - [ ] PATH includes LLVM 19 binary directory
@@ -194,7 +194,7 @@ Each contains working `llcppg.cfg` with proper `include`, `cflags`, `libs`, and 
 
 ### Critical Dependencies
 This project has hard dependencies on:
-- Specific LLGo commit (f0728c4fe028fbc72455c1242cef638ebdf60454)
+- Specific LLGo commit (298669b02c41190b2be623fcacace56a01ced3d7)
 - LLVM 19 (not compatible with other versions)
 - System C libraries for target bindings (libcjson-dev for cjson examples)
 
