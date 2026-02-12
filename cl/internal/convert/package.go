@@ -597,7 +597,13 @@ func (p *Package) createEnumType(goName string, enumName *ast.Ident, pnc nc.Node
 }
 
 func (p *Package) createEnumItems(pnc nc.NodeConverter, decl *ast.EnumTypeDecl, enumType types.Type) error {
-	defs := p.NewConstGroup()
+	var defs *ConstGroup
+	ensureDefs := func() *ConstGroup {
+		if defs == nil {
+			defs = p.NewConstGroup()
+		}
+		return defs
+	}
 	for _, item := range decl.Type.Items {
 		goName, err := pnc.ConvEnumItem(decl, item)
 		if err != nil {
@@ -623,7 +629,7 @@ func (p *Package) createEnumItems(pnc nc.NodeConverter, decl *ast.EnumTypeDecl, 
 		if err != nil {
 			return fmt.Errorf("createEnumItems:fail to convert %T to int: %w", item.Value, err)
 		}
-		defs.New(val, enumType, name)
+		ensureDefs().New(val, enumType, name)
 	}
 	return nil
 }
