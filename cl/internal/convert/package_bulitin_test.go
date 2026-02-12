@@ -2,6 +2,7 @@ package convert
 
 import (
 	"bytes"
+	goast "go/ast"
 	"go/token"
 	"go/types"
 	"strings"
@@ -251,5 +252,26 @@ func TestNoEmptyConstGroupWhenAllEnumItemsSkipped(t *testing.T) {
 	constCount := strings.Count(output, "const (")
 	if constCount != 1 {
 		t.Errorf("expected exactly 1 const block, got %d.\nOutput:\n%s", constCount, output)
+	}
+
+	// Also verify at the AST level: no const GenDecl with empty Specs
+	// should exist in the package's corresponding ast.File.
+	goFile := pkg.p.ASTFile("temp.go")
+	if goFile == nil {
+		t.Fatal("expected ast.File for temp.go, got nil")
+	}
+	constDeclCount := 0
+	for _, decl := range goFile.Decls {
+		genDecl, ok := decl.(*goast.GenDecl)
+		if !ok || genDecl.Tok != token.CONST {
+			continue
+		}
+		constDeclCount++
+		if len(genDecl.Specs) == 0 {
+			t.Error("found empty const declaration in AST (no Specs)")
+		}
+	}
+	if constDeclCount != 1 {
+		t.Errorf("expected exactly 1 const GenDecl in AST, got %d", constDeclCount)
 	}
 }
