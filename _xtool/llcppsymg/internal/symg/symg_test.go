@@ -584,7 +584,7 @@ const char* test_function_3(void) {
 `
 
 	cSourcePath := filepath.Join(tempDir, "test.c")
-	err = os.WriteFile(cSourcePath, []byte(cSource), os.ModePerm)
+	err = os.WriteFile(cSourcePath, []byte(cSource), 0644)
 	if err != nil {
 		t.Fatal(err)
 	}

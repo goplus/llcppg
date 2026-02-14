@@ -67,7 +67,7 @@ func testFrom(t *testing.T, dir string, filename string, isCpp, gen bool) {
 	output, _ := json.MarshalIndent(&js, "", "  ")
 
 	if gen {
-		err = os.WriteFile(filepath.Join(dir, "expect.json"), output, os.ModePerm)
+		err = os.WriteFile(filepath.Join(dir, "expect.json"), output, 0644)
 		if err != nil {
 			t.Fatal("WriteFile failed:", err)
 		}

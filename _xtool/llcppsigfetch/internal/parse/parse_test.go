@@ -89,7 +89,7 @@ func testFrom(t *testing.T, conf *parse.Config, dir string, gen bool) {
 
 	expectFile := filepath.Join(dir, "expect.json")
 	if gen {
-		err := os.WriteFile(expectFile, output, os.ModePerm)
+		err := os.WriteFile(expectFile, output, 0644)
 		if err != nil {
 			t.Fatal("WriteFile failed:", err)
 		}

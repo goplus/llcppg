@@ -194,7 +194,7 @@ func testFrom(t *testing.T, tc testCase, isStatic bool, gen bool) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = os.WriteFile(processCfgPath, cfgContent, os.ModePerm)
+		err = os.WriteFile(processCfgPath, cfgContent, 0644)
 		if err != nil {
 			t.Fatal(err)
 		}
