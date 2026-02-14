@@ -21,16 +21,20 @@ https://github.com/goplus/llgo?tab=readme-ov-file#how-to-install
 
 ```bash
 llgo install ./cmd/llcppg
+```
 
-# Optional debug / troubleshooting tools:
+For normal package generation, only the `llcppg` binary is required.
+
+### Development tools
+
+For debugging and isolated troubleshooting, you can optionally install these standalone tools:
+
+```bash
 llgo install ./_xtool/llcppsymg
 llgo install ./_xtool/llcppsigfetch
 llgo install ./cmd/gogensig
 go install ./cmd/llcppcfg
 ```
-
-For normal package generation, only the `llcppg` binary is required.
-The standalone tools above are kept mainly for debugging and isolated troubleshooting.
 
 
 ## Usage
