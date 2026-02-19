@@ -29,8 +29,9 @@ type Config struct {
 	Pkg       *ast.File
 	NC        nc.NodeConverter
 
-	Deps []string // dependent packages
-	Libs string
+	Deps     []string // dependent packages
+	Libs     string
+	GenThird bool // trird type not in generation
 }
 
 // if modulePath is not empty, init the module by modulePath
