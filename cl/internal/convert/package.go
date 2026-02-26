@@ -59,9 +59,7 @@ type PackageConfig struct {
 func NewPackage(pnc nc.NodeConverter, config *PackageConfig) (*Package, error) {
 	gogen.GeneratedHeader = ""
 	if config.GenConf == nil {
-		config.GenConf = &gogen.Config{
-			EnableTypesalias: true,
-		}
+		config.GenConf = &gogen.Config{}
 	}
 	p := &Package{
 		p:               gogen.NewPackage(config.PkgPath, config.Name, config.GenConf),
