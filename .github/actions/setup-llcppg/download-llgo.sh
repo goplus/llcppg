@@ -39,8 +39,7 @@ esac
 # Remove 'v' prefix from version if present
 VERSION_NUMBER="${VERSION#v}"
 FILENAME="llgo${VERSION_NUMBER}.${OS}-${ARCH}.tar.gz"
-# Use fork releases while upstream release is not available yet.
-URL="https://github.com/luoliwoshang/llgo/releases/download/${VERSION}/${FILENAME}"
+URL="https://github.com/goplus/llgo/releases/download/${VERSION}/${FILENAME}"
 
 echo "Downloading LLGo ${VERSION} for ${OS}-${ARCH}..."
 echo "URL: $URL"

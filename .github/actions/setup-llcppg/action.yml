@@ -8,8 +8,8 @@ inputs:
     description: "LLVM version to install (e.g. 18)"
     default: "19"
   llgo:
-    description: "LLGo version to download (e.g. v0.12.14)"
-    default: "v0.12.14"
+    description: "LLGo version to download (e.g. v0.12.2)"
+    default: "v0.12.2"
 runs:
   using: "composite"
   steps:
