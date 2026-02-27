@@ -158,7 +158,7 @@ Each contains:
 When adding a new feature to llcppg, follow this workflow to verify your changes:
 
 1. **Create a test case** in `cl/internal/convert/_testdata/` with:
-   - A `conf/` directory containing `llcppg.cfg` and `llcppg.symb.json`
+   - A `conf/` directory containing `llcppg.cfg` and `llcppg.sym.json`
    - An `hfile/` directory with your test header files
    - Configuration that exercises your new feature
 
@@ -181,7 +181,7 @@ When adding a new feature to llcppg, follow this workflow to verify your changes
 cl/internal/convert/_testdata/yourfeature/
 ├── conf/
 │   ├── llcppg.cfg
-│   └── llcppg.symb.json
+│   └── llcppg.sym.json
 ├── hfile/
 │   └── test.h
 └── gogensig.expect  (generated with gen:true)

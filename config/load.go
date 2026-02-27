@@ -34,7 +34,7 @@ func ConfigFromReader(reader io.Reader) (Config, error) {
 	return config, nil
 }
 
-// llcppg.symb.json
+// llcppg.sym.json
 func GetSymTableFromFile(symFile string) (symTable *SymTable, err error) {
 	bytes, err := os.ReadFile(symFile)
 	if err != nil {
