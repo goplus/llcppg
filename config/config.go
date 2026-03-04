@@ -8,7 +8,7 @@ import (
 )
 
 const LLCPPG_CFG = "llcppg.cfg"
-const LLCPPG_SYMB = "llcppg.symb.json"
+const LLCPPG_SYMB = "llcppg.sym.json"
 const LLCPPG_SIGFETCH = "llcppg.sigfetch.json"
 const LLCPPG_PUB = "llcppg.pub"
 
