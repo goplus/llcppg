@@ -7,7 +7,7 @@ import (
 )
 
 // GoFuncSpec parses and stores components of a Go function name
-// Input examples from llcppg.symb.json's "go" field:
+// Input examples from llcppg.sym.json's "go" field:
 // 1. Simple function: "AddPatchToArray"
 // 2. Method with pointer receiver: "(*Sqlite3Stmt).Sqlite3BindParameterIndex"
 // 3. Method with value receiver: "CJSONBool.CJSONCreateBool"
