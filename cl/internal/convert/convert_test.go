@@ -233,6 +233,7 @@ func testFrom(t *testing.T, dir string, gen bool, validateFunc func(t *testing.T
 		NC:        cltest.NC(&cfg, convertPkg.FileMap, cltest.GetConvSym(symbPath)),
 		Deps:      cfg.Deps,
 		Libs:      cfg.Libs,
+		GenThird:  true,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -418,7 +419,7 @@ func createJSONFile(filepath string, data any) error {
 }
 
 func callSigfetch(configFile string, dir string) ([]byte, error) {
-	cmd := exec.Command("llcppsigfetch", configFile)
+	cmd := exec.Command("llcppsigfetch", "-v", configFile)
 	cmd.Dir = dir
 
 	var out bytes.Buffer
