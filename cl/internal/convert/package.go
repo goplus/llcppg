@@ -134,7 +134,7 @@ func (p *Package) newReceiver(typ *ast.FuncType) (*types.Var, error) {
 	if err != nil {
 		return nil, fmt.Errorf("newReceiver:failed to convert type: %w", err)
 	}
-	return p.p.NewParam(token.NoPos, "recv_", recvType), nil
+	return p.p.NewParam(token.NoPos, "recv_", recvType, false), nil
 }
 
 func (p *Package) ToSigSignature(recv *types.Var, funcDecl *ast.FuncDecl) (*types.Signature, error) {

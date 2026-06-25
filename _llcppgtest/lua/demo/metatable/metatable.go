@@ -33,7 +33,7 @@ func main() {
 	L := lua.Newstate__1()
 	defer L.Close()
 
-	L.Openlibs()
+	openlibs(L)
 
 	L.Createtable(0, 0)
 	printStack(L, "After creating main table")

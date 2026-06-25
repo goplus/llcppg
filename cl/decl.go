@@ -76,7 +76,7 @@ func compileFuncDecl(ctx *blockCtx, fn *ast.FuncDecl) {
 		}
 		pkg := ctx.pkg
 		if tyRet := toType(ctx, fnType, parser.FlagGetRetType); ctypes.NotVoid(tyRet) {
-			results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet))
+			results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet, false))
 		}
 		/* TODO(xsw): check
 		sig := gogen.NewCSignature(types.NewTuple(params...), results, variadic)
@@ -119,7 +119,7 @@ func compileFuncDecl(ctx *blockCtx, fn *ast.FuncDecl) {
 			if testMain {
 				entry = "TestMain"
 				testing := pkg.Import("testing")
-				t = pkg.NewParam(token.NoPos, "t", types.NewPointer(testing.Ref("T").Type()))
+				t = pkg.NewParam(token.NoPos, "t", types.NewPointer(testing.Ref("T").Type()), false)
 				entryParams = types.NewTuple(t)
 			}
 			pkg.NewFunc(nil, entry, entryParams, nil, false).BodyStart(pkg)

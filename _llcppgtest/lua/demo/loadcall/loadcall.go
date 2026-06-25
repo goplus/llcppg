@@ -12,7 +12,7 @@ func main() {
 	L := lua.Newstate__1()
 	defer L.Close()
 
-	L.Openlibs()
+	openlibs(L)
 	if res := L.Loadstring(c.Str("print('hello world')")); res != lua.OK {
 		println("error")
 	}
