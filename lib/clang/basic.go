@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package libclang
+package clang
 
 import (
 	_ "unsafe"

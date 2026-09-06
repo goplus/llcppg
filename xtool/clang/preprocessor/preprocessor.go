@@ -32,12 +32,14 @@ var (
 	debugExecCmd bool
 )
 
+// SetDebug sets the debug flags for the preprocessor.
 func SetDebug(flags int) {
 	debugExecCmd = (flags & DbgFlagExecCmd) != 0
 }
 
 // -----------------------------------------------------------------------------
 
+// Config represents the configuration for the preprocessor.
 type Config struct {
 	Compiler    string // default: clang
 	PPFlag      string // default: -E
@@ -47,6 +49,7 @@ type Config struct {
 	Flags       []string
 }
 
+// Do runs the preprocessor on the input file and writes the output to the output file.
 func Do(infile, outfile string, conf *Config) (err error) {
 	if infile, err = filepath.Abs(infile); err != nil {
 		return
