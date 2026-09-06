@@ -94,7 +94,11 @@ func (recv_ *Sqlite3) Exec(sql *c.Char, callback func(c.Pointer, c.Int, **c.Char
 }
 ```
 
-For struct fields that are anonymous function pointers, the field type is replaced with a `c.Pointer` for description.
+To work around LLGo's inability to use anonymous function types directly in struct fields, llcppg automatically generates a corresponding named function type. This generated type is intentionally made unexported (private) to mirror C/C++ semantics, where anonymous function types are not externally accessible. Crucially, even though the type itself is private, this does not affect the ability to assign a compatible function to the field during normal use in Go. All such function types follow the specific naming convention: 
+
+```
+llgo_<namespaces>_<typename>_<nested_field_typename>_<fieldname>
+```
 
 ```c
 typedef struct Hooks {
@@ -103,9 +107,60 @@ typedef struct Hooks {
 } Hooks;
 ```
 ```go
+// llgo:type C
+type llgo_Hooks_MallocFn func(c.SizeT) c.Pointer
+// llgo:type C
+type llgo_Hooks_FreeFn func(c.Pointer)
+
 type Hooks struct {
-	MallocFn c.Pointer
-	FreeFn   c.Pointer
+	MallocFn llgo_Hooks_MallocFn
+	FreeFn   llgo_Hooks_FreeFn
+}
+```
+
+with namespace
+
+```c
+namespace A {
+  struct Hooks {
+      void *(*malloc_fn)(size_t sz);
+      void (*free_fn)(void *ptr);
+  } Hooks;
+}
+```
+```go
+// llgo:type C
+type llgo_A_Hooks_MallocFn func(c.SizeT) c.Pointer
+// llgo:type C
+type llgo_A_Hooks_FreeFn func(c.Pointer)
+
+type Hooks struct {
+	MallocFn llgo_A_Hooks_MallocFn
+	FreeFn   llgo_A_Hooks_FreeFn
+}
+```
+in nested struct
+
+```c
+struct Foo {
+    struct {
+        void *(*malloc_fn)(size_t sz);
+        void (*free_fn)(void *ptr);
+    } Hooks;
+};
+```
+```go
+// llgo:type C
+type llgo_Foo_Hooks_MallocFn func(c.SizeT) c.Pointer
+
+// llgo:type C
+type llgo_Foo_Hooks_FreeFn func(c.Pointer)
+
+type Foo struct {
+	Hooks struct {
+		MallocFn llgo_Foo_Hooks_MallocFn
+		FreeFn   llgo_Foo_Hooks_FreeFn
+	}
 }
 ```
 
