@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
@@ -39,7 +41,7 @@ func dump(c clang.Cursor) {
 // usage: llcppdump <source-file>
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("usage: llcppdump <source-file>")
+		fmt.Println("usage: llcppdump <source-file> [<language>]")
 		return
 	}
 
@@ -47,7 +49,16 @@ func main() {
 	defer idx.Dispose()
 
 	filename := os.Args[1]
-	u := idx.ParseTranslationUnit(0, filename)
+	lang := "c"
+	if len(os.Args) > 2 {
+		lang = strings.ToLower(os.Args[2])
+	} else {
+		switch filepath.Ext(filename) {
+		case ".cpp", ".hpp":
+			lang = "c++"
+		}
+	}
+	u := idx.ParseTranslationUnit(0, filename, "-x", lang)
 	defer u.Dispose()
 
 	dump(u.Cursor())
