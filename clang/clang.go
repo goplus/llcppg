@@ -31,7 +31,9 @@ type stringer interface {
 
 // String returns the Go string of a value whose String() returns a clang String.
 func String[T stringer](v T) string {
-	return clang.GoString(v.String())
+	str := v.String()
+	defer str.Dispose()
+	return c.GoString(str.CStr())
 }
 
 // -----------------------------------------------------------------------------
@@ -112,6 +114,11 @@ func (u TranslationUnit) Cursor() Cursor {
 	return u.impl.Cursor()
 }
 
+// Underlying returns the underlying clang TranslationUnit.
+func (u TranslationUnit) Underlying() *clang.TranslationUnit {
+	return u.impl
+}
+
 // -----------------------------------------------------------------------------
 
 /**
@@ -133,6 +140,21 @@ func (u TranslationUnit) Cursor() Cursor {
  * source code into the AST.
  */
 type Cursor = clang.Cursor
+
+/**
+ * Identifies a specific source location within a translation
+ * unit.
+ *
+ * Use clang_getExpansionLocation() or clang_getSpellingLocation()
+ * to map a source location to a particular file, line, and column.
+ */
+type SourceLocation = clang.SourceLocation
+
+// PresumedFile returns the presumed file name for the given source location.
+func PresumedFile(loc SourceLocation) (filename clang.String) {
+	loc.PresumedLocation(&filename, nil, nil)
+	return
+}
 
 /**
  * Describes how the traversal of the children of a particular

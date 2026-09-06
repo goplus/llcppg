@@ -1284,7 +1284,7 @@ type TranslationUnit struct {
  * Destroy the specified CXTranslationUnit object.
  */
 // llgo:link (*TranslationUnit).Dispose C.clang_disposeTranslationUnit
-func (*TranslationUnit) Dispose() {}
+func (t *TranslationUnit) Dispose() {}
 
 /**
  * Retrieve the cursor that represents the given translation unit.
@@ -1294,6 +1294,16 @@ func (*TranslationUnit) Dispose() {}
  */
 //llgo:link (*TranslationUnit).Cursor C.clang_getTranslationUnitCursor
 func (t *TranslationUnit) Cursor() (ret Cursor) {
+	return
+}
+
+// llgo:link (*TranslationUnit).File C.clang_getFile
+func (t *TranslationUnit) File(filename *c.Char) (ret File) {
+	return
+}
+
+// llgo:link (*TranslationUnit).Spelling C.clang_getTranslationUnitSpelling
+func (t *TranslationUnit) Spelling() (ret String) {
 	return
 }
 
@@ -1506,6 +1516,9 @@ type Type struct {
  * A particular source file that is part of a translation unit.
  */
 type File uintptr
+
+//llgo:link File.FileName C.clang_getFileName
+func (File) FileName() (ret String) { return }
 
 /**
  * Identifies a specific source location within a translation
@@ -2487,7 +2500,7 @@ func (c Token) Kind() (ret TokenKind) {
  * the text of an identifier or keyword.
  */
 // llgo:link (*TranslationUnit).Token C.clang_getTokenSpelling
-func (c *TranslationUnit) Token(token Token) (ret String) {
+func (t *TranslationUnit) Token(token Token) (ret String) {
 	return
 }
 
@@ -2634,26 +2647,6 @@ func (l SourceLocation) IsInSystemHeader() (ret c.Uint) {
 func (l SourceLocation) SpellingLocation(file *File, line, column, offset *c.Uint) {
 }
 
-func (l SourceLocation) File() (ret File) {
-	l.SpellingLocation(&ret, nil, nil, nil)
-	return
-}
-
-func (l SourceLocation) Line() (ret c.Uint) {
-	l.SpellingLocation(nil, &ret, nil, nil)
-	return
-}
-
-func (l SourceLocation) Column() (ret c.Uint) {
-	l.SpellingLocation(nil, nil, &ret, nil)
-	return
-}
-
-func (l SourceLocation) Offset() (ret c.Uint) {
-	l.SpellingLocation(nil, nil, nil, &ret)
-	return
-}
-
 /**
  * Retrieve the file, line and column represented by the given source
  * location, as specified in a # line directive.
@@ -2715,6 +2708,3 @@ func (r SourceRange) RangeStart() (loc SourceLocation) {
 func (r SourceRange) RangeEnd() (loc SourceLocation) {
 	return
 }
-
-//llgo:link File.FileName C.clang_getFileName
-func (File) FileName() (ret String) { return }

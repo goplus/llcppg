@@ -57,13 +57,3 @@ type StringSet struct {
  */
 // llgo:link (*StringSet).Dispose C.clang_disposeStringSet
 func (*StringSet) Dispose() {}
-
-// GoString returns the Go string representation of clangStr and disposes it.
-func GoString(clangStr String) (str string) {
-	defer clangStr.Dispose()
-	cstr := clangStr.CStr()
-	if cstr != nil {
-		str = c.GoString(cstr)
-	}
-	return
-}
