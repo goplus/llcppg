@@ -9,6 +9,8 @@
 *.dylib
 *.DS_Store
 
+_temp/
+
 # Test binary, built with `go test -c`
 *.test
 

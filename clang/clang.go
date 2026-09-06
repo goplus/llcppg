@@ -25,6 +25,17 @@ import (
 
 // -----------------------------------------------------------------------------
 
+type stringer interface {
+	String() clang.String
+}
+
+// String returns the Go string of a value whose String() returns a clang String.
+func String[T stringer](v T) string {
+	return clang.GoString(v.String())
+}
+
+// -----------------------------------------------------------------------------
+
 /**
  * An "index" that consists of a set of translation units that would
  * typically be linked together into an executable or library.

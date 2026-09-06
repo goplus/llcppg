@@ -17,20 +17,42 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"strings"
+
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/goplus/llcppg/lib/clang"
 )
 
 func dump(c clang.Cursor) {
 	clang.VisitChildren(c, func(cur, parent clang.Cursor) clang.ChildVisitResult {
+		name := clang.String(cur)
+		log.Println("==>", cur.Kind, clang.String(cur.Kind), name)
+		switch cur.Kind {
+		case lc.CursorFunctionDecl, lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
+		}
 		return clang.Continue
 	})
 }
 
+// usage: llcppdump <source-file>
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("usage: llcppdump <source-file> [<language>]")
+		return
+	}
+
 	idx := clang.CreateIndex(0, 0)
 	defer idx.Dispose()
 
-	u := idx.ParseTranslationUnit(0, "")
+	filename := os.Args[1]
+	lang := "c++"
+	if len(os.Args) > 2 {
+		lang = strings.ToLower(os.Args[2])
+	}
+	u := idx.ParseTranslationUnit(0, filename, "-x", lang)
 	defer u.Dispose()
 
 	dump(u.Cursor())
