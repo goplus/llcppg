@@ -108,7 +108,7 @@ func findDepSlice(lines []string) ([]string, string) {
 }
 
 func getClangArgs(cflags string, relpath string) []string {
-	args := make([]string, 0)
+	var args []string
 	cflagsField := strings.Fields(cflags)
 	args = append(args, cflagsField...)
 	args = append(args, "-MM")

@@ -603,7 +603,7 @@ func (ct *Converter) ProcessMethodAttributes(cursor clang.Cursor, fn *ast.FuncDe
 }
 
 func (ct *Converter) ProcessEnumType(cursor clang.Cursor) *ast.EnumType {
-	items := make([]*ast.EnumItem, 0)
+	items := []*ast.EnumItem{}
 
 	clangutils.VisitChildren(cursor, func(cursor, parent clang.Cursor) clang.ChildVisitResult {
 		if cursor.Kind == clang.CursorEnumConstantDecl {
@@ -739,7 +739,7 @@ func (ct *Converter) ProcessFieldList(cursor clang.Cursor) *ast.FieldList {
 
 // Note:Public Method is considered
 func (ct *Converter) ProcessMethods(cursor clang.Cursor) []*ast.FuncDecl {
-	methods := make([]*ast.FuncDecl, 0)
+	methods := []*ast.FuncDecl{}
 	clangutils.VisitChildren(cursor, func(subcsr, parent clang.Cursor) clang.ChildVisitResult {
 		if isMethod(subcsr) && subcsr.CXXAccessSpecifier() == clang.CXXPublic {
 			method := ct.ProcessFuncDecl(subcsr)
