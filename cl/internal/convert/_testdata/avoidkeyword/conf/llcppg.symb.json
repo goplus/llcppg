@@ -1,7 +1,0 @@
-[
-  {
-    "mangle": "lua_sethook",
-    "c++": "lua_sethook",
-    "go": "Sethook"
-  }
-]

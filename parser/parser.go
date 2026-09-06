@@ -20,7 +20,7 @@ import (
 	"go/token"
 
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llgo/xtool/clang/preprocessor"
+	"github.com/goplus/llcppg/xtool/clang/preprocessor"
 )
 
 // Config represents the configuration for parsing C/C++ source files.

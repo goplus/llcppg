@@ -1,0 +1,41 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!dependabot/**"
+      - "!xgopilot/**"
+  pull_request:
+    branches: [ "**" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+        llvm: [19]
+        llgo: [v1.0.1]
+        go: [1.27]
+      fail-fast: false
+    runs-on: ${{matrix.os}}
+    steps:
+    - name: Setup llgo
+      uses: ./.github/actions/setup-llgo
+      with:
+        go: ${{ matrix.go }}
+        llvm: ${{ matrix.llvm }}
+        llgo: ${{ matrix.llgo }}
+
+    - name: Test
+      run: |
+        llgo test -v ./...

@@ -1,0 +1,50 @@
+name: "Setup llgo"
+description: "Setup LLGo with specified Go and LLVM versions"
+inputs:
+  go:
+    description: "Go version to install"
+    default: "1.27"
+  llvm:
+    description: "LLVM version to install (e.g. 18)"
+    default: "19"
+  llgo:
+    description: "LLGo version to install (e.g. v1.0.1)"
+    default: "v1.0.1"
+runs:
+  using: "composite"
+  steps:
+  - uses: actions/checkout@v7
+  - name: Set up Go
+    uses: actions/setup-go@v7
+    with:
+      go-version: ${{inputs.go}}
+  - name: Install dependencies (macOS)
+    if: runner.os == 'macOS'
+    shell: bash
+    run: |
+      brew install llvm@${{inputs.llvm}} bdw-gc openssl libffi libuv lld@${{inputs.llvm}}
+      brew link --force libffi
+      echo "$(brew --prefix llvm@${{inputs.llvm}})/bin" >> $GITHUB_PATH
+      echo "$(brew --prefix lld@${{inputs.llvm}})/bin" >> $GITHUB_PATH
+  - name: Install dependencies (Linux)
+    shell: bash
+    if: runner.os == 'Linux'
+    run: |
+      echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{inputs.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+      wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      sudo apt-get update
+      sudo apt-get install -y clang-${{inputs.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
+      echo "/usr/lib/llvm-${{inputs.llvm}}/bin" >> $GITHUB_PATH
+  - name: Download LLGo release
+    shell: bash
+    run: |
+      bash .github/actions/setup-llgo/download-llgo.sh ${{inputs.llgo}} .llgo
+      echo "$GITHUB_WORKSPACE/.llgo/bin" >> $GITHUB_PATH
+      export LLGO_ROOT=$GITHUB_WORKSPACE/.llgo
+      echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
+  - name: Verify LLGo installation
+    shell: bash
+    run: |
+      echo "LLGO_ROOT: $LLGO_ROOT"
+      llgo version
+      clang --version

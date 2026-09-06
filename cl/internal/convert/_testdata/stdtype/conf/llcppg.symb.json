@@ -1,7 +1,0 @@
-[
-  {
-    "mangle": "testStdType",
-    "c++": "testStdType",
-    "go": "TestStdType"
-  }
-]
