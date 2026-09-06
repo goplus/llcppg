@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/goplus/llcppg/clang"
@@ -49,14 +48,9 @@ func main() {
 	defer idx.Dispose()
 
 	filename := os.Args[1]
-	lang := "c"
+	lang := "c++"
 	if len(os.Args) > 2 {
 		lang = strings.ToLower(os.Args[2])
-	} else {
-		switch filepath.Ext(filename) {
-		case ".cpp", ".hpp":
-			lang = "c++"
-		}
 	}
 	u := idx.ParseTranslationUnit(0, filename, "-x", lang)
 	defer u.Dispose()
