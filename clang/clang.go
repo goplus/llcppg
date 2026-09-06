@@ -29,7 +29,7 @@ type stringer interface {
 	String() clang.String
 }
 
-// String returns the string representation of the given stringer.
+// String returns the Go string of a value whose String() returns a clang String.
 func String[T stringer](v T) string {
 	return clang.GoString(v.String())
 }
