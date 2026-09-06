@@ -1,4 +1,4 @@
-module github.com/goplus/llcppg/_cmptest/testdata/bzip2/1.0.8/bzip2
+module github.com/xgo-dev/llcppg/_cmptest/testdata/bzip2/1.0.8/bzip2
 
 go 1.20
 

@@ -25,15 +25,15 @@ import (
 	"path/filepath"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/_xtool/parse"
-	"github.com/goplus/llcppg/_xtool/symg"
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl"
-	"github.com/goplus/llcppg/cl/nc/ncimpl"
-	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llcppg/internal/gowrite"
 	"github.com/goplus/llgo/xtool/env"
 	"github.com/qiniu/x/errors"
+	"github.com/xgo-dev/llcppg/_xtool/parse"
+	"github.com/xgo-dev/llcppg/_xtool/symg"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl"
+	"github.com/xgo-dev/llcppg/cl/nc/ncimpl"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llcppg/internal/gowrite"
 
 	// import to make it linked in go.mod
 	_ "github.com/goplus/lib/c"

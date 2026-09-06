@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/header"
-	llconfig "github.com/goplus/llcppg/config"
+	"github.com/xgo-dev/llcppg/_xtool/internal/header"
+	llconfig "github.com/xgo-dev/llcppg/config"
 )
 
 func TestPkgHfileInfo(t *testing.T) {

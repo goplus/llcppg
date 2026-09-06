@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	llcppg "github.com/goplus/llcppg/config"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 func Test_emptyStringError_Error(t *testing.T) {

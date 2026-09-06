@@ -1,8 +1,8 @@
 package parse
 
 import (
-	"github.com/goplus/llcppg/_xtool/internal/parser"
-	llcppg "github.com/goplus/llcppg/config"
+	"github.com/xgo-dev/llcppg/_xtool/internal/parser"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 func MarshalPkg(pkg *llcppg.Pkg) map[string]any {

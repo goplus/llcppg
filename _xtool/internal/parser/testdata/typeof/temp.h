@@ -1,4 +1,4 @@
-// https://github.com/goplus/llcppg/issues/497
+// https://github.com/xgo-dev/llcppg/issues/497
 typedef struct {
     int x;
     union {

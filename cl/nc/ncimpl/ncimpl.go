@@ -4,10 +4,10 @@ import (
 	"log"
 	"strings"
 
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/nc"
-	llconfig "github.com/goplus/llcppg/config"
-	"github.com/goplus/llcppg/internal/name"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/nc"
+	llconfig "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llcppg/internal/name"
 )
 
 type ThirdTypeLoc struct {

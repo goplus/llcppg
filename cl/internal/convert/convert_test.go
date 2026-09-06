@@ -12,13 +12,13 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/internal/cltest"
-	"github.com/goplus/llcppg/cl/internal/convert"
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llcppg/internal/gowrite"
 	"github.com/goplus/llgo/xtool/env"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/internal/cltest"
+	"github.com/xgo-dev/llcppg/cl/internal/convert"
+	"github.com/xgo-dev/llcppg/cmd/gogensig/unmarshal"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llcppg/internal/gowrite"
 )
 
 func init() {
@@ -371,16 +371,16 @@ func prepareEnv(name string, deps []string) (string, error) {
 	}
 
 	// with the same module to import the internal/testdata/pkg
-	err = runCommand(outputDir, "go", "mod", "init", "github.com/goplus/llcppg/cl/internal/"+name)
+	err = runCommand(outputDir, "go", "mod", "init", "github.com/xgo-dev/llcppg/cl/internal/"+name)
 	if err != nil {
 		return "", err
 	}
 
-	err = runCommand(outputDir, "go", "get", "github.com/goplus/llcppg")
+	err = runCommand(outputDir, "go", "get", "github.com/xgo-dev/llcppg")
 	if err != nil {
 		return "", err
 	}
-	err = runCommand(outputDir, "go", "mod", "edit", "-replace", "github.com/goplus/llcppg="+projectRoot)
+	err = runCommand(outputDir, "go", "mod", "edit", "-replace", "github.com/xgo-dev/llcppg="+projectRoot)
 	if err != nil {
 		return "", err
 	}

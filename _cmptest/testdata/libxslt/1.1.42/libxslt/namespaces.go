@@ -1,8 +1,9 @@
 package libxslt
 
 import (
-	"github.com/goplus/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2"
 	_ "unsafe"
+
+	"github.com/xgo-dev/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2"
 )
 
 //go:linkname NamespaceAlias C.xsltNamespaceAlias

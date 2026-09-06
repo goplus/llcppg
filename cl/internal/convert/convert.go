@@ -5,8 +5,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/nc"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/nc"
 )
 
 type dbgFlags = int

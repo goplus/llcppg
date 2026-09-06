@@ -4,8 +4,8 @@ import (
 	"go/types"
 	"testing"
 
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/internal/convert"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/internal/convert"
 )
 
 func TestBuiltinType(t *testing.T) {

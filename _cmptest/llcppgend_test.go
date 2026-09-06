@@ -12,9 +12,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/goplus/llcppg/config"
 	"github.com/goplus/llpkgstore/upstream"
 	"github.com/goplus/llpkgstore/upstream/installer/conan"
+	"github.com/xgo-dev/llcppg/config"
 )
 
 const llcppgGoVersion = "1.20.14"
@@ -34,7 +34,7 @@ type testCase struct {
 
 var testCases = []testCase{
 	{
-		modpath: "github.com/goplus/llcppg/_cmptest/testdata/cjson/1.7.18/cjson",
+		modpath: "github.com/xgo-dev/llcppg/_cmptest/testdata/cjson/1.7.18/cjson",
 		dir:     "./testdata/cjson/1.7.18",
 		pkg:     upstream.Package{Name: "cjson", Version: "1.7.18"},
 		config: map[string]string{
@@ -43,7 +43,7 @@ var testCases = []testCase{
 		demosDir: "./testdata/cjson/demo",
 	},
 	{
-		modpath: "github.com/goplus/llcppg/_cmptest/testdata/cjson/1.7.17/cjson",
+		modpath: "github.com/xgo-dev/llcppg/_cmptest/testdata/cjson/1.7.17/cjson",
 		dir:     "./testdata/cjson/1.7.17",
 		pkg:     upstream.Package{Name: "cjson", Version: "1.7.17"},
 		config: map[string]string{
@@ -52,7 +52,7 @@ var testCases = []testCase{
 		demosDir: "./testdata/cjson/demo",
 	},
 	{
-		modpath: "github.com/goplus/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2",
+		modpath: "github.com/xgo-dev/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2",
 		dir:     "./testdata/libxml2/2.13.6",
 		pkg:     upstream.Package{Name: "libxml2", Version: "2.13.6"},
 		config: map[string]string{
@@ -61,44 +61,44 @@ var testCases = []testCase{
 		demosDir: "./testdata/libxml2/demo",
 	},
 	{
-		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/sqlite3/3.49.1/sqlite3",
+		modpath:  "github.com/xgo-dev/llcppg/_cmptest/testdata/sqlite3/3.49.1/sqlite3",
 		dir:      "./testdata/sqlite3/3.49.1",
 		pkg:      upstream.Package{Name: "sqlite3", Version: "3.49.1"},
 		demosDir: "./testdata/sqlite3/demo",
 	},
 	{
-		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/zlib/1.3.1/zlib",
+		modpath:  "github.com/xgo-dev/llcppg/_cmptest/testdata/zlib/1.3.1/zlib",
 		dir:      "./testdata/zlib/1.3.1",
 		pkg:      upstream.Package{Name: "zlib", Version: "1.3.1"},
 		demosDir: "./testdata/zlib/demo",
 	},
 	{
-		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/bzip3/1.5.1/bzip3",
+		modpath:  "github.com/xgo-dev/llcppg/_cmptest/testdata/bzip3/1.5.1/bzip3",
 		dir:      "./testdata/bzip3/1.5.1",
 		pkg:      upstream.Package{Name: "bzip3", Version: "1.5.1"},
 		demosDir: "./testdata/bzip3/demo",
 	},
 	{
-		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/cargs/1.2.0/cargs",
+		modpath:  "github.com/xgo-dev/llcppg/_cmptest/testdata/cargs/1.2.0/cargs",
 		dir:      "./testdata/cargs/1.2.0",
 		pkg:      upstream.Package{Name: "cargs", Version: "1.2.0"},
 		demosDir: "./testdata/cargs/demo",
 	},
 	{
-		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/bzip2/1.0.8/bzip2",
+		modpath:  "github.com/xgo-dev/llcppg/_cmptest/testdata/bzip2/1.0.8/bzip2",
 		dir:      "./testdata/bzip2/1.0.8",
 		pkg:      upstream.Package{Name: "bzip2", Version: "1.0.8"},
 		demosDir: "./testdata/bzip2/demo",
 	},
 	{
-		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/libxslt/1.1.42/libxslt",
+		modpath:  "github.com/xgo-dev/llcppg/_cmptest/testdata/libxslt/1.1.42/libxslt",
 		dir:      "./testdata/libxslt/1.1.42",
 		pkg:      upstream.Package{Name: "libxslt", Version: "1.1.42"},
 		demosDir: "./testdata/libxslt/demo",
 	},
 
 	{
-		modpath:  "github.com/goplus/llcppg/_cmptest/testdata/libtool/2.4.7/libtool",
+		modpath:  "github.com/xgo-dev/llcppg/_cmptest/testdata/libtool/2.4.7/libtool",
 		dir:      "./testdata/libtool/2.4.7",
 		pkg:      upstream.Package{Name: "libtool", Version: "2.4.7"},
 		demosDir: "./testdata/libtool/demo",

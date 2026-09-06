@@ -75,7 +75,7 @@ jobs:
       uses: codecov/codecov-action@v5
       with:
         token: ${{secrets.CODECOV_TOKEN}}
-        slug: goplus/llcppg
+        slug: xgo-dev/llcppg
 
     - name: Test demos
       run: bash .github/workflows/test_demo.sh

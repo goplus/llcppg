@@ -8,14 +8,14 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/internal/cltest"
-	"github.com/goplus/llcppg/cl/internal/convert"
-	"github.com/goplus/llcppg/cl/nc"
-	"github.com/goplus/llcppg/cl/nc/ncimpl"
-	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llcppg/internal/name"
-	"github.com/goplus/llcppg/token"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/internal/cltest"
+	"github.com/xgo-dev/llcppg/cl/internal/convert"
+	"github.com/xgo-dev/llcppg/cl/nc"
+	"github.com/xgo-dev/llcppg/cl/nc/ncimpl"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llcppg/internal/name"
+	"github.com/xgo-dev/llcppg/token"
 )
 
 var dir string
@@ -1973,8 +1973,8 @@ func TestImport(t *testing.T) {
 	t.Run("invalid include path", func(t *testing.T) {
 		genPkg := gogen.NewPackage(".", "include", nil)
 		deps := []string{
-			"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpath",
-			"github.com/goplus/llcppg/cl/internal/convert/testdata/partfinddep",
+			"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/invalidpath",
+			"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/partfinddep",
 		}
 		_, err := convert.NewPkgDepLoader(".", genPkg, deps)
 		if err == nil {
@@ -1984,7 +1984,7 @@ func TestImport(t *testing.T) {
 	t.Run("unknown import path", func(t *testing.T) {
 		genPkg := gogen.NewPackage(".", "include", nil)
 		deps := []string{
-			"github.com/goplus/llcppg/cl/internal/convert/testdata/cjson",
+			"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/cjson",
 		}
 		loader, err := convert.NewPkgDepLoader(".", genPkg, deps)
 		if err != nil {
@@ -2000,7 +2000,7 @@ func TestImport(t *testing.T) {
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				Deps: []string{
-					"github.com/goplus/llcppg/cl/internal/convert/testdata/invalidpub",
+					"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/invalidpub",
 				},
 			},
 		})
@@ -2013,7 +2013,7 @@ func TestImport(t *testing.T) {
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				Deps: []string{
-					"github.com/goplus/llcppg/cl/internal/convert/testdata/invaliddep",
+					"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/invaliddep",
 				},
 			},
 		})
@@ -2026,8 +2026,8 @@ func TestImport(t *testing.T) {
 			OutputDir: ".",
 			PkgBase: convert.PkgBase{
 				Deps: []string{
-					"github.com/goplus/llcppg/cl/internal/convert/testdata/cjson",
-					"github.com/goplus/llcppg/cl/internal/convert/testdata/cjsonbool",
+					"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/cjson",
+					"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/cjsonbool",
 				},
 			},
 		})

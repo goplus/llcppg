@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/internal/unmarshal"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/internal/unmarshal"
 )
 
 func TestUnmarshalFile(t *testing.T) {

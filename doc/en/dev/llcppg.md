@@ -252,7 +252,7 @@ Named nested enums in C are accessible in the global scope, not just within the 
 
 **Reason**: In C, named nested enums are declared in the global scope and can be used independently. This means the enum type can be used anywhere in the code, not just within the context of the outer struct.
 
-**NOTE:** Should we add type alias here in the future? See discussion: [#530](https://github.com/goplus/llcppg/pull/530)
+**NOTE:** Should we add type alias here in the future? See discussion: [#530](https://github.com/xgo-dev/llcppg/pull/530)
 
 ```c
 typedef struct Config {

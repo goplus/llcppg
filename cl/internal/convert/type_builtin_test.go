@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/internal/cltest"
-	llcppg "github.com/goplus/llcppg/config"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/internal/cltest"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 func TestIdentRef(t *testing.T) {

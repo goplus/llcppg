@@ -1,4 +1,4 @@
-module github.com/goplus/llcppg/_demo/cjsondemo
+module github.com/xgo-dev/llcppg/_demo/cjsondemo
 
 go 1.20
 

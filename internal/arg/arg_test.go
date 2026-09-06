@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llcppg/internal/arg"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llcppg/internal/arg"
 )
 
 func TestParseArgs(t *testing.T) {

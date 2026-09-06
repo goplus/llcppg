@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/goplus/llcppg/_xtool/llclang/internal/parser"
+	"github.com/xgo-dev/llcppg/_xtool/llclang/internal/parser"
 )
 
 /*

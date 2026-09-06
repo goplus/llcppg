@@ -12,7 +12,7 @@ import (
 	"strings"
 	"unicode"
 
-	llcppg "github.com/goplus/llcppg/config"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 type Config struct {

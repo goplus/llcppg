@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	llconfig "github.com/goplus/llcppg/config"
+	llconfig "github.com/xgo-dev/llcppg/config"
 )
 
 func TestMain(t *testing.T) {

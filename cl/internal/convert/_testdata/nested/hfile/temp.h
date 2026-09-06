@@ -11,7 +11,7 @@ struct struct1
 };
 
 
-// https://github.com/goplus/llcppg/issues/514
+// https://github.com/xgo-dev/llcppg/issues/514
 // named nested struct
 struct struct_with_nested {
     struct inner_struct {
@@ -59,7 +59,7 @@ union union2
 };
 
 
-// https://github.com/goplus/llcppg/issues/514
+// https://github.com/xgo-dev/llcppg/issues/514
 struct a {
     struct b {
         struct c {

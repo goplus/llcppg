@@ -2,7 +2,7 @@ const void *ares_dns_pton(const char *ipaddr, struct ares_addr *addr);
 char *ares_dns_addr_to_ptr(const struct ares_addr *addr);
 
 
-// case for https://github.com/goplus/llcppg/issues/510
+// case for https://github.com/xgo-dev/llcppg/issues/510
 typedef enum {
     ESP_LOG_NONE = 0,
     ESP_LOG_ERROR = 1,

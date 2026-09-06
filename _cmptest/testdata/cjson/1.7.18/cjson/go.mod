@@ -1,4 +1,4 @@
-module github.com/goplus/llcppg/_cmptest/testdata/cjson/1.7.18/cjson
+module github.com/xgo-dev/llcppg/_cmptest/testdata/cjson/1.7.18/cjson
 
 go 1.20
 

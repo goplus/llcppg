@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/goplus/gogen"
-	llcppg "github.com/goplus/llcppg/config"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 type PkgDepLoader struct {

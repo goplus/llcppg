@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goplus/llcppg/cmd/llcppgtest/demo"
+	"github.com/xgo-dev/llcppg/cmd/llcppgtest/demo"
 )
 
 type FlagName string

@@ -1,4 +1,4 @@
-module github.com/goplus/llcppg
+module github.com/xgo-dev/llcppg
 
 go 1.23.0
 

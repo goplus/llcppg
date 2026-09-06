@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
-	clang "github.com/goplus/llcppg/_xtool/internal/libclang"
+	clangutils "github.com/xgo-dev/llcppg/_xtool/internal/clang"
+	clang "github.com/xgo-dev/llcppg/_xtool/internal/libclang"
 )
 
 func TestClangUtil(t *testing.T) {

@@ -1,9 +1,9 @@
 package cl
 
 import (
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/internal/convert"
-	"github.com/goplus/llcppg/cl/nc"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/internal/convert"
+	"github.com/xgo-dev/llcppg/cl/nc"
 )
 
 const DbgFlagAll = convert.DbgFlagAll

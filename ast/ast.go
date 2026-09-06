@@ -16,7 +16,7 @@
 
 package ast
 
-import "github.com/goplus/llcppg/token"
+import "github.com/xgo-dev/llcppg/token"
 
 // =============================================================================
 

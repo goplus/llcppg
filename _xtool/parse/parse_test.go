@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/parser"
-	"github.com/goplus/llcppg/_xtool/parse"
-	llcppg "github.com/goplus/llcppg/config"
+	"github.com/xgo-dev/llcppg/_xtool/internal/clangtool"
+	"github.com/xgo-dev/llcppg/_xtool/internal/parser"
+	"github.com/xgo-dev/llcppg/_xtool/parse"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 func TestInclusionMap(t *testing.T) {

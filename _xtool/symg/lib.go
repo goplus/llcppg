@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/internal/symbol"
+	"github.com/xgo-dev/llcppg/_xtool/internal/symbol"
 )
 
 type Libs struct {

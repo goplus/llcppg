@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/goplus/llcppg/_xtool/symg"
-	llcppg "github.com/goplus/llcppg/config"
-	args "github.com/goplus/llcppg/internal/arg"
+	"github.com/xgo-dev/llcppg/_xtool/symg"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	args "github.com/xgo-dev/llcppg/internal/arg"
 )
 
 func main() {

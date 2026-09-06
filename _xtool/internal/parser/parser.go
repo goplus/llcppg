@@ -9,10 +9,10 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
-	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
-	clang "github.com/goplus/llcppg/_xtool/internal/libclang"
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/token"
+	clangutils "github.com/xgo-dev/llcppg/_xtool/internal/clang"
+	clang "github.com/xgo-dev/llcppg/_xtool/internal/libclang"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/token"
 )
 
 type dbgFlags = int
@@ -288,7 +288,7 @@ func (ct *Converter) ProcessType(t clang.Type) ast.Expr {
 	ct.logln("ProcessType: TypeName:", typeName, "TypeKind:", typeKind)
 
 	if t.Kind == clang.TypeUnexposed {
-		// https://github.com/goplus/llcppg/issues/497
+		// https://github.com/xgo-dev/llcppg/issues/497
 		return ct.ProcessType(t.CanonicalType())
 	}
 
@@ -899,7 +899,7 @@ func (ct *Converter) ProcessElaboratedType(t clang.Type) ast.Expr {
 		}
 		// case 2: anonymous enum, nested (normal nested struct reference)
 		// by default, the type of an anonymous enum is int
-		// NOTE(MeteorsLiu): see disscussion https://github.com/goplus/llcppg/pull/530
+		// NOTE(MeteorsLiu): see disscussion https://github.com/xgo-dev/llcppg/pull/530
 		return &ast.BuiltinType{Kind: ast.Int}
 
 		// case 3: named enum, nested, fallback to process as a ElaboratedType (nornaml nested struct)

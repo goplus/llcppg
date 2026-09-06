@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/ld"
+	"github.com/xgo-dev/llcppg/_xtool/internal/ld"
 )
 
 func TestLdOutput(t *testing.T) {

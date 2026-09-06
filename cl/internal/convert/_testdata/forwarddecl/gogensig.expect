@@ -129,7 +129,7 @@ type X_xmlParserCtxt struct {
 type XmlParserCtxt X_xmlParserCtxt
 type HtmlParserCtxt XmlParserCtxt
 
-// https://github.com/goplus/llcppg/issues/526
+// https://github.com/xgo-dev/llcppg/issues/526
 type ForwardOnly struct {
 	Unused [8]uint8
 }

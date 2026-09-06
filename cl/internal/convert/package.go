@@ -9,10 +9,10 @@ import (
 	goast "go/ast"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/nc"
-	"github.com/goplus/llcppg/internal/name"
-	ctoken "github.com/goplus/llcppg/token"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/nc"
+	"github.com/xgo-dev/llcppg/internal/name"
+	ctoken "github.com/xgo-dev/llcppg/token"
 )
 
 // In Processing Package
@@ -336,7 +336,7 @@ func (p *Package) lookupType(name string, pnc nc.NodeConverter) (types.Type, err
 	}
 	// in third hfile but not have converted go type
 	if path, ok := pnc.Lookup(name); ok {
-		return nil, fmt.Errorf("convert %s first, declare converted package in llcppg.cfg deps for load [%s]. See: https://github.com/goplus/llcppg#dependency", path, name)
+		return nil, fmt.Errorf("convert %s first, declare converted package in llcppg.cfg deps for load [%s]. See: https://github.com/xgo-dev/llcppg#dependency", path, name)
 	}
 	// implicit forward decl
 	decl := p.handleImplicitForwardDecl(name, pnc)

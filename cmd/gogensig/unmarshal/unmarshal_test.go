@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	llcppg "github.com/goplus/llcppg/config"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cmd/gogensig/unmarshal"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 func TestUnmarshalPkg(t *testing.T) {

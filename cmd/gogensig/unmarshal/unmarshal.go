@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llcppg/internal/unmarshal"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llcppg/internal/unmarshal"
 )
 
 func Pkg(data []byte) (*llcppg.Pkg, error) {

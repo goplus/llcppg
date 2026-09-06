@@ -13,10 +13,10 @@ package depcjson
 
 import (
 	_ "github.com/goplus/lib/c"
-	_ "github.com/goplus/llcppg/cl/internal/convert/testdata/cjson"
-	_ "github.com/goplus/llcppg/cl/internal/convert/testdata/thirddep"
-	_ "github.com/goplus/llcppg/cl/internal/convert/testdata/thirddep2"
-	_ "github.com/goplus/llcppg/cl/internal/convert/testdata/thirddep3"
+	_ "github.com/xgo-dev/llcppg/cl/internal/convert/testdata/cjson"
+	_ "github.com/xgo-dev/llcppg/cl/internal/convert/testdata/thirddep"
+	_ "github.com/xgo-dev/llcppg/cl/internal/convert/testdata/thirddep2"
+	_ "github.com/xgo-dev/llcppg/cl/internal/convert/testdata/thirddep3"
 )
 
 const LLGoPackage string = "link: $(pkg-config --libs libcjson);"
@@ -26,11 +26,11 @@ package depcjson
 
 import (
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/cl/internal/convert/testdata/basicdep"
-	"github.com/goplus/llcppg/cl/internal/convert/testdata/cjson"
-	"github.com/goplus/llcppg/cl/internal/convert/testdata/thirddep"
-	"github.com/goplus/llcppg/cl/internal/convert/testdata/thirddep2"
-	"github.com/goplus/llcppg/cl/internal/convert/testdata/thirddep3"
+	"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/basicdep"
+	"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/cjson"
+	"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/thirddep"
+	"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/thirddep2"
+	"github.com/xgo-dev/llcppg/cl/internal/convert/testdata/thirddep3"
 	_ "unsafe"
 )
 

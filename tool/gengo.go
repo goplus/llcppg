@@ -21,11 +21,11 @@ import (
 	"path/filepath"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/cl"
-	"github.com/goplus/llcppg/cl/nc"
-	"github.com/goplus/llcppg/internal/gowrite"
-	"github.com/goplus/llcppg/parser"
 	"github.com/qiniu/x/errors"
+	"github.com/xgo-dev/llcppg/cl"
+	"github.com/xgo-dev/llcppg/cl/nc"
+	"github.com/xgo-dev/llcppg/internal/gowrite"
+	"github.com/xgo-dev/llcppg/parser"
 )
 
 // Config is the configuration for generating Go code from C++ header files.

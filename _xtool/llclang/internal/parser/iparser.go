@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	cparser "github.com/goplus/llcppg/_xtool/internal/parser"
-	"github.com/goplus/llcppg/parser"
+	cparser "github.com/xgo-dev/llcppg/_xtool/internal/parser"
+	"github.com/xgo-dev/llcppg/parser"
 )
 
 type Mode = parser.Mode

@@ -8,7 +8,7 @@ import (
 	"libxslt"
 
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2"
+	"github.com/xgo-dev/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2"
 )
 
 func main() {

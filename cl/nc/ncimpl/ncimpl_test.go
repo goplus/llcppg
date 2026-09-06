@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/nc"
-	llconfig "github.com/goplus/llcppg/config"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/nc"
+	llconfig "github.com/xgo-dev/llcppg/config"
 )
 
 func TestHeaderFile(t *testing.T) {

@@ -1,10 +1,10 @@
 package cltest
 
 import (
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/nc"
-	"github.com/goplus/llcppg/cl/nc/ncimpl"
-	llcppg "github.com/goplus/llcppg/config"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/nc"
+	"github.com/xgo-dev/llcppg/cl/nc/ncimpl"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 func NewConvSym(syms ...llcppg.SymbolInfo) func(name *ast.Object, mangleName string) (goName string, err error) {

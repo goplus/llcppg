@@ -1,9 +1,10 @@
 package libxslt
 
 import (
-	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2"
 	_ "unsafe"
+
+	"github.com/goplus/lib/c"
+	"github.com/xgo-dev/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2"
 )
 
 //go:linkname AddKey C.xsltAddKey

@@ -3,7 +3,7 @@ package nc
 import (
 	"errors"
 
-	"github.com/goplus/llcppg/ast"
+	"github.com/xgo-dev/llcppg/ast"
 )
 
 var (

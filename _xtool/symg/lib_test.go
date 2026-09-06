@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/symbol"
-	"github.com/goplus/llcppg/_xtool/symg"
+	"github.com/xgo-dev/llcppg/_xtool/internal/symbol"
+	"github.com/xgo-dev/llcppg/_xtool/symg"
 )
 
 func TestParseLibs(t *testing.T) {

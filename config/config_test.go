@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	llconfig "github.com/goplus/llcppg/config"
+	llconfig "github.com/xgo-dev/llcppg/config"
 )
 
 type testMode int

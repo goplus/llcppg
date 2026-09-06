@@ -3,7 +3,7 @@ package convert
 import (
 	"strings"
 
-	"github.com/goplus/llcppg/ast"
+	"github.com/xgo-dev/llcppg/ast"
 )
 
 // GoFuncSpec parses and stores components of a Go function name

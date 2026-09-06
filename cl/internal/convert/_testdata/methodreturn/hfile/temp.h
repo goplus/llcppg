@@ -1,6 +1,6 @@
 // origin field is float,but if use float,we will ref the c.Float
 // we only can get the c.Float's underlying type,not the c.Float
-// so we use int to replace float, https://github.com/goplus/llcppg/issues/249
+// so we use int to replace float, https://github.com/xgo-dev/llcppg/issues/249
 typedef struct Vector3 {
     int x;
     int y;

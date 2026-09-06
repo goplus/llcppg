@@ -25,7 +25,7 @@ type InnerStruct struct {
 	L c.Long
 }
 
-// https://github.com/goplus/llcppg/issues/514
+// https://github.com/xgo-dev/llcppg/issues/514
 // named nested struct
 type StructWithNested struct {
 	Init InnerStruct
@@ -77,7 +77,7 @@ type E struct {
 	FField F
 }
 
-// https://github.com/goplus/llcppg/issues/514
+// https://github.com/xgo-dev/llcppg/issues/514
 type A struct {
 	BField B
 	EField E

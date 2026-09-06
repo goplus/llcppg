@@ -3,8 +3,8 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/parser"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/parser"
 )
 
 func TestParseFile(t *testing.T) {

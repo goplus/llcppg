@@ -20,7 +20,7 @@ import (
 	"go/token"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/ast"
+	"github.com/xgo-dev/llcppg/ast"
 )
 
 type blockCtx struct {

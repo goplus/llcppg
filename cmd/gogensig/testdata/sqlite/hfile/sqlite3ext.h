@@ -157,7 +157,7 @@ struct sqlite3_api_routines {
   const void * (*value_text16be)(sqlite3_value*);
   const void * (*value_text16le)(sqlite3_value*);
   int  (*value_type)(sqlite3_value*);
-  //   https://github.com/goplus/llcppg/issues/68 va_list not patch cause struct convert error
+  //   https://github.com/xgo-dev/llcppg/issues/68 va_list not patch cause struct convert error
   //   char *(*vmprintf)(const char*,va_list);
   /* Added ??? */
   int (*overload_function)(sqlite3*, const char *zFuncName, int nArg);
@@ -247,7 +247,7 @@ struct sqlite3_api_routines {
   int (*uri_boolean)(const char*,const char*,int);
   sqlite3_int64 (*uri_int64)(const char*,const char*,sqlite3_int64);
   const char *(*uri_parameter)(const char*,const char*);
-  //   https://github.com/goplus/llcppg/issues/68 va_list not patch cause struct convert error
+  //   https://github.com/xgo-dev/llcppg/issues/68 va_list not patch cause struct convert error
   //   char *(*xvsnprintf)(int,char*,const char*,va_list);
   int (*wal_checkpoint_v2)(sqlite3*,const char*,int,int*,int*);
   /* Version 3.8.7 and later */
@@ -304,7 +304,7 @@ struct sqlite3_api_routines {
   sqlite3_str *(*str_new)(sqlite3*);
   char *(*str_finish)(sqlite3_str*);
   void (*str_appendf)(sqlite3_str*, const char *zFormat, ...);
-  //   https://github.com/goplus/llcppg/issues/68 va_list not patch cause struct convert error
+  //   https://github.com/xgo-dev/llcppg/issues/68 va_list not patch cause struct convert error
   //   void (*str_vappendf)(sqlite3_str*, const char *zFormat, va_list);
   void (*str_append)(sqlite3_str*, const char *zIn, int N);
   void (*str_appendall)(sqlite3_str*, const char *zIn);

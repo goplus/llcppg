@@ -25,14 +25,14 @@ import (
 	"strings"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl"
-	"github.com/goplus/llcppg/cl/nc/ncimpl"
-	"github.com/goplus/llcppg/cmd/gogensig/unmarshal"
-	llcppg "github.com/goplus/llcppg/config"
-	args "github.com/goplus/llcppg/internal/arg"
-	"github.com/goplus/llcppg/internal/gowrite"
 	"github.com/qiniu/x/errors"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl"
+	"github.com/xgo-dev/llcppg/cl/nc/ncimpl"
+	"github.com/xgo-dev/llcppg/cmd/gogensig/unmarshal"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	args "github.com/xgo-dev/llcppg/internal/arg"
+	"github.com/xgo-dev/llcppg/internal/gowrite"
 )
 
 func main() {

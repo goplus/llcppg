@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/goplus/llcppg/cmd/llcppcfg/gen"
+	"github.com/xgo-dev/llcppg/cmd/llcppcfg/gen"
 )
 
 func printHelp() {

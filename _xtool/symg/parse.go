@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
-	clang "github.com/goplus/llcppg/_xtool/internal/libclang"
-	"github.com/goplus/llcppg/internal/name"
+	clangutils "github.com/xgo-dev/llcppg/_xtool/internal/clang"
+	clang "github.com/xgo-dev/llcppg/_xtool/internal/libclang"
+	"github.com/xgo-dev/llcppg/internal/name"
 
-	llcppg "github.com/goplus/llcppg/config"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 type HeaderSymbols map[string]*SymbolInfo

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goplus/llcppg/internal/name"
+	"github.com/xgo-dev/llcppg/internal/name"
 )
 
 func TestToGoName(t *testing.T) {

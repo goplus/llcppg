@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/goplus/llcppg/ast"
+	"github.com/xgo-dev/llcppg/ast"
 )
 
 func XMarshalDeclList(list []ast.Decl) []map[string]any {

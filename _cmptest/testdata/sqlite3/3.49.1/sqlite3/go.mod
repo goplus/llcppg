@@ -1,4 +1,4 @@
-module github.com/goplus/llcppg/_cmptest/testdata/sqlite3/3.49.1/sqlite3
+module github.com/xgo-dev/llcppg/_cmptest/testdata/sqlite3/3.49.1/sqlite3
 
 go 1.20
 

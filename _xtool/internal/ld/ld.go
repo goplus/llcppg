@@ -11,7 +11,7 @@ import (
 func GetLibSearchPaths() []string {
 	var paths []string
 	if runtime.GOOS == "linux" {
-		//resolution from https://github.com/goplus/llcppg/commit/02307485db9269481297a4dc5e8449fffaa4f562
+		//resolution from https://github.com/xgo-dev/llcppg/commit/02307485db9269481297a4dc5e8449fffaa4f562
 		cmd := exec.Command("ld", "--verbose")
 		output, err := cmd.Output()
 		if err != nil {

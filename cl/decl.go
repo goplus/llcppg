@@ -17,7 +17,7 @@
 package cl
 
 import (
-	"github.com/goplus/llcppg/ast"
+	"github.com/xgo-dev/llcppg/ast"
 )
 
 func compileMacro(ctx *blockCtx, macro *ast.Macro) {

@@ -23,8 +23,8 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/internal/unmarshal"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/internal/unmarshal"
 )
 
 // Mode represents the parsing mode.

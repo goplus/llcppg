@@ -9,13 +9,13 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/cl/internal/cltest"
-	"github.com/goplus/llcppg/cl/nc"
-	"github.com/goplus/llcppg/cl/nc/ncimpl"
-	llcppg "github.com/goplus/llcppg/config"
-	"github.com/goplus/llcppg/internal/name"
-	ctoken "github.com/goplus/llcppg/token"
+	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llcppg/cl/internal/cltest"
+	"github.com/xgo-dev/llcppg/cl/nc"
+	"github.com/xgo-dev/llcppg/cl/nc/ncimpl"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llcppg/internal/name"
+	ctoken "github.com/xgo-dev/llcppg/token"
 )
 
 func emptyPkg(nc nc.NodeConverter) *Package {

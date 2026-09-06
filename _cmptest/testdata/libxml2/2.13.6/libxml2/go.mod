@@ -1,4 +1,4 @@
-module github.com/goplus/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2
+module github.com/xgo-dev/llcppg/_cmptest/testdata/libxml2/2.13.6/libxml2
 
 go 1.20
 

@@ -17,7 +17,7 @@ Foo *Foo_ParseWithLength(const char *value, size_t buffer_length);
 Foo *Foo_ParseWithSize(const char *value, size_t buffer_length);
 
 Foo *Foo_ignoreFunc();
-// https://github.com/goplus/llcppg/issues/522
+// https://github.com/xgo-dev/llcppg/issues/522
 Foo *Foo_ignoreFunc2();
 
 

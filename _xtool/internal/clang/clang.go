@@ -6,8 +6,8 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	clang "github.com/goplus/llcppg/_xtool/internal/libclang"
+	"github.com/xgo-dev/llcppg/_xtool/internal/clangtool"
+	clang "github.com/xgo-dev/llcppg/_xtool/internal/libclang"
 )
 
 type Config struct {

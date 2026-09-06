@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/goplus/llcppg/_xtool/internal/clangtool"
+	"github.com/xgo-dev/llcppg/_xtool/internal/clangtool"
 )
 
 func TestComposeIncludes(t *testing.T) {

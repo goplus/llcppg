@@ -1,4 +1,4 @@
-module github.com/goplus/llcppg/_cmptest/testdata/libtool/2.4.7/libtool
+module github.com/xgo-dev/llcppg/_cmptest/testdata/libtool/2.4.7/libtool
 
 go 1.20
 

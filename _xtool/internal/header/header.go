@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/internal/clangtool"
+	"github.com/xgo-dev/llcppg/_xtool/internal/clangtool"
 )
 
 type PkgHfilesInfo struct {

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	llcppg "github.com/goplus/llcppg/config"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 var mkdirTempLazily = sync.OnceValue(func() string {

@@ -22,10 +22,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	clangutils "github.com/goplus/llcppg/_xtool/internal/clang"
-	"github.com/goplus/llcppg/_xtool/parse"
-	llcppg "github.com/goplus/llcppg/config"
-	args "github.com/goplus/llcppg/internal/arg"
+	clangutils "github.com/xgo-dev/llcppg/_xtool/internal/clang"
+	"github.com/xgo-dev/llcppg/_xtool/parse"
+	llcppg "github.com/xgo-dev/llcppg/config"
+	args "github.com/xgo-dev/llcppg/internal/arg"
 )
 
 func main() {

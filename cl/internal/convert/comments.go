@@ -5,7 +5,7 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/goplus/llcppg/ast"
+	"github.com/xgo-dev/llcppg/ast"
 )
 
 const (

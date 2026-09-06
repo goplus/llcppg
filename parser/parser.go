@@ -19,8 +19,8 @@ package parser
 import (
 	"go/token"
 
-	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llgo/xtool/clang/preprocessor"
+	"github.com/xgo-dev/llcppg/ast"
 )
 
 // Config represents the configuration for parsing C/C++ source files.

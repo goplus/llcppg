@@ -6,11 +6,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/goplus/llcppg/_xtool/internal/clangtool"
-	"github.com/goplus/llcppg/_xtool/internal/header"
-	"github.com/goplus/llcppg/_xtool/internal/parser"
-	llcppg "github.com/goplus/llcppg/config"
 	"github.com/goplus/llgo/xtool/clang/preprocessor"
+	"github.com/xgo-dev/llcppg/_xtool/internal/clangtool"
+	"github.com/xgo-dev/llcppg/_xtool/internal/header"
+	"github.com/xgo-dev/llcppg/_xtool/internal/parser"
+	llcppg "github.com/xgo-dev/llcppg/config"
 )
 
 type dbgFlags = int
