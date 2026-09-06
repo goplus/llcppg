@@ -26,12 +26,14 @@ import (
 	lc "github.com/goplus/llcppg/lib/clang"
 )
 
-func dump(c clang.Cursor) {
+func dump(c clang.Cursor, ns string) {
 	clang.VisitChildren(c, func(cur, parent clang.Cursor) clang.ChildVisitResult {
-		name := clang.String(cur)
+		name := ns + clang.String(cur)
 		log.Println("==>", cur.Kind, clang.String(cur.Kind), name)
 		switch cur.Kind {
 		case lc.CursorFunctionDecl, lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
+		case lc.CursorNamespace:
+			dump(cur, name+"::")
 		}
 		return clang.Continue
 	})
@@ -55,5 +57,5 @@ func main() {
 	u := idx.ParseTranslationUnit(0, filename, "-x", lang)
 	defer u.Dispose()
 
-	dump(u.Cursor())
+	dump(u.Cursor(), "")
 }
