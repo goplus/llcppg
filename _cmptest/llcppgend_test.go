@@ -225,7 +225,7 @@ func testFrom(t *testing.T, tc testCase, isStatic bool, gen bool) {
 		t.Fatal(err)
 	}
 
-	// llcppg.symb.json is a middle file
+	// llcppg.sym.json is a middle file
 	os.Remove(filepath.Join(resultDir, config.LLCPPG_SYMB))
 	copyFile(cfgPath, filepath.Join(resultDir, tc.pkg.Name, config.LLCPPG_CFG))
 
