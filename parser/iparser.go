@@ -17,14 +17,9 @@
 package parser
 
 import (
-	"bytes"
 	"go/token"
-	"os"
-	"os/exec"
-	"strconv"
 
 	"github.com/goplus/llcppg/ast"
-	"github.com/goplus/llcppg/internal/unmarshal"
 )
 
 // Mode represents the parsing mode.
@@ -38,17 +33,5 @@ const (
 // ParseIntermediateFile parses an intermediate file (*.i) and returns the corresponding AST.
 // Allow fset to be nil, in which case a new FileSet will be created.
 func ParseIntermediateFile(fset *token.FileSet, filename string, mode Mode) (f *ast.File, err error) {
-	var stdout bytes.Buffer
-	cmd := exec.Command("llclang", "parseIntermediateFile", filename, strconv.Itoa(int(mode)))
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = &stdout
-	err = cmd.Run()
-	if err != nil {
-		return
-	}
-	file, err := unmarshal.File(stdout.Bytes())
-	if err != nil {
-		return nil, err
-	}
-	return file, nil
+	panic("todo")
 }
