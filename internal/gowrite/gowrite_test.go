@@ -37,7 +37,7 @@ func InitHooks() {
 
 func TestWriteTo_NonEmptyFuncStaysMultiline(t *testing.T) {
 	pkg := gogen.NewPackage("", "demo", nil)
-	results := types.NewTuple(pkg.NewParam(token.NoPos, "", types.Typ[types.Int]))
+	results := types.NewTuple(pkg.NewParam(token.NoPos, "", types.Typ[types.Int], false))
 	pkg.NewFunc(nil, "RetZero", nil, results, false).BodyStart(pkg).Val(0).Return(1).End()
 
 	var buf bytes.Buffer

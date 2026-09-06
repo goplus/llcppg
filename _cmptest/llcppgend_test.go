@@ -312,7 +312,7 @@ func appendPCPath(path string) string {
 // llgo env
 func llgoEnv() []string {
 	return []string{
-		// for https://github.com/goplus/llgo/issues/1135
+		// for https://github.com/xgo-dev/llgo/issues/1135
 		"LLGO_RPATH_CHANGE=on",
 	}
 }

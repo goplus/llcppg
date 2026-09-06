@@ -11,17 +11,17 @@ import (
 	"testing"
 
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llgo/xtool/clang/preprocessor"
 	clangutils "github.com/xgo-dev/llcppg/_xtool/internal/clang"
 	"github.com/xgo-dev/llcppg/_xtool/internal/clangtool"
 	clang "github.com/xgo-dev/llcppg/_xtool/internal/libclang"
 	"github.com/xgo-dev/llcppg/_xtool/internal/parser"
 	"github.com/xgo-dev/llcppg/ast"
+	"github.com/xgo-dev/llgo/xtool/clang/preprocessor"
 )
 
 func TestParserCppMode(t *testing.T) {
 	cases := []string{"class", "comment", "enum", "func", "scope", "struct", "typedef", "union", "macro", "forwarddecl1", "forwarddecl2", "include", "typeof", "forward_vs_empty", "nestedenum_cpp"}
-	// https://github.com/goplus/llgo/issues/1114
+	// https://github.com/xgo-dev/llgo/issues/1114
 	// todo(zzy):use os.ReadDir
 	for _, folder := range cases {
 		t.Run(folder, func(t *testing.T) {
@@ -57,7 +57,7 @@ func testFrom(t *testing.T, dir string, filename string, isCpp, gen bool) {
 	if err != nil {
 		t.Fatal("Do failed:", err)
 	}
-	// https://github.com/goplus/llgo/issues/1116
+	// https://github.com/xgo-dev/llgo/issues/1116
 	// astJson, err := json.MarshalIndent(ast, "", "  ")
 	// todo(zzy):use json.Marshal
 	if err != nil {

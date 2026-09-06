@@ -1,6 +1,6 @@
 module github.com/xgo-dev/llcppg/_cmptest
 
-go 1.23.4
+go 1.27.0
 
 require (
 	github.com/goplus/llpkgstore v0.0.0-20250514100530-dd449df83ebf

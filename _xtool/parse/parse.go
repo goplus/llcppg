@@ -6,11 +6,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/goplus/llgo/xtool/clang/preprocessor"
 	"github.com/xgo-dev/llcppg/_xtool/internal/clangtool"
 	"github.com/xgo-dev/llcppg/_xtool/internal/header"
 	"github.com/xgo-dev/llcppg/_xtool/internal/parser"
 	llcppg "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llgo/xtool/clang/preprocessor"
 )
 
 type dbgFlags = int
@@ -110,7 +110,7 @@ func Do(conf *Config) error {
 		return err
 	}
 
-	// https://github.com/goplus/llgo/issues/603
+	// https://github.com/xgo-dev/llgo/issues/603
 	// we need exec.Command("clang", "-print-resource-dir").Output() in llcppsigfetch to obtain the resource directory
 	// to ensure consistency between clang preprocessing and libclang-extracted header filelink cflags.
 	// Currently, directly calling exec.Command in the main flow of llcppsigfetch will cause hang and fail to execute correctly.

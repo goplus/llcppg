@@ -7,12 +7,12 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goplus/llgo/xtool/nm"
 	"github.com/xgo-dev/llcppg/_xtool/internal/clangtool"
 	"github.com/xgo-dev/llcppg/_xtool/internal/header"
 	"github.com/xgo-dev/llcppg/_xtool/internal/ld"
 	"github.com/xgo-dev/llcppg/_xtool/internal/symbol"
 	llcppg "github.com/xgo-dev/llcppg/config"
+	"github.com/xgo-dev/llgo/xtool/nm"
 )
 
 type dbgFlags = int

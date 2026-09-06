@@ -16,7 +16,7 @@ This project depends on LLGo's C ecosystem integration capability, and the curre
 llcppg currently follows the latest LLGo main-branch behavior. Please build and install LLGo from the `main` branch first, then install llcppg.
 
 For LLGo installation, please refer to:
-https://github.com/goplus/llgo?tab=readme-ov-file#how-to-install
+https://github.com/xgo-dev/llgo?tab=readme-ov-file#how-to-install
 
 ```bash
 llgo install ./cmd/llcppg
@@ -336,14 +336,14 @@ When a header file in the current project references types from third-party pack
  * Otherwise, the user is notified of the missing type and its source header file for conversion.
 
 #### Special Dependency Aliases
-In llcppg, there is a consistent pattern for naming aliases related to the standard library. Any alias that starts with `c/` corresponds to a remote repository in the github.com/goplus/llgo.
+In llcppg, there is a consistent pattern for naming aliases related to the standard library. Any alias that starts with `c/` corresponds to a remote repository in the github.com/xgo-dev/llgo.
 
 For example:
 * The alias `c` → `github.com/goplus/lib/c`
 * The alias `c/os` → `github.com/goplus/lib/c/os`
 * The alias `c/time` → `github.com/goplus/lib/c/time`
 
-> Note: Standard library type conversion in LLGo is not comprehensive. For standard library types that cannot be found in LLGo, you will need to supplement these types in the corresponding package at https://github.com/goplus/llgo.
+> Note: Standard library type conversion in LLGo is not comprehensive. For standard library types that cannot be found in LLGo, you will need to supplement these types in the corresponding package at https://github.com/xgo-dev/llgo.
 
 #### Example
 You can specify dependent package paths in the `deps` field of `llcppg.cfg`. For example, in the `_llcppgtest/libxslt` example, since libxslt depends on libxml2, its configuration file looks like this:

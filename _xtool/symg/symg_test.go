@@ -13,11 +13,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/llgo/xtool/nm"
 	"github.com/xgo-dev/llcppg/_xtool/internal/symbol"
 	"github.com/xgo-dev/llcppg/_xtool/symg"
 	llcppg "github.com/xgo-dev/llcppg/config"
 	"github.com/xgo-dev/llcppg/internal/name"
+	"github.com/xgo-dev/llgo/xtool/nm"
 )
 
 func TestAddSuffix(t *testing.T) {

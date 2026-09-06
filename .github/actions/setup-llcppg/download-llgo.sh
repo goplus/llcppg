@@ -39,7 +39,7 @@ esac
 # Remove 'v' prefix from version if present
 VERSION_NUMBER="${VERSION#v}"
 FILENAME="llgo${VERSION_NUMBER}.${OS}-${ARCH}.tar.gz"
-URL="https://github.com/goplus/llgo/releases/download/${VERSION}/${FILENAME}"
+URL="https://github.com/xgo-dev/llgo/releases/download/${VERSION}/${FILENAME}"
 
 echo "Downloading LLGo ${VERSION} for ${OS}-${ARCH}..."
 echo "URL: $URL"

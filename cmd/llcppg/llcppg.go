@@ -25,7 +25,6 @@ import (
 	"path/filepath"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/llgo/xtool/env"
 	"github.com/qiniu/x/errors"
 	"github.com/xgo-dev/llcppg/_xtool/parse"
 	"github.com/xgo-dev/llcppg/_xtool/symg"
@@ -34,6 +33,7 @@ import (
 	"github.com/xgo-dev/llcppg/cl/nc/ncimpl"
 	llcppg "github.com/xgo-dev/llcppg/config"
 	"github.com/xgo-dev/llcppg/internal/gowrite"
+	"github.com/xgo-dev/llgo/xtool/env"
 
 	// import to make it linked in go.mod
 	_ "github.com/goplus/lib/c"
