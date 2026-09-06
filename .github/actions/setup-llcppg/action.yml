@@ -3,13 +3,13 @@ description: "Install dependencies, set up Go, download LLGo release, install ll
 inputs:
   go:
     description: "Go version to install"
-    default: "1.23"
+    default: "1.27"
   llvm:
     description: "LLVM version to install (e.g. 18)"
     default: "19"
   llgo:
     description: "LLGo version to download (e.g. v0.13.0)"
-    default: "v0.13.0"
+    default: "v1.0.1"
 runs:
   using: "composite"
   steps:
