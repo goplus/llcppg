@@ -23,8 +23,8 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-        llvm: [19]
-        llgo: [v1.0.1]
+        llvm: [22]
+        llgo: [v1.0.2]
         go: [1.27]
       fail-fast: false
     runs-on: ${{matrix.os}}

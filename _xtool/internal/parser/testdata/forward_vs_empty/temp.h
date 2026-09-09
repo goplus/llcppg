@@ -1,2 +1,0 @@
-struct ForwardOnly;
-struct EmptyStruct {};
