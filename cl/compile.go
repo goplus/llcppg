@@ -17,12 +17,46 @@
 package cl
 
 import (
+	"go/ast"
+	"go/token"
 	"go/types"
+	"log"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/goplus/llcppg/lib/clang"
 )
+
+const (
+	DbgFlagCompileDecl = 1 << iota
+	DbgFlagLoadDeps
+	DbgFlagAll = DbgFlagCompileDecl | DbgFlagLoadDeps
+)
+
+var (
+	debugCompileDecl bool
+	debugLoadDeps    bool
+)
+
+func SetDebug(flags int) {
+	debugCompileDecl = (flags & DbgFlagCompileDecl) != 0
+	debugLoadDeps = (flags & DbgFlagLoadDeps) != 0
+}
+
+// -----------------------------------------------------------------------------
+
+type nodeInterp struct {
+	fset *token.FileSet
+}
+
+func (p *nodeInterp) Position(start token.Pos) token.Position {
+	return p.fset.Position(start)
+}
+
+func (p *nodeInterp) LoadExpr(v ast.Node) string {
+	panic("todo")
+}
 
 // -----------------------------------------------------------------------------
 
@@ -44,6 +78,10 @@ type Reused struct {
 
 // Config specifies the configuration for compiling C/C++ header files.
 type Config struct {
+	// Fset provides source position information for syntax trees and types.
+	// If Fset is nil, Load will use a new fileset, but preserve Fset's value.
+	Fset *token.FileSet
+
 	// An Importer resolves import paths to Packages.
 	Importer types.Importer
 
@@ -64,10 +102,241 @@ type Source struct {
 
 // -----------------------------------------------------------------------------
 
+const (
+	headerGoFile = "llcppg_header.i.go"
+)
+
 // NewPackage creates a new Package instance for the specified package path and name, using
 // the provided Source and Config.
-func NewPackage(pkgPath, pkgName string, src Source, conf *Config) (pkg Package, err error) {
+func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package, err error) {
+	if reused := conf.Reused; reused != nil && reused.pkg.Package != nil {
+		pkg = reused.pkg
+	} else {
+		interp := &nodeInterp{}
+		confGox := &gogen.Config{
+			Fset:            conf.Fset,
+			Importer:        conf.Importer,
+			LoadNamed:       nil,
+			HandleErr:       nil,
+			NewBuiltin:      nil,
+			NodeInterpreter: interp,
+			CanImplicitCast: implicitCast,
+			DefaultGoFile:   headerGoFile,
+		}
+		pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
+		interp.fset = pkg.Fset
+	}
+	pkg.SetRedeclarable(true)
+	pkg.pi, err = loadFile(pkg.Package, conf, file)
+	return
+}
+
+func implicitCast(pkg *gogen.Package, V, T types.Type, pv *gogen.Element) bool {
 	panic("todo")
+}
+
+// -----------------------------------------------------------------------------
+
+func loadFile(p *gogen.Package, conf *Config, file Source) (pi *PkgInfo, err error) {
+	ctx := &blockCtx{
+		pkg: p, cb: p.CB(), fset: p.Fset,
+	}
+	_ = conf
+	compileGlobalDecls(ctx, file.Cursor())
+	return
+}
+
+func compileGlobalDecls(ctx *blockCtx, node clang.Cursor) {
+	clang.VisitChildren(node, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		/* if global {
+			ctx.logFile(decl)
+			if decl.IsImplicit || ctx.inDepPkg {
+				continue
+			}
+		} */
+		switch decl.Kind {
+		case lc.CursorFunctionDecl:
+			compileFunc(ctx, decl)
+		case lc.CursorVarDecl:
+			// compileVarDecl(ctx, decl, global)
+		case lc.CursorTypedefDecl:
+			/* origName, pub := decl.Name, false
+					if global {
+						pub = ctx.getPubName(&decl.Name)
+					}
+					compileTypedef(ctx, decl, global, pub)
+					if pub {
+						substObj(ctx.pkg.Types, scope, origName, scope.Lookup(decl.Name))
+					}
+			case ast.RecordDecl:
+				pub := false
+				name, suKind := ctx.getSuName(decl, decl.TagUsed)
+				origName := name
+				if global {
+					if suKind == suAnonymous {
+						// pub = true if this is a public typedef
+						pub = i+1 < n && isPubTypedef(ctx, node.Inner[i+1])
+					} else {
+						pub = ctx.getPubName(&name)
+						if decl.CompleteDefinition && ctx.checkExists(name) {
+							continue
+						}
+					}
+				}
+				typ, del := compileStructOrUnion(ctx, name, decl, pub)
+				if suKind != suAnonymous {
+					if pub {
+						substObj(ctx.pkg.Types, scope, origName, scope.Lookup(name))
+					}
+					break
+				}
+				ctx.unnameds[decl.ID] = unnamedType{typ: typ, del: del}
+				for i+1 < n {
+					next := node.Inner[i+1]
+					if next.Kind == ast.VarDecl {
+						if ret, ok := checkAnonymous(ctx, scope, typ, next); ok {
+							compileVarWith(ctx, ret, next)
+							i++
+							continue
+						}
+					}
+					break
+				}
+			case ast.EmptyDecl:
+			case ast.StaticAssertDecl:
+				continue
+			*/
+		case lc.CursorEnumDecl:
+			// compileEnum(ctx, decl, global)
+		default:
+			log.Panicln("compileDeclStmt: unknown kind =", decl.Kind)
+		}
+		return clang.Continue
+	})
+}
+
+func compileFunc(_ *blockCtx, fn clang.Cursor) {
+	fnName := clang.String(fn)
+	fnType := fn.Type()
+	if debugCompileDecl {
+		log.Println("func", fnName, "-", clang.String(fnType))
+	}
+	/* var hasName bool
+	var params []*types.Var
+	var body *ast.Node
+	var results *types.Tuple
+	for _, item := range fn.Inner {
+		switch item.Kind {
+		case ast.ParmVarDecl:
+			if debugCompileDecl {
+				log.Println("  => param", item.Name, "-", item.Type.QualType)
+			}
+			if item.Name != "" {
+				hasName = true
+			}
+			params = append(params, newParam(ctx, item))
+		case ast.CompoundStmt:
+			body = item
+		case ast.BuiltinAttr, ast.FormatAttr, ast.AsmLabelAttr, ast.AvailabilityAttr, ast.ColdAttr, ast.DeprecatedAttr,
+			ast.AlwaysInlineAttr, ast.WarnUnusedResultAttr, ast.NoThrowAttr, ast.NoInlineAttr, ast.AllocSizeAttr,
+			ast.NonNullAttr, ast.ConstAttr, ast.PureAttr, ast.GNUInlineAttr, ast.ReturnsTwiceAttr, ast.NoSanitizeAttr,
+			ast.RestrictAttr, ast.MSAllocatorAttr, ast.VisibilityAttr, ast.C11NoReturnAttr, ast.StrictFPAttr,
+			ast.AllocAlignAttr, ast.DisableTailCallsAttr, ast.FormatArgAttr:
+		default:
+			log.Panicln("compileFunc: unknown kind =", item.Kind)
+		}
+	}
+	variadic := fn.Variadic
+	if variadic {
+		params = append(params, newVariadicParam(ctx, hasName))
+	}
+	pkg := ctx.pkg
+	if tyRet := toType(ctx, fnType, parser.FlagGetRetType); ctypes.NotVoid(tyRet) {
+		results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet))
+	}
+	sig := gogen.NewCSignature(types.NewTuple(params...), results, variadic)
+	origName, rewritten := fnName, false
+	if !ctx.inHeader && fn.StorageClass == ast.Static {
+		fnName, rewritten = ctx.autoStaticName(origName), true
+	} else {
+		rewritten = ctx.getPubName(&fnName)
+	}
+	if body != nil {
+		if ctx.checkExists(fnName) {
+			return
+		}
+		isMain := false
+		if fnName == "main" && (results != nil || params != nil) {
+			fnName, isMain = "_cgo_main", true
+		}
+		f, err := pkg.NewFuncWith(ctx.goNodePos(fn), fnName, sig, nil)
+		if err != nil {
+			log.Panicln("compileFunc:", err)
+		}
+		if rewritten { // for fnName is a recursive function
+			scope := pkg.Types.Scope()
+			substObj(pkg.Types, scope, origName, f.Obj())
+			rewritten = false
+		}
+		cb := f.BodyStart(pkg)
+		ctx.curfn = newFuncCtx(pkg, ctx.markComplicated(fnName, body), origName)
+		compileSub(ctx, body)
+		checkNeedReturn(ctx, body)
+		ctx.curfn = nil
+		cb.End()
+		if isMain {
+			var t *types.Var
+			var entryParams *types.Tuple
+			var entry = "main"
+			var testMain = ctx.testMain
+			if testMain {
+				entry = "TestMain"
+				testing := pkg.Import("testing")
+				t = pkg.NewParam(token.NoPos, "t", types.NewPointer(testing.Ref("T").Type()))
+				entryParams = types.NewTuple(t)
+			}
+			pkg.NewFunc(nil, entry, entryParams, nil, false).BodyStart(pkg)
+			if results != nil {
+				if testMain {
+					// if _cgo_ret := _cgo_main(); _cgo_ret != 0 {
+					//   t.Fatal("exit status", _cgo_ret)
+					// }
+					cb.If().DefineVarStart(token.NoPos, retName)
+				} else {
+					// os.Exit(int(_cgo_main()))
+					cb.Val(pkg.Import("os").Ref("Exit")).Typ(types.Typ[types.Int])
+				}
+			}
+			cb.Val(f.Obj())
+			if params != nil {
+				panic("TODO: main func with params")
+			}
+			cb.Call(len(params))
+			if results != nil {
+				if testMain {
+					cb.EndInit(1)
+					ret := cb.Scope().Lookup(retName)
+					cb.Val(ret).Val(0).BinaryOp(token.NEQ).Then().
+						Val(t).MemberVal("Fatal").Val("exit status").Val(ret).Call(2).EndStmt().
+						End()
+				} else {
+					cb.Call(1).Call(1)
+				}
+			}
+			cb.EndStmt().End()
+		} else {
+			delete(ctx.extfns, fnName)
+		}
+	} else if fn.IsUsed {
+		f := types.NewFunc(ctx.goNodePos(fn), pkg.Types, fnName, sig)
+		if pkg.Types.Scope().Insert(f) == nil {
+			ctx.addExternFunc(fnName)
+		}
+	}
+	if rewritten {
+		scope := pkg.Types.Scope()
+		substObj(pkg.Types, scope, origName, scope.Lookup(fnName))
+	} */
 }
 
 // -----------------------------------------------------------------------------
