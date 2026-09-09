@@ -1890,7 +1890,7 @@ func (t Type) IsConstQualifiedType() (ret c.Uint) {
 }
 
 /**
- * Determine whether a  CXCursor that is a macro, is
+ * Determine whether a CXCursor that is a macro, is
  * function like.
  */
 // llgo:link Cursor.IsMacroFunctionLike C.clang_Cursor_isMacroFunctionLike
@@ -1899,7 +1899,7 @@ func (c Cursor) IsMacroFunctionLike() (ret c.Uint) {
 }
 
 /**
- * Determine whether a  CXCursor that is a macro, is a
+ * Determine whether a CXCursor that is a macro, is a
  * builtin one.
  */
 // llgo:link Cursor.IsMacroBuiltin C.clang_Cursor_isMacroBuiltin
@@ -1908,7 +1908,7 @@ func (c Cursor) IsMacroBuiltin() (ret c.Uint) {
 }
 
 /**
- * Determine whether a  CXCursor that is a function declaration, is an
+ * Determine whether a CXCursor that is a function declaration, is an
  * inline declaration.
  */
 // llgo:link Cursor.IsFunctionInlined C.clang_Cursor_isFunctionInlined
@@ -2274,56 +2274,48 @@ func (c Cursor) Mangling() (ret String) {
 /**
  * Determine if a C++ constructor is a converting constructor.
  */
-// llgo:link Cursor.IsConvertingConstructor C.clang_CXXConstructor_isConvertingConstructor
-func (c Cursor) IsConvertingConstructor() (ret c.Uint) {
+// llgo:link Cursor.CXXConstructorIsConvertingConstructor C.clang_CXXConstructor_isConvertingConstructor
+func (c Cursor) CXXConstructorIsConvertingConstructor() (ret c.Uint) {
 	return
 }
 
 /**
  * Determine if a C++ constructor is a copy constructor.
  */
-// llgo:link Cursor.IsCopyConstructor C.clang_CXXConstructor_isCopyConstructor
-func (c Cursor) IsCopyConstructor() (ret c.Uint) {
+// llgo:link Cursor.CXXConstructorIsCopyConstructor C.clang_CXXConstructor_isCopyConstructor
+func (c Cursor) CXXConstructorIsCopyConstructor() (ret c.Uint) {
 	return
 }
 
 /**
  * Determine if a C++ constructor is the default constructor.
  */
-// llgo:link Cursor.IsDefaultConstructor C.clang_CXXConstructor_isDefaultConstructor
-func (c Cursor) IsDefaultConstructor() (ret c.Uint) {
+// llgo:link Cursor.CXXConstructorIsDefaultConstructor C.clang_CXXConstructor_isDefaultConstructor
+func (c Cursor) CXXConstructorIsDefaultConstructor() (ret c.Uint) {
 	return
 }
 
 /**
  * Determine if a C++ constructor is a move constructor.
  */
-// llgo:link Cursor.IsMoveConstructor C.clang_CXXConstructor_isMoveConstructor
-func (c Cursor) IsMoveConstructor() (ret c.Uint) {
-	return
-}
-
-/**
- * Determine if a C++ field is declared 'mutable'.
- */
-// llgo:link Cursor.IsMutable C.clang_CXXField_isMutable
-func (c Cursor) IsMutable() (ret c.Uint) {
+// llgo:link Cursor.CXXConstructorIsMoveConstructor C.clang_CXXConstructor_isMoveConstructor
+func (c Cursor) CXXConstructorIsMoveConstructor() (ret c.Uint) {
 	return
 }
 
 /**
  * Determine if a C++ method is declared '= default'.
  */
-// llgo:link Cursor.IsDefaulted C.clang_CXXMethod_isDefaulted
-func (c Cursor) IsDefaulted() (ret c.Uint) {
+// llgo:link Cursor.CXXMethodIsDefaulted C.clang_CXXMethod_isDefaulted
+func (c Cursor) CXXMethodIsDefaulted() (ret c.Uint) {
 	return
 }
 
 /**
  * Determine if a C++ method is declared '= delete'.
  */
-// llgo:link Cursor.IsDeleted C.clang_CXXMethod_isDeleted
-func (c Cursor) IsDeleted() (ret c.Uint) {
+// llgo:link Cursor.CXXMethodIsDeleted C.clang_CXXMethod_isDeleted
+func (c Cursor) CXXMethodIsDeleted() (ret c.Uint) {
 	return
 }
 
@@ -2331,8 +2323,8 @@ func (c Cursor) IsDeleted() (ret c.Uint) {
  * Determine if a C++ member function or member function template is
  * pure virtual.
  */
-// llgo:link Cursor.IsPureVirtual C.clang_CXXMethod_isPureVirtual
-func (c Cursor) IsPureVirtual() (ret c.Uint) {
+// llgo:link Cursor.CXXMethodIsPureVirtual C.clang_CXXMethod_isPureVirtual
+func (c Cursor) CXXMethodIsPureVirtual() (ret c.Uint) {
 	return
 }
 
@@ -2340,8 +2332,17 @@ func (c Cursor) IsPureVirtual() (ret c.Uint) {
  * Determine if a C++ member function or member function template is
  * declared 'static'.
  */
-// llgo:link Cursor.IsStatic C.clang_CXXMethod_isStatic
-func (c Cursor) IsStatic() (ret c.Uint) {
+// llgo:link Cursor.CXXMethodIsStatic C.clang_CXXMethod_isStatic
+func (c Cursor) CXXMethodIsStatic() (ret c.Uint) {
+	return
+}
+
+/**
+ * Determine if a C++ member function or member function template is
+ * declared 'const'.
+ */
+// llgo:link Cursor.CXXMethodIsConst C.clang_CXXMethod_isConst
+func (c Cursor) CXXMethodIsConst() (ret c.Uint) {
 	return
 }
 
@@ -2350,8 +2351,8 @@ func (c Cursor) IsStatic() (ret c.Uint) {
  * explicitly declared 'virtual' or if it overrides a virtual method from
  * one of the base classes.
  */
-// llgo:link Cursor.IsVirtual C.clang_CXXMethod_isVirtual
-func (c Cursor) IsVirtual() (ret c.Uint) {
+// llgo:link Cursor.CXXMethodIsVirtual C.clang_CXXMethod_isVirtual
+func (c Cursor) CXXMethodIsVirtual() (ret c.Uint) {
 	return
 }
 
@@ -2378,8 +2379,8 @@ func (c Cursor) IsVirtual() (ret c.Uint) {
  *
  * Is not.
  */
-// llgo:link Cursor.IsCopyAssignmentOperator C.clang_CXXMethod_isCopyAssignmentOperator
-func (c Cursor) IsCopyAssignmentOperator() (ret c.Uint) {
+// llgo:link Cursor.CXXMethodIsCopyAssignmentOperator C.clang_CXXMethod_isCopyAssignmentOperator
+func (c Cursor) CXXMethodIsCopyAssignmentOperator() (ret c.Uint) {
 	return
 }
 
@@ -2406,8 +2407,8 @@ func (c Cursor) IsCopyAssignmentOperator() (ret c.Uint) {
  *
  * Is not.
  */
-// llgo:link Cursor.IsMoveAssignmentOperator C.clang_CXXMethod_isMoveAssignmentOperator
-func (c Cursor) IsMoveAssignmentOperator() (ret c.Uint) {
+// llgo:link Cursor.CXXMethodIsMoveAssignmentOperator C.clang_CXXMethod_isMoveAssignmentOperator
+func (c Cursor) CXXMethodIsMoveAssignmentOperator() (ret c.Uint) {
 	return
 }
 
@@ -2454,8 +2455,16 @@ func (c Cursor) IsMoveAssignmentOperator() (ret c.Uint) {
  * This function will return 0 for the constructor and 1 for
  * the conversion function.
  */
-// llgo:link Cursor.IsExplicit C.clang_CXXMethod_isExplicit
-func (c Cursor) IsExplicit() (ret c.Uint) {
+// llgo:link Cursor.CXXMethodIsExplicit C.clang_CXXMethod_isExplicit
+func (c Cursor) CXXMethodIsExplicit() (ret c.Uint) {
+	return
+}
+
+/**
+ * Determine if a C++ field is declared 'mutable'.
+ */
+// llgo:link Cursor.CXXFieldIsMutable C.clang_CXXField_isMutable
+func (c Cursor) CXXFieldIsMutable() (ret c.Uint) {
 	return
 }
 
@@ -2463,25 +2472,16 @@ func (c Cursor) IsExplicit() (ret c.Uint) {
  * Determine if a C++ record is abstract, i.e. whether a class or struct
  * has a pure virtual member function.
  */
-// llgo:link Cursor.IsAbstract C.clang_CXXRecord_isAbstract
-func (c Cursor) IsAbstract() (ret c.Uint) {
+// llgo:link Cursor.CXXRecordIsAbstract C.clang_CXXRecord_isAbstract
+func (c Cursor) CXXRecordIsAbstract() (ret c.Uint) {
 	return
 }
 
 /**
  * Determine if an enum declaration refers to a scoped enum.
  */
-// llgo:link Cursor.IsScoped C.clang_EnumDecl_isScoped
-func (c Cursor) IsScoped() (ret c.Uint) {
-	return
-}
-
-/**
- * Determine if a C++ member function or member function template is
- * declared 'const'.
- */
-// llgo:link Cursor.IsConst C.clang_CXXMethod_isConst
-func (c Cursor) IsConst() (ret c.Uint) {
+// llgo:link Cursor.EnumDeclIsScoped C.clang_EnumDecl_isScoped
+func (c Cursor) EnumDeclIsScoped() (ret c.Uint) {
 	return
 }
 

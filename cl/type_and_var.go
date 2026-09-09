@@ -17,39 +17,33 @@
 package cl
 
 import (
-	"go/token"
+	"go/types"
 
-	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/clang"
+	lc "github.com/goplus/llcppg/lib/clang"
 )
 
 // -----------------------------------------------------------------------------
 
-type blockCtx struct {
-	pkg  *gogen.Package
-	cb   *gogen.CodeBuilder
-	fset *token.FileSet
-}
+const (
+	flagIsParam = 1 << iota
+	flagIsStructField
+	flagIsExtern
+	flagIsTypedef
+	flagRetType
+)
 
-/*
-func (ctx *blockCtx) goNode(v clang.Cursor) ast.Node {
-	if rg := v.Range; rg != nil && ctx.file != nil {
-		base := ctx.file.Base()
-		pos := token.Pos(int(rg.Begin.Offset) + base)
-		end := token.Pos(int(rg.End.Offset) + rg.End.TokLen + base)
-		return &node{pos: pos, end: end, ctx: ctx}
-	}
-	return nil
-}
-*/
-
-func (ctx *blockCtx) goNodePos(v clang.Cursor) token.Pos {
-	/* if rg := v.Range; rg != nil && ctx.file != nil {
-		base := ctx.file.Base()
-		return token.Pos(int(rg.Begin.Offset) + base)
-	}
-	return token.NoPos */
+func toType(ctx *blockCtx, typ lc.Type, flags int) types.Type {
 	panic("todo")
+}
+
+// -----------------------------------------------------------------------------
+
+func avoidKeyword(name *string) {
+	switch *name {
+	case "map", "type", "range", "chan", "var", "func", "go", "select",
+		"defer", "package", "import", "interface", "fallthrough":
+		*name += "_"
+	}
 }
 
 // -----------------------------------------------------------------------------

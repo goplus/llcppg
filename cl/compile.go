@@ -21,6 +21,7 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"strconv"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -142,120 +143,104 @@ func loadFile(p *gogen.Package, conf *Config, file Source) (pi *PkgInfo, err err
 		pkg: p, cb: p.CB(), fset: p.Fset,
 	}
 	_ = conf
-	compileGlobalDecls(ctx, file.Cursor())
+	clang.VisitChildren(file.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		compileDecl(ctx, decl)
+		return clang.Continue
+	})
 	return
 }
 
-func compileGlobalDecls(ctx *blockCtx, node clang.Cursor) {
-	clang.VisitChildren(node, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		/* if global {
-			ctx.logFile(decl)
-			if decl.IsImplicit || ctx.inDepPkg {
-				continue
-			}
-		} */
-		switch decl.Kind {
-		case lc.CursorFunctionDecl:
-			compileFunc(ctx, decl)
-		case lc.CursorVarDecl:
-			// compileVarDecl(ctx, decl, global)
-		case lc.CursorTypedefDecl:
-			/* origName, pub := decl.Name, false
-					if global {
-						pub = ctx.getPubName(&decl.Name)
-					}
-					compileTypedef(ctx, decl, global, pub)
-					if pub {
-						substObj(ctx.pkg.Types, scope, origName, scope.Lookup(decl.Name))
-					}
-			case ast.RecordDecl:
-				pub := false
-				name, suKind := ctx.getSuName(decl, decl.TagUsed)
-				origName := name
-				if global {
-					if suKind == suAnonymous {
-						// pub = true if this is a public typedef
-						pub = i+1 < n && isPubTypedef(ctx, node.Inner[i+1])
-					} else {
-						pub = ctx.getPubName(&name)
-						if decl.CompleteDefinition && ctx.checkExists(name) {
-							continue
-						}
-					}
-				}
-				typ, del := compileStructOrUnion(ctx, name, decl, pub)
-				if suKind != suAnonymous {
-					if pub {
-						substObj(ctx.pkg.Types, scope, origName, scope.Lookup(name))
-					}
-					break
-				}
-				ctx.unnameds[decl.ID] = unnamedType{typ: typ, del: del}
-				for i+1 < n {
-					next := node.Inner[i+1]
-					if next.Kind == ast.VarDecl {
-						if ret, ok := checkAnonymous(ctx, scope, typ, next); ok {
-							compileVarWith(ctx, ret, next)
-							i++
-							continue
-						}
-					}
-					break
-				}
-			case ast.EmptyDecl:
-			case ast.StaticAssertDecl:
-				continue
-			*/
-		case lc.CursorEnumDecl:
-			// compileEnum(ctx, decl, global)
-		default:
-			log.Panicln("compileDeclStmt: unknown kind =", decl.Kind)
+func compileDecl(ctx *blockCtx, decl clang.Cursor) {
+	/* if global {
+		ctx.logFile(decl)
+		if decl.IsImplicit || ctx.inDepPkg {
+			continue
 		}
-		return clang.Continue
-	})
+	} */
+	switch decl.Kind {
+	case lc.CursorFunctionDecl:
+		compileFunc(ctx, decl)
+	case lc.CursorVarDecl:
+		// compileVarDecl(ctx, decl, global)
+	case lc.CursorTypedefDecl:
+		/* origName, pub := decl.Name, false
+				if global {
+					pub = ctx.getPubName(&decl.Name)
+				}
+				compileTypedef(ctx, decl, global, pub)
+				if pub {
+					substObj(ctx.pkg.Types, scope, origName, scope.Lookup(decl.Name))
+				}
+		case ast.RecordDecl:
+			pub := false
+			name, suKind := ctx.getSuName(decl, decl.TagUsed)
+			origName := name
+			if global {
+				if suKind == suAnonymous {
+					// pub = true if this is a public typedef
+					pub = i+1 < n && isPubTypedef(ctx, node.Inner[i+1])
+				} else {
+					pub = ctx.getPubName(&name)
+					if decl.CompleteDefinition && ctx.checkExists(name) {
+						continue
+					}
+				}
+			}
+			typ, del := compileStructOrUnion(ctx, name, decl, pub)
+			if suKind != suAnonymous {
+				if pub {
+					substObj(ctx.pkg.Types, scope, origName, scope.Lookup(name))
+				}
+				break
+			}
+			ctx.unnameds[decl.ID] = unnamedType{typ: typ, del: del}
+			for i+1 < n {
+				next := node.Inner[i+1]
+				if next.Kind == ast.VarDecl {
+					if ret, ok := checkAnonymous(ctx, scope, typ, next); ok {
+						compileVarWith(ctx, ret, next)
+						i++
+						continue
+					}
+				}
+				break
+			}
+		case ast.EmptyDecl:
+		case ast.StaticAssertDecl:
+			continue
+		*/
+	case lc.CursorEnumDecl:
+		// compileEnum(ctx, decl, global)
+	default:
+		log.Panicln("compileDecl: unknown kind =", decl.Kind)
+	}
 }
 
-func compileFunc(_ *blockCtx, fn clang.Cursor) {
+func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	fnName := clang.String(fn)
-	fnType := fn.Type()
 	if debugCompileDecl {
-		log.Println("func", fnName, "-", clang.String(fnType))
+		log.Println("func", fnName, "-", clang.String(fn.Type()))
 	}
-	/* var hasName bool
+	n := fn.NumArguments()
 	var params []*types.Var
-	var body *ast.Node
 	var results *types.Tuple
-	for _, item := range fn.Inner {
-		switch item.Kind {
-		case ast.ParmVarDecl:
-			if debugCompileDecl {
-				log.Println("  => param", item.Name, "-", item.Type.QualType)
-			}
-			if item.Name != "" {
-				hasName = true
-			}
-			params = append(params, newParam(ctx, item))
-		case ast.CompoundStmt:
-			body = item
-		case ast.BuiltinAttr, ast.FormatAttr, ast.AsmLabelAttr, ast.AvailabilityAttr, ast.ColdAttr, ast.DeprecatedAttr,
-			ast.AlwaysInlineAttr, ast.WarnUnusedResultAttr, ast.NoThrowAttr, ast.NoInlineAttr, ast.AllocSizeAttr,
-			ast.NonNullAttr, ast.ConstAttr, ast.PureAttr, ast.GNUInlineAttr, ast.ReturnsTwiceAttr, ast.NoSanitizeAttr,
-			ast.RestrictAttr, ast.MSAllocatorAttr, ast.VisibilityAttr, ast.C11NoReturnAttr, ast.StrictFPAttr,
-			ast.AllocAlignAttr, ast.DisableTailCallsAttr, ast.FormatArgAttr:
-		default:
-			log.Panicln("compileFunc: unknown kind =", item.Kind)
-		}
+	for i := range n {
+		item := fn.Argument(c.Uint(i))
+		param := newParam(ctx, item, i)
+		params = append(params, param)
 	}
-	variadic := fn.Variadic
+	variadic := fn.IsVariadic() != 0
 	if variadic {
-		params = append(params, newVariadicParam(ctx, hasName))
+		params = append(params, newVariadicParam(ctx))
 	}
 	pkg := ctx.pkg
-	if tyRet := toType(ctx, fnType, parser.FlagGetRetType); ctypes.NotVoid(tyRet) {
-		results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet))
-	}
-	sig := gogen.NewCSignature(types.NewTuple(params...), results, variadic)
-	origName, rewritten := fnName, false
+	retType := fn.ResultType() // TODO(xsw): return void
+	tyRet := toType(ctx, retType, flagRetType)
+	results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet, false))
+	// TODO(xsw): method
+	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
+	_ = sig
+	/* origName, rewritten := fnName, false
 	if !ctx.inHeader && fn.StorageClass == ast.Static {
 		fnName, rewritten = ctx.autoStaticName(origName), true
 	} else {
@@ -337,6 +322,29 @@ func compileFunc(_ *blockCtx, fn clang.Cursor) {
 		scope := pkg.Types.Scope()
 		substObj(pkg.Types, scope, origName, scope.Lookup(fnName))
 	} */
+}
+
+var (
+	tyValist types.Type = types.NewSlice(gogen.TyAny)
+)
+
+func newVariadicParam(ctx *blockCtx) *types.Var {
+	return types.NewParam(token.NoPos, ctx.pkg.Types, "__llgo_va_list", tyValist)
+}
+
+func newParam(ctx *blockCtx, decl clang.Cursor, i c.Int) *types.Var {
+	declName := clang.String(decl)
+	declTyp := decl.Type()
+	if debugCompileDecl {
+		log.Println("  => param", declName, "-", clang.String(declTyp))
+	}
+	typ := toType(ctx, declTyp, flagIsParam)
+	if declName != "" {
+		avoidKeyword(&declName)
+	} else {
+		declName = "__llcppg_param" + strconv.Itoa(int(i)+1)
+	}
+	return types.NewParam(ctx.goNodePos(decl), ctx.pkg.Types, declName, typ)
 }
 
 // -----------------------------------------------------------------------------
