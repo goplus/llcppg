@@ -10,6 +10,7 @@
 *.DS_Store
 
 _temp/
+_c2go/
 *.log
 
 # Test binary, built with `go test -c`
