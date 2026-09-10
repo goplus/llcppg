@@ -17,45 +17,44 @@
 package cl
 
 import (
-	"go/token"
-
-	"github.com/goplus/gogen"
-	"github.com/goplus/llcppg/clang"
+	"os"
+	"path"
+	"strings"
+	"testing"
 )
 
 // -----------------------------------------------------------------------------
 
-type blockCtx struct {
-	pkg  *gogen.Package
-	cb   *gogen.CodeBuilder
-	fset *token.FileSet
+func DoTestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, pkgDir string)) {
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed:", err)
+	}
+	dir = path.Join(dir, relDir)
+	fis, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal("ReadDir failed:", err)
+	}
+	for _, fi := range fis {
+		name := fi.Name()
+		if strings.HasPrefix(name, "_") {
+			continue
+		}
+		t.Run(name, func(t *testing.T) {
+			pkgDir := dir + "/" + name
+			if sel != "" && !strings.Contains(pkgDir, sel) {
+				return
+			}
+			testFunc(t, pkgDir)
+		})
+	}
 }
 
+// -----------------------------------------------------------------------------
 /*
-func (ctx *blockCtx) goNode(v clang.Cursor) ast.Node {
-	if rg := v.Range; rg != nil && ctx.file != nil {
-		base := ctx.file.Base()
-		pos := token.Pos(int(rg.Begin.Offset) + base)
-		end := token.Pos(int(rg.End.Offset) + rg.End.TokLen + base)
-		return &node{pos: pos, end: end, ctx: ctx}
-	}
-	return nil
+func testFromDir(t *testing.T, sel, relDir string) {
+	DoTestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
+	})
 }
 */
-
-func (ctx *blockCtx) goNodePos(v clang.Cursor) token.Pos {
-	/* if rg := v.Range; rg != nil && ctx.file != nil {
-		base := ctx.file.Base()
-		return token.Pos(int(rg.Begin.Offset) + base)
-	}
-	return token.NoPos */
-	panic("todo")
-}
-
-func (p *blockCtx) getPubName(pfnName *string) (rewritten bool) {
-	// TODO(xsw):
-	_ = pfnName
-	return
-}
-
 // -----------------------------------------------------------------------------

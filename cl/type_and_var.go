@@ -17,8 +17,11 @@
 package cl
 
 import (
+	"go/token"
 	"go/types"
+	"log"
 
+	"github.com/goplus/gogen"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
 
@@ -34,6 +37,19 @@ const (
 
 func toType(ctx *blockCtx, typ lc.Type, flags int) types.Type {
 	panic("todo")
+}
+
+// -----------------------------------------------------------------------------
+
+func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
+	old := scope.Insert(gogen.NewSubst(token.NoPos, pkg, origName, real))
+	if old != nil {
+		if t, ok := old.Type().(*gogen.TySubst); ok {
+			t.Real = real
+		} else {
+			log.Panicln(origName, "redefined")
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------

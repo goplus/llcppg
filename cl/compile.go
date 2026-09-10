@@ -121,7 +121,7 @@ func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package
 			HandleErr:       nil,
 			NewBuiltin:      nil,
 			NodeInterpreter: interp,
-			CanImplicitCast: implicitCast,
+			CanImplicitCast: nil,
 			DefaultGoFile:   headerGoFile,
 		}
 		pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
@@ -130,10 +130,6 @@ func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package
 	pkg.SetRedeclarable(true)
 	pkg.pi, err = loadFile(pkg.Package, conf, file)
 	return
-}
-
-func implicitCast(pkg *gogen.Package, V, T types.Type, pv *gogen.Element) bool {
-	panic("todo")
 }
 
 // -----------------------------------------------------------------------------
@@ -216,11 +212,14 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	}
 }
 
+// TODO(xsw): method support
 func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	fnName := clang.String(fn)
 	if debugCompileDecl {
 		log.Println("func", fnName, "-", clang.String(fn.Type()))
 	}
+	origName := fnName
+	rewritten := ctx.getPubName(&fnName)
 	n := fn.NumArguments()
 	var params []*types.Var
 	var results *types.Tuple
@@ -237,9 +236,16 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	retType := fn.ResultType() // TODO(xsw): return void
 	tyRet := toType(ctx, retType, flagRetType)
 	results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet, false))
-	// TODO(xsw): method
 	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
-	_ = sig
+	f := types.NewFunc(ctx.goNodePos(fn), pkg.Types, fnName, sig)
+	if old := pkg.Types.Scope().Insert(f); old != nil {
+		log.Panicln("Go func", fnName, "redefined")
+	}
+	// ctx.addExternFunc(fnName)
+	if rewritten {
+		scope := pkg.Types.Scope()
+		substObj(pkg.Types, scope, origName, f)
+	}
 	/* origName, rewritten := fnName, false
 	if !ctx.inHeader && fn.StorageClass == ast.Static {
 		fnName, rewritten = ctx.autoStaticName(origName), true
