@@ -14,47 +14,64 @@
  * limitations under the License.
  */
 
-package cl
+package cl_test
 
 import (
+	"bytes"
 	"os"
-	"path"
-	"strings"
 	"testing"
+
+	"github.com/goplus/gogen"
+	"github.com/goplus/llcppg/cl"
+	"github.com/goplus/llcppg/cl/cltest"
+	"github.com/goplus/llcppg/clang"
+	"github.com/qiniu/x/test"
 )
 
 // -----------------------------------------------------------------------------
 
-func DoTestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, pkgDir string)) {
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Getwd failed:", err)
-	}
-	dir = path.Join(dir, relDir)
-	fis, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatal("ReadDir failed:", err)
-	}
-	for _, fi := range fis {
-		name := fi.Name()
-		if strings.HasPrefix(name, "_") {
-			continue
+func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp any) {
+	if expected, ok := exp.(string); ok {
+		result := b.String()
+		if result != expected {
+			t.Errorf("\nResult:\n%s\nExpected:\n%s\n", result, expected)
 		}
-		t.Run(name, func(t *testing.T) {
-			pkgDir := dir + "/" + name
-			if sel != "" && !strings.Contains(pkgDir, sel) {
-				return
-			}
-			testFunc(t, pkgDir)
-		})
+	} else if test.Diff(t, dir+outfname, b.Bytes(), exp.([]byte)) {
+		t.Error(dir, ": unexpect result")
 	}
 }
 
-// -----------------------------------------------------------------------------
-/*
+func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
+	var b bytes.Buffer
+	err := pkg.WriteTo(&b)
+	if err != nil {
+		t.Fatal("gogen.WriteTo failed:", err)
+	}
+	testDiff(t, dir, "/result.txt", &b, exp)
+}
+
 func testFromDir(t *testing.T, sel, relDir string) {
-	DoTestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
+	cltest.TestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
+		idx := clang.CreateIndex(0, 0)
+		defer idx.Dispose()
+
+		u := idx.ParseTranslationUnit(0, pkgDir+"/in.h", "-x", "c")
+		defer u.Dispose()
+
+		pkg, err := cl.NewPackage("", "foo", cl.Source{TU: u}, &cl.Config{
+			NameLookup: cltest.MockNameLookup,
+		})
+		if err != nil {
+			t.Error("cl.NewPackage:", err)
+			return
+		}
+		exp, _ := os.ReadFile(pkgDir + "/out.go")
+		testGenGo(t, pkg.Package, pkgDir, exp)
 	})
 }
-*/
+
+func _TestMockC(t *testing.T) {
+	testFromDir(t, "", "./_testmockc")
+}
+
 // -----------------------------------------------------------------------------

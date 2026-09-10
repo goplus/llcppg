@@ -36,7 +36,7 @@ const (
 )
 
 func toType(ctx *blockCtx, typ lc.Type, flags int) types.Type {
-	panic("todo")
+	panic("todo: toType")
 }
 
 // -----------------------------------------------------------------------------

@@ -49,7 +49,7 @@ func (ctx *blockCtx) goNodePos(v clang.Cursor) token.Pos {
 		return token.Pos(int(rg.Begin.Offset) + base)
 	}
 	return token.NoPos */
-	panic("todo")
+	panic("todo: goNodePos")
 }
 
 func (p *blockCtx) getPubName(pfnName *string) (rewritten bool) {
