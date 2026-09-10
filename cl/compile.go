@@ -56,7 +56,7 @@ func (p *nodeInterp) Position(start token.Pos) token.Position {
 }
 
 func (p *nodeInterp) LoadExpr(v ast.Node) string {
-	panic("todo")
+	panic("todo: nodeInterp.LoadExpr")
 }
 
 // -----------------------------------------------------------------------------
@@ -91,13 +91,16 @@ type Config struct {
 
 	// Reused specifies to reuse the Package instance between processing multiple C/C++ header files.
 	*Reused
+
+	// NameLookup looks up the archive path for a given mangling name. It returns the archive path and a boolean indicating whether the lookup was successful.
+	NameLookup func(manglingName string) (archivePath string, ok bool)
 }
 
 // -----------------------------------------------------------------------------
 
 // Source represents a C/C++ header to compile.
 type Source struct {
-	clang.TranslationUnit
+	TU           clang.TranslationUnit
 	PresumedFile *c.Char
 }
 
@@ -139,7 +142,7 @@ func loadFile(p *gogen.Package, conf *Config, file Source) (pi *PkgInfo, err err
 		pkg: p, cb: p.CB(), fset: p.Fset,
 	}
 	_ = conf
-	clang.VisitChildren(file.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
+	clang.VisitChildren(file.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		compileDecl(ctx, decl)
 		return clang.Continue
 	})
