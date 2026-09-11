@@ -54,7 +54,6 @@ func dump(node clang.Cursor, ns string, presumedFile *c.Char) {
 	})
 }
 
-// usage: llcppdump <source-file>
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("usage: llcppdump <source-file> [<language>]")
