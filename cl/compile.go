@@ -138,8 +138,9 @@ func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package
 // -----------------------------------------------------------------------------
 
 func loadFile(p *gogen.Package, conf *Config, file Source) (pi *PkgInfo, err error) {
+	c := p.Import("github.com/lib/c")
 	ctx := &blockCtx{
-		pkg: p, cb: p.CB(), fset: p.Fset,
+		pkg: p, cb: p.CB(), fset: p.Fset, c: c,
 	}
 	_ = conf
 	clang.VisitChildren(file.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
@@ -236,9 +237,11 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 		params = append(params, newVariadicParam(ctx))
 	}
 	pkg := ctx.pkg
-	retType := fn.ResultType() // TODO(xsw): return void
-	tyRet := toType(ctx, retType, flagRetType)
-	results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet, false))
+	retType := fn.ResultType()
+	if retType.Kind != lc.TypeVoid {
+		tyRet := toType(ctx, retType, flagRetType)
+		results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet, false))
+	}
 	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
 	f := types.NewFunc(ctx.goNodePos(fn), pkg.Types, fnName, sig)
 	if old := pkg.Types.Scope().Insert(f); old != nil {
