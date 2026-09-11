@@ -22,6 +22,7 @@ import (
 	"log"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
 
@@ -35,8 +36,41 @@ const (
 	flagRetType
 )
 
+var (
+	tyVoid = types.Typ[types.UntypedNil]
+)
+
+func newPointer(typ types.Type) types.Type {
+	switch t := typ.(type) {
+	case *types.Basic:
+		if t == tyVoid {
+			return types.Typ[types.UnsafePointer]
+		}
+	case *types.Signature:
+		panic("todo: newPointer for signature")
+		/* if gogen.IsCSignature(t) {
+			return types.NewSignature(nil, t.Params(), t.Results(), t.Variadic())
+		} */
+	case *types.Named:
+		panic("todo: newPointer for named type")
+		/* if typ == ValistTag {
+			return Valist
+		} */
+	}
+	return types.NewPointer(typ)
+}
+
 func toType(ctx *blockCtx, typ lc.Type, flags int) types.Type {
-	panic("todo: toType")
+	switch typ.Kind {
+	case lc.TypeInt:
+		return ctx.c.Ref("Int").Type()
+	case lc.TypeUInt:
+		return ctx.c.Ref("UInt").Type()
+	case lc.TypePointer:
+		pointee := toType(ctx, typ.PointeeType(), flags)
+		return newPointer(pointee)
+	}
+	panic("todo: toType " + clang.String(typ))
 }
 
 // -----------------------------------------------------------------------------

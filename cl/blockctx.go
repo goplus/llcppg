@@ -29,6 +29,7 @@ type blockCtx struct {
 	pkg  *gogen.Package
 	cb   *gogen.CodeBuilder
 	fset *token.FileSet
+	c    gogen.PkgRef
 }
 
 /*

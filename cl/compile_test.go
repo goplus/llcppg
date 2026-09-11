@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/gogen/packages"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cl/cltest"
 	"github.com/goplus/llcppg/clang"
@@ -50,15 +51,17 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 	testDiff(t, dir, "/result.txt", &b, exp)
 }
 
-func testFromDir(t *testing.T, sel, relDir string) {
+func testFromDir(t *testing.T, sel, relDir, lang string) {
 	cltest.TestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
 		idx := clang.CreateIndex(0, 0)
 		defer idx.Dispose()
 
-		u := idx.ParseTranslationUnit(0, pkgDir+"/in.h", "-x", "c")
+		u := idx.ParseTranslationUnit(0, pkgDir+"/in.h", "-x", lang)
 		defer u.Dispose()
 
+		imp := packages.NewImporter(nil, "./_mod")
 		pkg, err := cl.NewPackage("", "foo", cl.Source{TU: u}, &cl.Config{
+			Importer:   imp,
 			NameLookup: cltest.MockNameLookup,
 		})
 		if err != nil {
@@ -71,7 +74,7 @@ func testFromDir(t *testing.T, sel, relDir string) {
 }
 
 func _TestMockC(t *testing.T) {
-	testFromDir(t, "", "./_testmockc")
+	testFromDir(t, "", "./_testmockc", "c")
 }
 
 // -----------------------------------------------------------------------------
