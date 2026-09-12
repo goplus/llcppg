@@ -22,6 +22,7 @@ import (
 	"go/types"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -167,6 +168,9 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	m := fn.Mangling()
 	manglingName := c.GoString(m.CStr())
 	m.Dispose()
+	if !strings.HasPrefix(manglingName, "_") {
+		manglingName = "_" + manglingName
+	}
 
 	if _, ok := ctx.nameLookup(manglingName); !ok {
 		if debugCompileDecl {
