@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/ast"
 	"go/token"
 	"go/types"
 	"log"
@@ -43,20 +42,6 @@ var (
 func SetDebug(flags int) {
 	debugCompileDecl = (flags & DbgFlagCompileDecl) != 0
 	debugLoadDeps = (flags & DbgFlagLoadDeps) != 0
-}
-
-// -----------------------------------------------------------------------------
-
-type nodeInterp struct {
-	fset *token.FileSet
-}
-
-func (p *nodeInterp) Position(start token.Pos) token.Position {
-	return p.fset.Position(start)
-}
-
-func (p *nodeInterp) LoadExpr(v ast.Node) string {
-	panic("todo: nodeInterp.LoadExpr")
 }
 
 // -----------------------------------------------------------------------------
@@ -101,6 +86,7 @@ type Config struct {
 // Source represents a C/C++ header to compile.
 type Source struct {
 	TU           clang.TranslationUnit
+	Handle       clang.File
 	PresumedFile *c.Char
 }
 
@@ -138,10 +124,11 @@ func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package
 // -----------------------------------------------------------------------------
 
 func loadFile(p *gogen.Package, conf *Config, file Source) (pi *PkgInfo, err error) {
-	c := p.Import("github.com/lib/c")
+	c := p.Import("github.com/goplus/lib/c")
 	ctx := &blockCtx{
 		pkg: p, cb: p.CB(), fset: p.Fset, c: c,
 	}
+	ctx.initFile(file)
 	_ = conf
 	clang.VisitChildren(file.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		compileDecl(ctx, decl)
@@ -243,9 +230,9 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 		results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet, false))
 	}
 	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
-	f := types.NewFunc(ctx.goNodePos(fn), pkg.Types, fnName, sig)
-	if old := pkg.Types.Scope().Insert(f); old != nil {
-		log.Panicln("Go func", fnName, "redefined")
+	f, err := pkg.NewFuncWith(goNodePos(ctx, fn), fnName, sig, nil)
+	if err != nil {
+		log.Panicln("compileFunc:", fnName, err)
 	}
 	// ctx.addExternFunc(fnName)
 	if rewritten {
@@ -356,7 +343,7 @@ func newParam(ctx *blockCtx, decl clang.Cursor, i c.Int) *types.Var {
 	} else {
 		declName = "__llcppg_param" + strconv.Itoa(int(i)+1)
 	}
-	return types.NewParam(ctx.goNodePos(decl), ctx.pkg.Types, declName, typ)
+	return types.NewParam(goNodePos(ctx, decl), ctx.pkg.Types, declName, typ)
 }
 
 // -----------------------------------------------------------------------------

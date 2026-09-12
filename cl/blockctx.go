@@ -17,11 +17,60 @@
 package cl
 
 import (
+	"go/ast"
 	"go/token"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 )
+
+// -----------------------------------------------------------------------------
+
+type node struct {
+	pos token.Pos
+	end token.Pos
+	ctx *blockCtx
+}
+
+func (p *node) Pos() token.Pos {
+	return p.pos
+}
+
+func (p *node) End() token.Pos {
+	return p.end
+}
+
+/* TODO(xsw):
+func goNode(ctx *blockCtx, v clang.Cursor) ast.Node {
+	var pos, end c.Uint
+	rg := v.Extent()
+	rg.RangeStart().SpellingLocation(nil, nil, nil, &pos)
+	rg.RangeEnd().SpellingLocation(nil, nil, nil, &end)
+	base := ctx.file.Base()
+	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
+}
+*/
+
+func goNodePos(ctx *blockCtx, v clang.Cursor) token.Pos {
+	var pos c.Uint
+	v.Extent().RangeStart().SpellingLocation(nil, nil, nil, &pos)
+	return token.Pos(int(pos) + ctx.file.Base())
+}
+
+// -----------------------------------------------------------------------------
+
+type nodeInterp struct {
+	fset *token.FileSet
+}
+
+func (p *nodeInterp) Position(start token.Pos) token.Position {
+	return p.fset.Position(start)
+}
+
+func (p *nodeInterp) LoadExpr(v ast.Node) string {
+	panic("todo: nodeInterp.LoadExpr")
+}
 
 // -----------------------------------------------------------------------------
 
@@ -29,28 +78,14 @@ type blockCtx struct {
 	pkg  *gogen.Package
 	cb   *gogen.CodeBuilder
 	fset *token.FileSet
+	file *token.File
 	c    gogen.PkgRef
 }
 
-/*
-func (ctx *blockCtx) goNode(v clang.Cursor) ast.Node {
-	if rg := v.Range; rg != nil && ctx.file != nil {
-		base := ctx.file.Base()
-		pos := token.Pos(int(rg.Begin.Offset) + base)
-		end := token.Pos(int(rg.End.Offset) + rg.End.TokLen + base)
-		return &node{pos: pos, end: end, ctx: ctx}
-	}
-	return nil
-}
-*/
-
-func (ctx *blockCtx) goNodePos(v clang.Cursor) token.Pos {
-	/* if rg := v.Range; rg != nil && ctx.file != nil {
-		base := ctx.file.Base()
-		return token.Pos(int(rg.Begin.Offset) + base)
-	}
-	return token.NoPos */
-	panic("todo: goNodePos")
+func (p *blockCtx) initFile(file Source) {
+	src := file.TU.FileContents(file.Handle)
+	p.file = p.fset.AddFile("", -1, len(src))
+	p.file.SetLinesForContent(src)
 }
 
 func (p *blockCtx) getPubName(pfnName *string) (rewritten bool) {

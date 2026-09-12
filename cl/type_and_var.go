@@ -62,13 +62,17 @@ func newPointer(typ types.Type) types.Type {
 
 func toType(ctx *blockCtx, typ lc.Type, flags int) types.Type {
 	switch typ.Kind {
+	case lc.TypeCharS:
+		return ctx.c.Ref("Char").Type()
 	case lc.TypeInt:
 		return ctx.c.Ref("Int").Type()
 	case lc.TypeUInt:
-		return ctx.c.Ref("UInt").Type()
+		return ctx.c.Ref("Uint").Type()
 	case lc.TypePointer:
 		pointee := toType(ctx, typ.PointeeType(), flags)
 		return newPointer(pointee)
+	default:
+		log.Println("==> toType: unknown Kind -", typ.Kind)
 	}
 	panic("todo: toType " + clang.String(typ))
 }
