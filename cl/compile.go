@@ -166,12 +166,14 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	manglingName := c.GoString(m.CStr())
 	m.Dispose()
 
-	fnName := clang.String(fn)
 	if _, ok := ctx.nameLookup(manglingName); !ok {
-		log.Println("func", fnName, "- skipped")
+		if debugCompileDecl {
+			log.Println("func", clang.String(fn), "- skipped")
+		}
 		return
 	}
 
+	fnName := clang.String(fn)
 	if debugCompileDecl {
 		log.Println("func", fnName, "-", clang.String(fn.Type()))
 	}
