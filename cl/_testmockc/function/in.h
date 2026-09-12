@@ -1,5 +1,5 @@
 unsigned f(int a);
 
-void g();
+void _g();
 
 signed int xprintf(const char* fmt, ...);

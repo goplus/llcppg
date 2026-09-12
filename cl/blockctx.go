@@ -89,9 +89,23 @@ func (p *blockCtx) initFile(file Source) {
 }
 
 func (p *blockCtx) getPubName(pfnName *string) (rewritten bool) {
-	// TODO(xsw):
-	_ = pfnName
+	fnName := *pfnName
+	pubName := cPubName(fnName)
+	rewritten = fnName != pubName
+	if rewritten {
+		*pfnName = pubName
+	}
 	return
+}
+
+func cPubName(name string) string {
+	if r := name[0]; 'a' <= r && r <= 'z' {
+		r -= 'a' - 'A'
+		return string(r) + name[1:]
+	} else if r == '_' {
+		return "X" + name
+	}
+	return name
 }
 
 // -----------------------------------------------------------------------------
