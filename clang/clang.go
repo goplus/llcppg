@@ -91,6 +91,13 @@ func (i Index) ParseTranslationUnit(options uint, filename string, args ...strin
 // -----------------------------------------------------------------------------
 
 /**
+ * A particular source file that is part of a translation unit.
+ */
+type File = clang.File
+
+// -----------------------------------------------------------------------------
+
+/**
  * A single translation unit, which resides in an index.
  */
 type TranslationUnit struct {
@@ -102,6 +109,18 @@ type TranslationUnit struct {
  */
 func (u TranslationUnit) Dispose() {
 	u.impl.Dispose()
+}
+
+// File returns the File object corresponding to the given filename in the translation unit.
+func (u TranslationUnit) File(filename string) File {
+	return u.impl.File(c.AllocaCStr(filename))
+}
+
+// FileContents returns the contents of the specified file in the translation unit.
+func (u TranslationUnit) FileContents(file File) []byte {
+	var size c.SizeT
+	data := u.impl.FileContents(file, &size)
+	return unsafe.Slice((*byte)(unsafe.Pointer(data)), int(size))
 }
 
 /**

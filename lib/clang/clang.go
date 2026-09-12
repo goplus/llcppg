@@ -1302,6 +1302,11 @@ func (t *TranslationUnit) File(filename *c.Char) (ret File) {
 	return
 }
 
+// llgo:link (*TranslationUnit).FileContents C.clang_getFileContents
+func (t *TranslationUnit) FileContents(file File, size *c.SizeT) (ret *c.Char) {
+	return
+}
+
 // llgo:link (*TranslationUnit).Spelling C.clang_getTranslationUnitSpelling
 func (t *TranslationUnit) Spelling() (ret String) {
 	return
