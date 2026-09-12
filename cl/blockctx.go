@@ -80,6 +80,17 @@ type blockCtx struct {
 	fset *token.FileSet
 	file *token.File
 	c    gogen.PkgRef
+
+	nameLookup func(manglingName string) (archivePath string, ok bool)
+
+	unsafeImported bool
+}
+
+func (p *blockCtx) forceImportUnsafe() {
+	if !p.unsafeImported {
+		p.unsafeImported = true
+		p.pkg.ForceImport("unsafe")
+	}
 }
 
 func (p *blockCtx) initFile(file Source) {
@@ -89,9 +100,23 @@ func (p *blockCtx) initFile(file Source) {
 }
 
 func (p *blockCtx) getPubName(pfnName *string) (rewritten bool) {
-	// TODO(xsw):
-	_ = pfnName
+	fnName := *pfnName
+	pubName := cPubName(fnName)
+	rewritten = fnName != pubName
+	if rewritten {
+		*pfnName = pubName
+	}
 	return
+}
+
+func cPubName(name string) string {
+	if r := name[0]; 'a' <= r && r <= 'z' {
+		r -= 'a' - 'A'
+		return string(r) + name[1:]
+	} else if r == '_' {
+		return "X" + name
+	}
+	return name
 }
 
 // -----------------------------------------------------------------------------

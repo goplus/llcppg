@@ -25,8 +25,8 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// TestFromDir runs testFunc for each subdirectory of relDir. If sel is not empty, only subdirectories
-// whose path contains sel will be tested.
+// TestFromDir runs testFunc for each subdirectory of relDir. If sel is not empty, only
+// subdirectories whose path contains sel will be tested.
 func TestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, pkgDir string)) {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -54,8 +54,8 @@ func TestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, p
 
 // -----------------------------------------------------------------------------
 
-// MockNameLookup is a mock implementation of the NameLookup function. It returns a fixed archive
-// path and true for any input.
+// MockNameLookup is a mock implementation of the NameLookup function. It returns a
+// fixed archive path and true for any input.
 func MockNameLookup(manglingName string) (archivePath string, ok bool) {
 	return "libfoo.a", true
 }

@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"go/ast"
 	"go/token"
 	"go/types"
 	"log"
@@ -55,7 +56,8 @@ type Package struct {
 	pi *PkgInfo
 }
 
-// Reused specifies to reuse the Package instance between processing multiple C/C++ header files.
+// Reused specifies to reuse the Package instance between processing multiple C/C++
+// header files.
 type Reused struct {
 	pkg Package
 }
@@ -74,10 +76,12 @@ type Config struct {
 	// Include specifies include searching directories.
 	Include []string
 
-	// Reused specifies to reuse the Package instance between processing multiple C/C++ header files.
+	// Reused specifies to reuse the Package instance between processing multiple C/C++
+	// header files.
 	*Reused
 
-	// NameLookup looks up the archive path for a given mangling name. It returns the archive path and a boolean indicating whether the lookup was successful.
+	// NameLookup looks up the archive path for a given mangling name. It returns the
+	// archive path and a boolean indicating whether the lookup was successful.
 	NameLookup func(manglingName string) (archivePath string, ok bool)
 }
 
@@ -127,9 +131,9 @@ func loadFile(p *gogen.Package, conf *Config, file Source) (pi *PkgInfo, err err
 	c := p.Import("github.com/goplus/lib/c")
 	ctx := &blockCtx{
 		pkg: p, cb: p.CB(), fset: p.Fset, c: c,
+		nameLookup: conf.NameLookup,
 	}
 	ctx.initFile(file)
-	_ = conf
 	clang.VisitChildren(file.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		compileDecl(ctx, decl)
 		return clang.Continue
@@ -150,52 +154,7 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:
-		/* origName, pub := decl.Name, false
-				if global {
-					pub = ctx.getPubName(&decl.Name)
-				}
-				compileTypedef(ctx, decl, global, pub)
-				if pub {
-					substObj(ctx.pkg.Types, scope, origName, scope.Lookup(decl.Name))
-				}
-		case ast.RecordDecl:
-			pub := false
-			name, suKind := ctx.getSuName(decl, decl.TagUsed)
-			origName := name
-			if global {
-				if suKind == suAnonymous {
-					// pub = true if this is a public typedef
-					pub = i+1 < n && isPubTypedef(ctx, node.Inner[i+1])
-				} else {
-					pub = ctx.getPubName(&name)
-					if decl.CompleteDefinition && ctx.checkExists(name) {
-						continue
-					}
-				}
-			}
-			typ, del := compileStructOrUnion(ctx, name, decl, pub)
-			if suKind != suAnonymous {
-				if pub {
-					substObj(ctx.pkg.Types, scope, origName, scope.Lookup(name))
-				}
-				break
-			}
-			ctx.unnameds[decl.ID] = unnamedType{typ: typ, del: del}
-			for i+1 < n {
-				next := node.Inner[i+1]
-				if next.Kind == ast.VarDecl {
-					if ret, ok := checkAnonymous(ctx, scope, typ, next); ok {
-						compileVarWith(ctx, ret, next)
-						i++
-						continue
-					}
-				}
-				break
-			}
-		case ast.EmptyDecl:
-		case ast.StaticAssertDecl:
-			continue
-		*/
+		// TODO(xsw)
 	case lc.CursorEnumDecl:
 		// compileEnum(ctx, decl, global)
 	default:
@@ -205,6 +164,14 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 
 // TODO(xsw): method support
 func compileFunc(ctx *blockCtx, fn clang.Cursor) {
+	manglingName := clang.Mangling(fn)
+	if _, ok := ctx.nameLookup(manglingName); !ok {
+		if debugCompileDecl {
+			log.Println("func", clang.String(fn), "- skipped")
+		}
+		return
+	}
+
 	fnName := clang.String(fn)
 	if debugCompileDecl {
 		log.Println("func", fnName, "-", clang.String(fn.Type()))
@@ -234,93 +201,16 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	if err != nil {
 		log.Panicln("compileFunc:", fnName, err)
 	}
-	// ctx.addExternFunc(fnName)
+	ctx.forceImportUnsafe()
+	f.SetComments(pkg, &ast.CommentGroup{
+		List: []*ast.Comment{
+			{Text: "\n//go:linkname " + fnName + " C." + manglingName[1:]},
+		},
+	})
 	if rewritten {
 		scope := pkg.Types.Scope()
 		substObj(pkg.Types, scope, origName, f)
 	}
-	/* origName, rewritten := fnName, false
-	if !ctx.inHeader && fn.StorageClass == ast.Static {
-		fnName, rewritten = ctx.autoStaticName(origName), true
-	} else {
-		rewritten = ctx.getPubName(&fnName)
-	}
-	if body != nil {
-		if ctx.checkExists(fnName) {
-			return
-		}
-		isMain := false
-		if fnName == "main" && (results != nil || params != nil) {
-			fnName, isMain = "_cgo_main", true
-		}
-		f, err := pkg.NewFuncWith(ctx.goNodePos(fn), fnName, sig, nil)
-		if err != nil {
-			log.Panicln("compileFunc:", err)
-		}
-		if rewritten { // for fnName is a recursive function
-			scope := pkg.Types.Scope()
-			substObj(pkg.Types, scope, origName, f.Obj())
-			rewritten = false
-		}
-		cb := f.BodyStart(pkg)
-		ctx.curfn = newFuncCtx(pkg, ctx.markComplicated(fnName, body), origName)
-		compileSub(ctx, body)
-		checkNeedReturn(ctx, body)
-		ctx.curfn = nil
-		cb.End()
-		if isMain {
-			var t *types.Var
-			var entryParams *types.Tuple
-			var entry = "main"
-			var testMain = ctx.testMain
-			if testMain {
-				entry = "TestMain"
-				testing := pkg.Import("testing")
-				t = pkg.NewParam(token.NoPos, "t", types.NewPointer(testing.Ref("T").Type()))
-				entryParams = types.NewTuple(t)
-			}
-			pkg.NewFunc(nil, entry, entryParams, nil, false).BodyStart(pkg)
-			if results != nil {
-				if testMain {
-					// if _cgo_ret := _cgo_main(); _cgo_ret != 0 {
-					//   t.Fatal("exit status", _cgo_ret)
-					// }
-					cb.If().DefineVarStart(token.NoPos, retName)
-				} else {
-					// os.Exit(int(_cgo_main()))
-					cb.Val(pkg.Import("os").Ref("Exit")).Typ(types.Typ[types.Int])
-				}
-			}
-			cb.Val(f.Obj())
-			if params != nil {
-				panic("TODO: main func with params")
-			}
-			cb.Call(len(params))
-			if results != nil {
-				if testMain {
-					cb.EndInit(1)
-					ret := cb.Scope().Lookup(retName)
-					cb.Val(ret).Val(0).BinaryOp(token.NEQ).Then().
-						Val(t).MemberVal("Fatal").Val("exit status").Val(ret).Call(2).EndStmt().
-						End()
-				} else {
-					cb.Call(1).Call(1)
-				}
-			}
-			cb.EndStmt().End()
-		} else {
-			delete(ctx.extfns, fnName)
-		}
-	} else if fn.IsUsed {
-		f := types.NewFunc(ctx.goNodePos(fn), pkg.Types, fnName, sig)
-		if pkg.Types.Scope().Insert(f) == nil {
-			ctx.addExternFunc(fnName)
-		}
-	}
-	if rewritten {
-		scope := pkg.Types.Scope()
-		substObj(pkg.Types, scope, origName, scope.Lookup(fnName))
-	} */
 }
 
 var (
@@ -341,7 +231,7 @@ func newParam(ctx *blockCtx, decl clang.Cursor, i c.Int) *types.Var {
 	if declName != "" {
 		avoidKeyword(&declName)
 	} else {
-		declName = "__llcppg_param" + strconv.Itoa(int(i)+1)
+		declName = "_llcppg_param" + strconv.Itoa(int(i)+1)
 	}
 	return types.NewParam(goNodePos(ctx, decl), ctx.pkg.Types, declName, typ)
 }
