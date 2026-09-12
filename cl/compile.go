@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"go/ast"
 	"go/token"
 	"go/types"
 	"log"
@@ -235,6 +236,11 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	if err != nil {
 		log.Panicln("compileFunc:", fnName, err)
 	}
+	f.SetComments(pkg, &ast.CommentGroup{
+		List: []*ast.Comment{
+			{Text: "\n//go:linkname " + fnName + " C." + origName},
+		},
+	})
 	// ctx.addExternFunc(fnName)
 	if rewritten {
 		scope := pkg.Types.Scope()
@@ -342,7 +348,7 @@ func newParam(ctx *blockCtx, decl clang.Cursor, i c.Int) *types.Var {
 	if declName != "" {
 		avoidKeyword(&declName)
 	} else {
-		declName = "__llcppg_param" + strconv.Itoa(int(i)+1)
+		declName = "_llcppg_param" + strconv.Itoa(int(i)+1)
 	}
 	return types.NewParam(goNodePos(ctx, decl), ctx.pkg.Types, declName, typ)
 }
