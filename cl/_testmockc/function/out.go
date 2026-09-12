@@ -1,6 +1,9 @@
 package foo
 
-import "github.com/goplus/lib/c"
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
 
 //go:linkname F C.f
 func F(a c.Int) c.Uint

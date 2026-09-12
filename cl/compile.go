@@ -236,6 +236,7 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	if err != nil {
 		log.Panicln("compileFunc:", fnName, err)
 	}
+	ctx.forceImportUnsafe()
 	f.SetComments(pkg, &ast.CommentGroup{
 		List: []*ast.Comment{
 			{Text: "\n//go:linkname " + fnName + " C." + origName},

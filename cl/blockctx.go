@@ -80,6 +80,15 @@ type blockCtx struct {
 	fset *token.FileSet
 	file *token.File
 	c    gogen.PkgRef
+
+	unsafeImported bool
+}
+
+func (p *blockCtx) forceImportUnsafe() {
+	if !p.unsafeImported {
+		p.unsafeImported = true
+		p.pkg.ForceImport("unsafe")
+	}
 }
 
 func (p *blockCtx) initFile(file Source) {
