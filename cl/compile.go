@@ -56,7 +56,8 @@ type Package struct {
 	pi *PkgInfo
 }
 
-// Reused specifies to reuse the Package instance between processing multiple C/C++ header files.
+// Reused specifies to reuse the Package instance between processing multiple C/C++
+// header files.
 type Reused struct {
 	pkg Package
 }
@@ -75,11 +76,12 @@ type Config struct {
 	// Include specifies include searching directories.
 	Include []string
 
-	// Reused specifies to reuse the Package instance between processing multiple C/C++ header files.
+	// Reused specifies to reuse the Package instance between processing multiple C/C++
+	// header files.
 	*Reused
 
-	// NameLookup looks up the archive path for a given mangling name. It returns the archive
-	// path and a boolean indicating whether the lookup was successful.
+	// NameLookup looks up the archive path for a given mangling name. It returns the
+	// archive path and a boolean indicating whether the lookup was successful.
 	NameLookup func(manglingName string) (archivePath string, ok bool)
 }
 
