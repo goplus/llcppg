@@ -18,7 +18,6 @@ package cl_test
 
 import (
 	"bytes"
-	"log"
 	"os"
 	"testing"
 
@@ -44,13 +43,11 @@ func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp an
 }
 
 func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
-	log.Println("==> testGenGo", dir)
 	var b bytes.Buffer
 	err := pkg.WriteTo(&b)
 	if err != nil {
 		t.Fatal("gogen.WriteTo failed:", err)
 	}
-	log.Println("==> testGenGo", dir, "len:", b.Len())
 	testDiff(t, dir, "/result.txt", &b, exp)
 }
 
@@ -78,7 +75,7 @@ func testFromDir(t *testing.T, sel, relDir, lang string) {
 	})
 }
 
-func _TestMockC(t *testing.T) {
+func TestMockC(t *testing.T) {
 	cl.SetDebug(cl.DbgFlagAll)
 	testFromDir(t, "", "./_testmockc", "c")
 }
