@@ -99,13 +99,9 @@ func (p *blockCtx) initFile(file Source) {
 	p.file.SetLinesForContent(src)
 }
 
-func (p *blockCtx) getPubName(pfnName *string) (rewritten bool) {
-	fnName := *pfnName
-	pubName := cPubName(fnName)
+func (p *blockCtx) getPubName(fnName string) (pubName string, rewritten bool) {
+	pubName = cPubName(fnName)
 	rewritten = fnName != pubName
-	if rewritten {
-		*pfnName = pubName
-	}
 	return
 }
 

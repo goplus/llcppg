@@ -20,8 +20,10 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"strconv"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
@@ -60,7 +62,7 @@ func newPointer(typ types.Type) types.Type {
 	return types.NewPointer(typ)
 }
 
-func toType(ctx *blockCtx, typ lc.Type, flags int) types.Type {
+func toType(ctx *blockCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
 	switch typ.Kind {
 	case lc.TypeCharS:
 		return ctx.c.Ref("Char").Type()
@@ -69,12 +71,57 @@ func toType(ctx *blockCtx, typ lc.Type, flags int) types.Type {
 	case lc.TypeUInt:
 		return ctx.c.Ref("Uint").Type()
 	case lc.TypePointer:
-		pointee := toType(ctx, typ.PointeeType(), flags)
+		elem := typ.PointeeType()
+		if elem.Kind == lc.TypeFunctionProto {
+			return toFuncType(ctx, pkg, elem)
+		}
+		pointee := toType(ctx, pkg, elem, flags)
 		return newPointer(pointee)
+	case lc.TypeVoid:
+		return tyVoid
 	default:
 		log.Println("==> toType: unknown Kind -", typ.Kind)
 	}
 	panic("todo: toType " + clang.String(typ))
+}
+
+func toFuncType(ctx *blockCtx, pkg *types.Package, fn lc.Type) *types.Signature {
+	params, variadic := toFuncParams(ctx, pkg, fn)
+	results := toFuncResults(ctx, pkg, fn.ResultType())
+	return types.NewSignatureType(nil, nil, nil, params, results, variadic)
+}
+
+func toFuncParams(ctx *blockCtx, pkg *types.Package, fn lc.Type) (ret *types.Tuple, variadic bool) {
+	n := fn.NumArgTypes()
+	var params []*types.Var
+	for i := range n {
+		item := fn.ArgType(c.Uint(i))
+		tyParam := toType(ctx, pkg, item, flagIsParam)
+		nameParam := "_llcppg_param" + strconv.Itoa(int(i)+1)
+		params = append(params, types.NewParam(token.NoPos, pkg, nameParam, tyParam))
+	}
+	variadic = fn.IsFunctionTypeVariadic() != 0
+	if variadic {
+		params = append(params, newVariadicParam(pkg))
+	}
+	ret = types.NewTuple(params...)
+	return
+}
+
+var (
+	tyValist types.Type = types.NewSlice(gogen.TyAny)
+)
+
+func newVariadicParam(pkg *types.Package) *types.Var {
+	return types.NewParam(token.NoPos, pkg, "__llgo_va_list", tyValist)
+}
+
+func toFuncResults(ctx *blockCtx, pkg *types.Package, retType lc.Type) (results *types.Tuple) {
+	if retType.Kind != lc.TypeVoid {
+		tyRet := toType(ctx, pkg, retType, flagRetType)
+		results = types.NewTuple(types.NewParam(token.NoPos, pkg, "", tyRet))
+	}
+	return
 }
 
 // -----------------------------------------------------------------------------

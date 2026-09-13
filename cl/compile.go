@@ -172,31 +172,16 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 		return
 	}
 
-	fnName := clang.String(fn)
+	origName := clang.String(fn)
 	if debugCompileDecl {
-		log.Println("func", fnName, "-", clang.String(fn.Type()))
-	}
-	origName := fnName
-	rewritten := ctx.getPubName(&fnName)
-	n := fn.NumArguments()
-	var params []*types.Var
-	var results *types.Tuple
-	for i := range n {
-		item := fn.Argument(c.Uint(i))
-		param := newParam(ctx, item, i)
-		params = append(params, param)
-	}
-	variadic := fn.IsVariadic() != 0
-	if variadic {
-		params = append(params, newVariadicParam(ctx))
+		log.Println("func", origName, "-", clang.String(fn.Type()))
 	}
 	pkg := ctx.pkg
-	retType := fn.ResultType()
-	if retType.Kind != lc.TypeVoid {
-		tyRet := toType(ctx, retType, flagRetType)
-		results = types.NewTuple(pkg.NewParam(token.NoPos, "", tyRet, false))
-	}
-	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
+	pkgTypes := pkg.Types
+	fnName, rewritten := ctx.getPubName(origName)
+	params, variadic := newParams(ctx, pkgTypes, fn)
+	results := toFuncResults(ctx, pkgTypes, fn.ResultType())
+	sig := types.NewSignatureType(nil, nil, nil, params, results, variadic)
 	f, err := pkg.NewFuncWith(goNodePos(ctx, fn), fnName, sig, nil)
 	if err != nil {
 		log.Panicln("compileFunc:", fnName, err)
@@ -213,27 +198,35 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	}
 }
 
-var (
-	tyValist types.Type = types.NewSlice(gogen.TyAny)
-)
-
-func newVariadicParam(ctx *blockCtx) *types.Var {
-	return types.NewParam(token.NoPos, ctx.pkg.Types, "__llgo_va_list", tyValist)
+func newParams(ctx *blockCtx, pkg *types.Package, fn clang.Cursor) (ret *types.Tuple, variadic bool) {
+	n := fn.NumArguments()
+	var params []*types.Var
+	for i := range n {
+		item := fn.Argument(c.Uint(i))
+		param := newParam(ctx, pkg, item, i)
+		params = append(params, param)
+	}
+	variadic = fn.IsVariadic() != 0
+	if variadic {
+		params = append(params, newVariadicParam(pkg))
+	}
+	ret = types.NewTuple(params...)
+	return
 }
 
-func newParam(ctx *blockCtx, decl clang.Cursor, i c.Int) *types.Var {
+func newParam(ctx *blockCtx, pkg *types.Package, decl clang.Cursor, i c.Int) *types.Var {
 	declName := clang.String(decl)
 	declTyp := decl.Type()
 	if debugCompileDecl {
 		log.Println("  => param", declName, "-", clang.String(declTyp))
 	}
-	typ := toType(ctx, declTyp, flagIsParam)
+	typ := toType(ctx, pkg, declTyp, flagIsParam)
 	if declName != "" {
 		avoidKeyword(&declName)
 	} else {
 		declName = "_llcppg_param" + strconv.Itoa(int(i)+1)
 	}
-	return types.NewParam(goNodePos(ctx, decl), ctx.pkg.Types, declName, typ)
+	return types.NewParam(goNodePos(ctx, decl), pkg, declName, typ)
 }
 
 // -----------------------------------------------------------------------------
