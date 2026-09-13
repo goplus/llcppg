@@ -48,11 +48,6 @@ func newPointer(typ types.Type) types.Type {
 		if t == tyVoid {
 			return types.Typ[types.UnsafePointer]
 		}
-	case *types.Signature:
-		panic("todo: newPointer for signature")
-		/* if gogen.IsCSignature(t) {
-			return types.NewSignature(nil, t.Params(), t.Results(), t.Variadic())
-		} */
 	case *types.Named:
 		panic("todo: newPointer for named type")
 		/* if typ == ValistTag {
@@ -79,6 +74,8 @@ func toType(ctx *blockCtx, pkg *types.Package, typ lc.Type, flags int) types.Typ
 		return newPointer(pointee)
 	case lc.TypeVoid:
 		return tyVoid
+	case lc.TypeFunctionProto:
+		return toFuncType(ctx, pkg, typ)
 	default:
 		log.Println("==> toType: unknown Kind -", typ.Kind)
 	}
