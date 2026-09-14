@@ -18,6 +18,7 @@ package cl
 
 import (
 	"go/ast"
+	"go/token"
 	"go/types"
 	"log"
 	"strconv"
@@ -28,8 +29,7 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// TODO(xsw): method support
-func compileFunc(ctx *blockCtx, fn clang.Cursor) {
+func compileFunc(ctx *blockCtx, fn clang.Cursor, typNamed *types.Named) {
 	manglingName := clang.Mangling(fn)
 	origName := clang.String(fn)
 	if fn.IsFunctionInlined() != 0 {
@@ -53,23 +53,47 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	fnName, rewritten := ctx.getPubName(origName)
+
+	var recv *types.Var
+	var nameInPkg string
+	var fnName, rewritten = ctx.getPubName(origName)
+	if typNamed == nil {
+		nameInPkg = fnName
+	} else {
+		nameInPkg = "(*" + typNamed.Obj().Name() + ")." + fnName
+		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
+	}
+
 	params, variadic := newParams(ctx, pkgTypes, fn)
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType())
-	sig := types.NewSignatureType(nil, nil, nil, params, results, variadic)
+	sig := types.NewSignatureType(recv, nil, nil, params, results, variadic)
 	f, err := pkg.NewFuncWith(goNodePos(ctx, fn), fnName, sig, nil)
 	if err != nil {
 		log.Panicln("compileFunc:", origName, err)
 	}
-	ctx.forceImportUnsafe()
-	f.SetComments(pkg, &ast.CommentGroup{
-		List: []*ast.Comment{
-			{Text: "\n//go:linkname " + fnName + " C." + manglingName},
-		},
-	})
-	if rewritten {
-		scope := pkg.Types.Scope()
-		substObj(pkg.Types, scope, origName, f)
+
+	if typNamed == nil {
+		ctx.forceImportUnsafe()
+		f.SetComments(pkg, &ast.CommentGroup{
+			List: []*ast.Comment{
+				{Text: "\n//go:linkname " + nameInPkg + " C." + manglingName},
+			},
+		})
+		if rewritten {
+			scope := pkg.Types.Scope()
+			substObj(pkg.Types, scope, origName, f)
+		}
+	} else {
+		f.SetComments(pkg, &ast.CommentGroup{
+			List: []*ast.Comment{
+				{Text: "\n// llgo:link " + nameInPkg + " C." + manglingName},
+			},
+		})
+		cb := f.BodyStart(pkg)
+		if n := results.Len(); n > 0 {
+			cb.ZeroLit(results.At(0).Type()).Return(1)
+		}
+		cb.End()
 	}
 }
 

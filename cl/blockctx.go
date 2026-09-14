@@ -85,6 +85,9 @@ type blockCtx struct {
 	reused     *Reused
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 
+	methods map[string]*classMethod // manglingName => class
+	clTasks []func()
+
 	unsafeImported bool
 }
 

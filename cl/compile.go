@@ -158,12 +158,18 @@ func loadFile(p *gogen.Package, conf *Config, file Source, reused *Reused) (err 
 		pkg: p, cb: p.CB(), fset: p.Fset, c: c,
 		lang: conf.Language, cflags: conf.CFlags,
 		reused: reused, nameLookup: conf.NameLookup,
+		methods: make(map[string]*classMethod),
 	}
 	ctx.initFile(file)
 	clang.VisitChildren(file.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		compileDecl(ctx, decl)
 		return clang.Continue
 	})
+	clTasks := ctx.clTasks
+	ctx.clTasks = nil
+	for _, task := range clTasks {
+		task()
+	}
 	return
 }
 
@@ -176,10 +182,12 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	} */
 	switch decl.Kind {
 	case lc.CursorFunctionDecl:
-		compileFunc(ctx, decl)
+		compileFunc(ctx, decl, nil)
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		defaultInPublic := decl.Kind == lc.CursorStructDecl
 		compileClass(ctx, decl, defaultInPublic)
+	case lc.CursorCXXMethod:
+		compileOutsideMethod(ctx, decl)
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:

@@ -36,6 +36,19 @@ func String[T stringer](v T) string {
 	return c.GoString(str.CStr())
 }
 
+/**
+ * Retrieve the display name for the entity referenced by this cursor.
+ *
+ * The display name contains extra information that helps identify the cursor,
+ * such as the parameters of a function or template or the arguments of a
+ * class template specialization.
+ */
+func DisplayName(entity clang.Cursor) string {
+	str := entity.DisplayName()
+	defer str.Dispose()
+	return c.GoString(str.CStr())
+}
+
 // -----------------------------------------------------------------------------
 
 /**
