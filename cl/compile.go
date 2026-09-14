@@ -169,7 +169,8 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	case lc.CursorFunctionDecl:
 		compileFunc(ctx, decl)
 	case lc.CursorClassDecl, lc.CursorStructDecl:
-		compileClass(ctx, decl, decl.Kind == lc.CursorStructDecl)
+		defaultInPublic := decl.Kind == lc.CursorStructDecl
+		compileClass(ctx, decl, defaultInPublic)
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:

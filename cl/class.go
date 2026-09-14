@@ -42,7 +42,7 @@ type classCtx struct {
 	inPublic      bool
 }
 
-func compileClass(ctx *blockCtx, cls clang.Cursor, inPublic bool) {
+func compileClass(ctx *blockCtx, cls clang.Cursor, defaultInPublic bool) {
 	origName := clang.String(cls)
 	if debugCompileDecl {
 		log.Println("class", origName)
@@ -56,7 +56,7 @@ func compileClass(ctx *blockCtx, cls clang.Cursor, inPublic bool) {
 	ctxCls := &classCtx{
 		typDecl:  typDecl,
 		methods:  make(map[string]*classMethod),
-		inPublic: inPublic,
+		inPublic: defaultInPublic,
 	}
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		compileClassMember(ctx, pkgTypes, ctxCls, decl)
