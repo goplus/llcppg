@@ -67,6 +67,7 @@ func testFromDir(t *testing.T, sel, relDir, lang string) {
 		pkg, err := cl.NewPackage("", "foo", cl.Source{TU: u, Handle: file}, &cl.Config{
 			Importer:    imp,
 			LLGoPackage: conf.LLGoPackage,
+			Language:    lang,
 			CFlags:      conf.CFlags,
 			NameLookup:  cltest.MockNameLookup,
 		})
@@ -81,7 +82,7 @@ func testFromDir(t *testing.T, sel, relDir, lang string) {
 
 func TestMockC(t *testing.T) {
 	cl.SetDebug(cl.DbgFlagAll)
-	testFromDir(t, "", "./_testmockc", "c")
+	testFromDir(t, "inline", "./_testmockc", "c")
 }
 
 // -----------------------------------------------------------------------------
