@@ -60,11 +60,15 @@ func testFromDir(t *testing.T, sel, relDir, lang string) {
 		u := idx.ParseTranslationUnit(0, filename, "-x", lang)
 		defer u.Dispose()
 
+		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
+
 		imp := packages.NewImporter(nil)
 		file := u.File(filename)
 		pkg, err := cl.NewPackage("", "foo", cl.Source{TU: u, Handle: file}, &cl.Config{
-			Importer:   imp,
-			NameLookup: cltest.MockNameLookup,
+			Importer:    imp,
+			LLGoPackage: conf.LLGoPackage,
+			CFlags:      conf.CFlags,
+			NameLookup:  cltest.MockNameLookup,
 		})
 		if err != nil {
 			t.Error("cl.NewPackage:", err)

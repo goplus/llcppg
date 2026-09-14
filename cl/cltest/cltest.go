@@ -17,11 +17,31 @@
 package cltest
 
 import (
+	"encoding/json"
 	"os"
 	"path"
 	"strings"
 	"testing"
 )
+
+// -----------------------------------------------------------------------------
+
+// Config represents the lltest configuration.
+type Config struct {
+	LLGoPackage string `json:"LLGoPackage"`
+	CFlags      string `json:"CFlags"`
+}
+
+// LoadConf loads the lltest configuration.
+func LoadConf(filename string) (conf Config, err error) {
+	b, err := os.ReadFile(filename)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(b, &conf)
+	return
+}
 
 // -----------------------------------------------------------------------------
 

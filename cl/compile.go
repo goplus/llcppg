@@ -73,8 +73,9 @@ type Config struct {
 	// An Importer resolves import paths to Packages.
 	Importer types.Importer
 
-	// Include specifies include searching directories.
-	Include []string
+	LLGoPackage string
+
+	CFlags string
 
 	// Reused specifies to reuse the Package instance between processing multiple C/C++
 	// header files.
@@ -119,6 +120,12 @@ func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package
 		}
 		pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
 		interp.fset = pkg.Fset
+	}
+	if llgo := conf.LLGoPackage; llgo != "" {
+		pkg.NewConstDefs(pkg.Types.Scope()).New(func(cb *gogen.CodeBuilder) int {
+			cb.Val(llgo)
+			return 1
+		}, 0, token.NoPos, nil, "LLGoPackage")
 	}
 	pkg.SetRedeclarable(true)
 	pkg.pi, err = loadFile(pkg.Package, conf, file)
