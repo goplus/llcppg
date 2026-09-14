@@ -44,14 +44,15 @@ func newWrapFile(ctx *blockCtx) *wrapFile {
 	return &wrapFile{}
 }
 
-func wrapInlineFunc(ctx *blockCtx, origName string, fn clang.Cursor) string {
+func wrapInlineFunc(ctx *blockCtx, manglingName, origName string, fn clang.Cursor) string {
 	reused := ctx.reused
 	if reused.wrap == nil {
 		reused.wrap = newWrapFile(ctx)
 	}
-	wrapName := "_llcppg_" + origName
+	wrapName := "_llcppg_" + manglingName
 	// TODO(xsw): wrap inline func
 	_ = fn
+	_ = origName
 	return wrapName
 }
 
