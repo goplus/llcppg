@@ -162,6 +162,8 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	switch decl.Kind {
 	case lc.CursorFunctionDecl:
 		compileFunc(ctx, decl)
+	case lc.CursorClassDecl:
+		compileClass(ctx, decl)
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:
@@ -173,20 +175,13 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	}
 }
 
-func wrapInlineFunc(ctx *blockCtx, origName string, fn clang.Cursor) string {
-	if !ctx.hasWrapFile {
-		ctx.hasWrapFile = true
-		wrapFile := "_wrap/" + ctx.pkg.Types.Name() + "." + ctx.lang
-		llgoFiles := ctx.cflags + ": " + wrapFile
-		ctx.reused.llgo.New(func(cb *gogen.CodeBuilder) int {
-			cb.Val(llgoFiles)
-			return 1
-		}, 0, token.NoPos, nil, "LLGoFiles")
-	}
-	wrapName := "_llcppg_" + origName
-	// TODO(xsw): wrap inline func
-	_ = fn
-	return wrapName
+func compileClass(ctx *blockCtx, cls clang.Cursor) {
+	/* TODO(xsw):
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		compileDecl(ctx, decl)
+		return clang.Continue
+	})
+	*/
 }
 
 // TODO(xsw): method support
@@ -232,6 +227,26 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 		scope := pkg.Types.Scope()
 		substObj(pkg.Types, scope, origName, f)
 	}
+}
+
+func wrapInlineFunc(ctx *blockCtx, origName string, fn clang.Cursor) string {
+	if !ctx.hasWrapFile {
+		ctx.hasWrapFile = true
+		wrapExt := ".c"
+		if ctx.lang != "c" {
+			wrapExt = ".cpp"
+		}
+		wrapFile := "_wrap/" + ctx.pkg.Types.Name() + wrapExt
+		llgoFiles := ctx.cflags + ": " + wrapFile
+		ctx.reused.llgo.New(func(cb *gogen.CodeBuilder) int {
+			cb.Val(llgoFiles)
+			return 1
+		}, 0, token.NoPos, nil, "LLGoFiles")
+	}
+	wrapName := "_llcppg_" + origName
+	// TODO(xsw): wrap inline func
+	_ = fn
+	return wrapName
 }
 
 func newParams(ctx *blockCtx, pkg *types.Package, fn clang.Cursor) (ret *types.Tuple, variadic bool) {

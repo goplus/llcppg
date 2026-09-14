@@ -29,6 +29,10 @@ import (
 	"github.com/qiniu/x/test"
 )
 
+func init() {
+	cl.SetDebug(cl.DbgFlagAll)
+}
+
 // -----------------------------------------------------------------------------
 
 func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp any) {
@@ -81,8 +85,11 @@ func testFromDir(t *testing.T, sel, relDir, lang string) {
 }
 
 func TestMockC(t *testing.T) {
-	cl.SetDebug(cl.DbgFlagAll)
-	testFromDir(t, "inline", "./_testmockc", "c")
+	testFromDir(t, "", "./_testmockc", "c")
+}
+
+func _TestMockCpp(t *testing.T) {
+	testFromDir(t, "", "./_testmockcpp", "c++")
 }
 
 // -----------------------------------------------------------------------------
