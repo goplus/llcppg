@@ -88,7 +88,7 @@ func TestMockC(t *testing.T) {
 	testFromDir(t, "", "./_testmockc", "c")
 }
 
-func _TestMockCpp(t *testing.T) {
+func TestMockCpp(t *testing.T) {
 	testFromDir(t, "", "./_testmockcpp", "c++")
 }
 
