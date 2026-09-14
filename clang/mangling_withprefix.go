@@ -1,4 +1,4 @@
-//go:build linux
+//go:build darwin || windows
 
 /*
  * Copyright (c) 2026 The XGo Authors (xgo.dev). All rights reserved.
@@ -31,7 +31,7 @@ func Mangling(fn Cursor) string {
 	m := fn.Mangling()
 	manglingName := c.GoString(m.CStr())
 	m.Dispose()
-	return "_" + manglingName
+	return manglingName[1:]
 }
 
 // -----------------------------------------------------------------------------

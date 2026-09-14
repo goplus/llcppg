@@ -47,19 +47,17 @@ func SetDebug(flags int) {
 
 // -----------------------------------------------------------------------------
 
-type PkgInfo struct {
-}
-
 // Package represents a generated Go package.
 type Package struct {
 	*gogen.Package
-	pi *PkgInfo
 }
 
 // Reused specifies to reuse the Package instance between processing multiple C/C++
 // header files.
 type Reused struct {
-	pkg Package
+	pkg  Package
+	llgo *gogen.ConstDefs
+	wrap *wrapFile
 }
 
 // -----------------------------------------------------------------------------
@@ -73,8 +71,16 @@ type Config struct {
 	// An Importer resolves import paths to Packages.
 	Importer types.Importer
 
-	// Include specifies include searching directories.
-	Include []string
+	// LLGoPackage specifies the value of the LLGoPackage constant in the generated
+	// Go package.
+	LLGoPackage string
+
+	// Language specifies the programming language of the C/C++ header file. It can
+	// be "c" or "c++".
+	Language string
+
+	// CFlags specifies the compiler flags to be used when compiling the C/C++ header file.
+	CFlags string
 
 	// Reused specifies to reuse the Package instance between processing multiple C/C++
 	// header files.
@@ -97,13 +103,17 @@ type Source struct {
 // -----------------------------------------------------------------------------
 
 const (
-	headerGoFile = "llcppg_header.i.go"
+	headerGoFile = "llcppg.i.go"
 )
 
 // NewPackage creates a new Package instance for the specified package path and name, using
 // the provided Source and Config.
 func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package, err error) {
-	if reused := conf.Reused; reused != nil && reused.pkg.Package != nil {
+	reused := conf.Reused
+	if reused == nil {
+		reused = new(Reused)
+	}
+	if reused.pkg.Package != nil {
 		pkg = reused.pkg
 	} else {
 		interp := &nodeInterp{}
@@ -118,20 +128,29 @@ func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package
 			DefaultGoFile:   headerGoFile,
 		}
 		pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
+		reused.llgo = pkg.Package.NewConstDefs(pkg.Types.Scope())
 		interp.fset = pkg.Fset
+		if llgoPkg := conf.LLGoPackage; llgoPkg != "" {
+			reused.llgo.New(func(cb *gogen.CodeBuilder) int {
+				cb.Val(llgoPkg)
+				return 1
+			}, 0, token.NoPos, nil, "LLGoPackage")
+		}
 	}
 	pkg.SetRedeclarable(true)
-	pkg.pi, err = loadFile(pkg.Package, conf, file)
+	err = loadFile(pkg.Package, conf, file, reused)
+	reused.pkg = pkg
 	return
 }
 
 // -----------------------------------------------------------------------------
 
-func loadFile(p *gogen.Package, conf *Config, file Source) (pi *PkgInfo, err error) {
+func loadFile(p *gogen.Package, conf *Config, file Source, reused *Reused) (err error) {
 	c := p.Import("github.com/goplus/lib/c")
 	ctx := &blockCtx{
 		pkg: p, cb: p.CB(), fset: p.Fset, c: c,
-		nameLookup: conf.NameLookup,
+		lang: conf.Language, cflags: conf.CFlags,
+		reused: reused, nameLookup: conf.NameLookup,
 	}
 	ctx.initFile(file)
 	clang.VisitChildren(file.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
@@ -151,6 +170,8 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	switch decl.Kind {
 	case lc.CursorFunctionDecl:
 		compileFunc(ctx, decl)
+	case lc.CursorClassDecl:
+		compileClass(ctx, decl)
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:
@@ -162,20 +183,38 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	}
 }
 
+func compileClass(ctx *blockCtx, cls clang.Cursor) {
+	/* TODO(xsw):
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		compileDecl(ctx, decl)
+		return clang.Continue
+	})
+	*/
+}
+
 // TODO(xsw): method support
 func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	manglingName := clang.Mangling(fn)
-	if _, ok := ctx.nameLookup(manglingName); !ok {
+	origName := clang.String(fn)
+	if fn.IsFunctionInlined() != 0 {
+		if ctx.cflags == "" {
+			if debugCompileDecl {
+				log.Println("inline func", origName, "- skipped")
+			}
+			return
+		}
+		manglingName = wrapInlineFunc(ctx, origName, fn)
+	} else if _, ok := ctx.nameLookup(manglingName); !ok {
 		if debugCompileDecl {
-			log.Println("func", clang.String(fn), "- skipped")
+			log.Println("func", origName, "- skipped")
 		}
 		return
 	}
 
-	origName := clang.String(fn)
 	if debugCompileDecl {
 		log.Println("func", origName, "-", clang.String(fn.Type()))
 	}
+
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	fnName, rewritten := ctx.getPubName(origName)
@@ -184,12 +223,12 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 	sig := types.NewSignatureType(nil, nil, nil, params, results, variadic)
 	f, err := pkg.NewFuncWith(goNodePos(ctx, fn), fnName, sig, nil)
 	if err != nil {
-		log.Panicln("compileFunc:", fnName, err)
+		log.Panicln("compileFunc:", origName, err)
 	}
 	ctx.forceImportUnsafe()
 	f.SetComments(pkg, &ast.CommentGroup{
 		List: []*ast.Comment{
-			{Text: "\n//go:linkname " + fnName + " C." + manglingName[1:]},
+			{Text: "\n//go:linkname " + fnName + " C." + manglingName},
 		},
 	})
 	if rewritten {

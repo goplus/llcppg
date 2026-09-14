@@ -29,6 +29,10 @@ import (
 	"github.com/qiniu/x/test"
 )
 
+func init() {
+	cl.SetDebug(cl.DbgFlagAll)
+}
+
 // -----------------------------------------------------------------------------
 
 func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp any) {
@@ -60,11 +64,16 @@ func testFromDir(t *testing.T, sel, relDir, lang string) {
 		u := idx.ParseTranslationUnit(0, filename, "-x", lang)
 		defer u.Dispose()
 
+		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
+
 		imp := packages.NewImporter(nil)
 		file := u.File(filename)
 		pkg, err := cl.NewPackage("", "foo", cl.Source{TU: u, Handle: file}, &cl.Config{
-			Importer:   imp,
-			NameLookup: cltest.MockNameLookup,
+			Importer:    imp,
+			LLGoPackage: conf.LLGoPackage,
+			Language:    lang,
+			CFlags:      conf.CFlags,
+			NameLookup:  cltest.MockNameLookup,
 		})
 		if err != nil {
 			t.Error("cl.NewPackage:", err)
@@ -76,8 +85,11 @@ func testFromDir(t *testing.T, sel, relDir, lang string) {
 }
 
 func TestMockC(t *testing.T) {
-	cl.SetDebug(cl.DbgFlagAll)
 	testFromDir(t, "", "./_testmockc", "c")
+}
+
+func _TestMockCpp(t *testing.T) {
+	testFromDir(t, "", "./_testmockcpp", "c++")
 }
 
 // -----------------------------------------------------------------------------

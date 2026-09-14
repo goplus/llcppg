@@ -1,5 +1,3 @@
-//go:build linux
-
 /*
  * Copyright (c) 2026 The XGo Authors (xgo.dev). All rights reserved.
  *
@@ -16,22 +14,43 @@
  * limitations under the License.
  */
 
-package clang
+package cl
 
 import (
-	"github.com/goplus/lib/c"
+	"go/token"
+
+	"github.com/goplus/gogen"
+	"github.com/goplus/llcppg/clang"
 )
 
 // -----------------------------------------------------------------------------
 
-/**
- * Retrieve a name for the entity referenced by this cursor.
- */
-func Mangling(fn Cursor) string {
-	m := fn.Mangling()
-	manglingName := c.GoString(m.CStr())
-	m.Dispose()
-	return manglingName
+type wrapFile struct {
+}
+
+func newWrapFile(ctx *blockCtx) *wrapFile {
+	ext := ".c"
+	if ctx.lang != "c" {
+		ext = ".cpp"
+	}
+	filename := "_wrap/" + ctx.pkg.Types.Name() + ext
+	llgoFiles := ctx.cflags + ": " + filename
+	ctx.reused.llgo.New(func(cb *gogen.CodeBuilder) int {
+		cb.Val(llgoFiles)
+		return 1
+	}, 0, token.NoPos, nil, "LLGoFiles")
+	return &wrapFile{}
+}
+
+func wrapInlineFunc(ctx *blockCtx, origName string, fn clang.Cursor) string {
+	reused := ctx.reused
+	if reused.wrap == nil {
+		reused.wrap = newWrapFile(ctx)
+	}
+	wrapName := "_llcppg_" + origName
+	// TODO(xsw): wrap inline func
+	_ = fn
+	return wrapName
 }
 
 // -----------------------------------------------------------------------------
