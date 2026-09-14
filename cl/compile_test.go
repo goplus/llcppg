@@ -55,13 +55,13 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 	testDiff(t, dir, "/result.txt", &b, exp)
 }
 
-func testFromDir(t *testing.T, sel, relDir, lang string) {
+func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 	cltest.TestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
 		idx := clang.CreateIndex(0, 0)
 		defer idx.Dispose()
 
 		filename := pkgDir + "/in.h"
-		u := idx.ParseTranslationUnit(0, filename, "-x", lang)
+		u := idx.ParseTranslationUnit(0, filename, "-x", cltest.LanguageOf(lang))
 		defer u.Dispose()
 
 		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
@@ -85,11 +85,11 @@ func testFromDir(t *testing.T, sel, relDir, lang string) {
 }
 
 func TestMockC(t *testing.T) {
-	testFromDir(t, "", "./_testmockc", "c")
+	testFromDir(t, "", "./_testmockc", cl.LanguageC)
 }
 
 func TestMockCpp(t *testing.T) {
-	testFromDir(t, "", "./_testmockcpp", "c++")
+	testFromDir(t, "", "./_testmockcpp", cl.LanguageCXX)
 }
 
 // -----------------------------------------------------------------------------

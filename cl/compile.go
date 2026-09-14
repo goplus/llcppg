@@ -60,7 +60,17 @@ type Reused struct {
 
 // -----------------------------------------------------------------------------
 
-// Config specifies the configuration for compiling C/C++ header files.
+// Language specifies the programming language of the header file.
+type Language int
+
+const (
+	LanguageC Language = iota
+	LanguageCXX
+)
+
+// -----------------------------------------------------------------------------
+
+// Config specifies the configuration for compiling header files.
 type Config struct {
 	// Fset provides source position information for syntax trees and types.
 	// If Fset is nil, Load will use a new fileset, but preserve Fset's value.
@@ -73,15 +83,14 @@ type Config struct {
 	// Go package.
 	LLGoPackage string
 
-	// Language specifies the programming language of the C/C++ header file. It can
-	// be "c" or "c++".
-	Language string
+	// Language specifies the programming language of the header file.
+	Language Language
 
-	// CFlags specifies the compiler flags to be used when compiling the C/C++ header file.
+	// CFlags specifies the compiler flags to be used when compiling the wrapper file.
 	CFlags string
 
-	// Reused specifies to reuse the Package instance between processing multiple C/C++
-	// header files.
+	// Reused specifies to reuse the Package instance between processing multiple header
+	// files.
 	*Reused
 
 	// NameLookup looks up the archive path for a given mangling name. It returns the
@@ -169,7 +178,8 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	case lc.CursorFunctionDecl:
 		compileFunc(ctx, decl)
 	case lc.CursorClassDecl, lc.CursorStructDecl:
-		compileClass(ctx, decl, decl.Kind == lc.CursorStructDecl)
+		defaultInPublic := decl.Kind == lc.CursorStructDecl
+		compileClass(ctx, decl, defaultInPublic)
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:

@@ -22,6 +22,8 @@ import (
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/goplus/llcppg/cl"
 )
 
 // -----------------------------------------------------------------------------
@@ -70,6 +72,18 @@ func TestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, p
 			testFunc(t, pkgDir)
 		})
 	}
+}
+
+// -----------------------------------------------------------------------------
+
+var langs = [...]string{
+	cl.LanguageC:   "c",
+	cl.LanguageCXX: "c++",
+}
+
+// LanguageOf returns the string representation of the specified programming language.
+func LanguageOf(lang cl.Language) string {
+	return langs[lang]
 }
 
 // -----------------------------------------------------------------------------

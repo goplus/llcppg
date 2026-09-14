@@ -1,4 +1,4 @@
-class Bar
+class bar
 {
 	int a;
 public:

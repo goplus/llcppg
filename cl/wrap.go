@@ -28,11 +28,13 @@ import (
 type wrapFile struct {
 }
 
+var langExts = [...]string{
+	LanguageC:   ".c",
+	LanguageCXX: ".cpp",
+}
+
 func newWrapFile(ctx *blockCtx) *wrapFile {
-	ext := ".c"
-	if ctx.lang != "c" {
-		ext = ".cpp"
-	}
+	ext := langExts[ctx.lang]
 	filename := "_wrap/" + ctx.pkg.Types.Name() + ext
 	llgoFiles := ctx.cflags + ": " + filename
 	ctx.reused.llgo.New(func(cb *gogen.CodeBuilder) int {
