@@ -79,7 +79,8 @@ type blockCtx struct {
 	file *token.File
 	c    gogen.PkgRef
 
-	cflags, lang string
+	cflags string
+	lang   Language
 
 	reused     *Reused
 	nameLookup func(manglingName string) (archivePath string, ok bool)
