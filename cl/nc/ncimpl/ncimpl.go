@@ -42,6 +42,7 @@ type Converter struct {
 	Pubs           map[string]string
 	TrimPrefixes   []string
 	KeepUnderScore bool
+	GenThird       bool
 }
 
 func (p *Converter) convFile(file string, obj *ast.Object) (goFile string, ok bool) {
@@ -63,11 +64,11 @@ func (p *Converter) convFile(file string, obj *ast.Object) (goFile string, ok bo
 
 func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string, err error) {
 	obj := ast.ObjectOf(decl)
-	goFile, ok := p.convFile(file, obj)
-	if !ok {
-		err = nc.ErrSkip
-		return
-	}
+	goFile, _ = p.convFile(file, obj)
+	// if !ok {
+	// 	err = nc.ErrSkip
+	// 	return
+	// }
 	switch decl := decl.(type) {
 	case *ast.FuncDecl:
 		goName, err = p.ConvSym(obj, decl.MangledName)
@@ -89,11 +90,11 @@ func (p *Converter) ConvDecl(file string, decl ast.Decl) (goName, goFile string,
 }
 
 func (p *Converter) ConvMacro(file string, macro *ast.Macro) (goName, goFile string, err error) {
-	goFile, ok := p.convFile(file, nil)
-	if !ok {
-		err = nc.ErrSkip
-		return
-	}
+	goFile, _ = p.convFile(file, nil)
+	// if !ok {
+	// 	err = nc.ErrSkip
+	// 	return
+	// }
 	goName = p.constName(macro.Name)
 	return
 }

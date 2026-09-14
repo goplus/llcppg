@@ -39,6 +39,7 @@ type Config struct {
 	TypeMap        map[string]string `json:"typeMap,omitempty"`
 	StaticLib      bool              `json:"staticLib,omitempty"`
 	HeaderOnly     bool              `json:"headerOnly,omitempty"`
+	GenThird       bool              `json:"genThird,omitempty"`
 }
 
 // json middleware for validating
