@@ -57,6 +57,7 @@ type Package struct {
 type Reused struct {
 	pkg  Package
 	llgo *gogen.ConstDefs
+	wrap *wrapFile
 }
 
 // -----------------------------------------------------------------------------
@@ -227,26 +228,6 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor) {
 		scope := pkg.Types.Scope()
 		substObj(pkg.Types, scope, origName, f)
 	}
-}
-
-func wrapInlineFunc(ctx *blockCtx, origName string, fn clang.Cursor) string {
-	if !ctx.hasWrapFile {
-		ctx.hasWrapFile = true
-		wrapExt := ".c"
-		if ctx.lang != "c" {
-			wrapExt = ".cpp"
-		}
-		wrapFile := "_wrap/" + ctx.pkg.Types.Name() + wrapExt
-		llgoFiles := ctx.cflags + ": " + wrapFile
-		ctx.reused.llgo.New(func(cb *gogen.CodeBuilder) int {
-			cb.Val(llgoFiles)
-			return 1
-		}, 0, token.NoPos, nil, "LLGoFiles")
-	}
-	wrapName := "_llcppg_" + origName
-	// TODO(xsw): wrap inline func
-	_ = fn
-	return wrapName
 }
 
 func newParams(ctx *blockCtx, pkg *types.Package, fn clang.Cursor) (ret *types.Tuple, variadic bool) {

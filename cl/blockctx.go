@@ -87,7 +87,6 @@ type blockCtx struct {
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 
 	unsafeImported bool
-	hasWrapFile    bool
 }
 
 func (p *blockCtx) forceImportUnsafe() {
