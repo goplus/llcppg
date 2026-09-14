@@ -39,7 +39,7 @@ func compileFunc(ctx *blockCtx, fn clang.Cursor, typNamed *types.Named) {
 			}
 			return
 		}
-		manglingName = wrapInlineFunc(ctx, origName, fn)
+		manglingName = wrapInlineFunc(ctx, manglingName, origName, fn)
 	} else if _, ok := ctx.nameLookup(manglingName); !ok {
 		if debugCompileDecl {
 			log.Println("func", origName, "- skipped")
