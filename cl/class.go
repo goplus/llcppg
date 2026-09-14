@@ -28,17 +28,16 @@ import (
 // -----------------------------------------------------------------------------
 
 type classMethod struct {
-	decl         clang.Cursor
+	decl         clang.Cursor // declared inside of class
+	outsideDecl  clang.Cursor // inline method declared outside of class
 	manglingName string
 	isPublic     bool
-	isInline     bool
 }
 
 type classCtx struct {
 	typDecl       *gogen.TypeDecl
 	fields        []*types.Var
 	publicMethods []*classMethod
-	methods       map[string]*classMethod // manglingName => class
 	inPublic      bool
 }
 
@@ -55,7 +54,6 @@ func compileClass(ctx *blockCtx, cls clang.Cursor, defaultInPublic bool) {
 
 	ctxCls := &classCtx{
 		typDecl:  typDecl,
-		methods:  make(map[string]*classMethod),
 		inPublic: defaultInPublic,
 	}
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
@@ -69,6 +67,33 @@ func compileClass(ctx *blockCtx, cls clang.Cursor, defaultInPublic bool) {
 		scope := pkgTypes.Scope()
 		substObj(pkgTypes, scope, origName, typNamed.Obj())
 	}
+
+	ctx.clTasks = append(ctx.clTasks, func() {
+		compilePublicMethods(ctx, ctxCls, typNamed)
+	})
+}
+
+func compileOutsideMethod(ctx *blockCtx, outsideDecl clang.Cursor) {
+	manglingName := clang.Mangling(outsideDecl)
+	if m, ok := ctx.methods[manglingName]; ok {
+		if m.outsideDecl.Kind == 0 {
+			m.outsideDecl = outsideDecl
+		} else {
+			log.Panicln("method redeclared -", clang.DisplayName(outsideDecl))
+		}
+	} else {
+		log.Panicln("method undeclared -", clang.DisplayName(outsideDecl))
+	}
+}
+
+func compilePublicMethods(ctx *blockCtx, cls *classCtx, typNamed *types.Named) {
+	for _, method := range cls.publicMethods {
+		if method.outsideDecl.Kind != 0 {
+			compileFunc(ctx, method.outsideDecl, typNamed)
+		} else {
+			compileFunc(ctx, method.decl, typNamed)
+		}
+	}
 }
 
 func compileClassMember(ctx *blockCtx, pkg *types.Package, cls *classCtx, decl clang.Cursor) {
@@ -77,7 +102,7 @@ func compileClassMember(ctx *blockCtx, pkg *types.Package, cls *classCtx, decl c
 		manglingName := clang.Mangling(decl)
 		isPublic := cls.inPublic
 		method := &classMethod{decl: decl, manglingName: manglingName, isPublic: isPublic}
-		cls.methods[manglingName] = method
+		ctx.methods[manglingName] = method
 		if isPublic {
 			cls.publicMethods = append(cls.publicMethods, method)
 		}
