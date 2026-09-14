@@ -41,7 +41,6 @@ func (p *node) End() token.Pos {
 	return p.end
 }
 
-/* TODO(xsw):
 func goNode(ctx *blockCtx, v clang.Cursor) ast.Node {
 	var pos, end c.Uint
 	rg := v.Extent()
@@ -50,7 +49,6 @@ func goNode(ctx *blockCtx, v clang.Cursor) ast.Node {
 	base := ctx.file.Base()
 	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
 }
-*/
 
 func goNodePos(ctx *blockCtx, v clang.Cursor) token.Pos {
 	var pos c.Uint
