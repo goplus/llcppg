@@ -71,9 +71,16 @@ type Config struct {
 	// An Importer resolves import paths to Packages.
 	Importer types.Importer
 
+	// LLGoPackage specifies the value of the LLGoPackage constant in the generated
+	// Go package.
 	LLGoPackage string
-	Language    string
-	CFlags      string
+
+	// Language specifies the programming language of the C/C++ header file. It can
+	// be "c" or "c++".
+	Language string
+
+	// CFlags specifies the compiler flags to be used when compiling the C/C++ header file.
+	CFlags string
 
 	// Reused specifies to reuse the Package instance between processing multiple C/C++
 	// header files.
