@@ -46,8 +46,11 @@ func goNode(ctx *blockCtx, v clang.Cursor) ast.Node {
 	var pos, end c.Uint
 	rg := v.Extent()
 	rg.RangeStart().SpellingLocation(&file, nil, nil, &pos)
+	base, ok := ctx.fileBases[file]
+	if !ok {
+		return nil
+	}
 	rg.RangeEnd().SpellingLocation(nil, nil, nil, &end)
-	base := ctx.fileBases[file]
 	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
 }
 
@@ -55,7 +58,11 @@ func goNodePos(ctx *blockCtx, v clang.Cursor) token.Pos {
 	var file clang.File
 	var pos c.Uint
 	v.Extent().RangeStart().SpellingLocation(&file, nil, nil, &pos)
-	return token.Pos(int(pos) + ctx.fileBases[file])
+	base, ok := ctx.fileBases[file]
+	if !ok {
+		return token.NoPos
+	}
+	return token.Pos(int(pos) + base)
 }
 
 // -----------------------------------------------------------------------------
