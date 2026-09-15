@@ -42,18 +42,20 @@ func (p *node) End() token.Pos {
 }
 
 func goNode(ctx *blockCtx, v clang.Cursor) ast.Node {
+	var file clang.File
 	var pos, end c.Uint
 	rg := v.Extent()
-	rg.RangeStart().SpellingLocation(nil, nil, nil, &pos)
+	rg.RangeStart().SpellingLocation(&file, nil, nil, &pos)
 	rg.RangeEnd().SpellingLocation(nil, nil, nil, &end)
-	base := ctx.file.Base()
+	base := ctx.fileBases[file]
 	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
 }
 
 func goNodePos(ctx *blockCtx, v clang.Cursor) token.Pos {
+	var file clang.File
 	var pos c.Uint
-	v.Extent().RangeStart().SpellingLocation(nil, nil, nil, &pos)
-	return token.Pos(int(pos) + ctx.file.Base())
+	v.Extent().RangeStart().SpellingLocation(&file, nil, nil, &pos)
+	return token.Pos(int(pos) + ctx.fileBases[file])
 }
 
 // -----------------------------------------------------------------------------
@@ -75,15 +77,18 @@ func (p *nodeInterp) LoadExpr(v ast.Node) string {
 type blockCtx struct {
 	pkg  *gogen.Package
 	cb   *gogen.CodeBuilder
+	llgo *gogen.ConstDefs
+	wrap *wrapFile
 	fset *token.FileSet
-	file *token.File
+	tu   clang.TranslationUnit
 	c    gogen.PkgRef
 
 	cflags string
 	lang   Language
 
-	reused     *Reused
 	nameLookup func(manglingName string) (archivePath string, ok bool)
+
+	fileBases map[clang.File]int // clang.File => base
 
 	methods map[string]*classMethod // manglingName => class
 	clTasks []func()
@@ -98,10 +103,18 @@ func (p *blockCtx) forceImportUnsafe() {
 	}
 }
 
-func (p *blockCtx) initFile(file Source) {
-	src := file.TU.FileContents(file.Handle)
-	p.file = p.fset.AddFile("", -1, len(src))
-	p.file.SetLinesForContent(src)
+func (p *blockCtx) initFiles(files []string) {
+	fset := p.fset
+	tu := p.tu
+	fileBases := make(map[clang.File]int)
+	for _, filename := range files {
+		f := tu.File(filename)
+		src := p.tu.FileContents(f)
+		tf := fset.AddFile(filename, -1, len(src))
+		tf.SetLinesForContent(src)
+		fileBases[f] = tf.Base()
+	}
+	p.fileBases = fileBases
 }
 
 func (p *blockCtx) getPubName(fnName string) (pubName string, rewritten bool) {

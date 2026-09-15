@@ -37,7 +37,7 @@ func newWrapFile(ctx *blockCtx) *wrapFile {
 	ext := langExts[ctx.lang]
 	filename := "_wrap/" + ctx.pkg.Types.Name() + ext
 	llgoFiles := ctx.cflags + ": " + filename
-	ctx.reused.llgo.New(func(cb *gogen.CodeBuilder) int {
+	ctx.llgo.New(func(cb *gogen.CodeBuilder) int {
 		cb.Val(llgoFiles)
 		return 1
 	}, 0, token.NoPos, nil, "LLGoFiles")
@@ -45,9 +45,8 @@ func newWrapFile(ctx *blockCtx) *wrapFile {
 }
 
 func wrapInlineFunc(ctx *blockCtx, manglingName, origName string, fn clang.Cursor) string {
-	reused := ctx.reused
-	if reused.wrap == nil {
-		reused.wrap = newWrapFile(ctx)
+	if ctx.wrap == nil {
+		ctx.wrap = newWrapFile(ctx)
 	}
 	wrapName := "_llcppg_" + manglingName
 	// TODO(xsw): wrap inline func

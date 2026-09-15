@@ -22,7 +22,6 @@ import (
 	"log"
 
 	"github.com/goplus/gogen"
-	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
@@ -48,14 +47,6 @@ func SetDebug(flags int) {
 // Package represents a generated Go package.
 type Package struct {
 	*gogen.Package
-}
-
-// Reused specifies to reuse the Package instance between processing multiple C/C++
-// header files.
-type Reused struct {
-	pkg  Package
-	llgo *gogen.ConstDefs
-	wrap *wrapFile
 }
 
 // -----------------------------------------------------------------------------
@@ -89,22 +80,14 @@ type Config struct {
 	// CFlags specifies the compiler flags to be used when compiling the wrapper file.
 	CFlags string
 
-	// Reused specifies to reuse the Package instance between processing multiple header
-	// files.
-	*Reused
-
 	// NameLookup looks up the archive path for a given mangling name. It returns the
 	// archive path and a boolean indicating whether the lookup was successful.
 	NameLookup func(manglingName string) (archivePath string, ok bool)
-}
 
-// -----------------------------------------------------------------------------
-
-// Source represents a C/C++ header to compile.
-type Source struct {
-	TU           clang.TranslationUnit
-	Handle       clang.File
-	PresumedFile *c.Char
+	// PresumedFiles specifies the list of files that are presumed to be included in the
+	// compilation. This is used to determine which files are considered part of the
+	// package being compiled.
+	PresumedFiles []string
 }
 
 // -----------------------------------------------------------------------------
@@ -113,55 +96,48 @@ const (
 	headerGoFile = "llcppg.i.go"
 )
 
-// NewPackage creates a new Package instance for the specified package path and name, using
-// the provided Source and Config.
-func NewPackage(pkgPath, pkgName string, file Source, conf *Config) (pkg Package, err error) {
-	reused := conf.Reused
-	if reused == nil {
-		reused = new(Reused)
+// NewPackage creates a new Package instance for the given package path and name,
+// using the provided configuration and translation unit.
+func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit, files ...string) (ret Package, err error) {
+	interp := &nodeInterp{}
+	confGox := &gogen.Config{
+		Fset:            conf.Fset,
+		Importer:        conf.Importer,
+		LoadNamed:       nil,
+		HandleErr:       nil,
+		NewBuiltin:      nil,
+		NodeInterpreter: interp,
+		CanImplicitCast: nil,
+		DefaultGoFile:   headerGoFile,
 	}
-	if reused.pkg.Package != nil {
-		pkg = reused.pkg
-	} else {
-		interp := &nodeInterp{}
-		confGox := &gogen.Config{
-			Fset:            conf.Fset,
-			Importer:        conf.Importer,
-			LoadNamed:       nil,
-			HandleErr:       nil,
-			NewBuiltin:      nil,
-			NodeInterpreter: interp,
-			CanImplicitCast: nil,
-			DefaultGoFile:   headerGoFile,
-		}
-		pkg.Package = gogen.NewPackage(pkgPath, pkgName, confGox)
-		reused.llgo = pkg.Package.NewConstDefs(pkg.Types.Scope())
-		interp.fset = pkg.Fset
-		if llgoPkg := conf.LLGoPackage; llgoPkg != "" {
-			reused.llgo.New(func(cb *gogen.CodeBuilder) int {
-				cb.Val(llgoPkg)
-				return 1
-			}, 0, token.NoPos, nil, "LLGoPackage")
-		}
-	}
+	pkg := gogen.NewPackage(pkgPath, pkgName, confGox)
 	pkg.SetRedeclarable(true)
-	err = loadFile(pkg.Package, conf, file, reused)
-	reused.pkg = pkg
+	interp.fset = pkg.Fset
+
+	llgo := pkg.NewConstDefs(pkg.Types.Scope())
+	if llgoPkg := conf.LLGoPackage; llgoPkg != "" {
+		llgo.New(func(cb *gogen.CodeBuilder) int {
+			cb.Val(llgoPkg)
+			return 1
+		}, 0, token.NoPos, nil, "LLGoPackage")
+	}
+
+	c := pkg.Import("github.com/goplus/lib/c")
+	ctx := &blockCtx{
+		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu, c: c,
+		lang: conf.Language, cflags: conf.CFlags, nameLookup: conf.NameLookup,
+		methods: make(map[string]*classMethod),
+	}
+	ctx.initFiles(files)
+	err = loadFiles(ctx)
+	ret.Package = pkg
 	return
 }
 
 // -----------------------------------------------------------------------------
 
-func loadFile(p *gogen.Package, conf *Config, file Source, reused *Reused) (err error) {
-	c := p.Import("github.com/goplus/lib/c")
-	ctx := &blockCtx{
-		pkg: p, cb: p.CB(), fset: p.Fset, c: c,
-		lang: conf.Language, cflags: conf.CFlags,
-		reused: reused, nameLookup: conf.NameLookup,
-		methods: make(map[string]*classMethod),
-	}
-	ctx.initFile(file)
-	clang.VisitChildren(file.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
+func loadFiles(ctx *blockCtx) (err error) {
+	clang.VisitChildren(ctx.tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		compileDecl(ctx, decl)
 		return clang.Continue
 	})
