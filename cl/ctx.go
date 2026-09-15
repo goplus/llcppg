@@ -20,6 +20,8 @@ import (
 	"go/ast"
 	"go/token"
 	"log"
+	"sort"
+	"strconv"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -137,8 +139,11 @@ func (p *pkgCtx) compile() {
 	}
 }
 
-func (p *pkgCtx) getPubName(fnName string) (pubName string, rewritten bool) {
+func (p *pkgCtx) getPubName(fnName string, order int) (pubName string, rewritten bool) {
 	pubName = cPubName(fnName)
+	if order >= 0 {
+		return pubName + "__" + strconv.FormatInt(int64(order), 36), true
+	}
 	rewritten = fnName != pubName
 	return
 }
@@ -159,15 +164,47 @@ type overloads struct {
 	items []*object
 }
 
+func (p *overloads) reorder() {
+	items := p.items
+	if len(items) > 1 {
+		sort.SliceStable(items, func(i, j int) bool {
+			a, b := items[i].decl, items[j].decl
+			na, nb := a.NumArguments(), b.NumArguments()
+			if na != nb {
+				return na < nb
+			}
+			for k := range c.Uint(na) {
+				ta, tb := a.Argument(k).Type(), b.Argument(k).Type()
+				if ret := cmpType(ta, tb); ret != 0 {
+					return ret < 0
+				}
+			}
+			return false
+		})
+	}
+}
+
 type object struct {
 	name      string
 	decl      clang.Cursor
 	overloads *overloads
-	idx       int // index in overloads.items
+}
+
+// order returns the order of the object in the overloads list.
+// -1 means no order (only one overload, or not found).
+func (p *object) order() int {
+	items := p.overloads.items
+	if len(items) > 1 {
+		for i, obj := range items {
+			if obj == p {
+				return i
+			}
+		}
+	}
+	return -1
 }
 
 type scopeCtx struct {
-	ns        string
 	overloads map[string]*overloads // name => overload items
 }
 
@@ -179,7 +216,6 @@ func (p *scopeCtx) addObject(decl clang.Cursor) *object {
 	}
 	ovs, ok := p.overloads[name]
 	if ok {
-		obj.idx = len(ovs.items)
 		ovs.items = append(ovs.items, obj)
 	} else {
 		ovs = &overloads{items: []*object{obj}}
@@ -187,6 +223,12 @@ func (p *scopeCtx) addObject(decl clang.Cursor) *object {
 	}
 	obj.overloads = ovs
 	return obj
+}
+
+func (p *scopeCtx) reorder() {
+	for _, o := range p.overloads {
+		o.reorder()
+	}
 }
 
 // -----------------------------------------------------------------------------

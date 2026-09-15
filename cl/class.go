@@ -47,19 +47,20 @@ func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) {
 	}
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	clsName, rewritten := ctx.getPubName(origName)
+	clsName, rewritten := ctx.getPubName(origName, -1)
 	typDecl := pkg.NewTypeDefs().NewType(clsName, goNode(ctx, cls))
 	typStruc := types.NewStruct(scope.fields, nil)
 	typNamed := typDecl.InitType(pkg, typStruc)
 	if rewritten {
-		scope := pkgTypes.Scope()
-		substObj(pkgTypes, scope, origName, typNamed.Obj())
+		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
 	}
+	scope.reorder()
 	for _, method := range scope.publicMethods {
-		if method.outsideDecl.Kind != 0 {
-			compileFuncOrMethod(ctx, method.outsideDecl, typNamed)
+		obj := method.obj
+		if decl := method.outsideDecl; decl.Kind != 0 {
+			compileFuncOrMethod(ctx, decl, obj, typNamed)
 		} else {
-			compileFuncOrMethod(ctx, method.obj.decl, typNamed)
+			compileFuncOrMethod(ctx, obj.decl, obj, typNamed)
 		}
 	}
 }
@@ -97,7 +98,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.
 		fldType := toType(ctx, pkg, decl.Type(), flagIsStructField)
 		fldName := origName
 		if cls.inPublic {
-			fldName, _ = ctx.getPubName(origName)
+			fldName, _ = ctx.getPubName(origName, -1)
 		}
 		fld := types.NewField(goNodePos(ctx, decl), pkg, fldName, fldType, false)
 		cls.fields = append(cls.fields, fld)
