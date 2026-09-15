@@ -82,12 +82,12 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 	})
 }
 
-func TestMockC(t *testing.T) {
-	testFromDir(t, "", "./_testmockc", cl.LanguageC)
+func TestC(t *testing.T) {
+	testFromDir(t, "", "./_testc", cl.LanguageC)
 }
 
-func TestMockCpp(t *testing.T) {
-	testFromDir(t, "", "./_testmockcpp", cl.LanguageCXX)
+func TestCpp(t *testing.T) {
+	testFromDir(t, "", "./_testcpp", cl.LanguageCXX)
 }
 
 // -----------------------------------------------------------------------------
