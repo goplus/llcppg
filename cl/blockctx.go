@@ -19,6 +19,7 @@ package cl
 import (
 	"go/ast"
 	"go/token"
+	"log"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -116,6 +117,10 @@ func (p *blockCtx) initFiles(files []string) {
 	fileBases := make(map[clang.File]int)
 	for _, filename := range files {
 		f := tu.File(filename)
+		if f == clang.InvalidFile {
+			log.Println("[WARN]", filename, "is not included in the translation unit")
+			continue
+		}
 		src := p.tu.FileContents(f)
 		tf := fset.AddFile(filename, -1, len(src))
 		tf.SetLinesForContent(src)
