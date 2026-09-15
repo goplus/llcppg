@@ -89,9 +89,9 @@ func compileOutsideMethod(ctx *blockCtx, outsideDecl clang.Cursor) {
 func compilePublicMethods(ctx *blockCtx, cls *classCtx, typNamed *types.Named) {
 	for _, method := range cls.publicMethods {
 		if method.outsideDecl.Kind != 0 {
-			compileFunc(ctx, method.outsideDecl, typNamed)
+			compileFuncOrMethod(ctx, method.outsideDecl, typNamed)
 		} else {
-			compileFunc(ctx, method.decl, typNamed)
+			compileFuncOrMethod(ctx, method.decl, typNamed)
 		}
 	}
 }

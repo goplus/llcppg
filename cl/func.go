@@ -29,7 +29,7 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func compileFunc(ctx *blockCtx, fn clang.Cursor, typNamed *types.Named) {
+func compileFuncOrMethod(ctx *blockCtx, fn clang.Cursor, typNamed *types.Named) {
 	manglingName := clang.Mangling(fn)
 	origName := clang.String(fn)
 	if fn.IsFunctionInlined() != 0 {
