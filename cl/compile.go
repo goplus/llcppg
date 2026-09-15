@@ -158,7 +158,7 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	} */
 	switch decl.Kind {
 	case lc.CursorFunctionDecl:
-		compileFunc(ctx, decl, nil)
+		compileFuncOrMethod(ctx, decl, nil)
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		defaultInPublic := decl.Kind == lc.CursorStructDecl
 		compileClass(ctx, decl, defaultInPublic)
