@@ -57,7 +57,7 @@ func newPointer(typ types.Type) types.Type {
 	return types.NewPointer(typ)
 }
 
-func toType(ctx *blockCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
+func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
 	switch typ.Kind {
 	case lc.TypeCharS:
 		return ctx.c.Ref("Char").Type()
@@ -82,13 +82,13 @@ func toType(ctx *blockCtx, pkg *types.Package, typ lc.Type, flags int) types.Typ
 	panic("todo: toType " + clang.String(typ))
 }
 
-func toFuncType(ctx *blockCtx, pkg *types.Package, fn lc.Type) *types.Signature {
+func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type) *types.Signature {
 	params, variadic := toFuncParams(ctx, pkg, fn)
 	results := toFuncResults(ctx, pkg, fn.ResultType())
 	return types.NewSignatureType(nil, nil, nil, params, results, variadic)
 }
 
-func toFuncParams(ctx *blockCtx, pkg *types.Package, fn lc.Type) (ret *types.Tuple, variadic bool) {
+func toFuncParams(ctx *pkgCtx, pkg *types.Package, fn lc.Type) (ret *types.Tuple, variadic bool) {
 	n := fn.NumArgTypes()
 	var params []*types.Var
 	for i := range n {
@@ -113,7 +113,7 @@ func newVariadicParam(pkg *types.Package) *types.Var {
 	return types.NewParam(token.NoPos, pkg, "__llgo_va_list", tyValist)
 }
 
-func toFuncResults(ctx *blockCtx, pkg *types.Package, retType lc.Type) (results *types.Tuple) {
+func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type) (results *types.Tuple) {
 	if retType.Kind != lc.TypeVoid {
 		tyRet := toType(ctx, pkg, retType, flagRetType)
 		results = types.NewTuple(types.NewParam(token.NoPos, pkg, "", tyRet))
