@@ -109,7 +109,8 @@ func (i Index) ParseTranslationUnit(options uint, filename string, args ...strin
 type File = clang.File
 
 const (
-	InvalidFile = File(0) // value of invalid file
+	// NULL file handle (invalid/absent File)
+	InvalidFile = File(0)
 )
 
 // -----------------------------------------------------------------------------

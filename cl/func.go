@@ -29,7 +29,15 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func compileFuncOrMethod(ctx *blockCtx, fn clang.Cursor, typNamed *types.Named) {
+func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
+	obj := scope.addObject(decl)
+	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+		_ = obj
+		compileFuncOrMethod(ctx, decl, nil)
+	})
+}
+
+func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, typNamed *types.Named) {
 	manglingName := clang.Mangling(fn)
 	origName := clang.String(fn)
 	if fn.IsFunctionInlined() != 0 {
@@ -97,7 +105,7 @@ func compileFuncOrMethod(ctx *blockCtx, fn clang.Cursor, typNamed *types.Named) 
 	}
 }
 
-func newParams(ctx *blockCtx, pkg *types.Package, fn clang.Cursor) (ret *types.Tuple, variadic bool) {
+func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor) (ret *types.Tuple, variadic bool) {
 	n := fn.NumArguments()
 	var params []*types.Var
 	for i := range n {
@@ -113,7 +121,7 @@ func newParams(ctx *blockCtx, pkg *types.Package, fn clang.Cursor) (ret *types.T
 	return
 }
 
-func newParam(ctx *blockCtx, pkg *types.Package, decl clang.Cursor, i c.Int) *types.Var {
+func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int) *types.Var {
 	declName := clang.String(decl)
 	declTyp := decl.Type()
 	if debugCompileDecl {

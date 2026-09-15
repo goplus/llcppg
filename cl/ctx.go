@@ -31,7 +31,7 @@ import (
 type node struct {
 	pos token.Pos
 	end token.Pos
-	ctx *blockCtx
+	ctx *pkgCtx
 }
 
 func (p *node) Pos() token.Pos {
@@ -42,7 +42,7 @@ func (p *node) End() token.Pos {
 	return p.end
 }
 
-func goNode(ctx *blockCtx, v clang.Cursor) ast.Node {
+func goNode(ctx *pkgCtx, v clang.Cursor) ast.Node {
 	var file clang.File
 	var pos, end c.Uint
 	rg := v.Extent()
@@ -55,7 +55,7 @@ func goNode(ctx *blockCtx, v clang.Cursor) ast.Node {
 	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
 }
 
-func goNodePos(ctx *blockCtx, v clang.Cursor) token.Pos {
+func goNodePos(ctx *pkgCtx, v clang.Cursor) token.Pos {
 	var file clang.File
 	var pos c.Uint
 	v.Extent().RangeStart().SpellingLocation(&file, nil, nil, &pos)
@@ -82,7 +82,9 @@ func (p *nodeInterp) LoadExpr(v ast.Node) string {
 
 // -----------------------------------------------------------------------------
 
-type blockCtx struct {
+type compileFunc = func(ctx *pkgCtx)
+
+type pkgCtx struct {
 	pkg  *gogen.Package
 	cb   *gogen.CodeBuilder
 	llgo *gogen.ConstDefs
@@ -98,20 +100,20 @@ type blockCtx struct {
 
 	fileBases map[clang.File]int // clang.File => base
 
-	methods map[string]*classMethod // manglingName => class
-	clTasks []func()
+	methods  map[string]*classMethod // manglingName => class
+	compiles []compileFunc
 
 	unsafeImported bool
 }
 
-func (p *blockCtx) forceImportUnsafe() {
+func (p *pkgCtx) forceImportUnsafe() {
 	if !p.unsafeImported {
 		p.unsafeImported = true
 		p.pkg.ForceImport("unsafe")
 	}
 }
 
-func (p *blockCtx) initFiles(files []string) {
+func (p *pkgCtx) initFiles(files []string) {
 	fset := p.fset
 	tu := p.tu
 	fileBases := make(map[clang.File]int)
@@ -129,7 +131,13 @@ func (p *blockCtx) initFiles(files []string) {
 	p.fileBases = fileBases
 }
 
-func (p *blockCtx) getPubName(fnName string) (pubName string, rewritten bool) {
+func (p *pkgCtx) compile() {
+	for _, compile := range p.compiles {
+		compile(p)
+	}
+}
+
+func (p *pkgCtx) getPubName(fnName string) (pubName string, rewritten bool) {
 	pubName = cPubName(fnName)
 	rewritten = fnName != pubName
 	return
@@ -143,6 +151,42 @@ func cPubName(name string) string {
 		return "X" + name
 	}
 	return name
+}
+
+// -----------------------------------------------------------------------------
+
+type overloads struct {
+	items []*object
+}
+
+type object struct {
+	name      string
+	decl      clang.Cursor
+	overloads *overloads
+	idx       int // index in overloads.items
+}
+
+type scopeCtx struct {
+	ns        string
+	overloads map[string]*overloads // name => overload items
+}
+
+func (p *scopeCtx) addObject(decl clang.Cursor) *object {
+	name := clang.String(decl)
+	obj := &object{
+		name: name,
+		decl: decl,
+	}
+	ovs, ok := p.overloads[name]
+	if ok {
+		obj.idx = len(ovs.items)
+		ovs.items = append(ovs.items, obj)
+	} else {
+		ovs = &overloads{items: []*object{obj}}
+		p.overloads[name] = ovs
+	}
+	obj.overloads = ovs
+	return obj
 }
 
 // -----------------------------------------------------------------------------

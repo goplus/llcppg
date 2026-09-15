@@ -123,33 +123,31 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 	}
 
 	c := pkg.Import("github.com/goplus/lib/c")
-	ctx := &blockCtx{
+	ctx := &pkgCtx{
 		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu, c: c,
 		lang: conf.Language, cflags: conf.CFlags, nameLookup: conf.NameLookup,
 		methods: make(map[string]*classMethod),
 	}
 	ctx.initFiles(files)
-	err = loadFiles(ctx)
+	loadFiles(ctx)
 	ret.Package = pkg
 	return
 }
 
 // -----------------------------------------------------------------------------
 
-func loadFiles(ctx *blockCtx) (err error) {
+func loadFiles(ctx *pkgCtx) {
+	scope := &scopeCtx{
+		overloads: make(map[string]*overloads),
+	}
 	clang.VisitChildren(ctx.tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		compileDecl(ctx, decl)
+		loadDecl(ctx, scope, decl)
 		return clang.Continue
 	})
-	clTasks := ctx.clTasks
-	ctx.clTasks = nil
-	for _, task := range clTasks {
-		task()
-	}
-	return
+	ctx.compile()
 }
 
-func compileDecl(ctx *blockCtx, decl clang.Cursor) {
+func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	/* if global {
 		ctx.logFile(decl)
 		if decl.IsImplicit || ctx.inDepPkg {
@@ -158,12 +156,12 @@ func compileDecl(ctx *blockCtx, decl clang.Cursor) {
 	} */
 	switch decl.Kind {
 	case lc.CursorFunctionDecl:
-		compileFuncOrMethod(ctx, decl, nil)
+		loadGlobalFunc(ctx, scope, decl)
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		defaultInPublic := decl.Kind == lc.CursorStructDecl
-		compileClass(ctx, decl, defaultInPublic)
+		loadClass(ctx, decl, defaultInPublic)
 	case lc.CursorCXXMethod:
-		compileOutsideMethod(ctx, decl)
+		loadOutsideMethod(ctx, decl)
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:

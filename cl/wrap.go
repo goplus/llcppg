@@ -33,7 +33,7 @@ var langExts = [...]string{
 	LanguageCXX: ".cpp",
 }
 
-func newWrapFile(ctx *blockCtx) *wrapFile {
+func newWrapFile(ctx *pkgCtx) *wrapFile {
 	ext := langExts[ctx.lang]
 	filename := "_wrap/" + ctx.pkg.Types.Name() + ext
 	llgoFiles := ctx.cflags + ": " + filename
@@ -44,7 +44,7 @@ func newWrapFile(ctx *blockCtx) *wrapFile {
 	return &wrapFile{}
 }
 
-func wrapInlineFunc(ctx *blockCtx, manglingName, origName string, fn clang.Cursor) string {
+func wrapInlineFunc(ctx *pkgCtx, manglingName, origName string, fn clang.Cursor) string {
 	if ctx.wrap == nil {
 		ctx.wrap = newWrapFile(ctx)
 	}
