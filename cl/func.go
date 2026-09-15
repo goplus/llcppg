@@ -32,14 +32,13 @@ import (
 func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	obj := scope.addObject(decl)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		_ = obj
-		compileFuncOrMethod(ctx, decl, nil)
+		compileFuncOrMethod(ctx, decl, obj, nil)
 	})
 }
 
-func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, typNamed *types.Named) {
+func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, typNamed *types.Named) {
 	manglingName := clang.Mangling(fn)
-	origName := clang.String(fn)
+	origName := obj.name
 	if fn.IsFunctionInlined() != 0 {
 		if ctx.cflags == "" {
 			if debugCompileDecl {
@@ -64,7 +63,7 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, typNamed *types.Named) {
 
 	var recv *types.Var
 	var nameInPkg string
-	var fnName, rewritten = ctx.getPubName(origName)
+	var fnName, rewritten = ctx.getPubName(origName, obj.order())
 	if typNamed == nil {
 		nameInPkg = fnName
 	} else {
@@ -88,8 +87,7 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, typNamed *types.Named) {
 			},
 		})
 		if rewritten {
-			scope := pkg.Types.Scope()
-			substObj(pkg.Types, scope, origName, f)
+			substObj(pkgTypes, pkgTypes.Scope(), origName, f)
 		}
 	} else {
 		f.SetComments(pkg, &ast.CommentGroup{

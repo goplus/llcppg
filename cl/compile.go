@@ -144,6 +144,7 @@ func loadFiles(ctx *pkgCtx) {
 		loadDecl(ctx, scope, decl)
 		return clang.Continue
 	})
+	scope.reorder()
 	ctx.compile()
 }
 

@@ -123,6 +123,13 @@ func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type) (results *t
 
 // -----------------------------------------------------------------------------
 
+func cmpType(ta, tb lc.Type) int {
+	// TODO(xsw): c++ overload support
+	return int(ta.Kind - tb.Kind)
+}
+
+// -----------------------------------------------------------------------------
+
 func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
 	old := scope.Insert(gogen.NewSubst(token.NoPos, pkg, origName, real))
 	if old != nil {
