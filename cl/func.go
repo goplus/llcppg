@@ -29,8 +29,8 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
-	name := clang.String(decl)
+func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
+	name := ns + clang.String(decl)
 	obj := scope.addObject(name, decl)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
 		compileFuncOrMethod(ctx, decl, obj, nil)

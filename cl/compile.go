@@ -95,10 +95,6 @@ type Config struct {
 
 // -----------------------------------------------------------------------------
 
-const (
-	headerGoFile = "llcppg.i.go"
-)
-
 // NewPackage loads a translation unit and generates a Go package with the given package
 // path, name and configuration.
 func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit, files ...string) (ret Package, err error) {
@@ -114,7 +110,7 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 		NewBuiltin:      nil,
 		NodeInterpreter: interp,
 		CanImplicitCast: nil,
-		DefaultGoFile:   headerGoFile,
+		DefaultGoFile:   "",
 	}
 	pkg := gogen.NewPackage(pkgPath, pkgName, confGox)
 	pkg.SetRedeclarable(true)
@@ -165,13 +161,13 @@ func loadFiles(ctx *pkgCtx) {
 				return clang.Continue
 			}
 		}
-		loadDecl(ctx, scope, decl)
+		loadDecl(ctx, scope, decl, "")
 		return clang.Continue
 	})
 	scope.reorder()
 }
 
-func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
+func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	/* if global {
 		ctx.logFile(decl)
 		if decl.IsImplicit || ctx.inDepPkg {
@@ -180,23 +176,33 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	} */
 	switch decl.Kind {
 	case lc.CursorFunctionDecl:
-		loadGlobalFunc(ctx, scope, decl)
+		loadGlobalFunc(ctx, scope, decl, ns)
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		defaultInPublic := decl.Kind == lc.CursorStructDecl
-		loadClass(ctx, decl, defaultInPublic)
+		loadClass(ctx, decl, ns, defaultInPublic)
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.CursorTypedefDecl:
-		loadTypedef(ctx, decl)
+		loadTypedef(ctx, decl, ns)
 	case lc.CursorEnumDecl:
 		// compileEnum(ctx, decl, global)
 	case lc.CursorMacroDefinition:
 		loadMacro(ctx, decl)
+	case lc.CursorNamespace:
+		loadNamespace(ctx, scope, decl, ns)
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}
+}
+
+func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns string) {
+	ns = ns + clang.String(namespace) + "_"
+	clang.VisitChildren(namespace, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		loadDecl(ctx, scope, decl, ns)
+		return clang.Continue
+	})
 }
 
 func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
@@ -225,9 +231,9 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 	})
 }
 
-func loadTypedef(ctx *pkgCtx, decl clang.Cursor) {
+func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		origName := clang.String(decl)
+		origName := ns + clang.String(decl)
 		pkg := ctx.pkg
 		pkgTypes := pkg.Types
 		underlying := decl.TypedefDeclUnderlyingType()
