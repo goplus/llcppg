@@ -47,6 +47,7 @@ func SetDebug(flags int) {
 // Package represents a generated Go package.
 type Package struct {
 	*gogen.Package
+	Wrap *WrapFile
 }
 
 // -----------------------------------------------------------------------------
@@ -61,32 +62,35 @@ const (
 
 // -----------------------------------------------------------------------------
 
-// Config specifies the configuration for compiling header files.
+// Config specifies the configuration for llcppg.
 type Config struct {
-	// Fset provides source position information for syntax trees and types.
+	// Fset provides source position information for syntax trees and types (optional).
 	// If Fset is nil, Load will use a new fileset, but preserve Fset's value.
 	Fset *token.FileSet
 
-	// An Importer resolves import paths to Packages.
+	// An Importer resolves import paths to Packages (optional).
 	Importer types.Importer
 
 	// LLGoPackage specifies the value of the LLGoPackage constant in the generated
-	// Go package.
+	// Go package (optional).
 	LLGoPackage string
 
-	// Language specifies the programming language of the header file.
+	// Language specifies the programming language of the header file (default LanguageC).
 	Language Language
 
 	// CFlags specifies the compiler flags to be used when compiling the wrapper file.
+	// If not specified, llcppg will skip wrapping inline functions/methods.
 	CFlags string
 
 	// NameLookup looks up the archive path for a given mangling name. It returns the
-	// archive path and a boolean indicating whether the lookup was successful.
+	// archive path and a boolean indicating whether the lookup was successful. If not
+	// specified, llcppg uses a default lookup function that returns an empty archivePath
+	// and true (it means any mangling name is considered found).
 	NameLookup func(manglingName string) (archivePath string, ok bool)
 
 	// PresumedFiles specifies the list of files that are presumed to be included in the
 	// compilation. This is used to determine which files are considered part of the
-	// package being compiled.
+	// package being compiled (optional).
 	PresumedFiles []string
 }
 
@@ -96,10 +100,13 @@ const (
 	headerGoFile = "llcppg.i.go"
 )
 
-// NewPackage creates a new Package instance for the given package path and name,
-// using the provided configuration and translation unit.
+// NewPackage loads a translation unit and generates a Go package with the given package
+// path, name and configuration.
 func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit, files ...string) (ret Package, err error) {
 	interp := &nodeInterp{}
+	if conf == nil {
+		conf = &Config{}
+	}
 	confGox := &gogen.Config{
 		Fset:            conf.Fset,
 		Importer:        conf.Importer,
@@ -123,15 +130,25 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 	}
 
 	c := pkg.Import("github.com/goplus/lib/c")
+	nameLookup := conf.NameLookup
+	if nameLookup == nil {
+		nameLookup = defaultNameLookup
+	}
 	ctx := &pkgCtx{
 		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu, c: c,
-		lang: conf.Language, cflags: conf.CFlags, nameLookup: conf.NameLookup,
+		lang: conf.Language, cflags: conf.CFlags, nameLookup: nameLookup,
 		methods: make(map[string]*classMethod),
 	}
 	ctx.initFiles(files)
 	loadFiles(ctx)
+	ctx.compile()
 	ret.Package = pkg
+	ret.Wrap = ctx.wrap
 	return
+}
+
+func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
+	return "", true
 }
 
 // -----------------------------------------------------------------------------
@@ -145,7 +162,6 @@ func loadFiles(ctx *pkgCtx) {
 		return clang.Continue
 	})
 	scope.reorder()
-	ctx.compile()
 }
 
 func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {

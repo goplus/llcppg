@@ -7,7 +7,7 @@ import (
 
 const (
 	LLGoPackage = "link: -L/path/foo -lfoo"
-	LLGoFiles   = "-I/path/foo/include: _wrap/foo.c"
+	LLGoFiles   = "-I/path/foo/include: _wrap/llcppg.c"
 )
 
 //go:linkname Add C._llcppg_add

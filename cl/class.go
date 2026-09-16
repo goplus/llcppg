@@ -84,7 +84,16 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, defaultInPublic bool) {
 func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.Cursor) {
 	switch decl.Kind {
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
-		obj := cls.addObject(decl)
+		var name string
+		switch decl.Kind {
+		case lc.CursorConstructor:
+			name = "XGo_Ctor"
+		case lc.CursorDestructor:
+			name = "XGo_Dtor"
+		default:
+			name = clang.String(decl)
+		}
+		obj := cls.addObject(name, decl)
 		manglingName := clang.Mangling(decl)
 		isPublic := cls.inPublic
 		method := &classMethod{obj: obj, manglingName: manglingName, isPublic: isPublic}

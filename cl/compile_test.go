@@ -52,7 +52,7 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 	if err != nil {
 		t.Fatal("gogen.WriteTo failed:", err)
 	}
-	testDiff(t, dir, "/result.txt", &b, exp)
+	testDiff(t, dir, "/out.txt", &b, exp)
 }
 
 func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
@@ -71,7 +71,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			LLGoPackage: conf.LLGoPackage,
 			Language:    lang,
 			CFlags:      conf.CFlags,
-			NameLookup:  cltest.MockNameLookup,
+			NameLookup:  nil,
 		}, u, filename)
 		if err != nil {
 			t.Error("cl.NewPackage:", err)
@@ -79,7 +79,17 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		}
 		exp, _ := os.ReadFile(pkgDir + "/out.go")
 		testGenGo(t, pkg.Package, pkgDir, exp)
+		wrapFile := "/wrap" + langExts[lang]
+		wrap, _ := os.ReadFile(pkgDir + wrapFile)
+		if pkg.Wrap != nil {
+			testDiff(t, pkgDir, wrapFile+".txt", &pkg.Wrap.Content, wrap)
+		}
 	})
+}
+
+var langExts = [...]string{
+	cl.LanguageC:   ".c",
+	cl.LanguageCXX: ".cpp",
 }
 
 func TestC(t *testing.T) {
