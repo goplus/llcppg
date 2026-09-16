@@ -230,7 +230,7 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v a
 
 // -----------------------------------------------------------------------------
 
-var goOps = map[string]token.Token{
+var c2goOps = map[string]token.Token{
 	"(": token.LPAREN,
 	")": token.RPAREN,
 
@@ -245,7 +245,7 @@ var goOps = map[string]token.Token{
 	">>": token.SHR,
 
 	"&": token.AND,
-	"^": token.XOR,
+	"~": token.XOR,
 	"|": token.OR,
 }
 
@@ -257,7 +257,7 @@ func scanToken(tu clang.TranslationUnit, tokens []lc.Token) (ret token.Token, li
 		case lc.Punctuation:
 			op := tu.Token(tok)
 			left = tokens[1:]
-			ret, ok = goOps[op]
+			ret, ok = c2goOps[op]
 		case lc.Literal:
 			lit, ok = tu.Token(tok), true
 			switch lit[0] {
