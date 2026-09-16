@@ -61,7 +61,7 @@ const (
 
 // -----------------------------------------------------------------------------
 
-// Config specifies the configuration for compiling header files.
+// Config specifies the configuration for llcppg.
 type Config struct {
 	// Fset provides source position information for syntax trees and types (optional).
 	// If Fset is nil, Load will use a new fileset, but preserve Fset's value.
@@ -99,8 +99,8 @@ const (
 	headerGoFile = "llcppg.i.go"
 )
 
-// NewPackage creates a new Package instance for the given package path and name,
-// using the provided configuration and translation unit.
+// NewPackage loads a translation unit and generates a Go package with the given package
+// path, name and configuration.
 func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit, files ...string) (ret Package, err error) {
 	interp := &nodeInterp{}
 	if conf == nil {
@@ -140,6 +140,7 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 	}
 	ctx.initFiles(files)
 	loadFiles(ctx)
+	ctx.compile()
 	ret.Package = pkg
 	return
 }
@@ -159,7 +160,6 @@ func loadFiles(ctx *pkgCtx) {
 		return clang.Continue
 	})
 	scope.reorder()
-	ctx.compile()
 }
 
 func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
