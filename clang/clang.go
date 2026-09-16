@@ -88,6 +88,27 @@ func (i Index) Dispose() {
 	i.impl.Dispose()
 }
 
+/**
+ * Flags that control the creation of translation units.
+ *
+ * The enumerators in this enumeration type are meant to be bitwise
+ * ORed together to specify which options should be used when
+ * constructing the translation unit.
+ */
+const (
+	/**
+	 * Used to indicate that the parser should construct a "detailed"
+	 * preprocessing record, including all macro definitions and instantiations.
+	 *
+	 * Constructing a detailed preprocessing record requires more memory
+	 * and time to parse, since the information contained in the record
+	 * is usually not retained. However, it can be useful for
+	 * applications that require more detailed information about the
+	 * behavior of the preprocessor.
+	 */
+	DetailedPreprocessingRecord = clang.DetailedPreprocessingRecord
+)
+
 // ParseTranslationUnit parses the given source file and returns the translation unit corresponding
 // to that file.
 func (i Index) ParseTranslationUnit(options uint, filename string, args ...string) TranslationUnit {
@@ -141,6 +162,32 @@ func (u TranslationUnit) FileContents(file File) []byte {
 	return unsafe.Slice((*byte)(unsafe.Pointer(data)), int(size))
 }
 
+// Tokenize tokenizes the source code described by the given source range
+// into raw lexical tokens. Call dispose() to free the memory allocated for
+// the tokens after use.
+func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, dispose func()) {
+	var tokens *clang.Token
+	var numTokens c.Uint
+	u.impl.Tokenize(extent, &tokens, &numTokens)
+	ret = unsafe.Slice(tokens, int(numTokens))
+	dispose = func() {
+		u.impl.DisposeTokens(tokens, numTokens)
+	}
+	return
+}
+
+/**
+ * Determine the spelling of the given token.
+ *
+ * The spelling of a token is the textual representation of that token, e.g.,
+ * the text of an identifier or keyword.
+ */
+func (u TranslationUnit) Token(tok clang.Token) string {
+	ret := u.impl.Token(tok)
+	defer ret.Dispose()
+	return c.GoString(ret.CStr())
+}
+
 /**
  * Retrieve the cursor that represents the given translation unit.
  *
@@ -188,9 +235,11 @@ type Cursor = clang.Cursor
 type SourceLocation = clang.SourceLocation
 
 // PresumedFile returns the presumed file name for the given source location.
-func PresumedFile(loc SourceLocation) (filename clang.String) {
+func PresumedFile(loc SourceLocation) string {
+	var filename clang.String
 	loc.PresumedLocation(&filename, nil, nil)
-	return
+	defer filename.Dispose()
+	return c.GoString(filename.CStr())
 }
 
 /**

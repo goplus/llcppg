@@ -27,14 +27,10 @@ import (
 	lc "github.com/goplus/llcppg/lib/clang"
 )
 
-func dump(node clang.Cursor, ns string, presumedFile *c.Char) {
+func dump(node clang.Cursor, ns, presumedFile string) {
 	clang.VisitChildren(node, func(cur, parent clang.Cursor) clang.ChildVisitResult {
-		if presumedFile != nil {
-			loc := cur.Location()
-			at := clang.PresumedFile(loc)
-			cmpf := c.Strcmp(at.CStr(), presumedFile)
-			at.Dispose()
-			if cmpf != 0 {
+		if presumedFile != "" {
+			if clang.PresumedFile(cur.Location()) != presumedFile {
 				return clang.Continue
 			}
 		}
@@ -68,7 +64,7 @@ func main() {
 	if len(os.Args) > 2 {
 		lang = strings.ToLower(os.Args[2])
 	}
-	u := idx.ParseTranslationUnit(0, filename, "-x", lang)
+	u := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, filename, "-x", lang)
 	defer u.Dispose()
 
 	usys := u.Underlying()
@@ -79,9 +75,8 @@ func main() {
 	file := usys.File(spelling.CStr())
 	loc := usys.GetLocationForOffset(file, 2)
 	presumedFile := clang.PresumedFile(loc)
-	defer presumedFile.Dispose()
-	log.Println("==> PresumedFile", c.GoString(presumedFile.CStr()))
+	log.Println("==> PresumedFile", presumedFile)
 
 	root := u.Cursor()
-	dump(root, "", presumedFile.CStr())
+	dump(root, "", presumedFile)
 }
