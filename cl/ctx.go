@@ -208,8 +208,7 @@ type scopeCtx struct {
 	overloads map[string]*overloads // name => overload items
 }
 
-func (p *scopeCtx) addObject(decl clang.Cursor) *object {
-	name := clang.String(decl)
+func (p *scopeCtx) addObject(name string, decl clang.Cursor) *object {
 	obj := &object{
 		name: name,
 		decl: decl,
