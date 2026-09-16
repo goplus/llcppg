@@ -86,12 +86,12 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		var name string
 		switch decl.Kind {
-		default:
-			name = clang.String(decl)
 		case lc.CursorConstructor:
 			name = "XGo_Ctor"
 		case lc.CursorDestructor:
 			name = "XGo_Dtor"
+		default:
+			name = clang.String(decl)
 		}
 		obj := cls.addObject(name, decl)
 		manglingName := clang.Mangling(decl)

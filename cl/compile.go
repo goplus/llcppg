@@ -83,7 +83,7 @@ type Config struct {
 
 	// NameLookup looks up the archive path for a given mangling name. It returns the
 	// archive path and a boolean indicating whether the lookup was successful. If not
-	// specified, llcppg use a default lookup function that returns an empty archivePath
+	// specified, llcppg uses a default lookup function that returns an empty archivePath
 	// and true (it means any mangling name is considered found).
 	NameLookup func(manglingName string) (archivePath string, ok bool)
 
