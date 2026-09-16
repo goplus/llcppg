@@ -186,12 +186,30 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:
-		// TODO(xsw)
+		loadTypedef(ctx, decl)
 	case lc.CursorEnumDecl:
 		// compileEnum(ctx, decl, global)
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}
+}
+
+func loadTypedef(ctx *pkgCtx, decl clang.Cursor) {
+	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+		origName := clang.String(decl)
+		pkg := ctx.pkg
+		pkgTypes := pkg.Types
+		underlying := decl.TypedefDeclUnderlyingType()
+		if debugCompileDecl {
+			log.Println("typedef", origName, "-", clang.String(underlying))
+		}
+		tunder := toType(ctx, pkgTypes, underlying, flagIsTypedef)
+		name, rewritten := ctx.getPubName(origName, -1)
+		t := pkg.NewTypeDefs().AliasType(name, tunder)
+		if rewritten {
+			pkgTypes.Scope().Insert(types.NewTypeName(token.NoPos, pkgTypes, origName, t))
+		}
+	})
 }
 
 // -----------------------------------------------------------------------------

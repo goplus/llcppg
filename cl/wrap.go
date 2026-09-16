@@ -122,7 +122,9 @@ func writeParam(b *writerT, typ lc.Type, name string) {
 		return
 	}
 	b.WriteString(clang.String(typ))
-	b.WriteByte(' ')
+	if typ.Kind != lc.TypePointer {
+		b.WriteByte(' ')
+	}
 	b.WriteString(name)
 }
 
