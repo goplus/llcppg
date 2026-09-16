@@ -20,6 +20,7 @@ import (
 	"go/types"
 	"log"
 
+	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
@@ -36,28 +37,17 @@ type classMethod struct {
 type classCtx struct {
 	scopeCtx
 	decl          clang.Cursor
-	typNamed      *types.Named
+	typDecl       *gogen.TypeDecl
 	fields        []*types.Var
 	publicMethods []*classMethod
 	inPublic      bool
 }
 
 func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor, ns string) {
-	origName := ns + clang.String(cls)
-	if debugCompileDecl {
-		log.Println("class", origName)
-	}
 	pkg := ctx.pkg
-	pkgTypes := pkg.Types
-	clsName, rewritten := ctx.getPubName(origName, -1)
-	typDecl := pkg.NewTypeDefs().NewType(clsName, goNode(ctx, cls))
 	typStruc := types.NewStruct(scope.fields, nil)
-	typNamed := typDecl.InitType(pkg, typStruc)
-	if rewritten {
-		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
-	}
+	scope.typDecl.InitType(pkg, typStruc)
 	scope.reorder()
-	scope.typNamed = typNamed
 	for _, method := range scope.publicMethods {
 		obj := method.obj
 		if decl := method.outsideDecl; decl.Kind != 0 {
@@ -71,8 +61,20 @@ func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor, ns string) {
 func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
+	origName := ns + clang.String(cls)
+	if debugCompileDecl {
+		log.Println("class", origName)
+	}
+	clsName, rewritten := ctx.getPubName(origName, -1)
+	typDecl := pkg.NewTypeDefs().NewType(clsName, goNode(ctx, cls))
+	typNamed := typDecl.Type()
+	if rewritten {
+		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
+	}
+	ctx.types[clang.String(cls.Type())] = typNamed
 	scope := &classCtx{
 		decl:      cls,
+		typDecl:   typDecl,
 		overloads: make(map[string]*overloads),
 		inPublic:  defaultInPublic,
 	}

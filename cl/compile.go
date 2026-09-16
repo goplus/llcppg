@@ -130,10 +130,10 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 		nameLookup = defaultNameLookup
 	}
 	ctx := &pkgCtx{
-		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu,
-		c: c, lang: conf.Language, cflags: conf.CFlags,
-		wrapFileHeader: conf.WrapFileHeader, nameLookup: nameLookup,
+		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu, c: c, lang: conf.Language,
+		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, nameLookup: nameLookup,
 		methods: make(map[string]*classMethod), macroVals: make(map[string]any),
+		types: make(map[string]types.Type),
 	}
 	ctx.initFiles(files)
 	loadFiles(ctx)
@@ -209,44 +209,41 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 	if decl.IsMacroFunctionLike() != 0 {
 		return
 	}
-	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		origName := clang.String(decl)
-		tokens, dispose := ctx.tu.Tokenize(decl.Extent())
-		defer dispose()
-		if debugCompileDecl {
-			log.Println("macro", origName, "-", len(tokens), "tokens")
+	origName := clang.String(decl)
+	tokens, dispose := ctx.tu.Tokenize(decl.Extent())
+	defer dispose()
+	if debugCompileDecl {
+		log.Println("macro", origName, "-", len(tokens), "tokens")
+	}
+	if len(tokens) > 1 {
+		if v, ok := evalConstExpr(ctx, tokens[1:]); ok {
+			pkg := ctx.pkg
+			pkgTypes := pkg.Types
+			ctx.macroVals[origName] = v
+			name, _ := ctx.getPubName(origName, -1)
+			pkg.NewConstDefs(pkgTypes.Scope()).New(func(cb *gogen.CodeBuilder) int {
+				cb.Val(v)
+				return 1
+			}, 0, token.NoPos, nil, name)
 		}
-		if len(tokens) > 1 {
-			if v, ok := evalConstExpr(ctx, tokens[1:]); ok {
-				pkg := ctx.pkg
-				pkgTypes := pkg.Types
-				ctx.macroVals[origName] = v
-				name, _ := ctx.getPubName(origName, -1)
-				pkg.NewConstDefs(pkgTypes.Scope()).New(func(cb *gogen.CodeBuilder) int {
-					cb.Val(v)
-					return 1
-				}, 0, token.NoPos, nil, name)
-			}
-		}
-	})
+	}
 }
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
-	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		origName := ns + clang.String(decl)
-		pkg := ctx.pkg
-		pkgTypes := pkg.Types
-		underlying := decl.TypedefDeclUnderlyingType()
-		if debugCompileDecl {
-			log.Println("typedef", origName, "-", clang.String(underlying))
-		}
-		tunder := toType(ctx, pkgTypes, underlying, flagIsTypedef)
-		name, rewritten := ctx.getPubName(origName, -1)
-		t := pkg.NewTypeDefs().AliasType(name, tunder)
-		if rewritten {
-			pkgTypes.Scope().Insert(types.NewTypeName(token.NoPos, pkgTypes, origName, t))
-		}
-	})
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	origName := ns + clang.String(decl)
+	underlying := decl.TypedefDeclUnderlyingType()
+	if debugCompileDecl {
+		log.Println("typedef", origName, "-", clang.String(underlying))
+	}
+	tunder := toType(ctx, pkgTypes, underlying, flagIsTypedef)
+	name, rewritten := ctx.getPubName(origName, -1)
+	t := pkg.NewTypeDefs().AliasType(name, tunder)
+	if rewritten {
+		pkgTypes.Scope().Insert(types.NewTypeName(token.NoPos, pkgTypes, origName, t))
+	}
+	ctx.types[clang.String(decl.Type())] = t
 }
 
 // -----------------------------------------------------------------------------

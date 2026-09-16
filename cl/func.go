@@ -68,7 +68,7 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCt
 	if cls == nil {
 		nameInPkg = fnName
 	} else {
-		typNamed := cls.typNamed
+		typNamed := cls.typDecl.Type()
 		nameInPkg = "(*" + typNamed.Obj().Name() + ")." + fnName
 		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
 	}

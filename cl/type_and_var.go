@@ -74,6 +74,8 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		return newPointer(pointee)
 	case lc.TypeVoid:
 		return tyVoid
+	case lc.TypeElaborated:
+		typ.NamedType()
 	case lc.TypeFunctionProto:
 		return toFuncType(ctx, pkg, typ)
 	default:
