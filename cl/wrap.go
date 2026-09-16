@@ -60,7 +60,7 @@ func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor, cls *clas
 	}
 	w.WriteByte('\n')
 	wrapName := "_llcppg_" + manglingName
-	writeFunc(w, wrapName, fn, cls)
+	writeFunc(w, wrapName, fn, cls, ctx.lang)
 	return wrapName
 }
 
@@ -68,15 +68,15 @@ func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor, cls *clas
 
 type writerT = bytes.Buffer
 
-func writeFunc(b *writerT, name string, fn clang.Cursor, cls *classCtx) {
+func writeFunc(b *writerT, name string, fn clang.Cursor, cls *classCtx, lang Language) {
 	var call writerT
-	writeFuncProto(b, &call, name, fn, cls)
+	writeFuncProto(b, &call, name, fn, cls, lang)
 	b.WriteString(" {\n")
 	b.Write(call.Bytes())
 	b.WriteString("}\n")
 }
 
-func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *classCtx) {
+func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *classCtx, lang Language) {
 	var b writerT
 	b.WriteString(name)
 	b.WriteByte('(')
@@ -109,6 +109,9 @@ func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *class
 	}
 	b.WriteByte(')')
 	call.WriteString(");\n")
+	if lang == LanguageCXX {
+		out.WriteString(`extern "C" `)
+	}
 	writeParam(out, retType, b.String())
 }
 
