@@ -11,4 +11,6 @@ namespace bar {
 	public:
 		~base();
 	};
+
+	typedef char boolean;
 }

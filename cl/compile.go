@@ -183,7 +183,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.CursorTypedefDecl:
-		loadTypedef(ctx, decl)
+		loadTypedef(ctx, decl, ns)
 	case lc.CursorEnumDecl:
 		// compileEnum(ctx, decl, global)
 	case lc.CursorMacroDefinition:
@@ -231,9 +231,9 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 	})
 }
 
-func loadTypedef(ctx *pkgCtx, decl clang.Cursor) {
+func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		origName := clang.String(decl)
+		origName := ns + clang.String(decl)
 		pkg := ctx.pkg
 		pkgTypes := pkg.Types
 		underlying := decl.TypedefDeclUnderlyingType()

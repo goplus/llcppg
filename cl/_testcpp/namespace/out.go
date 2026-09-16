@@ -19,3 +19,5 @@ type Bar_base struct {
 // llgo:link (*Bar_base).XGo_Dtor C._ZN3bar4baseD1Ev
 func (this *Bar_base) XGo_Dtor() {
 }
+
+type Bar_boolean = c.Char
