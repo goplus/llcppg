@@ -75,7 +75,10 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	case lc.TypeVoid:
 		return tyVoid
 	case lc.TypeElaborated:
-		typ.NamedType()
+		cName := clang.String(typ.NamedType())
+		if t, ok := ctx.types[cName]; ok {
+			return t
+		}
 	case lc.TypeFunctionProto:
 		return toFuncType(ctx, pkg, typ)
 	default:
