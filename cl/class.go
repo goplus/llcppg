@@ -42,8 +42,8 @@ type classCtx struct {
 	inPublic      bool
 }
 
-func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) {
-	origName := clang.String(cls)
+func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor, ns string) {
+	origName := ns + clang.String(cls)
 	if debugCompileDecl {
 		log.Println("class", origName)
 	}
@@ -68,7 +68,7 @@ func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) {
 	}
 }
 
-func loadClass(ctx *pkgCtx, cls clang.Cursor, defaultInPublic bool) {
+func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	scope := &classCtx{
@@ -81,7 +81,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, defaultInPublic bool) {
 		return clang.Continue
 	})
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		compileClass(ctx, scope, cls)
+		compileClass(ctx, scope, cls, ns)
 	})
 }
 

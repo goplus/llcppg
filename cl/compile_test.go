@@ -99,7 +99,7 @@ func TestC(t *testing.T) {
 }
 
 func TestCpp(t *testing.T) {
-	testFromDir(t, "", "./_testcpp", cl.LanguageCXX)
+	testFromDir(t, "namespace", "./_testcpp", cl.LanguageCXX)
 }
 
 func TestPreprocessor(t *testing.T) {
