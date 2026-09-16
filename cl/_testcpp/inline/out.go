@@ -4,7 +4,7 @@ import "github.com/goplus/lib/c"
 
 const (
 	LLGoPackage = "link: -L/path/foo -lfoo"
-	LLGoFiles   = "-I/path/foo/include: _wrap/foo.cpp"
+	LLGoFiles   = "-I/path/foo/include: _wrap/llcppg.cpp"
 )
 
 type Bar struct {

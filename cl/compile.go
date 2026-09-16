@@ -47,6 +47,7 @@ func SetDebug(flags int) {
 // Package represents a generated Go package.
 type Package struct {
 	*gogen.Package
+	Wrap *WrapFile
 }
 
 // -----------------------------------------------------------------------------
@@ -142,6 +143,7 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 	loadFiles(ctx)
 	ctx.compile()
 	ret.Package = pkg
+	ret.Wrap = ctx.wrap
 	return
 }
 

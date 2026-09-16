@@ -90,7 +90,7 @@ type pkgCtx struct {
 	pkg  *gogen.Package
 	cb   *gogen.CodeBuilder
 	llgo *gogen.ConstDefs
-	wrap *wrapFile
+	wrap *WrapFile
 	fset *token.FileSet
 	tu   clang.TranslationUnit
 	c    gogen.PkgRef

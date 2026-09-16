@@ -8,6 +8,7 @@
 *.so
 *.dylib
 *.DS_Store
+*.txt
 
 _temp/
 _c2go/

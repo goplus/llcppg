@@ -17,15 +17,20 @@
 package cl
 
 import (
+	"bytes"
 	"go/token"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/goplus/llcppg/lib/clang"
 )
 
 // -----------------------------------------------------------------------------
 
-type wrapFile struct {
+type WrapFile struct {
+	Filename string
+	Content  bytes.Buffer
 }
 
 var langExts = [...]string{
@@ -33,26 +38,96 @@ var langExts = [...]string{
 	LanguageCXX: ".cpp",
 }
 
-func newWrapFile(ctx *pkgCtx) *wrapFile {
+func newWrapFile(ctx *pkgCtx) *WrapFile {
 	ext := langExts[ctx.lang]
-	filename := "_wrap/" + ctx.pkg.Types.Name() + ext
+	filename := "_wrap/llcppg" + ext
 	llgoFiles := ctx.cflags + ": " + filename
 	ctx.llgo.New(func(cb *gogen.CodeBuilder) int {
 		cb.Val(llgoFiles)
 		return 1
 	}, 0, token.NoPos, nil, "LLGoFiles")
-	return &wrapFile{}
+	return &WrapFile{Filename: filename}
 }
 
-func wrapInlineFunc(ctx *pkgCtx, manglingName, origName string, fn clang.Cursor) string {
-	if ctx.wrap == nil {
+func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor) string {
+	first := ctx.wrap == nil
+	if first {
 		ctx.wrap = newWrapFile(ctx)
 	}
+	w := &ctx.wrap.Content
+	if !first {
+		w.WriteByte('\n')
+	}
 	wrapName := "_llcppg_" + manglingName
-	// TODO(xsw): wrap inline func
-	_ = fn
-	_ = origName
+	writeFunc(w, wrapName, fn)
 	return wrapName
+}
+
+// -----------------------------------------------------------------------------
+
+type writerT = bytes.Buffer
+
+func writeFunc(b *writerT, name string, fn clang.Cursor) {
+	writeFuncProto(b, name, fn)
+	b.WriteString(` {
+}
+`)
+}
+
+func writeFuncProto(out *writerT, name string, fn clang.Cursor) {
+	var b writerT
+	b.WriteString(name)
+	b.WriteByte('(')
+	for i := range c.Uint(fn.NumArguments()) {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		arg := fn.Argument(i)
+		argName := clang.String(arg)
+		writeParam(&b, arg.Type(), argName)
+	}
+	b.WriteByte(')')
+	writeParam(out, fn.ResultType(), b.String())
+}
+
+func writeParam(b *writerT, typ lc.Type, name string) {
+	tderef, lvl := deref(typ)
+	if tderef.Kind == lc.TypeFunctionProto {
+		writeFuncParam(b, tderef, lvl, name)
+		return
+	}
+	b.WriteString(clang.String(typ))
+	b.WriteByte(' ')
+	b.WriteString(name)
+}
+
+func writeFuncParam(out *writerT, fn lc.Type, lvl int, name string) {
+	var b writerT
+	b.WriteByte('(')
+	for range lvl {
+		b.WriteByte('*')
+	}
+	b.WriteString(name)
+	b.WriteByte(')')
+	b.WriteString("(")
+	for i := range c.Uint(fn.NumArgTypes()) {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		arg := fn.ArgType(i)
+		writeParam(&b, arg, "")
+	}
+	b.WriteString(")")
+	writeParam(out, fn.ResultType(), b.String())
+}
+
+func deref(typ lc.Type) (lc.Type, int) {
+	n := 0
+	for typ.Kind == lc.TypePointer {
+		typ = typ.PointeeType()
+		n++
+	}
+	return typ, n
 }
 
 // -----------------------------------------------------------------------------
