@@ -91,11 +91,6 @@ type Config struct {
 	// specified, llcppg uses a default lookup function that returns an empty archivePath
 	// and true (it means any mangling name is considered found).
 	NameLookup func(manglingName string) (archivePath string, ok bool)
-
-	// PresumedFiles specifies the list of files that are presumed to be included in the
-	// compilation. This is used to determine which files are considered part of the
-	// package being compiled (optional).
-	PresumedFiles []string
 }
 
 // -----------------------------------------------------------------------------
@@ -139,9 +134,10 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 		nameLookup = defaultNameLookup
 	}
 	ctx := &pkgCtx{
-		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu, c: c,
-		lang: conf.Language, cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
-		nameLookup: nameLookup, methods: make(map[string]*classMethod),
+		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu,
+		c: c, lang: conf.Language, cflags: conf.CFlags,
+		wrapFileHeader: conf.WrapFileHeader, nameLookup: nameLookup,
+		methods: make(map[string]*classMethod), macroVals: make(map[string]any),
 	}
 	ctx.initFiles(files)
 	loadFiles(ctx)
@@ -162,6 +158,13 @@ func loadFiles(ctx *pkgCtx) {
 		overloads: make(map[string]*overloads),
 	}
 	clang.VisitChildren(ctx.tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		presumedFiles := ctx.presumedFiles
+		if presumedFiles != nil {
+			at := clang.PresumedFile(decl.Location())
+			if _, ok := presumedFiles[at]; !ok {
+				return clang.Continue
+			}
+		}
 		loadDecl(ctx, scope, decl)
 		return clang.Continue
 	})
@@ -183,15 +186,41 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 		loadClass(ctx, decl, defaultInPublic)
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		loadOutsideMethod(ctx, decl)
-	case lc.CursorVarDecl:
-		// compileVarDecl(ctx, decl, global)
 	case lc.CursorTypedefDecl:
 		loadTypedef(ctx, decl)
 	case lc.CursorEnumDecl:
 		// compileEnum(ctx, decl, global)
+	case lc.CursorMacroDefinition:
+		loadMacro(ctx, decl)
+	case lc.CursorVarDecl:
+		// compileVarDecl(ctx, decl, global)
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}
+}
+
+func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
+	if decl.IsMacroFunctionLike() != 0 {
+		return
+	}
+	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+		origName := clang.String(decl)
+		tokens, dispose := ctx.tu.Tokenize(decl.Extent())
+		defer dispose()
+		if debugCompileDecl {
+			log.Println("macro", origName, "-", len(tokens), "tokens")
+		}
+		if v, ok := evalConstExpr(ctx, tokens[1:]); ok {
+			pkg := ctx.pkg
+			pkgTypes := pkg.Types
+			ctx.macroVals[origName] = v
+			name, _ := ctx.getPubName(origName, -1)
+			pkg.NewConstDefs(pkgTypes.Scope()).New(func(cb *gogen.CodeBuilder) int {
+				cb.Val(v)
+				return 1
+			}, 0, token.NoPos, nil, name)
+		}
+	})
 }
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor) {

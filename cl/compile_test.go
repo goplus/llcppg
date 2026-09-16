@@ -61,7 +61,8 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		defer idx.Dispose()
 
 		filename := pkgDir + "/in.h"
-		u := idx.ParseTranslationUnit(0, filename, "-x", cltest.LanguageOf(lang))
+		u := idx.ParseTranslationUnit(
+			clang.DetailedPreprocessingRecord, filename, "-x", cltest.LanguageOf(lang))
 		defer u.Dispose()
 
 		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
