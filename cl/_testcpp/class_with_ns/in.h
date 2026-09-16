@@ -9,5 +9,5 @@ namespace bar {
     {
     private:
         base b;
-    }
+    };
 }

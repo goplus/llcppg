@@ -20,7 +20,6 @@ import (
 	"go/types"
 	"log"
 
-	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
@@ -37,16 +36,13 @@ type classMethod struct {
 type classCtx struct {
 	scopeCtx
 	decl          clang.Cursor
-	typDecl       *gogen.TypeDecl
+	typNamed      *types.Named
 	fields        []*types.Var
 	publicMethods []*classMethod
 	inPublic      bool
 }
 
-func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor, ns string) {
-	pkg := ctx.pkg
-	typStruc := types.NewStruct(scope.fields, nil)
-	scope.typDecl.InitType(pkg, typStruc)
+func compileClass(ctx *pkgCtx, scope *classCtx) {
 	scope.reorder()
 	for _, method := range scope.publicMethods {
 		obj := method.obj
@@ -74,7 +70,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	ctx.types[clang.String(cls.Type())] = typNamed
 	scope := &classCtx{
 		decl:      cls,
-		typDecl:   typDecl,
+		typNamed:  typNamed,
 		overloads: make(map[string]*overloads),
 		inPublic:  defaultInPublic,
 	}
@@ -82,8 +78,10 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 		loadClassMember(ctx, pkgTypes, scope, decl)
 		return clang.Continue
 	})
+	typStruc := types.NewStruct(scope.fields, nil)
+	typDecl.InitType(pkg, typStruc)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		compileClass(ctx, scope, cls, ns)
+		compileClass(ctx, scope)
 	})
 }
 
