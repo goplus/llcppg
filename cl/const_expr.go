@@ -146,6 +146,10 @@ func mathOp(op token.Token, a, b any) (any, bool) {
 			case token.MUL:
 				return a * b, true
 			case token.QUO:
+				if b == 0 {
+					// TODO(xsw):
+					panic("integer divide by zero")
+				}
 				return a / b, true
 			}
 		case float64:
@@ -201,11 +205,11 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v a
 		if !ok {
 			return
 		}
-		switch v := v.(type) {
+		switch x := v.(type) {
 		case int:
-			v = -v
+			v = -x
 		case float64:
-			v = -v
+			v = -x
 		default:
 			ok = false
 		}
@@ -214,9 +218,9 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v a
 		if !ok {
 			return
 		}
-		switch v := v.(type) {
+		switch x := v.(type) {
 		case int:
-			v = ^v
+			v = ^x
 		default:
 			ok = false
 		}

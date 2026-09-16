@@ -210,15 +210,17 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 		if debugCompileDecl {
 			log.Println("macro", origName, "-", len(tokens), "tokens")
 		}
-		if v, ok := evalConstExpr(ctx, tokens[1:]); ok {
-			pkg := ctx.pkg
-			pkgTypes := pkg.Types
-			ctx.macroVals[origName] = v
-			name, _ := ctx.getPubName(origName, -1)
-			pkg.NewConstDefs(pkgTypes.Scope()).New(func(cb *gogen.CodeBuilder) int {
-				cb.Val(v)
-				return 1
-			}, 0, token.NoPos, nil, name)
+		if len(tokens) > 1 {
+			if v, ok := evalConstExpr(ctx, tokens[1:]); ok {
+				pkg := ctx.pkg
+				pkgTypes := pkg.Types
+				ctx.macroVals[origName] = v
+				name, _ := ctx.getPubName(origName, -1)
+				pkg.NewConstDefs(pkgTypes.Scope()).New(func(cb *gogen.CodeBuilder) int {
+					cb.Val(v)
+					return 1
+				}, 0, token.NoPos, nil, name)
+			}
 		}
 	})
 }
