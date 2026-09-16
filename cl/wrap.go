@@ -55,9 +55,10 @@ func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor, cls *clas
 		ctx.wrap = newWrapFile(ctx)
 	}
 	w := &ctx.wrap.Content
-	if !first {
-		w.WriteByte('\n')
+	if first {
+		w.WriteString(ctx.wrapFileHeader)
 	}
+	w.WriteByte('\n')
 	wrapName := "_llcppg_" + manglingName
 	writeFunc(w, wrapName, fn, cls)
 	return wrapName
@@ -68,22 +69,34 @@ func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor, cls *clas
 type writerT = bytes.Buffer
 
 func writeFunc(b *writerT, name string, fn clang.Cursor, cls *classCtx) {
-	writeFuncProto(b, name, fn, cls)
-	b.WriteString(` {
-}
-`)
+	var call writerT
+	writeFuncProto(b, &call, name, fn, cls)
+	b.WriteString(" {\n")
+	b.Write(call.Bytes())
+	b.WriteString("}\n")
 }
 
-func writeFuncProto(out *writerT, name string, fn clang.Cursor, cls *classCtx) {
+func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *classCtx) {
 	var b writerT
 	b.WriteString(name)
 	b.WriteByte('(')
+	call.WriteByte('\t')
+	retType := fn.ResultType()
+	if retType.Kind != lc.TypeVoid {
+		call.WriteString("return ")
+	}
 	notFirst := cls != nil
 	if notFirst {
 		b.WriteString(clang.String(cls.decl.Type()))
 		b.WriteString("* this")
+		call.WriteString("this->")
 	}
+	call.WriteString(clang.String(fn))
+	call.WriteByte('(')
 	for i := range c.Uint(fn.NumArguments()) {
+		if i > 0 {
+			call.WriteString(", ")
+		}
 		if notFirst {
 			b.WriteString(", ")
 		} else {
@@ -92,9 +105,11 @@ func writeFuncProto(out *writerT, name string, fn clang.Cursor, cls *classCtx) {
 		arg := fn.Argument(i)
 		argName := clang.String(arg)
 		writeParam(&b, arg.Type(), argName)
+		call.WriteString(argName)
 	}
 	b.WriteByte(')')
-	writeParam(out, fn.ResultType(), b.String())
+	call.WriteString(");\n")
+	writeParam(out, retType, b.String())
 }
 
 func writeParam(b *writerT, typ lc.Type, name string) {

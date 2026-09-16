@@ -98,6 +98,8 @@ type pkgCtx struct {
 	cflags string
 	lang   Language
 
+	wrapFileHeader string
+
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 
 	fileBases map[clang.File]int // clang.File => base

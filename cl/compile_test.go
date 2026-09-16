@@ -67,11 +67,12 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
 		imp := packages.NewImporter(nil)
 		pkg, err := cl.NewPackage("", "foo", &cl.Config{
-			Importer:    imp,
-			LLGoPackage: conf.LLGoPackage,
-			Language:    lang,
-			CFlags:      conf.CFlags,
-			NameLookup:  nil,
+			Importer:       imp,
+			LLGoPackage:    conf.LLGoPackage,
+			Language:       lang,
+			WrapFileHeader: conf.WrapFileHeader,
+			CFlags:         conf.CFlags,
+			NameLookup:     nil,
 		}, u, filename)
 		if err != nil {
 			t.Error("cl.NewPackage:", err)
