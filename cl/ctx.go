@@ -141,12 +141,12 @@ func (p *pkgCtx) compile() {
 	}
 }
 
-func (p *pkgCtx) getPubName(fnName string, order int) (pubName string, rewritten bool) {
-	pubName = cPubName(fnName)
+func (p *pkgCtx) getPubName(cName string, order int) (pubName string, rewritten bool) {
+	pubName = cPubName(cName)
 	if order >= 0 {
 		return pubName + "__" + strconv.FormatInt(int64(order), 36), true
 	}
-	rewritten = fnName != pubName
+	rewritten = cName != pubName
 	return
 }
 
