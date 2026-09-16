@@ -71,7 +71,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			LLGoPackage: conf.LLGoPackage,
 			Language:    lang,
 			CFlags:      conf.CFlags,
-			NameLookup:  cltest.MockNameLookup,
+			NameLookup:  nil,
 		}, u, filename)
 		if err != nil {
 			t.Error("cl.NewPackage:", err)
