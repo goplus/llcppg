@@ -82,6 +82,10 @@ type Config struct {
 	// If not specified, llcppg will skip wrapping inline functions/methods.
 	CFlags string
 
+	// WrapFileHeader specifies the header content to be included at the top of the generated
+	// wrapper file (optional).
+	WrapFileHeader string
+
 	// NameLookup looks up the archive path for a given mangling name. It returns the
 	// archive path and a boolean indicating whether the lookup was successful. If not
 	// specified, llcppg uses a default lookup function that returns an empty archivePath
@@ -136,8 +140,8 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 	}
 	ctx := &pkgCtx{
 		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu, c: c,
-		lang: conf.Language, cflags: conf.CFlags, nameLookup: nameLookup,
-		methods: make(map[string]*classMethod),
+		lang: conf.Language, cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
+		nameLookup: nameLookup, methods: make(map[string]*classMethod),
 	}
 	ctx.initFiles(files)
 	loadFiles(ctx)

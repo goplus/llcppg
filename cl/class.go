@@ -35,6 +35,8 @@ type classMethod struct {
 
 type classCtx struct {
 	scopeCtx
+	decl          clang.Cursor
+	typNamed      *types.Named
 	fields        []*types.Var
 	publicMethods []*classMethod
 	inPublic      bool
@@ -55,12 +57,13 @@ func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) {
 		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
 	}
 	scope.reorder()
+	scope.typNamed = typNamed
 	for _, method := range scope.publicMethods {
 		obj := method.obj
 		if decl := method.outsideDecl; decl.Kind != 0 {
-			compileFuncOrMethod(ctx, decl, obj, typNamed)
+			compileFuncOrMethod(ctx, decl, obj, scope)
 		} else {
-			compileFuncOrMethod(ctx, obj.decl, obj, typNamed)
+			compileFuncOrMethod(ctx, obj.decl, obj, scope)
 		}
 	}
 }
@@ -69,6 +72,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, defaultInPublic bool) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	scope := &classCtx{
+		decl:      cls,
 		overloads: make(map[string]*overloads),
 		inPublic:  defaultInPublic,
 	}
