@@ -37,7 +37,7 @@ func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	})
 }
 
-func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, typNamed *types.Named) {
+func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCtx) {
 	manglingName := clang.Mangling(fn)
 	origName := obj.name
 	if fn.IsFunctionInlined() != 0 {
@@ -47,7 +47,7 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, typNamed *ty
 			}
 			return
 		}
-		manglingName = wrapInlineFunc(ctx, manglingName, fn)
+		manglingName = wrapInlineFunc(ctx, manglingName, fn, cls)
 	} else if _, ok := ctx.nameLookup(manglingName); !ok {
 		if debugCompileDecl {
 			log.Println("func", origName, "- skipped")
@@ -65,9 +65,10 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, typNamed *ty
 	var recv *types.Var
 	var nameInPkg string
 	var fnName, rewritten = ctx.getPubName(origName, obj.order())
-	if typNamed == nil {
+	if cls == nil {
 		nameInPkg = fnName
 	} else {
+		typNamed := cls.typNamed
 		nameInPkg = "(*" + typNamed.Obj().Name() + ")." + fnName
 		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
 	}
@@ -80,7 +81,7 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, typNamed *ty
 		log.Panicln("compileFunc:", origName, err)
 	}
 
-	if typNamed == nil {
+	if cls == nil {
 		ctx.forceImportUnsafe()
 		f.SetComments(pkg, &ast.CommentGroup{
 			List: []*ast.Comment{
