@@ -52,7 +52,7 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 	if err != nil {
 		t.Fatal("gogen.WriteTo failed:", err)
 	}
-	testDiff(t, dir, "/out.txt", &b, exp)
+	testDiff(t, dir, "/out.go.txt", &b, exp)
 }
 
 func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {

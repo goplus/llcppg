@@ -181,7 +181,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		defaultInPublic := decl.Kind == lc.CursorStructDecl
 		loadClass(ctx, decl, defaultInPublic)
-	case lc.CursorCXXMethod:
+	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.CursorVarDecl:
 		// compileVarDecl(ctx, decl, global)

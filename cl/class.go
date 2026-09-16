@@ -119,6 +119,9 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.
 	case lc.CursorCXXAccessSpecifier:
 		cls.inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
 
+	case lc.CursorCXXBaseSpecifier:
+		// noop
+
 	default:
 		log.Panicln("loadClassMember: unknown kind =", decl.Kind)
 	}
