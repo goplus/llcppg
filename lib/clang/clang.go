@@ -1312,6 +1312,49 @@ func (t *TranslationUnit) Spelling() (ret String) {
 	return
 }
 
+// llgo:link (*TranslationUnit).NumDiagnostics C.clang_getNumDiagnostics
+func (t *TranslationUnit) NumDiagnostics() (ret c.Uint) {
+	return
+}
+
+// llgo:link (*TranslationUnit).Diagnostic C.clang_getDiagnostic
+func (t *TranslationUnit) Diagnostic(index c.Uint) (ret *Diagnostic) {
+	return
+}
+
+// Diagnostic represents a single diagnostic, such as a compiler warning or error.
+type Diagnostic struct {
+	Unused [0]byte
+}
+
+/**
+ * Destroy the given diagnostic object.
+ */
+// llgo:link (*Diagnostic).Dispose C.clang_disposeDiagnostic
+func (d *Diagnostic) Dispose() {}
+
+/**
+ * Returns the source location of the given diagnostic.
+ */
+// llgo:link (*Diagnostic).Location C.clang_getDiagnosticLocation
+func (d *Diagnostic) Location() (ret SourceLocation) {
+	return
+}
+
+/**
+ * Returns a string that describes the diagnostic.
+ */
+// llgo:link (*Diagnostic).Format C.clang_formatDiagnostic
+func (d *Diagnostic) Format(options c.Uint) (ret String) {
+	return
+}
+
+/**
+ * Returns the default set of display options for diagnostics.
+ */
+//go:linkname DefaultDiagnosticDisplayOptions C.clang_defaultDiagnosticDisplayOptions
+func DefaultDiagnosticDisplayOptions() (ret c.Uint)
+
 /**
  * Describes the kind of entity that a cursor refers to.
  */

@@ -25,7 +25,7 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func goStringAndDispose(str clang.String) string {
+func toGoStringAndDispose(str clang.String) string {
 	s := c.GoString(str.CStr())
 	str.Dispose()
 	return s
@@ -37,7 +37,7 @@ type stringer interface {
 
 // String returns the Go string of a value whose String() returns a clang String.
 func String[T stringer](v T) string {
-	return goStringAndDispose(v.String())
+	return toGoStringAndDispose(v.String())
 }
 
 // -----------------------------------------------------------------------------
@@ -129,7 +129,7 @@ const (
  * Retrieve the name of a particular source file.
  */
 func FileName(f clang.File) string {
-	return goStringAndDispose(f.FileName())
+	return toGoStringAndDispose(f.FileName())
 }
 
 // -----------------------------------------------------------------------------
@@ -181,7 +181,7 @@ func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, 
  * the text of an identifier or keyword.
  */
 func (u TranslationUnit) Token(tok clang.Token) string {
-	return goStringAndDispose(u.impl.Token(tok))
+	return toGoStringAndDispose(u.impl.Token(tok))
 }
 
 /**
@@ -234,7 +234,7 @@ type SourceLocation = clang.SourceLocation
 func PresumedFile(loc SourceLocation) string {
 	var filename clang.String
 	loc.PresumedLocation(&filename, nil, nil)
-	return goStringAndDispose(filename)
+	return toGoStringAndDispose(filename)
 }
 
 /**
@@ -245,7 +245,7 @@ func PresumedFile(loc SourceLocation) string {
  * class template specialization.
  */
 func DisplayName(entity clang.Cursor) string {
-	return goStringAndDispose(entity.DisplayName())
+	return toGoStringAndDispose(entity.DisplayName())
 }
 
 /**
