@@ -19,6 +19,7 @@ package cl_test
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/goplus/gogen"
@@ -60,21 +61,30 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		idx := clang.CreateIndex(0, 0)
 		defer idx.Dispose()
 
-		filename := pkgDir + "/in.h"
-		u := idx.ParseTranslationUnit(
-			clang.DetailedPreprocessingRecord, filename, "-x", cltest.LanguageOf(lang))
-		defer u.Dispose()
-
 		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
+		srcFiles := conf.Files
+		if len(srcFiles) == 0 {
+			srcFiles = []string{"in.h"}
+		}
+
+		files := make([]cl.Source, len(srcFiles))
+		for i, srcFile := range srcFiles {
+			presumedFile := filepath.Join(pkgDir, srcFile)
+			u := idx.ParseTranslationUnit(
+				clang.DetailedPreprocessingRecord, presumedFile, "-x", cltest.LanguageOf(lang))
+			defer u.Dispose()
+			files[i] = cl.Source{TU: u, PresumedFile: presumedFile}
+		}
+
 		imp := packages.NewImporter(nil)
-		pkg, err := cl.NewPackage("", "foo", &cl.Config{
+		pkg, err := cl.NewPackage("", "foo", files, &cl.Config{
 			Importer:       imp,
 			LLGoPackage:    conf.LLGoPackage,
 			Language:       lang,
 			WrapFileHeader: conf.WrapFileHeader,
 			CFlags:         conf.CFlags,
 			NameLookup:     nil,
-		}, u, filename)
+		})
 		if err != nil {
 			t.Error("cl.NewPackage:", err)
 			return

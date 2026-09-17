@@ -30,9 +30,10 @@ import (
 
 // Config represents the lltest configuration.
 type Config struct {
-	LLGoPackage    string `json:"LLGoPackage"`
-	WrapFileHeader string `json:"WrapFileHeader"`
-	CFlags         string `json:"CFlags"`
+	LLGoPackage    string   `json:"LLGoPackage"`
+	WrapFileHeader string   `json:"WrapFileHeader"`
+	CFlags         string   `json:"CFlags"`
+	Files          []string `json:"Files"`
 }
 
 // LoadConf loads the lltest configuration.

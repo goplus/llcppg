@@ -87,15 +87,12 @@ func (p *nodeInterp) LoadExpr(v ast.Node) string {
 
 type compileFunc = func(ctx *pkgCtx)
 
-type none struct{}
-
 type pkgCtx struct {
 	pkg  *gogen.Package
 	cb   *gogen.CodeBuilder
 	llgo *gogen.ConstDefs
 	wrap *WrapFile
 	fset *token.FileSet
-	tu   clang.TranslationUnit
 	c    gogen.PkgRef
 
 	cflags string
@@ -105,8 +102,7 @@ type pkgCtx struct {
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 
-	presumedFiles map[string]none    // presumedFile set
-	fileBases     map[clang.File]int // clang.File => base
+	fileBases map[clang.File]int // clang.File => base
 
 	macroVals map[string]any          // macroName => value
 	methods   map[string]*classMethod // manglingName => class
@@ -124,28 +120,25 @@ func (p *pkgCtx) forceImportUnsafe() {
 	}
 }
 
-func (p *pkgCtx) initFiles(files []string) {
+func (p *pkgCtx) initFiles(files []Source) {
 	if len(files) == 0 {
 		return
 	}
 	fset := p.fset
-	tu := p.tu
-	presumedFiles := make(map[string]none)
 	fileBases := make(map[clang.File]int)
-	for _, filename := range files {
+	for _, file := range files {
+		tu, filename := file.TU, file.PresumedFile
 		f := tu.File(filename)
 		if f == clang.InvalidFile {
 			log.Println("[WARN]", filename, "is not included in the translation unit")
 			continue
 		}
-		src := p.tu.FileContents(f)
+		src := tu.FileContents(f)
 		tf := fset.AddFile(filename, -1, len(src))
 		tf.SetLinesForContent(src)
 		fileBases[f] = tf.Base()
-		presumedFiles[filename] = none{}
 	}
 	p.fileBases = fileBases
-	p.presumedFiles = presumedFiles
 }
 
 func (p *pkgCtx) compile() {

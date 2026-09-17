@@ -95,9 +95,17 @@ type Config struct {
 
 // -----------------------------------------------------------------------------
 
+// Source represents a source file to be processed by llcppg.
+type Source struct {
+	TU           clang.TranslationUnit
+	PresumedFile string
+}
+
+// -----------------------------------------------------------------------------
+
 // NewPackage loads a translation unit and generates a Go package with the given package
 // path, name and configuration.
-func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit, files ...string) (ret Package, err error) {
+func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Package, err error) {
 	interp := &nodeInterp{}
 	if conf == nil {
 		conf = &Config{}
@@ -130,13 +138,13 @@ func NewPackage(pkgPath, pkgName string, conf *Config, tu clang.TranslationUnit,
 		nameLookup = defaultNameLookup
 	}
 	ctx := &pkgCtx{
-		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, tu: tu, c: c, lang: conf.Language,
+		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, nameLookup: nameLookup,
 		methods: make(map[string]*classMethod), macroVals: make(map[string]any),
 		types: make(map[string]types.Type),
 	}
 	ctx.initFiles(files)
-	loadFiles(ctx)
+	loadFiles(ctx, files)
 	ctx.compile()
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
@@ -149,21 +157,23 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 
 // -----------------------------------------------------------------------------
 
-func loadFiles(ctx *pkgCtx) {
+func loadFiles(ctx *pkgCtx, files []Source) {
 	scope := &scopeCtx{
 		overloads: make(map[string]*overloads),
 	}
-	clang.VisitChildren(ctx.tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		presumedFiles := ctx.presumedFiles
-		if presumedFiles != nil {
-			at := clang.PresumedFile(decl.Location())
-			if _, ok := presumedFiles[at]; !ok {
-				return clang.Continue
+	for _, file := range files {
+		tu, presumedFile := file.TU, file.PresumedFile
+		clang.VisitChildren(tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
+			if presumedFile != "" {
+				at := clang.PresumedFile(decl.Location())
+				if at != presumedFile {
+					return clang.Continue
+				}
 			}
-		}
-		loadDecl(ctx, scope, decl, "")
-		return clang.Continue
-	})
+			loadDecl(ctx, scope, decl, "")
+			return clang.Continue
+		})
+	}
 	scope.reorder()
 }
 

@@ -1584,6 +1584,14 @@ type Token struct {
 }
 
 /**
+ * Retrieve the translation unit that a cursor originated from.
+ */
+// llgo:link Cursor.TU C.clang_Cursor_getTranslationUnit
+func (c Cursor) TU() (ret *TranslationUnit) {
+	return
+}
+
+/**
  * Determine whether two cursors are equivalent.
  */
 // llgo:link Cursor.Equal C.clang_equalCursors

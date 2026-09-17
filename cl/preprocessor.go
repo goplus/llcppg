@@ -31,13 +31,14 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 		return
 	}
 	origName := clang.String(decl)
-	tokens, dispose := ctx.tu.Tokenize(decl.Extent())
+	tu := clang.TU(decl)
+	tokens, dispose := tu.Tokenize(decl.Extent())
 	defer dispose()
 	if debugCompileDecl {
 		log.Println("macro", origName, "-", len(tokens), "tokens")
 	}
 	if len(tokens) > 1 {
-		if v, ok := evalConstExpr(ctx, tokens[1:]); ok {
+		if v, ok := evalConstExpr(ctx, tu, tokens[1:]); ok {
 			pkg := ctx.pkg
 			pkgTypes := pkg.Types
 			ctx.macroVals[origName] = v
