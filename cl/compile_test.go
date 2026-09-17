@@ -61,6 +61,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		idx := clang.CreateIndex(0, 0)
 		defer idx.Dispose()
 
+		pkgDir, _ = filepath.Abs(pkgDir)
 		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
 		srcFiles := conf.Files
 		if len(srcFiles) == 0 {
@@ -117,7 +118,7 @@ func TestCpp(t *testing.T) {
 }
 
 func TestPreprocessor(t *testing.T) {
-	testFromDir(t, "", "./_testpp", cl.LanguageC)
+	testFromDir(t, "", "./_testpp", cl.LanguageCXX)
 }
 
 // -----------------------------------------------------------------------------

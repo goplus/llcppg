@@ -20,19 +20,18 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
-	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
 
-func dump(node clang.Cursor, ns, presumedFile string) {
+func dump(node clang.Cursor, ns, dir string) {
 	clang.VisitChildren(node, func(cur, parent clang.Cursor) clang.ChildVisitResult {
-		if presumedFile != "" {
-			if clang.PresumedFile(cur.Location()) != presumedFile {
-				return clang.Continue
-			}
+		at := clang.PresumedFile(cur.Location())
+		if filepath.Dir(at) != dir {
+			return clang.Continue
 		}
 		kind := cur.Kind
 		if kind == lc.CursorCXXAccessSpecifier {
@@ -44,7 +43,7 @@ func dump(node clang.Cursor, ns, presumedFile string) {
 		switch kind {
 		case lc.CursorFunctionDecl, lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		case lc.CursorClassDecl, lc.CursorNamespace:
-			dump(cur, name+"::", presumedFile)
+			dump(cur, name+"::", dir)
 		}
 		return clang.Continue
 	})
@@ -73,19 +72,11 @@ func main() {
 	if len(os.Args) > 2 {
 		lang = strings.ToLower(os.Args[2])
 	}
+	filename, _ = filepath.Abs(filename)
+	log.Println("==> dump", filename, "as", lang)
 	u := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, filename, "-x", lang)
 	defer u.Dispose()
 
-	usys := u.Underlying()
-	spelling := usys.Spelling()
-	defer spelling.Dispose()
-	log.Println("==> TranslationUnit", c.GoString(spelling.CStr()))
-
-	file := usys.File(spelling.CStr())
-	loc := usys.GetLocationForOffset(file, 2)
-	presumedFile := clang.PresumedFile(loc)
-	log.Println("==> PresumedFile", presumedFile)
-
 	root := u.Cursor()
-	dump(root, "", presumedFile)
+	dump(root, "", filepath.Dir(filename))
 }
