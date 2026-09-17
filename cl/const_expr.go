@@ -27,8 +27,8 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func evalConstExpr(ctx *pkgCtx, tokens []lc.Token) (v any, ok bool) {
-	v, _, ok = parseExpr(ctx, ctx.tu, tokens, false)
+func evalConstExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v any, ok bool) {
+	v, _, ok = parseExpr(ctx, tu, tokens, false)
 	return
 }
 

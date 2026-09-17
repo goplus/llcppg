@@ -243,6 +243,13 @@ func PresumedFile(loc SourceLocation) string {
 }
 
 /**
+ * Retrieve the translation unit that a cursor originated from.
+ */
+func TU(c Cursor) (ret TranslationUnit) {
+	return TranslationUnit{impl: c.TU()}
+}
+
+/**
  * Describes how the traversal of the children of a particular
  * cursor should proceed after visiting a particular child cursor.
  */
