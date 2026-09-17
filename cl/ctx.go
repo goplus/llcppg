@@ -246,3 +246,26 @@ func (p *scopeCtx) reorder() {
 }
 
 // -----------------------------------------------------------------------------
+
+func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
+	old := scope.Insert(gogen.NewSubst(token.NoPos, pkg, origName, real))
+	if old != nil {
+		if t, ok := old.Type().(*gogen.TySubst); ok {
+			t.Real = real
+		} else {
+			log.Panicln(origName, "redefined")
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+
+func avoidKeyword(name *string) {
+	switch *name {
+	case "map", "type", "range", "chan", "var", "func", "go", "select",
+		"defer", "package", "import", "interface", "fallthrough":
+		*name += "_"
+	}
+}
+
+// -----------------------------------------------------------------------------

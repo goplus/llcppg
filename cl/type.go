@@ -155,25 +155,21 @@ func cmpType(ta, tb lc.Type) int {
 
 // -----------------------------------------------------------------------------
 
-func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
-	old := scope.Insert(gogen.NewSubst(token.NoPos, pkg, origName, real))
-	if old != nil {
-		if t, ok := old.Type().(*gogen.TySubst); ok {
-			t.Real = real
-		} else {
-			log.Panicln(origName, "redefined")
-		}
+func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	origName := ns + clang.String(decl)
+	underlying := decl.TypedefDeclUnderlyingType()
+	if debugCompileDecl {
+		log.Println("typedef", origName, "-", clang.String(underlying))
 	}
-}
-
-// -----------------------------------------------------------------------------
-
-func avoidKeyword(name *string) {
-	switch *name {
-	case "map", "type", "range", "chan", "var", "func", "go", "select",
-		"defer", "package", "import", "interface", "fallthrough":
-		*name += "_"
+	tunder := toType(ctx, pkgTypes, underlying, flagIsTypedef)
+	name, rewritten := ctx.getPubName(origName, -1)
+	t := pkg.NewTypeDefs().AliasType(name, tunder)
+	if rewritten {
+		pkgTypes.Scope().Insert(types.NewTypeName(token.NoPos, pkgTypes, origName, t))
 	}
+	ctx.types[clang.String(decl.Type())] = t
 }
 
 // -----------------------------------------------------------------------------
