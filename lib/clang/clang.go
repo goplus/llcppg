@@ -1522,6 +1522,9 @@ type Type struct {
  */
 type File uintptr
 
+/**
+ * Retrieve the name of a particular source file.
+ */
 //llgo:link File.FileName C.clang_getFileName
 func (File) FileName() (ret String) { return }
 

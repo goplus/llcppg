@@ -91,14 +91,17 @@ type Config struct {
 	// specified, llcppg uses a default lookup function that returns an empty archivePath
 	// and true (it means any mangling name is considered found).
 	NameLookup func(manglingName string) (archivePath string, ok bool)
+
+	// PackageOf returns the package path for a given header file. If ok is false, it means
+	// we don't know the package path for the header file.
+	PackageOf func(headerFile string) (pkgPath string, ok bool)
 }
 
 // -----------------------------------------------------------------------------
 
 // Source represents a source file to be processed by llcppg.
 type Source struct {
-	TU           clang.TranslationUnit
-	PresumedFile string
+	TU clang.TranslationUnit
 }
 
 // -----------------------------------------------------------------------------
@@ -140,11 +143,10 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	ctx := &pkgCtx{
 		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, nameLookup: nameLookup,
-		methods: make(map[string]*classMethod), macroVals: make(map[string]any),
-		types: make(map[string]types.Type),
+		fileBases: make(map[clang.File]int), methods: make(map[string]*classMethod),
+		macroVals: make(map[string]any), types: make(map[string]types.Type),
 	}
-	ctx.initFiles(files)
-	loadFiles(ctx, files)
+	loadFiles(ctx, files, pkgPath, conf.PackageOf)
 	ctx.compile()
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
@@ -157,16 +159,16 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 
 // -----------------------------------------------------------------------------
 
-func loadFiles(ctx *pkgCtx, files []Source) {
+func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, pkgOf func(headerFile string) (pkgPath string, ok bool)) {
 	scope := &scopeCtx{
 		overloads: make(map[string]*overloads),
 	}
 	for _, file := range files {
-		tu, presumedFile := file.TU, file.PresumedFile
+		tu := file.TU
 		clang.VisitChildren(tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
-			if presumedFile != "" {
+			if pkgOf != nil {
 				at := clang.PresumedFile(decl.Location())
-				if at != presumedFile {
+				if pkgPath, ok := pkgOf(at); !ok || pkgPath != myPkgPath {
 					return clang.Continue
 				}
 			}
@@ -198,6 +200,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		// compileEnum(ctx, decl, global)
 	case lc.CursorMacroDefinition:
 		loadMacro(ctx, decl)
+	case lc.CursorInclusionDirective:
+		// noop
 	case lc.CursorNamespace:
 		loadNamespace(ctx, scope, decl, ns)
 	case lc.CursorVarDecl:

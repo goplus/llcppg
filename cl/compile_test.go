@@ -61,6 +61,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		idx := clang.CreateIndex(0, 0)
 		defer idx.Dispose()
 
+		pkgDir, _ = filepath.Abs(pkgDir)
 		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
 		srcFiles := conf.Files
 		if len(srcFiles) == 0 {
@@ -73,7 +74,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			u := idx.ParseTranslationUnit(
 				clang.DetailedPreprocessingRecord, presumedFile, "-x", cltest.LanguageOf(lang))
 			defer u.Dispose()
-			files[i] = cl.Source{TU: u, PresumedFile: presumedFile}
+			files[i] = cl.Source{TU: u}
 		}
 
 		imp := packages.NewImporter(nil)
@@ -84,6 +85,10 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			WrapFileHeader: conf.WrapFileHeader,
 			CFlags:         conf.CFlags,
 			NameLookup:     nil,
+			PackageOf: func(headerFile string) (pkgPath string, ok bool) {
+				ok = filepath.Dir(headerFile) == pkgDir
+				return
+			},
 		})
 		if err != nil {
 			t.Error("cl.NewPackage:", err)
@@ -113,7 +118,7 @@ func TestCpp(t *testing.T) {
 }
 
 func TestPreprocessor(t *testing.T) {
-	testFromDir(t, "", "./_testpp", cl.LanguageC)
+	testFromDir(t, "", "./_testpp", cl.LanguageCXX)
 }
 
 // -----------------------------------------------------------------------------
