@@ -1,0 +1,1 @@
+unsigned f(int a);
