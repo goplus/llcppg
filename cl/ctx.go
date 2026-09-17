@@ -50,11 +50,8 @@ func goNode(ctx *pkgCtx, v clang.Cursor) ast.Node {
 	var pos, end c.Uint
 	rg := v.Extent()
 	rg.RangeStart().SpellingLocation(&file, nil, nil, &pos)
-	base, ok := ctx.fileBases[file]
-	if !ok {
-		return nil
-	}
 	rg.RangeEnd().SpellingLocation(nil, nil, nil, &end)
+	base := ctx.getFileBase(v, file)
 	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
 }
 
@@ -62,10 +59,7 @@ func goNodePos(ctx *pkgCtx, v clang.Cursor) token.Pos {
 	var file clang.File
 	var pos c.Uint
 	v.Extent().RangeStart().SpellingLocation(&file, nil, nil, &pos)
-	base, ok := ctx.fileBases[file]
-	if !ok {
-		return token.NoPos
-	}
+	base := ctx.getFileBase(v, file)
 	return token.Pos(int(pos) + base)
 }
 
@@ -120,25 +114,16 @@ func (p *pkgCtx) forceImportUnsafe() {
 	}
 }
 
-func (p *pkgCtx) initFiles(files []Source) {
-	if len(files) == 0 {
-		return
-	}
-	fset := p.fset
-	fileBases := make(map[clang.File]int)
-	for _, file := range files {
-		tu, filename := file.TU, file.PresumedFile
-		f := tu.File(filename)
-		if f == clang.InvalidFile {
-			log.Println("[WARN]", filename, "is not included in the translation unit")
-			continue
-		}
-		src := tu.FileContents(f)
-		tf := fset.AddFile(filename, -1, len(src))
+func (p *pkgCtx) getFileBase(c clang.Cursor, file clang.File) int {
+	base, ok := p.fileBases[file]
+	if !ok {
+		src := clang.TU(c).FileContents(file)
+		tf := p.fset.AddFile(clang.FileName(file), -1, len(src))
 		tf.SetLinesForContent(src)
-		fileBases[f] = tf.Base()
+		base = tf.Base()
+		p.fileBases[file] = base
 	}
-	p.fileBases = fileBases
+	return base
 }
 
 func (p *pkgCtx) compile() {

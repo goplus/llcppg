@@ -73,7 +73,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			u := idx.ParseTranslationUnit(
 				clang.DetailedPreprocessingRecord, presumedFile, "-x", cltest.LanguageOf(lang))
 			defer u.Dispose()
-			files[i] = cl.Source{TU: u, PresumedFile: presumedFile}
+			files[i] = cl.Source{TU: u}
 		}
 
 		imp := packages.NewImporter(nil)
@@ -84,6 +84,10 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			WrapFileHeader: conf.WrapFileHeader,
 			CFlags:         conf.CFlags,
 			NameLookup:     nil,
+			PackageOf: func(headerFile string) (pkgPath string, ok bool) {
+				ok = filepath.Dir(headerFile) == pkgDir
+				return
+			},
 		})
 		if err != nil {
 			t.Error("cl.NewPackage:", err)

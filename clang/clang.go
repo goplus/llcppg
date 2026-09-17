@@ -25,28 +25,19 @@ import (
 
 // -----------------------------------------------------------------------------
 
+func goStringAndDispose(str clang.String) string {
+	s := c.GoString(str.CStr())
+	str.Dispose()
+	return s
+}
+
 type stringer interface {
 	String() clang.String
 }
 
 // String returns the Go string of a value whose String() returns a clang String.
 func String[T stringer](v T) string {
-	str := v.String()
-	defer str.Dispose()
-	return c.GoString(str.CStr())
-}
-
-/**
- * Retrieve the display name for the entity referenced by this cursor.
- *
- * The display name contains extra information that helps identify the cursor,
- * such as the parameters of a function or template or the arguments of a
- * class template specialization.
- */
-func DisplayName(entity clang.Cursor) string {
-	str := entity.DisplayName()
-	defer str.Dispose()
-	return c.GoString(str.CStr())
+	return goStringAndDispose(v.String())
 }
 
 // -----------------------------------------------------------------------------
@@ -134,6 +125,13 @@ const (
 	InvalidFile = File(0)
 )
 
+/**
+ * Retrieve the name of a particular source file.
+ */
+func FileName(f clang.File) string {
+	return goStringAndDispose(f.FileName())
+}
+
 // -----------------------------------------------------------------------------
 
 /**
@@ -183,9 +181,7 @@ func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, 
  * the text of an identifier or keyword.
  */
 func (u TranslationUnit) Token(tok clang.Token) string {
-	ret := u.impl.Token(tok)
-	defer ret.Dispose()
-	return c.GoString(ret.CStr())
+	return goStringAndDispose(u.impl.Token(tok))
 }
 
 /**
@@ -238,8 +234,18 @@ type SourceLocation = clang.SourceLocation
 func PresumedFile(loc SourceLocation) string {
 	var filename clang.String
 	loc.PresumedLocation(&filename, nil, nil)
-	defer filename.Dispose()
-	return c.GoString(filename.CStr())
+	return goStringAndDispose(filename)
+}
+
+/**
+ * Retrieve the display name for the entity referenced by this cursor.
+ *
+ * The display name contains extra information that helps identify the cursor,
+ * such as the parameters of a function or template or the arguments of a
+ * class template specialization.
+ */
+func DisplayName(entity clang.Cursor) string {
+	return goStringAndDispose(entity.DisplayName())
 }
 
 /**
