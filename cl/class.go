@@ -42,22 +42,8 @@ type classCtx struct {
 	inPublic      bool
 }
 
-func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor, ns string) {
-	origName := ns + clang.String(cls)
-	if debugCompileDecl {
-		log.Println("class", origName)
-	}
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
-	clsName, rewritten := ctx.getPubName(origName, -1)
-	typDecl := pkg.NewTypeDefs().NewType(clsName, goNode(ctx, cls))
-	typStruc := types.NewStruct(scope.fields, nil)
-	typNamed := typDecl.InitType(pkg, typStruc)
-	if rewritten {
-		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
-	}
+func compileClass(ctx *pkgCtx, scope *classCtx) {
 	scope.reorder()
-	scope.typNamed = typNamed
 	for _, method := range scope.publicMethods {
 		obj := method.obj
 		if decl := method.outsideDecl; decl.Kind != 0 {
@@ -71,8 +57,20 @@ func compileClass(ctx *pkgCtx, scope *classCtx, cls clang.Cursor, ns string) {
 func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
+	origName := ns + clang.String(cls)
+	if debugCompileDecl {
+		log.Println("class", origName)
+	}
+	clsName, rewritten := ctx.getPubName(origName, -1)
+	typDecl := pkg.NewTypeDefs().NewType(clsName, goNode(ctx, cls))
+	typNamed := typDecl.Type()
+	if rewritten {
+		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
+	}
+	ctx.types[clang.String(cls.Type())] = typNamed
 	scope := &classCtx{
 		decl:      cls,
+		typNamed:  typNamed,
 		overloads: make(map[string]*overloads),
 		inPublic:  defaultInPublic,
 	}
@@ -80,8 +78,10 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 		loadClassMember(ctx, pkgTypes, scope, decl)
 		return clang.Continue
 	})
+	typStruc := types.NewStruct(scope.fields, nil)
+	typDecl.InitType(pkg, typStruc)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		compileClass(ctx, scope, cls, ns)
+		compileClass(ctx, scope)
 	})
 }
 

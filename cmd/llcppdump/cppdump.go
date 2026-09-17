@@ -40,7 +40,7 @@ func dump(node clang.Cursor, ns, presumedFile string) {
 			return clang.Continue
 		}
 		name := ns + clang.String(cur)
-		log.Println("==>", kind, clang.String(kind), name)
+		log.Println("==>", kind, clang.String(kind), name, typeOf(cur.Type()))
 		switch kind {
 		case lc.CursorFunctionDecl, lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		case lc.CursorClassDecl, lc.CursorNamespace:
@@ -48,6 +48,15 @@ func dump(node clang.Cursor, ns, presumedFile string) {
 		}
 		return clang.Continue
 	})
+}
+
+func typeOf(t lc.Type) string {
+	switch t.Kind {
+	case lc.TypeElaborated:
+		return typeOf(t.NamedType())
+	default:
+		return clang.String(t)
+	}
 }
 
 func main() {

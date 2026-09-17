@@ -74,12 +74,37 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		return newPointer(pointee)
 	case lc.TypeVoid:
 		return tyVoid
+	case lc.TypeRecord:
+		cName := fullTypeName(typ)
+		log.Println("==> fullTypeName:", cName)
+		if t, ok := ctx.types[cName]; ok {
+			return t
+		}
+	case lc.TypeElaborated:
+		cName := clang.String(typ.NamedType())
+		if t, ok := ctx.types[cName]; ok {
+			return t
+		}
 	case lc.TypeFunctionProto:
 		return toFuncType(ctx, pkg, typ)
 	default:
 		log.Println("==> toType: unknown Kind -", typ.Kind)
 	}
 	panic("todo: toType " + clang.String(typ))
+}
+
+func fullTypeName(typ lc.Type) string {
+	decl := typ.TypeDeclaration()
+	name := clang.String(decl)
+	for {
+		parent := decl.SemanticParent()
+		if kind := parent.Kind; kind != lc.CursorNamespace && kind != lc.CursorLastDecl {
+			break
+		}
+		name = clang.String(parent) + "::" + name
+		decl = parent
+	}
+	return name
 }
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type) *types.Signature {

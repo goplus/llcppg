@@ -19,6 +19,7 @@ package cl
 import (
 	"go/ast"
 	"go/token"
+	"go/types"
 	"log"
 	"sort"
 	"strconv"
@@ -109,6 +110,7 @@ type pkgCtx struct {
 
 	macroVals map[string]any          // macroName => value
 	methods   map[string]*classMethod // manglingName => class
+	types     map[string]types.Type   // c/c++ fullName => types.Type
 
 	compiles []compileFunc
 

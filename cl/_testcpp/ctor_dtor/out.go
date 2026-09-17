@@ -10,12 +10,11 @@ const (
 
 type Base struct {
 }
+type Bar struct {
+}
 
 // llgo:link (*Base).XGo_Dtor C._ZN4baseD1Ev
 func (this *Base) XGo_Dtor() {
-}
-
-type Bar struct {
 }
 
 // llgo:link (*Bar).XGo_Ctor__1 C._ZN3barC1Ei
