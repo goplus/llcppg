@@ -1,6 +1,8 @@
 #define f()  1
 #define g(x) x
 
+#define STRVAL  "abc"
+
 #define TRUE  1
 #define FALSE 0
 

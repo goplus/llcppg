@@ -198,7 +198,10 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v a
 		return parseExpr(ctx, tu, left, true)
 	case token.IDENT:
 		v, ok = ctx.macroVals[lit]
-	case token.CHAR, token.STRING:
+	case token.STRING:
+		val, e := strconv.Unquote(lit)
+		v, ok = val, e == nil
+	case token.CHAR:
 		ok = false // not supported
 	case token.SUB: // -
 		v, left, ok = parseOperand(ctx, tu, left)

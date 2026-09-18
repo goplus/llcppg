@@ -93,7 +93,8 @@ type Config struct {
 	NameLookup func(manglingName string) (archivePath string, ok bool)
 
 	// PackageOf returns the package path for a given header file. If ok is false, it means
-	// we don't know the package path for the header file.
+	// we don't know the package path for the header file. If not specified, llcppg will assume
+	// all header files belong to the same package.
 	PackageOf func(headerFile string) (pkgPath string, ok bool)
 }
 
