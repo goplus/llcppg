@@ -1366,16 +1366,56 @@ func (d *Diagnostic) Location() (ret SourceLocation) {
 	return
 }
 
+/**
+ * Format the given diagnostic according to the specified display options.
+ */
 // llgo:link (*Diagnostic).Format C.clang_formatDiagnostic
-func (d *Diagnostic) Format(options c.Uint) (ret String) {
+func (d *Diagnostic) Format(options DiagnosticDisplayOptions) (ret String) {
 	return
 }
+
+/**
+ * Display options that control the behavior of \c clang_formatDiagnostic().
+ */
+type DiagnosticDisplayOptions c.Int
+
+const (
+	/**
+	 * Display source ranges in caret diagnostics.
+	 */
+	Diagnostic_DisplaySourceLocation = 0x01
+
+	/**
+	 * Display column numbers in caret diagnostics.
+	 */
+	Diagnostic_DisplayColumn = 0x02
+
+	/**
+	 * Display source ranges in caret diagnostics.
+	 */
+	Diagnostic_DisplaySourceRanges = 0x04
+
+	/**
+	 * Display option to include the option name in the diagnostic.
+	 */
+	Diagnostic_DisplayOption = 0x08
+
+	/**
+	 * Display option to include the category ID in the diagnostic.
+	 */
+	Diagnostic_DisplayCategoryId = 0x10
+
+	/**
+	 * Display option to include the category name in the diagnostic.
+	 */
+	Diagnostic_DisplayCategoryName = 0x20
+)
 
 /**
  * Returns the default set of display options for diagnostics.
  */
 //go:linkname DefaultDiagnosticDisplayOptions C.clang_defaultDiagnosticDisplayOptions
-func DefaultDiagnosticDisplayOptions() (ret c.Uint)
+func DefaultDiagnosticDisplayOptions() (ret DiagnosticDisplayOptions)
 
 /**
  * Describes the kind of entity that a cursor refers to.

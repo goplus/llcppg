@@ -146,9 +146,9 @@ func (e Diagnostic) CategoryText() string {
 }
 
 /**
- * Returns the text of the diagnostic, suitable for displaying to a user.
+ * Format the given diagnostic according to the specified display options.
  */
-func (e Diagnostic) Format(options c.Uint) string {
+func (e Diagnostic) Format(options clang.DiagnosticDisplayOptions) string {
 	return toGoStringAndDispose(e.Diagnostic.Format(options))
 }
 
@@ -195,6 +195,24 @@ func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, 
  */
 func (u TranslationUnit) Token(tok clang.Token) string {
 	return toGoStringAndDispose(u.TranslationUnit.Token(tok))
+}
+
+/**
+ * Retrieve the diagnostic associated with the given index in the translation unit.
+ */
+func (u TranslationUnit) Diagnostic(index c.Uint) (ret Diagnostic) {
+	return Diagnostic{u.TranslationUnit.Diagnostic(index)}
+}
+
+// VisitDiagnostics visits all diagnostics in the translation unit and invokes the
+// given function for each diagnostic.
+func (u TranslationUnit) VisitDiagnostics(fn func(diag Diagnostic)) {
+	numDiagnostics := u.NumDiagnostics()
+	for i := range numDiagnostics {
+		diag := u.Diagnostic(i)
+		fn(diag)
+		diag.Dispose()
+	}
 }
 
 // -----------------------------------------------------------------------------
