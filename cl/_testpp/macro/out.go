@@ -2,6 +2,7 @@ package foo
 
 import "github.com/goplus/lib/c"
 
+const STRVAL = "abc"
 const TRUE = 1
 const FALSE = 0
 const THREE = 3
