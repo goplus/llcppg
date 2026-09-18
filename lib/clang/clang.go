@@ -1247,6 +1247,7 @@ const (
 	 * needed.
 	 */
 	TranslationUnit_None = 0x0
+
 	/**
 	 * Used to indicate that the parser should construct a "detailed"
 	 * preprocessing record, including all macro definitions and instantiations.
@@ -1334,6 +1335,30 @@ type Diagnostic struct {
 func (d *Diagnostic) Dispose() {}
 
 /**
+ * Returns a string that describes the diagnostic.
+ */
+// llgo:link (*Diagnostic).String C.clang_getDiagnosticSpelling
+func (d *Diagnostic) String() (ret String) {
+	return
+}
+
+/**
+ * Returns the category text for the given diagnostic.
+ */
+// llgo:link (*Diagnostic).CategoryText C.clang_getDiagnosticCategoryText
+func (d *Diagnostic) CategoryText() (ret String) {
+	return
+}
+
+/**
+ * Returns the severity of the given diagnostic.
+ */
+// llgo:link (*Diagnostic).Severity C.clang_getDiagnosticSeverity
+func (d *Diagnostic) Severity() (ret DiagnosticSeverity) {
+	return
+}
+
+/**
  * Returns the source location of the given diagnostic.
  */
 // llgo:link (*Diagnostic).Location C.clang_getDiagnosticLocation
@@ -1341,9 +1366,6 @@ func (d *Diagnostic) Location() (ret SourceLocation) {
 	return
 }
 
-/**
- * Returns a string that describes the diagnostic.
- */
 // llgo:link (*Diagnostic).Format C.clang_formatDiagnostic
 func (d *Diagnostic) Format(options c.Uint) (ret String) {
 	return
@@ -2225,6 +2247,19 @@ const (
 func (c Cursor) CXXAccessSpecifier() (ret CXXAccessSpecifier) {
 	return
 }
+
+/**
+ * Describes the severity of a diagnostic.
+ */
+type DiagnosticSeverity c.Int
+
+const (
+	DiagnosticIgnored DiagnosticSeverity = iota
+	DiagnosticNote
+	DiagnosticWarning
+	DiagnosticError
+	DiagnosticFatal
+)
 
 type StorageClass c.Int
 
