@@ -25,7 +25,7 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func goStringAndDispose(str clang.String) string {
+func toGoStringAndDispose(str clang.String) string {
 	s := c.GoString(str.CStr())
 	str.Dispose()
 	return s
@@ -37,7 +37,7 @@ type stringer interface {
 
 // String returns the Go string of a value whose String() returns a clang String.
 func String[T stringer](v T) string {
-	return goStringAndDispose(v.String())
+	return toGoStringAndDispose(v.String())
 }
 
 // -----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ func String[T stringer](v T) string {
  * typically be linked together into an executable or library.
  */
 type Index struct {
-	impl *clang.Index
+	*clang.Index
 }
 
 /**
@@ -66,17 +66,9 @@ type Index struct {
  * (which gives the indexer the same performance benefit as the compiler).
  */
 func CreateIndex(excludeDeclarationsFromPCH, displayDiagnostics int) Index {
-	return Index{impl: clang.CreateIndex(c.Int(excludeDeclarationsFromPCH), c.Int(displayDiagnostics))}
-}
-
-/**
- * Destroy the given index.
- *
- * The index must not be destroyed until all of the translation units created
- * within that index have been destroyed.
- */
-func (i Index) Dispose() {
-	i.impl.Dispose()
+	return Index{
+		Index: clang.CreateIndex(c.Int(excludeDeclarationsFromPCH), c.Int(displayDiagnostics)),
+	}
 }
 
 /**
@@ -108,7 +100,7 @@ func (i Index) ParseTranslationUnit(options uint, filename string, args ...strin
 		cArgs[i] = c.AllocaCStr(arg)
 	}
 	return TranslationUnit{
-		impl: i.impl.ParseTranslationUnit(
+		TranslationUnit: i.Index.ParseTranslationUnit(
 			c.AllocaCStr(filename), unsafe.SliceData(cArgs), c.Int(len(cArgs)), nil, 0, c.Uint(options)),
 	}
 }
@@ -129,7 +121,35 @@ const (
  * Retrieve the name of a particular source file.
  */
 func FileName(f clang.File) string {
-	return goStringAndDispose(f.FileName())
+	return toGoStringAndDispose(f.FileName())
+}
+
+// -----------------------------------------------------------------------------
+
+// Diagnostic represents a diagnostic message, such as a compiler warning or error.
+type Diagnostic struct {
+	*clang.Diagnostic
+}
+
+/**
+ * Returns a string that describes the diagnostic.
+ */
+func (e Diagnostic) String() string {
+	return toGoStringAndDispose(e.Diagnostic.String())
+}
+
+/**
+ * Returns the category text for the given diagnostic.
+ */
+func (e Diagnostic) CategoryText() string {
+	return toGoStringAndDispose(e.Diagnostic.CategoryText())
+}
+
+/**
+ * Format the given diagnostic according to the specified display options.
+ */
+func (e Diagnostic) Format(options clang.DiagnosticDisplayOptions) string {
+	return toGoStringAndDispose(e.Diagnostic.Format(options))
 }
 
 // -----------------------------------------------------------------------------
@@ -138,25 +158,18 @@ func FileName(f clang.File) string {
  * A single translation unit, which resides in an index.
  */
 type TranslationUnit struct {
-	impl *clang.TranslationUnit
-}
-
-/**
- * Destroy the specified TranslationUnit object.
- */
-func (u TranslationUnit) Dispose() {
-	u.impl.Dispose()
+	*clang.TranslationUnit
 }
 
 // File returns the File object corresponding to the given filename in the translation unit.
 func (u TranslationUnit) File(filename string) File {
-	return u.impl.File(c.AllocaCStr(filename))
+	return u.TranslationUnit.File(c.AllocaCStr(filename))
 }
 
 // FileContents returns the contents of the specified file in the translation unit.
 func (u TranslationUnit) FileContents(file File) []byte {
 	var size c.SizeT
-	data := u.impl.FileContents(file, &size)
+	data := u.TranslationUnit.FileContents(file, &size)
 	return unsafe.Slice((*byte)(unsafe.Pointer(data)), int(size))
 }
 
@@ -166,10 +179,10 @@ func (u TranslationUnit) FileContents(file File) []byte {
 func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, dispose func()) {
 	var tokens *clang.Token
 	var numTokens c.Uint
-	u.impl.Tokenize(extent, &tokens, &numTokens)
+	u.TranslationUnit.Tokenize(extent, &tokens, &numTokens)
 	ret = unsafe.Slice(tokens, int(numTokens))
 	dispose = func() {
-		u.impl.DisposeTokens(tokens, numTokens)
+		u.TranslationUnit.DisposeTokens(tokens, numTokens)
 	}
 	return
 }
@@ -181,22 +194,25 @@ func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, 
  * the text of an identifier or keyword.
  */
 func (u TranslationUnit) Token(tok clang.Token) string {
-	return goStringAndDispose(u.impl.Token(tok))
+	return toGoStringAndDispose(u.TranslationUnit.Token(tok))
 }
 
 /**
- * Retrieve the cursor that represents the given translation unit.
- *
- * The translation unit cursor can be used to start traversing the
- * various declarations within the given translation unit.
+ * Retrieve the diagnostic associated with the given index in the translation unit.
  */
-func (u TranslationUnit) Cursor() Cursor {
-	return u.impl.Cursor()
+func (u TranslationUnit) Diagnostic(index c.Uint) (ret Diagnostic) {
+	return Diagnostic{u.TranslationUnit.Diagnostic(index)}
 }
 
-// Underlying returns the underlying clang TranslationUnit.
-func (u TranslationUnit) Underlying() *clang.TranslationUnit {
-	return u.impl
+// VisitDiagnostics visits all diagnostics in the translation unit and invokes the
+// given function for each diagnostic.
+func (u TranslationUnit) VisitDiagnostics(fn func(diag Diagnostic)) {
+	numDiagnostics := u.NumDiagnostics()
+	for i := range numDiagnostics {
+		diag := u.Diagnostic(i)
+		fn(diag)
+		diag.Dispose()
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -234,7 +250,7 @@ type SourceLocation = clang.SourceLocation
 func PresumedFile(loc SourceLocation) string {
 	var filename clang.String
 	loc.PresumedLocation(&filename, nil, nil)
-	return goStringAndDispose(filename)
+	return toGoStringAndDispose(filename)
 }
 
 /**
@@ -245,14 +261,14 @@ func PresumedFile(loc SourceLocation) string {
  * class template specialization.
  */
 func DisplayName(entity clang.Cursor) string {
-	return goStringAndDispose(entity.DisplayName())
+	return toGoStringAndDispose(entity.DisplayName())
 }
 
 /**
  * Retrieve the translation unit that a cursor originated from.
  */
 func TU(c Cursor) (ret TranslationUnit) {
-	return TranslationUnit{impl: c.TU()}
+	return TranslationUnit{TranslationUnit: c.TU()}
 }
 
 /**

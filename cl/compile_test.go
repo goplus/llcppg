@@ -18,6 +18,7 @@ package cl_test
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,6 +29,8 @@ import (
 	"github.com/goplus/llcppg/cl/cltest"
 	"github.com/goplus/llcppg/clang"
 	"github.com/qiniu/x/test"
+
+	lc "github.com/goplus/llcppg/lib/clang"
 )
 
 func init() {
@@ -69,12 +72,16 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		}
 
 		files := make([]cl.Source, len(srcFiles))
+		options := lc.DefaultDiagnosticDisplayOptions()
 		for i, srcFile := range srcFiles {
 			presumedFile := filepath.Join(pkgDir, srcFile)
 			u := idx.ParseTranslationUnit(
 				clang.DetailedPreprocessingRecord, presumedFile, "-x", cltest.LanguageOf(lang))
 			defer u.Dispose()
 			files[i] = cl.Source{TU: u}
+			u.VisitDiagnostics(func(diag clang.Diagnostic) {
+				fmt.Fprintln(os.Stderr, diag.Format(options))
+			})
 		}
 
 		imp := packages.NewImporter(nil)

@@ -1247,6 +1247,7 @@ const (
 	 * needed.
 	 */
 	TranslationUnit_None = 0x0
+
 	/**
 	 * Used to indicate that the parser should construct a "detailed"
 	 * preprocessing record, including all macro definitions and instantiations.
@@ -1312,6 +1313,110 @@ func (t *TranslationUnit) Spelling() (ret String) {
 	return
 }
 
+// llgo:link (*TranslationUnit).NumDiagnostics C.clang_getNumDiagnostics
+func (t *TranslationUnit) NumDiagnostics() (ret c.Uint) {
+	return
+}
+
+// llgo:link (*TranslationUnit).Diagnostic C.clang_getDiagnostic
+func (t *TranslationUnit) Diagnostic(index c.Uint) (ret *Diagnostic) {
+	return
+}
+
+// Diagnostic represents a single diagnostic, such as a compiler warning or error.
+type Diagnostic struct {
+	Unused [0]byte
+}
+
+/**
+ * Destroy the given diagnostic object.
+ */
+// llgo:link (*Diagnostic).Dispose C.clang_disposeDiagnostic
+func (d *Diagnostic) Dispose() {}
+
+/**
+ * Returns a string that describes the diagnostic.
+ */
+// llgo:link (*Diagnostic).String C.clang_getDiagnosticSpelling
+func (d *Diagnostic) String() (ret String) {
+	return
+}
+
+/**
+ * Returns the category text for the given diagnostic.
+ */
+// llgo:link (*Diagnostic).CategoryText C.clang_getDiagnosticCategoryText
+func (d *Diagnostic) CategoryText() (ret String) {
+	return
+}
+
+/**
+ * Returns the severity of the given diagnostic.
+ */
+// llgo:link (*Diagnostic).Severity C.clang_getDiagnosticSeverity
+func (d *Diagnostic) Severity() (ret DiagnosticSeverity) {
+	return
+}
+
+/**
+ * Returns the source location of the given diagnostic.
+ */
+// llgo:link (*Diagnostic).Location C.clang_getDiagnosticLocation
+func (d *Diagnostic) Location() (ret SourceLocation) {
+	return
+}
+
+/**
+ * Format the given diagnostic according to the specified display options.
+ */
+// llgo:link (*Diagnostic).Format C.clang_formatDiagnostic
+func (d *Diagnostic) Format(options DiagnosticDisplayOptions) (ret String) {
+	return
+}
+
+/**
+ * Display options that control the behavior of \c clang_formatDiagnostic().
+ */
+type DiagnosticDisplayOptions c.Int
+
+const (
+	/**
+	 * Display source ranges in caret diagnostics.
+	 */
+	Diagnostic_DisplaySourceLocation = 0x01
+
+	/**
+	 * Display column numbers in caret diagnostics.
+	 */
+	Diagnostic_DisplayColumn = 0x02
+
+	/**
+	 * Display source ranges in caret diagnostics.
+	 */
+	Diagnostic_DisplaySourceRanges = 0x04
+
+	/**
+	 * Display option to include the option name in the diagnostic.
+	 */
+	Diagnostic_DisplayOption = 0x08
+
+	/**
+	 * Display option to include the category ID in the diagnostic.
+	 */
+	Diagnostic_DisplayCategoryId = 0x10
+
+	/**
+	 * Display option to include the category name in the diagnostic.
+	 */
+	Diagnostic_DisplayCategoryName = 0x20
+)
+
+/**
+ * Returns the default set of display options for diagnostics.
+ */
+//go:linkname DefaultDiagnosticDisplayOptions C.clang_defaultDiagnosticDisplayOptions
+func DefaultDiagnosticDisplayOptions() (ret DiagnosticDisplayOptions)
+
 /**
  * Describes the kind of entity that a cursor refers to.
  */
@@ -1321,30 +1426,6 @@ type CursorKind c.Int
 // llgo:link CursorKind.String C.clang_getCursorKindSpelling
 func (CursorKind) String() (ret String) {
 	return
-}
-
-/**
- * A cursor representing some element in the abstract syntax tree for
- * a translation unit.
- *
- * The cursor abstraction unifies the different kinds of entities in a
- * program--declaration, statements, expressions, references to declarations,
- * etc.--under a single "cursor" abstraction with a common set of operations.
- * Common operation for a cursor include: getting the physical location in
- * a source file where the cursor points, getting the name associated with a
- * cursor, and retrieving cursors for any child nodes of a particular cursor.
- *
- * Cursors can be produced in two specific ways.
- * clang_getTranslationUnitCursor() produces a cursor for a translation unit,
- * from which one can use clang_visitChildren() to explore the rest of the
- * translation unit. clang_getCursor() maps from a physical source location
- * to the entity that resides at that location, allowing one to map from the
- * source code into the AST.
- */
-type Cursor struct {
-	Kind  CursorKind
-	xdata c.Int
-	data  [3]c.Pointer
 }
 
 type TypeKind c.Int
@@ -1509,12 +1590,199 @@ const (
 )
 
 /**
+ * Retrieve the spelling of a given CXTypeKind.
+ */
+// llgo:link TypeKind.String C.clang_getTypeKindSpelling
+func (TypeKind) String() (ret String) {
+	return
+}
+
+/**
  * The type of an element in the abstract syntax tree.
  *
  */
 type Type struct {
 	Kind TypeKind
 	data [2]c.Pointer
+}
+
+/**
+ * Pretty-print the underlying type using the rules of the
+ * language of the translation unit from which it came.
+ *
+ * If the type is invalid, an empty string is returned.
+ */
+// llgo:link Type.String C.clang_getTypeSpelling
+func (t Type) String() (ret String) {
+	return
+}
+
+/**
+ * Return the size of a type in bytes as per C++[expr.sizeof] standard.
+ *
+ * If the type declaration is invalid, CXTypeLayoutError_Invalid is returned.
+ * If the type declaration is an incomplete type, CXTypeLayoutError_Incomplete
+ *   is returned.
+ * If the type declaration is a dependent type, CXTypeLayoutError_Dependent is
+ *   returned.
+ */
+// llgo:link Type.SizeOf C.clang_Type_getSizeOf
+func (t Type) SizeOf() (ret c.LongLong) {
+	return
+}
+
+/**
+ * Return the canonical type for a CXType.
+ *
+ * Clang's type system explicitly models typedefs and all the ways
+ * a specific type can be represented.  The canonical type is the underlying
+ * type with all the "sugar" removed.  For example, if 'T' is a typedef
+ * for 'int', the canonical type for 'T' would be 'int'.
+ */
+// llgo:link Type.CanonicalType C.clang_getCanonicalType
+func (t Type) CanonicalType() (ret Type) {
+	return
+}
+
+/**
+ * Determine whether a CXType has the "const" qualifier set,
+ * without looking through typedefs that may have added "const" at a
+ * different level.
+ */
+// llgo:link Type.IsConstQualifiedType C.clang_isConstQualifiedType
+func (t Type) IsConstQualifiedType() (ret c.Uint) {
+	return
+}
+
+/**
+ * Determine whether a CXType has the "volatile" qualifier set,
+ * without looking through typedefs that may have added "volatile" at
+ * a different level.
+ */
+// llgo:link Type.IsVolatileQualifiedType C.clang_isVolatileQualifiedType
+func (t Type) IsVolatileQualifiedType() (ret c.Uint) {
+	return
+}
+
+/**
+ * Determine whether a CXType has the "restrict" qualifier set,
+ * without looking through typedefs that may have added "restrict" at a
+ * different level.
+ */
+// llgo:link Type.IsRestrictQualifiedType C.clang_isRestrictQualifiedType
+func (t Type) IsRestrictQualifiedType() (ret c.Uint) {
+	return
+}
+
+/**
+ * For pointer types, returns the type of the pointee.
+ */
+// llgo:link Type.PointeeType C.clang_getPointeeType
+func (t Type) PointeeType() (ret Type) {
+	return
+}
+
+/**
+ * For reference types (e.g., "const int&"), returns the type that the
+ * reference refers to (e.g "const int").
+ *
+ * Otherwise, returns the type itself.
+ *
+ * A type that has kind \c CXType_LValueReference or
+ * \c CXType_RValueReference is a reference type.
+ */
+// llgo:link Type.NonReferenceType C.clang_getNonReferenceType
+func (t Type) NonReferenceType() (ret Type) {
+	return
+}
+
+/**
+ * Return the cursor for the declaration of the given type.
+ */
+// llgo:link Type.TypeDeclaration C.clang_getTypeDeclaration
+func (t Type) TypeDeclaration() (ret Cursor) {
+	return
+}
+
+/**
+ * Retrieve the return type associated with a function type.
+ *
+ * If a non-function type is passed in, an invalid type is returned.
+ */
+// llgo:link Type.ResultType C.clang_getResultType
+func (t Type) ResultType() (ret Type) {
+	return
+}
+
+/**
+ * Retrieve the number of non-variadic parameters associated with a
+ * function type.
+ *
+ * If a non-function type is passed in, -1 is returned.
+ */
+// llgo:link Type.NumArgTypes C.clang_getNumArgTypes
+func (t Type) NumArgTypes() (num c.Int) {
+	return
+}
+
+/**
+ * Retrieve the type of a parameter of a function type.
+ *
+ * If a non-function type is passed in or the function does not have enough
+ * parameters, an invalid type is returned.
+ */
+// llgo:link Type.ArgType C.clang_getArgType
+func (t Type) ArgType(index c.Uint) (ret Type) {
+	return
+}
+
+/**
+ * Return 1 if the CXType is a variadic function type, and 0 otherwise.
+ */
+// llgo:link Type.IsFunctionTypeVariadic C.clang_isFunctionTypeVariadic
+func (t Type) IsFunctionTypeVariadic() (ret c.Uint) {
+	return
+}
+
+/**
+ * Return the element type of an array, complex, or vector type.
+ *
+ * If a type is passed in that is not an array, complex, or vector type,
+ * an invalid type is returned.
+ */
+// llgo:link Type.ElementType C.clang_getElementType
+func (t Type) ElementType() (ret Type) {
+	return
+}
+
+/**
+ * Return the element type of an array type.
+ *
+ * If a non-array type is passed in, an invalid type is returned.
+ */
+// llgo:link Type.ArrayElementType C.clang_getArrayElementType
+func (t Type) ArrayElementType() (ret Type) {
+	return
+}
+
+/**
+ * Return the array size of a constant array.
+ *
+ * If a non-array type is passed in, -1 is returned.
+ */
+// llgo:link Type.ArraySize C.clang_getArraySize
+func (t Type) ArraySize() (ret c.LongLong) {
+	return
+}
+
+/**
+ * Retrieve the type named by the qualified-id.
+ *
+ * If a non-elaborated type is passed in, an invalid type is returned.
+ */
+// llgo:link Type.NamedType C.clang_Type_getNamedType
+func (t Type) NamedType() (ret Type) {
+	return
 }
 
 /**
@@ -1585,6 +1853,65 @@ type Token struct {
 	intData [4]c.Uint
 	ptrData c.Pointer
 }
+
+/**
+ * Determine the kind of the given token.
+ */
+// llgo:link Token.Kind C.clang_getTokenKind
+func (c Token) Kind() (ret TokenKind) {
+	return
+}
+
+/**
+ * A cursor representing some element in the abstract syntax tree for
+ * a translation unit.
+ *
+ * The cursor abstraction unifies the different kinds of entities in a
+ * program--declaration, statements, expressions, references to declarations,
+ * etc.--under a single "cursor" abstraction with a common set of operations.
+ * Common operation for a cursor include: getting the physical location in
+ * a source file where the cursor points, getting the name associated with a
+ * cursor, and retrieving cursors for any child nodes of a particular cursor.
+ *
+ * Cursors can be produced in two specific ways.
+ * clang_getTranslationUnitCursor() produces a cursor for a translation unit,
+ * from which one can use clang_visitChildren() to explore the rest of the
+ * translation unit. clang_getCursor() maps from a physical source location
+ * to the entity that resides at that location, allowing one to map from the
+ * source code into the AST.
+ */
+type Cursor struct {
+	Kind  CursorKind
+	xdata c.Int
+	data  [3]c.Pointer
+}
+
+/**
+ * Map a source location to the cursor that describes the entity at that
+ * location in the source code.
+ *
+ * clang_getCursor() maps an arbitrary source location within a translation
+ * unit down to the most specific cursor that describes the entity at that
+ * location. For example, given an expression \c x + y, invoking
+ * clang_getCursor() with a source location pointing to "x" will return the
+ * cursor for "x"; similarly for "y". If the cursor points anywhere between
+ * "x" or "y" (e.g., on the + or the whitespace around it), clang_getCursor()
+ * will return a cursor referring to the "+" expression.
+ *
+ * \returns a cursor representing the entity at the given source location, or
+ * a NULL cursor if no such entity can be found.
+ */
+// llgo:link (*TranslationUnit).GetCursor C.clang_getCursor
+func (l *TranslationUnit) GetCursor(loc *SourceLocation) (cur Cursor) {
+	return
+}
+
+/**
+ * Free the set of overridden cursors returned by \c
+ * clang_getOverriddenCursors().
+ */
+// llgo:link (*Cursor).DisposeOverriddenCursors C.clang_disposeOverriddenCursors
+func (c *Cursor) DisposeOverriddenCursors() {}
 
 /**
  * Retrieve the translation unit that a cursor originated from.
@@ -1749,38 +2076,11 @@ func (c Cursor) OverriddenCursors(overridden **Cursor, numOverridden *c.Uint) {
 }
 
 /**
- * Free the set of overridden cursors returned by \c
- * clang_getOverriddenCursors().
- */
-// llgo:link (*Cursor).DisposeOverriddenCursors C.clang_disposeOverriddenCursors
-func (c *Cursor) DisposeOverriddenCursors() {}
-
-/**
  * Retrieve the file that is included by the given inclusion directive
  * cursor.
  */
 // llgo:link Cursor.IncludedFile C.clang_getIncludedFile
 func (c Cursor) IncludedFile() (file File) {
-	return
-}
-
-/**
- * Map a source location to the cursor that describes the entity at that
- * location in the source code.
- *
- * clang_getCursor() maps an arbitrary source location within a translation
- * unit down to the most specific cursor that describes the entity at that
- * location. For example, given an expression \c x + y, invoking
- * clang_getCursor() with a source location pointing to "x" will return the
- * cursor for "x"; similarly for "y". If the cursor points anywhere between
- * "x" or "y" (e.g., on the + or the whitespace around it), clang_getCursor()
- * will return a cursor referring to the "+" expression.
- *
- * \returns a cursor representing the entity at the given source location, or
- * a NULL cursor if no such entity can be found.
- */
-// llgo:link (*TranslationUnit).GetCursor C.clang_getCursor
-func (l *TranslationUnit) GetCursor(loc *SourceLocation) (cur Cursor) {
 	return
 }
 
@@ -1820,17 +2120,6 @@ func (c Cursor) Extent() (loc SourceRange) {
  */
 // llgo:link Cursor.Type C.clang_getCursorType
 func (c Cursor) Type() (ret Type) {
-	return
-}
-
-/**
- * Pretty-print the underlying type using the rules of the
- * language of the translation unit from which it came.
- *
- * If the type is invalid, an empty string is returned.
- */
-// llgo:link Type.String C.clang_getTypeSpelling
-func (t Type) String() (ret String) {
 	return
 }
 
@@ -1883,29 +2172,6 @@ func (c Cursor) Argument(index c.Uint) (arg Cursor) {
 }
 
 /**
- * Return the canonical type for a CXType.
- *
- * Clang's type system explicitly models typedefs and all the ways
- * a specific type can be represented.  The canonical type is the underlying
- * type with all the "sugar" removed.  For example, if 'T' is a typedef
- * for 'int', the canonical type for 'T' would be 'int'.
- */
-// llgo:link Type.CanonicalType C.clang_getCanonicalType
-func (t Type) CanonicalType() (ret Type) {
-	return
-}
-
-/**
- * Determine whether a CXType has the "const" qualifier set,
- * without looking through typedefs that may have added "const" at a
- * different level.
- */
-// llgo:link Type.IsConstQualifiedType C.clang_isConstQualifiedType
-func (t Type) IsConstQualifiedType() (ret c.Uint) {
-	return
-}
-
-/**
  * Determine whether a CXCursor that is a macro, is
  * function like.
  */
@@ -1933,151 +2199,12 @@ func (c Cursor) IsFunctionInlined() (ret c.Uint) {
 }
 
 /**
- * Determine whether a CXType has the "volatile" qualifier set,
- * without looking through typedefs that may have added "volatile" at
- * a different level.
- */
-// llgo:link Type.IsVolatileQualifiedType C.clang_isVolatileQualifiedType
-func (t Type) IsVolatileQualifiedType() (ret c.Uint) {
-	return
-}
-
-/**
- * Determine whether a CXType has the "restrict" qualifier set,
- * without looking through typedefs that may have added "restrict" at a
- * different level.
- */
-// llgo:link Type.IsRestrictQualifiedType C.clang_isRestrictQualifiedType
-func (t Type) IsRestrictQualifiedType() (ret c.Uint) {
-	return
-}
-
-/**
- * For pointer types, returns the type of the pointee.
- */
-// llgo:link Type.PointeeType C.clang_getPointeeType
-func (t Type) PointeeType() (ret Type) {
-	return
-}
-
-/**
- * For reference types (e.g., "const int&"), returns the type that the
- * reference refers to (e.g "const int").
- *
- * Otherwise, returns the type itself.
- *
- * A type that has kind \c CXType_LValueReference or
- * \c CXType_RValueReference is a reference type.
- */
-// llgo:link Type.NonReferenceType C.clang_getNonReferenceType
-func (t Type) NonReferenceType() (ret Type) {
-	return
-}
-
-/**
- * Return the cursor for the declaration of the given type.
- */
-// llgo:link Type.TypeDeclaration C.clang_getTypeDeclaration
-func (t Type) TypeDeclaration() (ret Cursor) {
-	return
-}
-
-/**
- * Retrieve the spelling of a given CXTypeKind.
- */
-// llgo:link TypeKind.String C.clang_getTypeKindSpelling
-func (TypeKind) String() (ret String) {
-	return
-}
-
-/**
- * Retrieve the return type associated with a function type.
- *
- * If a non-function type is passed in, an invalid type is returned.
- */
-// llgo:link Type.ResultType C.clang_getResultType
-func (t Type) ResultType() (ret Type) {
-	return
-}
-
-/**
- * Retrieve the number of non-variadic parameters associated with a
- * function type.
- *
- * If a non-function type is passed in, -1 is returned.
- */
-// llgo:link Type.NumArgTypes C.clang_getNumArgTypes
-func (t Type) NumArgTypes() (num c.Int) {
-	return
-}
-
-/**
- * Retrieve the type of a parameter of a function type.
- *
- * If a non-function type is passed in or the function does not have enough
- * parameters, an invalid type is returned.
- */
-// llgo:link Type.ArgType C.clang_getArgType
-func (t Type) ArgType(index c.Uint) (ret Type) {
-	return
-}
-
-/**
- * Return 1 if the CXType is a variadic function type, and 0 otherwise.
- */
-// llgo:link Type.IsFunctionTypeVariadic C.clang_isFunctionTypeVariadic
-func (t Type) IsFunctionTypeVariadic() (ret c.Uint) {
-	return
-}
-
-/**
  * Retrieve the return type associated with a given cursor.
  *
  * This only returns a valid type if the cursor refers to a function or method.
  */
 // llgo:link Cursor.ResultType C.clang_getCursorResultType
 func (c Cursor) ResultType() (ret Type) {
-	return
-}
-
-/**
- * Return the element type of an array, complex, or vector type.
- *
- * If a type is passed in that is not an array, complex, or vector type,
- * an invalid type is returned.
- */
-// llgo:link Type.ElementType C.clang_getElementType
-func (t Type) ElementType() (ret Type) {
-	return
-}
-
-/**
- * Return the element type of an array type.
- *
- * If a non-array type is passed in, an invalid type is returned.
- */
-// llgo:link Type.ArrayElementType C.clang_getArrayElementType
-func (t Type) ArrayElementType() (ret Type) {
-	return
-}
-
-/**
- * Return the array size of a constant array.
- *
- * If a non-array type is passed in, -1 is returned.
- */
-// llgo:link Type.ArraySize C.clang_getArraySize
-func (t Type) ArraySize() (ret c.LongLong) {
-	return
-}
-
-/**
- * Retrieve the type named by the qualified-id.
- *
- * If a non-elaborated type is passed in, an invalid type is returned.
- */
-// llgo:link Type.NamedType C.clang_Type_getNamedType
-func (t Type) NamedType() (ret Type) {
 	return
 }
 
@@ -2117,20 +2244,6 @@ const (
 	 */
 	LayoutErrorUndeduced LayoutError = -6
 )
-
-/**
- * Return the size of a type in bytes as per C++[expr.sizeof] standard.
- *
- * If the type declaration is invalid, CXTypeLayoutError_Invalid is returned.
- * If the type declaration is an incomplete type, CXTypeLayoutError_Incomplete
- *   is returned.
- * If the type declaration is a dependent type, CXTypeLayoutError_Dependent is
- *   returned.
- */
-// llgo:link Type.SizeOf C.clang_Type_getSizeOf
-func (t Type) SizeOf() (ret c.LongLong) {
-	return
-}
 
 /**
  * Determine whether the given cursor represents an anonymous
@@ -2174,6 +2287,19 @@ const (
 func (c Cursor) CXXAccessSpecifier() (ret CXXAccessSpecifier) {
 	return
 }
+
+/**
+ * Describes the severity of a diagnostic.
+ */
+type DiagnosticSeverity c.Int
+
+const (
+	DiagnosticIgnored DiagnosticSeverity = iota
+	DiagnosticNote
+	DiagnosticWarning
+	DiagnosticError
+	DiagnosticFatal
+)
 
 type StorageClass c.Int
 
@@ -2498,14 +2624,6 @@ func (c Cursor) CXXRecordIsAbstract() (ret c.Uint) {
  */
 // llgo:link Cursor.EnumDeclIsScoped C.clang_EnumDecl_isScoped
 func (c Cursor) EnumDeclIsScoped() (ret c.Uint) {
-	return
-}
-
-/**
- * Determine the kind of the given token.
- */
-// llgo:link Token.Kind C.clang_getTokenKind
-func (c Token) Kind() (ret TokenKind) {
 	return
 }
 
