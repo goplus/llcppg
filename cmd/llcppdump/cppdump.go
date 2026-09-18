@@ -77,6 +77,11 @@ func main() {
 	u := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, filename, "-x", lang)
 	defer u.Dispose()
 
+	options := lc.DefaultDiagnosticDisplayOptions()
+	u.VisitDiagnostics(func(diag clang.Diagnostic) {
+		fmt.Fprintln(os.Stderr, diag.Format(options))
+	})
+
 	root := u.Cursor()
 	dump(root, "", filepath.Dir(filename))
 }
