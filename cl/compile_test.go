@@ -97,7 +97,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			NameLookup:     nil,
 			PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
 				if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {
-					pubFile, ok = filepath.Join(rootDir, name, "llcppg.pub"), true
+					return filepath.Join(rootDir, name, "llcppg.pub"), true
 				}
 				return
 			},
