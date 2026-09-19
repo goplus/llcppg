@@ -120,11 +120,32 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.
 		cls.inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
 
 	case lc.CursorCXXBaseSpecifier:
-		// noop
+		// A base class is treated the same as a member variable (field) - simply
+		// an embedded one. Virtual base classes are not supported for now.
+		if decl.IsVirtualBase() != 0 {
+			log.Panicln("loadClassMember: virtual base class is not supported -", clang.DisplayName(decl))
+		}
+		baseType := toType(ctx, pkg, decl.Type(), flagIsStructField)
+		fld := types.NewField(goNodePos(ctx, decl), pkg, baseFieldName(baseType), baseType, true)
+		cls.fields = append(cls.fields, fld)
 
 	default:
 		log.Panicln("loadClassMember: unknown kind =", decl.Kind)
 	}
+}
+
+// baseFieldName returns the field name used for an embedded base class. For an
+// embedded field the name must match the unqualified name of the embedded type.
+func baseFieldName(typ types.Type) string {
+	t := typ
+	if ptr, ok := t.(*types.Pointer); ok {
+		t = ptr.Elem()
+	}
+	if named, ok := t.(*types.Named); ok {
+		return named.Obj().Name()
+	}
+	log.Panicln("baseFieldName: base class is not a named type -", typ)
+	return ""
 }
 
 func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {

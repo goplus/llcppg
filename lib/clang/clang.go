@@ -2499,6 +2499,16 @@ func (c Cursor) CXXMethodIsVirtual() (ret c.Uint) {
 }
 
 /**
+ * Determine if a C++ base class specifier (a cursor with kind
+ * CXCursor_CXXBaseSpecifier) refers to a virtual base class, returning 1 if
+ * such is the case and 0 otherwise.
+ */
+// llgo:link Cursor.IsVirtualBase C.clang_isVirtualBase
+func (c Cursor) IsVirtualBase() (ret c.Uint) {
+	return
+}
+
+/**
  * Determine if a C++ member function is a copy-assignment operator,
  * returning 1 if such is the case and 0 otherwise.
  *
