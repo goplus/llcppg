@@ -19,10 +19,34 @@ package cl
 import (
 	"go/token"
 	"log"
+	"path/filepath"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
 )
+
+// -----------------------------------------------------------------------------
+
+func loadInclude(ctx *pkgCtx, decl clang.Cursor) {
+	file := decl.IncludedFile()
+	if file == clang.InvalidFile {
+		return
+	}
+	includeFile, err := filepath.Abs(clang.FileName(file))
+	if err != nil {
+		log.Panicln("loadInclude:", err)
+	}
+	if debugCompileDecl {
+		log.Println("include", includeFile)
+	}
+	pkgPath, ok := ctx.pkgOf(includeFile)
+	if !ok {
+		log.Panicln("loadInclude: package not found for", includeFile)
+	}
+	if ctx.pkg.Types.Path() != pkgPath {
+		ctx.importPkg(pkgPath)
+	}
+}
 
 // -----------------------------------------------------------------------------
 

@@ -76,13 +76,12 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		return tyVoid
 	case lc.TypeRecord:
 		cName := fullTypeName(typ)
-		log.Println("==> fullTypeName:", cName)
-		if t, ok := ctx.types[cName]; ok {
+		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
 	case lc.TypeElaborated:
 		cName := clang.String(typ.NamedType())
-		if t, ok := ctx.types[cName]; ok {
+		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
 	case lc.TypeFunctionProto:
@@ -165,11 +164,11 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	}
 	tunder := toType(ctx, pkgTypes, underlying, flagIsTypedef)
 	name, rewritten := ctx.getPubName(origName, -1)
-	t := pkg.NewTypeDefs().AliasType(name, tunder)
+	t := pkg.NewTypeDefs().AliasType(name, tunder).(*types.Alias)
 	if rewritten {
 		pkgTypes.Scope().Insert(types.NewTypeName(token.NoPos, pkgTypes, origName, t))
 	}
-	ctx.types[clang.String(decl.Type())] = t
+	ctx.objects[clang.String(decl.Type())] = t.Obj()
 }
 
 // -----------------------------------------------------------------------------
