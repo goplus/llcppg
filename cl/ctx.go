@@ -23,6 +23,7 @@ import (
 	"log"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -125,10 +126,16 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 		log.Println("==> importPkg", pkgPath)
 	}
 	if pubFile, ok := p.pubLookup(pkgPath); ok {
+		if debugCompileDecl {
+			log.Println("==> pubFile", pubFile)
+		}
 		pkg := p.pkg.Import(pkgPath)
 		scope := pkg.Types.Scope()
 		if it, _, e := loadPubFile(pubFile); e == nil {
 			for cName, goName := range it {
+				if goName == "" {
+					goName, _ = p.getPubName(strings.ReplaceAll(cName, "::", "_"), -1)
+				}
 				if o := scope.Lookup(goName); o != nil {
 					p.objects[cName] = o
 				}
