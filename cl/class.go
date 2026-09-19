@@ -31,11 +31,13 @@ type classMethod struct {
 	outsideDecl  clang.Cursor // inline method declared outside of class
 	manglingName string
 	isPublic     bool
+	isStatic     bool // a static method: the class name acts like a namespace
 }
 
 type classCtx struct {
 	scopeCtx
 	decl          clang.Cursor
+	origName      string // fully qualified C/C++ class name (namespace prefix + class name)
 	typNamed      *types.Named
 	fields        []*types.Var
 	publicMethods []*classMethod
@@ -47,9 +49,9 @@ func compileClass(ctx *pkgCtx, scope *classCtx) {
 	for _, method := range scope.publicMethods {
 		obj := method.obj
 		if decl := method.outsideDecl; decl.Kind != 0 {
-			compileFuncOrMethod(ctx, decl, obj, scope)
+			compileFuncOrMethod(ctx, decl, obj, scope, method.isStatic)
 		} else {
-			compileFuncOrMethod(ctx, obj.decl, obj, scope)
+			compileFuncOrMethod(ctx, obj.decl, obj, scope, method.isStatic)
 		}
 	}
 }
@@ -70,6 +72,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	ctx.objects[clang.String(cls.Type())] = typNamed.Obj()
 	scope := &classCtx{
 		decl:      cls,
+		origName:  origName,
 		typNamed:  typNamed,
 		overloads: make(map[string]*overloads),
 		inPublic:  defaultInPublic,
@@ -89,6 +92,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.
 	switch decl.Kind {
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		var name string
+		isStatic := decl.Kind == lc.CursorCXXMethod && decl.CXXMethodIsStatic() != 0
 		switch decl.Kind {
 		case lc.CursorConstructor:
 			name = "XGo_Ctor"
@@ -96,11 +100,16 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.
 			name = "XGo_Dtor"
 		default:
 			name = clang.String(decl)
+			if isStatic {
+				// A static method has no receiver; the enclosing class name
+				// acts like a namespace prefix (see namespace handling).
+				name = cls.origName + "_" + name
+			}
 		}
 		obj := cls.addObject(name, decl)
 		manglingName := clang.Mangling(decl)
 		isPublic := cls.inPublic
-		method := &classMethod{obj: obj, manglingName: manglingName, isPublic: isPublic}
+		method := &classMethod{obj: obj, manglingName: manglingName, isPublic: isPublic, isStatic: isStatic}
 		ctx.methods[manglingName] = method
 		if isPublic {
 			cls.publicMethods = append(cls.publicMethods, method)
