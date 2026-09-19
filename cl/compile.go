@@ -44,10 +44,17 @@ func SetDebug(flags int) {
 
 // -----------------------------------------------------------------------------
 
-// Package represents a generated Go package.
+// PublicEntry represents a public C/C++ name and its corresponding Go name.
+type PublicEntry struct {
+	Name   string
+	GoName string // optional
+}
+
+// Package represents a generated Go package from a C/C++ library.
 type Package struct {
 	*gogen.Package
-	Wrap *WrapFile
+	Wrap   *WrapFile
+	Public []PublicEntry
 }
 
 // -----------------------------------------------------------------------------
@@ -91,6 +98,11 @@ type Config struct {
 	// specified, llcppg uses a default lookup function that returns an empty archivePath
 	// and true (it means any mangling name is considered found).
 	NameLookup func(manglingName string) (archivePath string, ok bool)
+
+	// PubFileLookup looks up the public file for a given package path. A public file is
+	// a text file that contains a list of public C/C++ names and their corresponding Go
+	// names.
+	PubFileLookup func(pkgPath string) (pubFile string, ok bool)
 
 	// PackageOf returns the package path for a given header file. If ok is false, it means
 	// we don't know the package path for the header file. If not specified, llcppg will assume
@@ -143,14 +155,17 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	}
 	ctx := &pkgCtx{
 		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, nameLookup: nameLookup,
+		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, pkgOf: conf.PackageOf,
+		nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), methods: make(map[string]*classMethod),
-		macroVals: make(map[string]any), types: make(map[string]types.Type),
+		macroVals: make(map[string]any), objects: make(map[string]types.Object),
+		includes: make(map[string]none),
 	}
-	loadFiles(ctx, files, pkgPath, conf.PackageOf)
+	loadFiles(ctx, files, pkgPath)
 	ctx.compile()
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
+	ret.Public = ctx.pubs
 	return
 }
 
@@ -160,7 +175,8 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 
 // -----------------------------------------------------------------------------
 
-func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, pkgOf func(headerFile string) (pkgPath string, ok bool)) {
+func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
+	pkgOf := ctx.pkgOf
 	scope := &scopeCtx{
 		overloads: make(map[string]*overloads),
 	}
@@ -202,7 +218,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorMacroDefinition:
 		loadMacro(ctx, decl)
 	case lc.CursorInclusionDirective:
-		// noop
+		loadInclude(ctx, decl)
 	case lc.CursorNamespace:
 		loadNamespace(ctx, scope, decl, ns)
 	case lc.CursorVarDecl:

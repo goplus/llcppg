@@ -62,6 +62,9 @@ func TestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, p
 		t.Fatal("ReadDir failed:", err)
 	}
 	for _, fi := range fis {
+		if !fi.IsDir() {
+			continue
+		}
 		name := fi.Name()
 		if strings.HasPrefix(name, "_") {
 			continue

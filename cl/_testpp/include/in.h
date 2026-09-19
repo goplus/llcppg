@@ -2,8 +2,8 @@
 
 namespace bar {
 	class derived
-    {
-    private:
-        base b;
-    };
+	{
+	private:
+		base b;
+	};
 }

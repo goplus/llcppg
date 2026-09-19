@@ -79,6 +79,7 @@ func (p *nodeInterp) LoadExpr(v ast.Node) string {
 
 // -----------------------------------------------------------------------------
 
+type none struct{}
 type compileFunc = func(ctx *pkgCtx)
 
 type pkgCtx struct {
@@ -95,14 +96,19 @@ type pkgCtx struct {
 	wrapFileHeader string
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
+	pubLookup  func(pkgPath string) (pubFile string, ok bool)
+
+	pkgOf func(headerFile string) (pkgPath string, ok bool)
 
 	fileBases map[clang.File]int // clang.File => base
 
 	macroVals map[string]any          // macroName => value
 	methods   map[string]*classMethod // manglingName => class
-	types     map[string]types.Type   // c/c++ fullName => types.Type
+	objects   map[string]types.Object // c/c++ fullName => object
+	includes  map[string]none         // includeFile Set
 
 	compiles []compileFunc
+	pubs     []PublicEntry
 
 	unsafeImported bool
 }
@@ -111,6 +117,23 @@ func (p *pkgCtx) forceImportUnsafe() {
 	if !p.unsafeImported {
 		p.unsafeImported = true
 		p.pkg.ForceImport("unsafe")
+	}
+}
+
+func (p *pkgCtx) importPkg(pkgPath string) {
+	if debugCompileDecl {
+		log.Println("==> importPkg", pkgPath)
+	}
+	if pubFile, ok := p.pubLookup(pkgPath); ok {
+		pkg := p.pkg.Import(pkgPath)
+		scope := pkg.Types.Scope()
+		if it, _, e := loadPubFile(pubFile); e == nil {
+			for cName, goName := range it {
+				if o := scope.Lookup(goName); o != nil {
+					p.objects[cName] = o
+				}
+			}
+		}
 	}
 }
 
@@ -130,6 +153,15 @@ func (p *pkgCtx) compile() {
 	for _, compile := range p.compiles {
 		compile(p)
 	}
+}
+
+func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
+	if o, ok := p.objects[cName]; ok {
+		if t, ok := o.(*types.TypeName); ok {
+			return t.Type(), true
+		}
+	}
+	return nil, false
 }
 
 func (p *pkgCtx) getPubName(cName string, order int) (pubName string, rewritten bool) {

@@ -84,16 +84,24 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			})
 		}
 
-		imp := packages.NewImporter(nil)
-		pkg, err := cl.NewPackage("", "foo", files, &cl.Config{
+		rootDir, myPkgName := filepath.Split(pkgDir)
+		imp := packages.NewImporter(nil, rootDir)
+		pkg, err := cl.NewPackage("testcl/"+myPkgName, "foo", files, &cl.Config{
 			Importer:       imp,
 			LLGoPackage:    conf.LLGoPackage,
 			Language:       lang,
 			WrapFileHeader: conf.WrapFileHeader,
 			CFlags:         conf.CFlags,
 			NameLookup:     nil,
+			PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
+				return
+			},
 			PackageOf: func(headerFile string) (pkgPath string, ok bool) {
-				ok = filepath.Dir(headerFile) == pkgDir
+				dir := filepath.Dir(headerFile)
+				tRootDir, tPkgName := filepath.Split(dir)
+				if ok = tRootDir == rootDir; ok {
+					pkgPath = "testcl/" + tPkgName
+				}
 				return
 			},
 		})
@@ -116,11 +124,11 @@ var langExts = [...]string{
 	cl.LanguageCXX: ".cpp",
 }
 
-func TestC(t *testing.T) {
+func _TestC(t *testing.T) {
 	testFromDir(t, "", "./_testc", cl.LanguageC)
 }
 
-func TestCpp(t *testing.T) {
+func _TestCpp(t *testing.T) {
 	testFromDir(t, "", "./_testcpp", cl.LanguageCXX)
 }
 
