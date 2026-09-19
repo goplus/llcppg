@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goplus/gogen"
@@ -95,7 +96,10 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			CFlags:         conf.CFlags,
 			NameLookup:     nil,
 			PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
-				return filepath.Join(rootDir, pkgPath[len(pkgPrefix):], "llcppg.pub"), true
+				if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {
+					pubFile, ok = filepath.Join(rootDir, name, "llcppg.pub"), true
+				}
+				return
 			},
 			PackageOf: func(headerFile string) (pkgPath string, ok bool) {
 				dir := filepath.Dir(headerFile)
