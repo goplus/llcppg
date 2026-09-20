@@ -214,7 +214,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorTypedefDecl:
 		loadTypedef(ctx, decl, ns)
 	case lc.CursorEnumDecl:
-		// compileEnum(ctx, decl)
+		compileEnum(ctx, decl, ns)
 	case lc.CursorMacroDefinition:
 		loadMacro(ctx, decl)
 	case lc.CursorInclusionDirective:
