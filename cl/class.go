@@ -124,6 +124,14 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 	case lc.CursorCXXAccessSpecifier:
 		cls.inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
 
+	case lc.CursorEnumDecl:
+		// An enum nested in a class only affects naming: its constants are
+		// emitted as global consts prefixed by the enclosing class name (the
+		// class name acts like a namespace), e.g. Color_Red.
+		if cls.inPublic {
+			compileEnum(ctx, decl, origName+"_")
+		}
+
 	case lc.CursorCXXBaseSpecifier:
 		// A base class is treated the same as a member variable (field) - simply
 		// an embedded one. Virtual base classes are not supported for now.
