@@ -129,7 +129,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		// emitted as global consts prefixed by the enclosing class name (the
 		// class name acts like a namespace), e.g. Color_Red.
 		if cls.inPublic {
-			compileEnum(ctx, decl, origName+"_")
+			loadEnum(ctx, decl, origName+"_")
 		}
 
 	case lc.CursorCXXBaseSpecifier:
