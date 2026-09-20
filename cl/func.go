@@ -37,6 +37,13 @@ func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) 
 	})
 }
 
+// compileFuncOrMethod compiles a C/C++ function or method into a Go function.
+//
+// When cls is nil, it is compiled as a receiver-less global function with a
+// //go:linkname directive. A C++ static method is compiled this way too: it
+// has no implicit "this", so it is loaded as a global function (its Go name is
+// prefixed by the enclosing class name, which acts like a namespace). When cls
+// is non-nil, it is an instance method compiled with a "this" receiver.
 func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCtx) {
 	manglingName := clang.Mangling(fn)
 	origName := obj.name

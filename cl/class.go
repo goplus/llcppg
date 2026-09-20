@@ -39,6 +39,7 @@ type classCtx struct {
 	typNamed      *types.Named
 	fields        []*types.Var
 	publicMethods []*classMethod
+	staticFuncs   []*object // static methods, compiled as global functions
 	inPublic      bool
 }
 
@@ -51,6 +52,12 @@ func compileClass(ctx *pkgCtx, scope *classCtx) {
 		} else {
 			compileFuncOrMethod(ctx, obj.decl, obj, scope)
 		}
+	}
+	// A static method has no implicit "this"; it is compiled as a receiver-less
+	// global function (cls == nil), so its enclosing class name acts like a
+	// namespace prefix (matching free functions declared inside a namespace).
+	for _, obj := range scope.staticFuncs {
+		compileFuncOrMethod(ctx, obj.decl, obj, nil)
 	}
 }
 
@@ -75,7 +82,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 		inPublic:  defaultInPublic,
 	}
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadClassMember(ctx, pkgTypes, scope, decl)
+		loadClassMember(ctx, pkgTypes, scope, origName, decl)
 		return clang.Continue
 	})
 	typStruc := types.NewStruct(scope.fields, nil)
@@ -85,9 +92,20 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	})
 }
 
-func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.Cursor) {
+func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName string, decl clang.Cursor) {
 	switch decl.Kind {
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
+		// A static method is not a method: it has no implicit "this". Register
+		// it as a global function whose name is prefixed by the enclosing class
+		// name (the class name acts like a namespace); it is compiled with a
+		// nil class in compileClass.
+		if decl.Kind == lc.CursorCXXMethod && decl.CXXMethodIsStatic() != 0 {
+			if cls.inPublic {
+				obj := cls.addObject(origName+"_"+clang.String(decl), decl)
+				cls.staticFuncs = append(cls.staticFuncs, obj)
+			}
+			return
+		}
 		var name string
 		switch decl.Kind {
 		case lc.CursorConstructor:
@@ -147,6 +165,11 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
 }
 
 func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
+	// A static method is loaded as a global function, not a classMethod, so it
+	// is absent from ctx.methods; its in-class declaration is authoritative.
+	if outsideDecl.CXXMethodIsStatic() != 0 {
+		return
+	}
 	manglingName := clang.Mangling(outsideDecl)
 	if m, ok := ctx.methods[manglingName]; ok {
 		if m.outsideDecl.Kind == 0 {

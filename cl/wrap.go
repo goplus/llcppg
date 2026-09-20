@@ -85,11 +85,17 @@ func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *class
 	if retType.Kind != lc.TypeVoid {
 		call.WriteString("return ")
 	}
+	// An instance method takes a "this" receiver and calls "this->method(...)".
+	// A static method (loaded as a global function, so cls is nil) has no
+	// receiver, but the call must still be qualified as "ClassName::method(...)".
 	notFirst := cls != nil
-	if notFirst {
+	if cls != nil {
 		b.WriteString(clang.String(cls.decl.Type()))
 		b.WriteString("* this")
 		call.WriteString("this->")
+	} else if fn.CXXMethodIsStatic() != 0 {
+		call.WriteString(clang.String(fn.SemanticParent().Type()))
+		call.WriteString("::")
 	}
 	call.WriteString(clang.String(fn))
 	call.WriteByte('(')
