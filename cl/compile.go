@@ -214,7 +214,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorTypedefDecl:
 		loadTypedef(ctx, decl, ns)
 	case lc.CursorEnumDecl:
-		// compileEnum(ctx, decl, global)
+		// compileEnum(ctx, decl)
 	case lc.CursorMacroDefinition:
 		loadMacro(ctx, decl)
 	case lc.CursorInclusionDirective:
@@ -222,7 +222,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorNamespace:
 		loadNamespace(ctx, scope, decl, ns)
 	case lc.CursorVarDecl:
-		// compileVarDecl(ctx, decl, global)
+		// compileVarDecl(ctx, decl)
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}

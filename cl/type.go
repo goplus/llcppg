@@ -75,7 +75,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	case lc.TypeVoid:
 		return tyVoid
 	case lc.TypeRecord:
-		cName := fullTypeName(typ)
+		cName := fullName(typ.TypeDeclaration())
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
@@ -92,8 +92,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	panic("todo: toType " + clang.String(typ))
 }
 
-func fullTypeName(typ lc.Type) string {
-	decl := typ.TypeDeclaration()
+func fullName(decl clang.Cursor) string {
 	name := clang.String(decl)
 	for {
 		parent := decl.SemanticParent()
