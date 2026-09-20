@@ -100,9 +100,11 @@ func genVtable(ctx *pkgCtx, scope *classCtx, ownsVptr bool) {
 	vtStruct := types.NewStruct(fields, nil)
 
 	// //llgo:type C keeps the struct laid out exactly as the C++ vtable so the
-	// reinterpret cast in the accessor is valid.
+	// reinterpret cast in the accessor is valid. The leading "\n" renders a
+	// blank line before the directive, matching the spacing of the generated
+	// method blocks.
 	vtDecl := pkg.NewTypeDefs().SetComments(&ast.CommentGroup{
-		List: []*ast.Comment{{Text: "//llgo:type C"}},
+		List: []*ast.Comment{{Text: "\n//llgo:type C"}},
 	}).NewType(vtableName(clsName), goNode(ctx, scope.decl))
 	vtNamed := vtDecl.InitType(pkg, vtStruct)
 	vtPtr := types.NewPointer(vtNamed)
@@ -129,7 +131,7 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 	results := types.NewTuple(types.NewParam(token.NoPos, pkgTypes, "", vtPtr))
 	sig := types.NewSignatureType(recv, nil, nil, nil, results, false)
 
-	f, err := pkg.NewFuncWith(token.NoPos, vptrName, sig, nil)
+	f, err := pkg.NewFuncWith(token.NoPos, vptrAccessorName, sig, nil)
 	if err != nil {
 		panic("genVptrAccessor: " + err.Error())
 	}

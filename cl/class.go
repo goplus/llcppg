@@ -35,6 +35,11 @@ import (
 // method sharing a name). See vtable.go and issue goplus/llcppg#754.
 const vptrName = "_xgo_vptr"
 
+// vptrAccessorName is the exported method that returns the typed vtable for a
+// polymorphic class, e.g. "func (p *X) XGo_vptr() *_xgo_vtable_X". It must
+// differ from vptrName so the method and the field can coexist.
+const vptrAccessorName = "XGo_vptr"
+
 type classCtx struct {
 	scopeCtx
 	decl          clang.Cursor
@@ -248,6 +253,12 @@ func isPolymorphic(cls clang.Cursor) bool {
 
 func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
 	t := decl.Type()
+	// Depending on the libclang version, a base specifier's type may be reported
+	// as an elaborated type (e.g. "struct Base") rather than the bare record;
+	// unwrap it so the record lookup below works in both cases.
+	if t.Kind == lc.TypeElaborated {
+		t = t.NamedType()
+	}
 	switch t.Kind {
 	case lc.TypeRecord:
 		cName := fullName(decl)
