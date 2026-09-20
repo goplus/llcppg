@@ -95,13 +95,17 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		case lc.CursorDestructor:
 			name = "XGo_Dtor"
 		default:
-			name = clang.String(decl)
+			// A static method is not a method: it has no implicit "this". Register
+			// it as a global function whose name is prefixed by the enclosing class
+			// name (the class name acts like a namespace); it is compiled with a
+			// nil class in compileClass.
 			if decl.CXXMethodIsStatic() != 0 {
 				if cls.inPublic {
 					loadGlobalFunc(ctx, &ctx.scopeCtx, decl, origName+"_")
 				}
 				return
 			}
+			name = clang.String(decl)
 		}
 		obj := cls.addObject(name, decl)
 		manglingName := clang.Mangling(decl)
