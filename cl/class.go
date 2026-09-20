@@ -26,6 +26,11 @@ import (
 
 // -----------------------------------------------------------------------------
 
+// vptrName is the field name of the implicit vptr introduced by a polymorphic
+// (has-virtual-methods) C++ class. It is a pointer-sized slot placed at the
+// very beginning of the type layout, mirroring the C++ Itanium ABI.
+const vptrName = "XGo_vptr"
+
 type classCtx struct {
 	scopeCtx
 	decl          clang.Cursor
@@ -66,6 +71,19 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 		loadClassMember(ctx, pkgTypes, scope, origName, decl)
 		return clang.Continue
 	})
+	// Establish the layout at offset 0, following the C++ Itanium ABI. A
+	// polymorphic class shares its vptr with its primary base (the first
+	// non-virtual *polymorphic* direct base in declaration order); that base is
+	// laid out first so the shared vptr sits at offset 0. If the class is
+	// polymorphic but has no such base to reuse, it introduces its own implicit
+	// vptr at the start of the layout instead.
+	if primary, ok := primaryBase(cls); ok {
+		hoistPrimaryBase(ctx, scope, primary)
+	} else if isPolymorphic(cls) {
+		ctx.forceImportUnsafe()
+		vptr := types.NewField(goNodePos(ctx, cls), pkgTypes, vptrName, types.Typ[types.UnsafePointer], false)
+		scope.fields = append([]*types.Var{vptr}, scope.fields...)
+	}
 	typStruc := types.NewStruct(scope.fields, nil)
 	typDecl.InitType(pkg, typStruc)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
@@ -145,6 +163,72 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 	default:
 		log.Panicln("loadClassMember: unknown kind =", decl.Kind)
 	}
+}
+
+// primaryBase returns the base-specifier cursor of the primary base class of
+// cls, if any. Per the C++ Itanium ABI, the primary base is the first
+// non-virtual *dynamic (polymorphic)* direct base in declaration order;
+// non-polymorphic bases are skipped rather than disqualifying a later
+// polymorphic one. A class shares its vptr (at offset 0) with its primary base,
+// so no fresh vptr is introduced when one exists. This covers the four cases:
+//   - No base, own virtual methods: no primary base -> introduces a vptr.
+//   - Base without virtual methods + own virtual methods: no polymorphic base
+//     to reuse -> introduces a vptr.
+//   - Single polymorphic base: it is the primary base -> reuses its vptr.
+//   - Multiple bases where an earlier one is non-polymorphic but a later one is
+//     polymorphic: the polymorphic base is the primary base -> reuses its vptr
+//     (and is laid out first so the shared vptr stays at offset 0).
+func primaryBase(cls clang.Cursor) (spec clang.Cursor, ok bool) {
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		if decl.Kind == lc.CursorCXXBaseSpecifier && decl.IsVirtualBase() == 0 {
+			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 && isPolymorphic(b) {
+				spec, ok = decl, true
+				return clang.Break
+			}
+		}
+		return clang.Continue
+	})
+	return
+}
+
+// hoistPrimaryBase moves the embedded field of the given primary base to the
+// front of scope.fields, so its shared vptr sits at offset 0 (the ABI lays the
+// primary base out first, regardless of its declaration order among bases).
+func hoistPrimaryBase(ctx *pkgCtx, scope *classCtx, spec clang.Cursor) {
+	name := baseClass(ctx, spec).Name()
+	for i, f := range scope.fields {
+		if f.Embedded() && f.Name() == name {
+			if i != 0 {
+				rest := make([]*types.Var, 0, len(scope.fields))
+				rest = append(rest, scope.fields[:i]...)
+				rest = append(rest, scope.fields[i+1:]...)
+				scope.fields = append([]*types.Var{f}, rest...)
+			}
+			return
+		}
+	}
+}
+
+// isPolymorphic reports whether the class declares or inherits any virtual
+// method, i.e. whether it has (or shares) a vptr in its layout.
+func isPolymorphic(cls clang.Cursor) bool {
+	found := false
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		switch decl.Kind {
+		case lc.CursorCXXMethod, lc.CursorDestructor:
+			if decl.CXXMethodIsVirtual() != 0 {
+				found = true
+				return clang.Break
+			}
+		case lc.CursorCXXBaseSpecifier:
+			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 && isPolymorphic(b) {
+				found = true
+				return clang.Break
+			}
+		}
+		return clang.Continue
+	})
+	return found
 }
 
 func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
