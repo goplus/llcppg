@@ -9,7 +9,7 @@ namespace bar {
 	class base
 	{
 	public:
-		~base();
+		~base() {}
 	};
 
 	inline void print(base b) {}
