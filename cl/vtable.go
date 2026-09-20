@@ -22,7 +22,6 @@ import (
 	"go/types"
 	"strconv"
 
-	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
@@ -216,36 +215,49 @@ func ownVirtualMethods(cls clang.Cursor) []clang.Cursor {
 }
 
 // overriddenSlot returns the index of the inherited slot that m overrides, or
-// -1 if m introduces a new slot. Two virtual methods share a slot when they
-// have the same name and the same parameter types (Itanium ABI, no covariant
-// special-casing needed for the layout).
+// -1 if m introduces a new slot.
+//
+// Rather than re-deriving the C++ override rules by matching names and
+// parameter types, this asks libclang directly: clang_getOverriddenCursors
+// reports the base-class virtual methods a method immediately overrides, and it
+// already accounts for signature (including cv-qualifiers, ref-qualifiers and
+// covariant returns) the way the Itanium ABI does. libclang only returns the
+// *immediate* overrides, so we walk the graph transitively to reach the base
+// method that actually seeded the inherited slot.
 func overriddenSlot(slots []vtableSlot, m clang.Cursor) int {
-	name := clang.String(m)
+	roots := overriddenRoots(m)
+	if len(roots) == 0 {
+		return -1
+	}
 	for i, s := range slots {
 		if s.decl.IsNull() != 0 {
 			continue
 		}
-		if clang.String(s.decl) == name && sameParams(s.decl, m) {
-			return i
+		for _, r := range roots {
+			if s.decl.Equal(r) != 0 {
+				return i
+			}
 		}
 	}
 	return -1
 }
 
-// sameParams reports whether two methods have identical parameter type lists.
-func sameParams(a, b clang.Cursor) bool {
-	na, nb := a.NumArguments(), b.NumArguments()
-	if na != nb {
-		return false
-	}
-	for i := range c.Uint(na) {
-		ta := clang.String(a.Argument(i).Type())
-		tb := clang.String(b.Argument(i).Type())
-		if ta != tb {
-			return false
+// overriddenRoots returns the transitive set of virtual methods that m
+// overrides, walking clang_getOverriddenCursors until it reaches methods with
+// no further overrides. The inherited slot list is built from each base's own
+// method cursors, so an inherited slot's decl is one of these roots exactly when
+// m overrides it.
+func overriddenRoots(m clang.Cursor) []clang.Cursor {
+	var roots []clang.Cursor
+	var walk func(cur clang.Cursor)
+	walk = func(cur clang.Cursor) {
+		for _, base := range clang.OverriddenCursors(cur) {
+			roots = append(roots, base)
+			walk(base)
 		}
 	}
-	return true
+	walk(m)
+	return roots
 }
 
 // vtableMethodName returns the Go field name of a virtual method slot. When the
