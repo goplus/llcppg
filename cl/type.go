@@ -96,7 +96,7 @@ func fullName(decl clang.Cursor) string {
 	name := clang.String(decl)
 	for {
 		parent := decl.SemanticParent()
-		if kind := parent.Kind; kind != lc.CursorNamespace && kind != lc.CursorLastDecl {
+		if kind := parent.Kind; kind != lc.CursorNamespace && kind != lc.CursorClassDecl && kind != lc.CursorStructDecl {
 			break
 		}
 		name = clang.String(parent) + "::" + name
