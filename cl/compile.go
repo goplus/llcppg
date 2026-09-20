@@ -44,8 +44,8 @@ func SetDebug(flags int) {
 
 // -----------------------------------------------------------------------------
 
-// PublicEntry represents a public C/C++ name and its corresponding Go name.
-type PublicEntry struct {
+// Entry represents a C/C++ name and its corresponding Go name.
+type Entry struct {
 	Name   string
 	GoName string // optional
 	Kind   byte   // 'T' (type), 'f' (func), 'v' (var)
@@ -55,7 +55,7 @@ type PublicEntry struct {
 type Package struct {
 	*gogen.Package
 	Wrap   *WrapFile
-	Public []PublicEntry
+	Public []Entry // public entries
 }
 
 // -----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
-		fileBases: make(map[clang.File]int), methods: make(map[string]*classMethod),
+		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
 		includes: make(map[string]none),
 	}

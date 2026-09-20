@@ -6,11 +6,15 @@ import (
 )
 
 const XGoPackage = true
+const (
+	LLGoPackage = "link: -L/path/foo -lfoo"
+	LLGoFiles   = "-I/path/foo/include: _wrap/llcppg.cpp"
+)
 
 type Bar struct {
 }
 
-//go:linkname Bar_create__0 C._ZN3Bar6createEv
+//go:linkname Bar_create__0 C._llcppg__ZN3Bar6createEv
 func Bar_create__0() c.Int
 
 //go:linkname Bar_create__1 C._ZN3Bar6createEi

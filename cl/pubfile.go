@@ -27,7 +27,7 @@ import (
 // -----------------------------------------------------------------------------
 
 // loadPubFile loads a public file and returns an iterator that yields each public entry.
-func loadPubFile(pubfile string) (it iter.Seq[PublicEntry], n int, err error) {
+func loadPubFile(pubfile string) (it iter.Seq[Entry], n int, err error) {
 	b, err := os.ReadFile(pubfile)
 	if err != nil {
 		return
@@ -35,7 +35,7 @@ func loadPubFile(pubfile string) (it iter.Seq[PublicEntry], n int, err error) {
 
 	text := string(b)
 	lines := strings.Split(text, "\n")
-	it = func(yield func(PublicEntry) bool) {
+	it = func(yield func(Entry) bool) {
 		for i, line := range lines {
 			flds := strings.Fields(line)
 			goName := ""
@@ -50,7 +50,7 @@ func loadPubFile(pubfile string) (it iter.Seq[PublicEntry], n int, err error) {
 				return
 			}
 			n++
-			if !yield(PublicEntry{Kind: flds[0][0], Name: flds[1], GoName: goName}) {
+			if !yield(Entry{Kind: flds[0][0], Name: flds[1], GoName: goName}) {
 				return
 			}
 		}
@@ -60,7 +60,7 @@ func loadPubFile(pubfile string) (it iter.Seq[PublicEntry], n int, err error) {
 
 // -----------------------------------------------------------------------------
 
-func savePubFile(file string, it iter.Seq[PublicEntry], n int) (err error) {
+func savePubFile(file string, it iter.Seq[Entry], n int) (err error) {
 	if n == 0 {
 		return
 	}

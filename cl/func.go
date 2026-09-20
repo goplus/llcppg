@@ -31,10 +31,11 @@ import (
 
 func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	name := ns + clang.String(decl)
-	obj := scope.addObject(name, decl)
-	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		compileFuncOrMethod(ctx, decl, obj, nil)
-	})
+	if obj, ok := scope.addFunc(ctx, name, decl); ok {
+		ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+			compileFuncOrMethod(ctx, obj, nil)
+		})
+	}
 }
 
 // compileFuncOrMethod compiles a C/C++ function or method into a Go function.
@@ -44,7 +45,8 @@ func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) 
 // has no implicit "this", so it is loaded as a global function (its Go name is
 // prefixed by the enclosing class name, which acts like a namespace). When cls
 // is non-nil, it is an instance method compiled with a "this" receiver.
-func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCtx) {
+func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
+	fn := obj.decl
 	manglingName := clang.Mangling(fn)
 	origName := obj.name
 	if fn.IsFunctionInlined() != 0 {
