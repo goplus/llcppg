@@ -9,6 +9,7 @@ on:
       - "**"
       - "!dependabot/**"
       - "!xgopilot/**"
+      - "!goplus/fennoai/**"
   pull_request:
     branches: [ "**" ]
 
