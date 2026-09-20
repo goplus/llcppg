@@ -26,6 +26,11 @@ import (
 
 // -----------------------------------------------------------------------------
 
+// vptrName is the field name of the implicit vptr introduced by a polymorphic
+// (has-virtual-methods) C++ class. It is a pointer-sized slot placed at the
+// very beginning of the type layout, mirroring the C++ Itanium ABI.
+const vptrName = "XGo_vptr"
+
 type classCtx struct {
 	scopeCtx
 	decl          clang.Cursor
@@ -66,6 +71,15 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 		loadClassMember(ctx, pkgTypes, scope, origName, decl)
 		return clang.Continue
 	})
+	// A polymorphic class introduces an implicit vptr at the start of its
+	// layout, unless it can reuse the vptr of a polymorphic primary base (the
+	// first direct base, per the Itanium ABI). When it does introduce one, the
+	// vptr precedes the embedded bases and declared fields.
+	if introducesVptr(cls) {
+		ctx.forceImportUnsafe()
+		vptr := types.NewField(goNodePos(ctx, cls), pkgTypes, vptrName, types.Typ[types.UnsafePointer], false)
+		scope.fields = append([]*types.Var{vptr}, scope.fields...)
+	}
 	typStruc := types.NewStruct(scope.fields, nil)
 	typDecl.InitType(pkg, typStruc)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
@@ -137,6 +151,66 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 	default:
 		log.Panicln("loadClassMember: unknown kind =", decl.Kind)
 	}
+}
+
+// introducesVptr reports whether the class introduces its own implicit vptr at
+// the start of its layout. A polymorphic class needs a fresh vptr unless it can
+// reuse the one of a polymorphic primary base. Since virtual bases are not
+// supported, the primary base is simply the first direct base; the class reuses
+// its vptr only when that first base is itself polymorphic. This covers the
+// four cases:
+//   - No base, own virtual methods: introduces a vptr.
+//   - Base without virtual methods + own virtual methods: introduces a vptr.
+//   - Single polymorphic base: reuses the base's vptr (no new vptr).
+//   - Multiple bases where the first is non-polymorphic but a later one is
+//     polymorphic: introduces a vptr (the later base keeps its own vptr inside
+//     its embedded layout).
+func introducesVptr(cls clang.Cursor) bool {
+	if !isPolymorphic(cls) {
+		return false
+	}
+	firstBase, ok := firstDirectBase(cls)
+	if !ok {
+		return true // no base at all
+	}
+	return !isPolymorphic(firstBase)
+}
+
+// firstDirectBase returns the declaration of the first non-virtual direct base
+// class of cls, if any.
+func firstDirectBase(cls clang.Cursor) (base clang.Cursor, ok bool) {
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		if decl.Kind == lc.CursorCXXBaseSpecifier && decl.IsVirtualBase() == 0 {
+			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 {
+				base, ok = b, true
+			}
+			return clang.Break
+		}
+		return clang.Continue
+	})
+	return
+}
+
+// isPolymorphic reports whether the class declares or inherits any virtual
+// method, i.e. whether it has (or shares) a vptr in its layout.
+func isPolymorphic(cls clang.Cursor) bool {
+	found := false
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		switch decl.Kind {
+		case lc.CursorCXXMethod, lc.CursorDestructor:
+			if decl.CXXMethodIsVirtual() != 0 {
+				found = true
+				return clang.Break
+			}
+		case lc.CursorCXXBaseSpecifier:
+			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 && isPolymorphic(b) {
+				found = true
+				return clang.Break
+			}
+		}
+		return clang.Continue
+	})
+	return found
 }
 
 func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
