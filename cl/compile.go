@@ -154,9 +154,10 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		nameLookup = defaultNameLookup
 	}
 	ctx := &pkgCtx{
-		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, pkgOf: conf.PackageOf,
-		nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
+		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
+		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
+		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
+		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), methods: make(map[string]*classMethod),
 		macroVals: make(map[string]any), objects: make(map[string]types.Object),
 		includes: make(map[string]none),
@@ -177,9 +178,7 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 
 func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
 	pkgOf := ctx.pkgOf
-	scope := &scopeCtx{
-		overloads: make(map[string]*overloads),
-	}
+	scope := &ctx.scopeCtx
 	for _, file := range files {
 		tu := file.TU
 		clang.VisitChildren(tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {

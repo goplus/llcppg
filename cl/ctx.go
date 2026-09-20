@@ -84,6 +84,7 @@ type none struct{}
 type compileFunc = func(ctx *pkgCtx)
 
 type pkgCtx struct {
+	scopeCtx
 	pkg  *gogen.Package
 	cb   *gogen.CodeBuilder
 	llgo *gogen.ConstDefs
