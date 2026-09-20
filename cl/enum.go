@@ -28,7 +28,7 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// compileEnum translates a C/C++ enum declaration into Go declarations.
+// loadEnum translates a C/C++ enum declaration into Go declarations.
 //
 // A named enum is emitted as a Go named type (whose underlying type is the C
 // int the enum decays to) followed by a const block whose constants are typed
@@ -39,7 +39,7 @@ import (
 // affects naming: ns carries the enclosing namespace/class prefix (e.g. "bar_"
 // or "Shape_"), so a constant Red becomes bar_Red / Shape_Red and then goes
 // through getPubName for the final Go name.
-func compileEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
+func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	if debugCompileDecl {
 		log.Println("enum", ns+clang.String(decl))
 	}
@@ -71,7 +71,7 @@ func compileEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		}
 		origName := ns + clang.String(item)
 		name, _ := ctx.getPubName(origName, -1)
-		val := int(item.EnumConstantDeclValue())
+		val := int(item.EnumConstantDeclValue()) // TODO(xsw): use int64 for 64-bit enums?
 		defs.New(func(cb *gogen.CodeBuilder) int {
 			cb.Val(val)
 			return 1
