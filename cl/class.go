@@ -26,31 +26,19 @@ import (
 
 // -----------------------------------------------------------------------------
 
-type classMethod struct {
-	obj          *object      // declared inside of class
-	outsideDecl  clang.Cursor // inline method declared outside of class
-	manglingName string
-	isPublic     bool
-}
-
 type classCtx struct {
 	scopeCtx
 	decl          clang.Cursor
 	typNamed      *types.Named
 	fields        []*types.Var
-	publicMethods []*classMethod
+	publicMethods []*funcObj
 	inPublic      bool
 }
 
 func compileClass(ctx *pkgCtx, scope *classCtx) {
 	scope.reorder()
 	for _, method := range scope.publicMethods {
-		obj := method.obj
-		if decl := method.outsideDecl; decl.Kind != 0 {
-			compileFuncOrMethod(ctx, decl, obj, scope)
-		} else {
-			compileFuncOrMethod(ctx, obj.decl, obj, scope)
-		}
+		compileFuncOrMethod(ctx, method, scope)
 	}
 }
 
@@ -107,13 +95,11 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 			}
 			name = clang.String(decl)
 		}
-		obj := cls.addObject(name, decl)
-		manglingName := clang.Mangling(decl)
 		isPublic := cls.inPublic
-		method := &classMethod{obj: obj, manglingName: manglingName, isPublic: isPublic}
-		ctx.methods[manglingName] = method
 		if isPublic {
-			cls.publicMethods = append(cls.publicMethods, method)
+			if fn, ok := cls.addFunc(ctx, name, decl); ok {
+				cls.publicMethods = append(cls.publicMethods, fn)
+			}
 		}
 
 	case lc.CursorFieldDecl:
@@ -157,16 +143,9 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
 }
 
 func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
-	if outsideDecl.CXXMethodIsStatic() != 0 {
-		panic("todo: static method outside of class")
-	}
 	manglingName := clang.Mangling(outsideDecl)
-	if m, ok := ctx.methods[manglingName]; ok {
-		if m.outsideDecl.Kind == 0 {
-			m.outsideDecl = outsideDecl
-		} else {
-			log.Panicln("method redeclared -", clang.DisplayName(outsideDecl))
-		}
+	if m, ok := ctx.funcs[manglingName]; ok {
+		m.decl = outsideDecl
 	} else {
 		log.Panicln("method undeclared -", clang.DisplayName(outsideDecl))
 	}

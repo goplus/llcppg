@@ -105,7 +105,7 @@ type pkgCtx struct {
 	fileBases map[clang.File]int // clang.File => base
 
 	macroVals map[string]any             // macroName => value
-	methods   map[string]*classMethod    // manglingName => class
+	funcs     map[string]*funcObj        // manglingName => func object
 	types     map[string]*types.TypeName // c/c++ fullName => type name object
 	includes  map[string]none            // includeFile Set
 
@@ -206,7 +206,7 @@ func cPubName(name string) string {
 // -----------------------------------------------------------------------------
 
 type overloads struct {
-	items []*object
+	items []*funcObj
 }
 
 func (p *overloads) reorder() {
@@ -229,15 +229,17 @@ func (p *overloads) reorder() {
 	}
 }
 
-type object struct {
+type funcObj struct {
 	name      string
 	decl      clang.Cursor
 	overloads *overloads
+
+	manglingName string
 }
 
 // order returns the order of the object in the overloads list.
 // -1 means no order (only one overload, or not found).
-func (p *object) order() int {
+func (p *funcObj) order() int {
 	items := p.overloads.items
 	if len(items) > 1 {
 		for i, obj := range items {
@@ -253,20 +255,30 @@ type scopeCtx struct {
 	overloads map[string]*overloads // name => overload items
 }
 
-func (p *scopeCtx) addObject(name string, decl clang.Cursor) *object {
-	obj := &object{
-		name: name,
-		decl: decl,
+func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor) (*funcObj, bool) {
+	manglingName := clang.Mangling(decl)
+	if fn, ok := ctx.funcs[manglingName]; ok { // re-declared
+		if decl.IsFunctionInlined() != 0 {
+			fn.decl = decl // use the latest inline decl
+		}
+		return fn, false
+	}
+
+	obj := &funcObj{
+		name:         name,
+		decl:         decl,
+		manglingName: manglingName,
 	}
 	ovs, ok := p.overloads[name]
 	if ok {
 		ovs.items = append(ovs.items, obj)
 	} else {
-		ovs = &overloads{items: []*object{obj}}
+		ovs = &overloads{items: []*funcObj{obj}}
 		p.overloads[name] = ovs
 	}
 	obj.overloads = ovs
-	return obj
+	ctx.funcs[manglingName] = obj
+	return obj, true
 }
 
 func (p *scopeCtx) reorder() {
