@@ -22,9 +22,8 @@ type Circle struct {
 	R c.Int
 }
 type Button struct {
-	XGo_vptr unsafe.Pointer
-	Tag
 	Shape
+	Tag
 	B c.Int
 }
 

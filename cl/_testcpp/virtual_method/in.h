@@ -31,9 +31,10 @@ public:
 	int area();
 };
 
-// Case 4: multiple base classes; the first base has no virtual methods, while
-// another base does. The class introduces its own vptr (the first base is the
-// primary base and is non-polymorphic).
+// Case 4: multiple base classes; an earlier base has no virtual methods, while
+// a later one does. The polymorphic base (Shape) is the primary base, so the
+// class reuses its vptr and introduces no new one; the primary base is laid out
+// first (before the non-polymorphic Tag) to keep the shared vptr at offset 0.
 class Button : public Tag, public Shape
 {
 public:
