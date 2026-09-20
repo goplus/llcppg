@@ -21,7 +21,7 @@ func Bar_detail_f__1(a c.Int) c.Uint
 //go:linkname Bar_detail_f__0 C._llcppg__ZN3bar6detail1fEv
 func Bar_detail_f__0()
 
-// llgo:link (*Bar_base).XGo_Dtor C._ZN3bar4baseD1Ev
+// llgo:link (*Bar_base).XGo_Dtor C._llcppg__ZN3bar4baseD1Ev
 func (this *Bar_base) XGo_Dtor() {
 }
 
