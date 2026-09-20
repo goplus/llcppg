@@ -1,2 +1,2 @@
-bar::base
-bar::derived
+T bar::base
+T bar::derived

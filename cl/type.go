@@ -167,7 +167,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	if rewritten {
 		pkgTypes.Scope().Insert(types.NewTypeName(token.NoPos, pkgTypes, origName, t))
 	}
-	ctx.objects[clang.String(decl.Type())] = t.Obj()
+	ctx.types[clang.String(decl.Type())] = t.Obj()
 }
 
 // -----------------------------------------------------------------------------

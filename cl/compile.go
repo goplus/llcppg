@@ -48,6 +48,7 @@ func SetDebug(flags int) {
 type PublicEntry struct {
 	Name   string
 	GoName string // optional
+	Kind   byte   // 'T' (type), 'f' (func), 'v' (var)
 }
 
 // Package represents a generated Go package from a C/C++ library.
@@ -154,11 +155,12 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		nameLookup = defaultNameLookup
 	}
 	ctx := &pkgCtx{
-		pkg: pkg, cb: pkg.CB(), llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, pkgOf: conf.PackageOf,
-		nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
+		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
+		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
+		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
+		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), methods: make(map[string]*classMethod),
-		macroVals: make(map[string]any), objects: make(map[string]types.Object),
+		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
 		includes: make(map[string]none),
 	}
 	loadFiles(ctx, files, pkgPath)
@@ -177,9 +179,7 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 
 func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
 	pkgOf := ctx.pkgOf
-	scope := &scopeCtx{
-		overloads: make(map[string]*overloads),
-	}
+	scope := &ctx.scopeCtx
 	for _, file := range files {
 		tu := file.TU
 		clang.VisitChildren(tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
