@@ -18,6 +18,7 @@ package cl
 
 import (
 	"go/token"
+	"go/types"
 	"log"
 
 	"github.com/goplus/gogen"
@@ -27,20 +28,43 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// compileEnum translates a C/C++ enum declaration into Go const declarations.
+// compileEnum translates a C/C++ enum declaration into Go declarations.
 //
-// Only the enum constants are emitted (as Go consts); the enum type itself is
-// not generated. Whether the enum is global, in a namespace, or nested inside a
-// class only affects the naming of each constant: ns carries the enclosing
-// namespace/class prefix (e.g. "bar_" or "Color_"), so a constant Red becomes
-// bar_Red / Color_Red and then goes through getPubName for the final Go name.
+// A named enum is emitted as a Go named type (whose underlying type is the C
+// int the enum decays to) followed by a const block whose constants are typed
+// with that named type, so the enum type name is preserved. An anonymous enum
+// has no type name to preserve, so only untyped consts are emitted.
+//
+// Whether the enum is global, in a namespace, or nested inside a class only
+// affects naming: ns carries the enclosing namespace/class prefix (e.g. "bar_"
+// or "Shape_"), so a constant Red becomes bar_Red / Shape_Red and then goes
+// through getPubName for the final Go name.
 func compileEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	if debugCompileDecl {
 		log.Println("enum", ns+clang.String(decl))
 	}
 	pkg := ctx.pkg
-	scope := pkg.Types.Scope()
-	defs := pkg.NewConstDefs(scope)
+	pkgTypes := pkg.Types
+
+	// Preserve the enum type name for a named enum. An anonymous enum has no
+	// name, so its constants stay untyped.
+	var enumType types.Type
+	if name := clang.String(decl); name != "" && decl.IsAnonymous() == 0 {
+		origName := ns + name
+		typeName, rewritten := ctx.getPubName(origName, -1)
+		// C enums decay to int; use the same C int type the rest of the
+		// generator uses so enum-typed values interoperate with C APIs.
+		underlying := ctx.c.Ref("Int").Type()
+		typDecl := pkg.NewTypeDefs().NewType(typeName, goNode(ctx, decl))
+		typNamed := typDecl.InitType(pkg, underlying)
+		if rewritten {
+			substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
+		}
+		ctx.types[clang.String(decl.Type())] = typNamed.Obj()
+		enumType = typNamed
+	}
+
+	defs := pkg.NewConstDefs(pkgTypes.Scope())
 	clang.VisitChildren(decl, func(item, parent clang.Cursor) clang.ChildVisitResult {
 		if item.Kind != lc.CursorEnumConstantDecl {
 			return clang.Continue
@@ -51,7 +75,7 @@ func compileEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		defs.New(func(cb *gogen.CodeBuilder) int {
 			cb.Val(val)
 			return 1
-		}, 0, token.NoPos, nil, name)
+		}, 0, token.NoPos, enumType, name)
 		return clang.Continue
 	})
 }

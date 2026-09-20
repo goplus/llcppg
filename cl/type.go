@@ -79,6 +79,11 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
+	case lc.TypeEnum:
+		cName := clang.String(typ)
+		if t, ok := ctx.typeOf(cName); ok {
+			return t
+		}
 	case lc.TypeElaborated:
 		cName := clang.String(typ.NamedType())
 		if t, ok := ctx.typeOf(cName); ok {
