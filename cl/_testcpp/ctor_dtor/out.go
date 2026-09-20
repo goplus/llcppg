@@ -11,6 +11,7 @@ const (
 type Base struct {
 }
 type Bar struct {
+	Base
 }
 
 // llgo:link (*Base).XGo_Dtor C._ZN4baseD1Ev
