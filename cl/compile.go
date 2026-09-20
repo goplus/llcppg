@@ -222,7 +222,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorNamespace:
 		loadNamespace(ctx, scope, decl, ns)
 	case lc.CursorVarDecl:
-		// compileVarDecl(ctx, decl)
+		loadVar(ctx, decl, ns)
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}

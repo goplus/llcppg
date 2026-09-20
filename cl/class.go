@@ -112,6 +112,15 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		fld := types.NewField(goNodePos(ctx, decl), pkg, fldName, fldType, false)
 		cls.fields = append(cls.fields, fld)
 
+	case lc.CursorVarDecl:
+		// A static member variable is not a field: it has no per-instance
+		// storage. Load it as a package-level variable whose name is prefixed
+		// by the enclosing class name (the class name acts like a namespace),
+		// mirroring how a static method is handled above.
+		if cls.inPublic {
+			loadVar(ctx, decl, origName+"_")
+		}
+
 	case lc.CursorCXXAccessSpecifier:
 		cls.inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
 
