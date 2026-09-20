@@ -48,6 +48,7 @@ func SetDebug(flags int) {
 type PublicEntry struct {
 	Name   string
 	GoName string // optional
+	Kind   byte   // 'T' (type), 'f' (func), 'v' (var)
 }
 
 // Package represents a generated Go package from a C/C++ library.
@@ -159,7 +160,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), methods: make(map[string]*classMethod),
-		macroVals: make(map[string]any), objects: make(map[string]types.Object),
+		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
 		includes: make(map[string]none),
 	}
 	loadFiles(ctx, files, pkgPath)

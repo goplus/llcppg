@@ -104,10 +104,10 @@ type pkgCtx struct {
 
 	fileBases map[clang.File]int // clang.File => base
 
-	macroVals map[string]any          // macroName => value
-	methods   map[string]*classMethod // manglingName => class
-	objects   map[string]types.Object // c/c++ fullName => object
-	includes  map[string]none         // includeFile Set
+	macroVals map[string]any             // macroName => value
+	methods   map[string]*classMethod    // manglingName => class
+	types     map[string]*types.TypeName // c/c++ fullName => type name object
+	includes  map[string]none            // includeFile Set
 
 	compiles []compileFunc
 	pubs     []PublicEntry
@@ -133,12 +133,19 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 		pkg := p.pkg.Import(pkgPath)
 		scope := pkg.Types.Scope()
 		if it, _, e := loadPubFile(pubFile); e == nil {
-			for cName, goName := range it {
-				if goName == "" {
-					goName, _ = p.getPubName(strings.ReplaceAll(cName, "::", "_"), -1)
-				}
-				if o := scope.Lookup(goName); o != nil {
-					p.objects[cName] = o
+			for e := range it {
+				switch e.Kind {
+				case 'T': // type
+					if e.GoName == "" {
+						e.GoName, _ = p.getPubName(strings.ReplaceAll(e.Name, "::", "_"), -1)
+					}
+					if o := scope.Lookup(e.GoName); o != nil {
+						if t, ok := o.(*types.TypeName); ok {
+							p.types[e.Name] = t
+						}
+					}
+				default:
+					panic("todo: importPubFile " + e.Name)
 				}
 			}
 		}
@@ -164,19 +171,15 @@ func (p *pkgCtx) compile() {
 }
 
 func (p *pkgCtx) typeObj(cName string) (*types.TypeName, bool) {
-	if o, ok := p.objects[cName]; ok {
-		if t, ok := o.(*types.TypeName); ok {
-			return t, true
-		}
+	if o, ok := p.types[cName]; ok {
+		return o, true
 	}
 	return nil, false
 }
 
 func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
-	if o, ok := p.objects[cName]; ok {
-		if t, ok := o.(*types.TypeName); ok {
-			return t.Type(), true
-		}
+	if o, ok := p.types[cName]; ok {
+		return o.Type(), true
 	}
 	return nil, false
 }

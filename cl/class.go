@@ -67,7 +67,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	if rewritten {
 		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
 	}
-	ctx.objects[clang.String(cls.Type())] = typNamed.Obj()
+	ctx.types[clang.String(cls.Type())] = typNamed.Obj()
 	scope := &classCtx{
 		decl:      cls,
 		typNamed:  typNamed,

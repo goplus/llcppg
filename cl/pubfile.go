@@ -27,7 +27,7 @@ import (
 // -----------------------------------------------------------------------------
 
 // loadPubFile loads a public file and returns an iterator that yields each public entry.
-func loadPubFile(pubfile string) (it iter.Seq2[string, string], n int, err error) {
+func loadPubFile(pubfile string) (it iter.Seq[PublicEntry], n int, err error) {
 	b, err := os.ReadFile(pubfile)
 	if err != nil {
 		return
@@ -35,22 +35,22 @@ func loadPubFile(pubfile string) (it iter.Seq2[string, string], n int, err error
 
 	text := string(b)
 	lines := strings.Split(text, "\n")
-	it = func(yield func(cName, goName string) bool) {
+	it = func(yield func(PublicEntry) bool) {
 		for i, line := range lines {
 			flds := strings.Fields(line)
 			goName := ""
 			switch len(flds) {
-			case 1:
 			case 2:
+			case 3:
 				goName = flds[1]
 			case 0:
 				continue
 			default:
-				err = fmt.Errorf("line %d: too many fields - %s\n", i+1, line)
+				err = fmt.Errorf("line %d: too few/many fields - %s\n", i+1, line)
 				return
 			}
 			n++
-			if !yield(flds[0], goName) {
+			if !yield(PublicEntry{Kind: flds[0][0], Name: flds[1], GoName: goName}) {
 				return
 			}
 		}
@@ -60,7 +60,7 @@ func loadPubFile(pubfile string) (it iter.Seq2[string, string], n int, err error
 
 // -----------------------------------------------------------------------------
 
-func savePubFile(file string, it iter.Seq2[string, string], n int) (err error) {
+func savePubFile(file string, it iter.Seq[PublicEntry], n int) (err error) {
 	if n == 0 {
 		return
 	}
@@ -70,12 +70,12 @@ func savePubFile(file string, it iter.Seq2[string, string], n int) (err error) {
 	}
 	defer f.Close()
 	ret := make([]string, 0, n)
-	for name, goName := range it {
-		if goName == "" {
-			ret = append(ret, name)
-		} else {
-			ret = append(ret, name+" "+goName)
+	for e := range it {
+		line := string(rune(e.Kind)) + " " + e.Name
+		if e.GoName != "" {
+			line += " " + e.GoName
 		}
+		ret = append(ret, line)
 	}
 	sort.Strings(ret)
 	_, err = f.WriteString(strings.Join(ret, "\n"))
