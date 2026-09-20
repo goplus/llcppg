@@ -162,6 +162,15 @@ func (p *pkgCtx) compile() {
 	}
 }
 
+func (p *pkgCtx) typeObj(cName string) (*types.TypeName, bool) {
+	if o, ok := p.objects[cName]; ok {
+		if t, ok := o.(*types.TypeName); ok {
+			return t, true
+		}
+	}
+	return nil, false
+}
+
 func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 	if o, ok := p.objects[cName]; ok {
 		if t, ok := o.(*types.TypeName); ok {

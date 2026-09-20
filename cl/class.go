@@ -123,10 +123,10 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.
 		// A base class is treated the same as a member variable (field) - simply
 		// an embedded one. Virtual base classes are not supported for now.
 		if decl.IsVirtualBase() != 0 {
-			log.Panicln("loadClassMember: virtual base class is not supported -", clang.DisplayName(decl))
+			panic("todo: virtual base class is not supported")
 		}
-		baseType := toType(ctx, pkg, decl.Type(), flagIsStructField)
-		fld := types.NewField(goNodePos(ctx, decl), pkg, baseFieldName(baseType), baseType, true)
+		base := baseClass(ctx, decl)
+		fld := types.NewField(goNodePos(ctx, decl), pkg, base.Name(), base.Type(), true)
 		cls.fields = append(cls.fields, fld)
 
 	default:
@@ -134,18 +134,16 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.
 	}
 }
 
-// baseFieldName returns the field name used for an embedded base class. For an
-// embedded field the name must match the unqualified name of the embedded type.
-func baseFieldName(typ types.Type) string {
-	t := typ
-	if ptr, ok := t.(*types.Pointer); ok {
-		t = ptr.Elem()
+func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
+	t := decl.Type()
+	switch t.Kind {
+	case lc.TypeRecord:
+		cName := fullName(decl)
+		if t, ok := ctx.typeObj(cName); ok {
+			return t
+		}
 	}
-	if named, ok := t.(*types.Named); ok {
-		return named.Obj().Name()
-	}
-	log.Panicln("baseFieldName: base class is not a named type -", typ)
-	return ""
+	panic("baseClass: unknown base class type - " + clang.String(t))
 }
 
 func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
