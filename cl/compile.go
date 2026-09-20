@@ -44,8 +44,8 @@ func SetDebug(flags int) {
 
 // -----------------------------------------------------------------------------
 
-// PublicEntry represents a public C/C++ name and its corresponding Go name.
-type PublicEntry struct {
+// Entry represents a C/C++ name and its corresponding Go name.
+type Entry struct {
 	Name   string
 	GoName string // optional
 	Kind   byte   // 'T' (type), 'f' (func), 'v' (var)
@@ -55,7 +55,7 @@ type PublicEntry struct {
 type Package struct {
 	*gogen.Package
 	Wrap   *WrapFile
-	Public []PublicEntry
+	Public []Entry // public entries
 }
 
 // -----------------------------------------------------------------------------

@@ -110,7 +110,7 @@ type pkgCtx struct {
 	includes  map[string]none            // includeFile Set
 
 	compiles []compileFunc
-	pubs     []PublicEntry
+	pubs     []Entry
 
 	unsafeImported bool
 }
