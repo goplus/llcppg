@@ -33,19 +33,18 @@ func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) 
 	name := ns + clang.String(decl)
 	obj := scope.addObject(name, decl)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
-		compileFuncOrMethod(ctx, decl, obj, nil, false)
+		compileFuncOrMethod(ctx, decl, obj, nil)
 	})
 }
 
 // compileFuncOrMethod compiles a C/C++ function or method into a Go function.
 //
-// When cls is nil, it is a global function. When cls is non-nil and isStatic
-// is false, it is an instance method compiled with a "this" receiver. When cls
-// is non-nil and isStatic is true, it is a static method: it has no receiver
-// and is compiled like a global function whose Go name is prefixed by the
-// enclosing class name (the class name acts like a namespace); cls is still
-// used to qualify the C++ call when wrapping inline methods.
-func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCtx, isStatic bool) {
+// When cls is nil, it is compiled as a receiver-less global function with a
+// //go:linkname directive. A C++ static method is compiled this way too: it
+// has no implicit "this", so it is loaded as a global function (its Go name is
+// prefixed by the enclosing class name, which acts like a namespace). When cls
+// is non-nil, it is an instance method compiled with a "this" receiver.
+func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCtx) {
 	manglingName := clang.Mangling(fn)
 	origName := obj.name
 	if fn.IsFunctionInlined() != 0 {
@@ -55,7 +54,7 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCt
 			}
 			return
 		}
-		manglingName = wrapInlineFunc(ctx, manglingName, fn, cls, isStatic)
+		manglingName = wrapInlineFunc(ctx, manglingName, fn, cls)
 	} else if _, ok := ctx.nameLookup(manglingName); !ok {
 		if debugCompileDecl {
 			log.Println("func", origName, "- skipped")
@@ -73,7 +72,7 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCt
 	var recv *types.Var
 	var nameInPkg string
 	var fnName, rewritten = ctx.getPubName(origName, obj.order())
-	if cls == nil || isStatic {
+	if cls == nil {
 		nameInPkg = fnName
 	} else {
 		typNamed := cls.typNamed
@@ -89,7 +88,7 @@ func compileFuncOrMethod(ctx *pkgCtx, fn clang.Cursor, obj *object, cls *classCt
 		log.Panicln("compileFunc:", origName, err)
 	}
 
-	if cls == nil || isStatic {
+	if cls == nil {
 		ctx.forceImportUnsafe()
 		f.SetComments(pkg, &ast.CommentGroup{
 			List: []*ast.Comment{

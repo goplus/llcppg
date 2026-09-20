@@ -49,7 +49,7 @@ func newWrapFile(ctx *pkgCtx) *WrapFile {
 	return &WrapFile{Filename: filename}
 }
 
-func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor, cls *classCtx, isStatic bool) string {
+func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor, cls *classCtx) string {
 	first := ctx.wrap == nil
 	if first {
 		ctx.wrap = newWrapFile(ctx)
@@ -60,7 +60,7 @@ func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor, cls *clas
 	}
 	w.WriteByte('\n')
 	wrapName := "_llcppg_" + manglingName
-	writeFunc(w, wrapName, fn, cls, isStatic, ctx.lang)
+	writeFunc(w, wrapName, fn, cls, ctx.lang)
 	return wrapName
 }
 
@@ -68,15 +68,15 @@ func wrapInlineFunc(ctx *pkgCtx, manglingName string, fn clang.Cursor, cls *clas
 
 type writerT = bytes.Buffer
 
-func writeFunc(b *writerT, name string, fn clang.Cursor, cls *classCtx, isStatic bool, lang Language) {
+func writeFunc(b *writerT, name string, fn clang.Cursor, cls *classCtx, lang Language) {
 	var call writerT
-	writeFuncProto(b, &call, name, fn, cls, isStatic, lang)
+	writeFuncProto(b, &call, name, fn, cls, lang)
 	b.WriteString(" {\n")
 	b.Write(call.Bytes())
 	b.WriteString("}\n")
 }
 
-func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *classCtx, isStatic bool, lang Language) {
+func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *classCtx, lang Language) {
 	var b writerT
 	b.WriteString(name)
 	b.WriteByte('(')
@@ -85,16 +85,16 @@ func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *class
 	if retType.Kind != lc.TypeVoid {
 		call.WriteString("return ")
 	}
-	// A static method has no "this" receiver, but the call must be qualified
-	// with the enclosing class name (ClassName::method).
-	hasThis := cls != nil && !isStatic
-	notFirst := hasThis
-	if hasThis {
+	// An instance method takes a "this" receiver and calls "this->method(...)".
+	// A static method (loaded as a global function, so cls is nil) has no
+	// receiver, but the call must still be qualified as "ClassName::method(...)".
+	notFirst := cls != nil
+	if cls != nil {
 		b.WriteString(clang.String(cls.decl.Type()))
 		b.WriteString("* this")
 		call.WriteString("this->")
-	} else if isStatic && cls != nil {
-		call.WriteString(clang.String(cls.decl.Type()))
+	} else if fn.CXXMethodIsStatic() != 0 {
+		call.WriteString(clang.String(fn.SemanticParent().Type()))
 		call.WriteString("::")
 	}
 	call.WriteString(clang.String(fn))
