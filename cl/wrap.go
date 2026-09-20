@@ -90,14 +90,13 @@ func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *class
 	// receiver, but the call must still be qualified as "ClassName::method(...)".
 	notFirst := cls != nil
 	if cls != nil {
-		b.WriteString(clang.String(cls.decl.Type()))
+		b.WriteString(fullName(cls.decl))
 		b.WriteString("* this")
 		call.WriteString("this->")
-	} else if fn.CXXMethodIsStatic() != 0 {
-		call.WriteString(clang.String(fn.SemanticParent().Type()))
-		call.WriteString("::")
+		call.WriteString(clang.String(fn))
+	} else {
+		call.WriteString(fullName(fn))
 	}
-	call.WriteString(clang.String(fn))
 	call.WriteByte('(')
 	for i := range c.Uint(fn.NumArguments()) {
 		if i > 0 {
@@ -127,7 +126,7 @@ func writeParam(b *writerT, typ lc.Type, name string) {
 		writeFuncParam(b, tderef, lvl, name)
 		return
 	}
-	b.WriteString(clang.String(typ))
+	b.WriteString(toCType(typ, flagIsParam))
 	if typ.Kind != lc.TypePointer {
 		b.WriteByte(' ')
 	}
@@ -161,6 +160,20 @@ func deref(typ lc.Type) (lc.Type, int) {
 		n++
 	}
 	return typ, n
+}
+
+// -----------------------------------------------------------------------------
+
+func toCType(typ lc.Type, flags int) string {
+	_ = flags
+	switch typ.Kind {
+	case lc.TypeRecord:
+		return fullName(typ.TypeDeclaration())
+	case lc.TypeElaborated:
+		return clang.String(typ.NamedType())
+	default:
+		return clang.String(typ)
+	}
 }
 
 // -----------------------------------------------------------------------------

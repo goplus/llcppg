@@ -1,7 +1,7 @@
 namespace bar {
 	namespace detail {
 		unsigned f(int a);
-		void f();
+		inline void f() {}
 	}
 }
 
@@ -11,6 +11,8 @@ namespace bar {
 	public:
 		~base();
 	};
+
+	inline void print(base b) {}
 
 	typedef char boolean;
 }
