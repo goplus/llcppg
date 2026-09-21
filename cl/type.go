@@ -59,12 +59,34 @@ func newPointer(typ types.Type) types.Type {
 
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
 	switch typ.Kind {
+	case lc.TypeBool:
+		return types.Typ[types.Bool]
 	case lc.TypeCharS:
 		return ctx.c.Ref("Char").Type()
+	case lc.TypeSChar:
+		return types.Typ[types.Int8]
+	case lc.TypeCharU, lc.TypeUChar:
+		return types.Typ[types.Uint8]
+	case lc.TypeShort:
+		return types.Typ[types.Int16]
+	case lc.TypeUShort:
+		return types.Typ[types.Uint16]
 	case lc.TypeInt:
 		return ctx.c.Ref("Int").Type()
 	case lc.TypeUInt:
 		return ctx.c.Ref("Uint").Type()
+	case lc.TypeLong:
+		return ctx.c.Ref("Long").Type()
+	case lc.TypeULong:
+		return ctx.c.Ref("Ulong").Type()
+	case lc.TypeLongLong:
+		return ctx.c.Ref("LongLong").Type()
+	case lc.TypeULongLong:
+		return ctx.c.Ref("UlongLong").Type()
+	case lc.TypeFloat:
+		return ctx.c.Ref("Float").Type()
+	case lc.TypeDouble:
+		return ctx.c.Ref("Double").Type()
 	case lc.TypePointer:
 		elem := typ.PointeeType()
 		if elem.Kind == lc.TypeFunctionProto {
@@ -72,6 +94,20 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		}
 		pointee := toType(ctx, pkg, elem, flags)
 		return newPointer(pointee)
+	case lc.TypeConstantArray:
+		// A fixed-size C array T[N] is a true array only when it has real
+		// storage, e.g. as a struct field. As a function parameter it is a
+		// pseudo-array that decays to a pointer T*, so honor that here since
+		// libclang reports the parameter type as an array, not a pointer.
+		elem := toType(ctx, pkg, typ.ArrayElementType(), flags)
+		if flags&flagIsParam != 0 {
+			return newPointer(elem)
+		}
+		return types.NewArray(elem, int64(typ.ArraySize()))
+	case lc.TypeIncompleteArray, lc.TypeVariableArray:
+		// T[] (and VLAs) have no known extent, so they behave like T*.
+		elem := toType(ctx, pkg, typ.ArrayElementType(), flags)
+		return newPointer(elem)
 	case lc.TypeVoid:
 		return tyVoid
 	case lc.TypeRecord:
