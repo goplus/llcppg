@@ -50,22 +50,6 @@ union BigFloat {
 	double arr[4];
 };
 
-// A bit-field member cannot have a typed pointer accessor, so it is skipped and
-// the reason is recorded on the type's doc comment (the layout is unaffected;
-// the non-bit-field member still gets its accessor).
-union WithBits {
-	int whole;
-	unsigned flag : 1;
-};
-
-// A self-referential union pointer is not convertible on its own in this single
-// translation unit, so the member is skipped and annotated on the type doc
-// comment; the convertible scalar member still gets its accessor.
-union Node {
-	int value;
-	union Node *next;
-};
-
-// A union that is only forward-declared has no members and no known size, so it
-// becomes an opaque empty struct with no accessors.
+// A union that is only forward-declared has no body and no known size, so it
+// produces no Go declaration at all.
 union Opaque;

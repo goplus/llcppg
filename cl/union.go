@@ -51,6 +51,9 @@ const unionRefPrefix = "XGof_ref_"
 // verbatim (no PascalCase, no prefix trimming); each accessor carries the
 // original C member declaration as its doc comment.
 //
+// A union with no body (forward-declared only) or of size 0 produces no Go
+// declaration at all.
+//
 // Whether the union is global, in a namespace, or nested inside a class only
 // affects naming: ns carries the enclosing prefix, so the union type name goes
 // through getPubName like a struct's.
@@ -71,13 +74,16 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 		def = decl
 	}
 
+	// A union with no body (forward-declared only) or of size 0 (GNU empty
+	// union) has nothing to generate: emit no type and no accessors.
+	typ := def.Type()
+	size := int64(typ.SizeOf())
+	if size <= 0 || def.IsCursorDefinition() == 0 {
+		return
+	}
+
 	uName, rewritten := ctx.getPubName(origName, -1)
 	defs := pkg.NewTypeDefs()
-
-	// Notes about skipped members (bit-fields and unconvertible types) are
-	// recorded on the type's doc comment so the generated file explains why a
-	// member has no accessor, per issue goplus/llcppg#775 (C6/C7).
-	var doc []*ast.Comment
 
 	typDecl := defs.NewType(uName, goNode(ctx, decl))
 	typNamed := typDecl.Type()
@@ -88,26 +94,14 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 	// (e.g. "union U *next") and typedef aliases resolve to the same X.
 	ctx.types[clang.String(decl.Type())] = typNamed.Obj()
 
-	typ := def.Type()
-	size := int64(typ.SizeOf())
-	if size <= 0 || def.IsCursorDefinition() == 0 {
-		// Size 0 (GNU empty union) or forward-declared only: emit an opaque type
-		// (empty struct, no accessors). A "union V *" still becomes "*V".
-		if len(doc) > 0 {
-			defs.SetComments(&ast.CommentGroup{List: doc})
-		}
-		typDecl.InitType(pkg, types.NewStruct(nil, nil))
-		return
-	}
-
 	storage, aligned := unionStorageType(ctx, typ)
 	ctx.forceImportUnsafe()
 	typDecl.InitType(pkg, unionStruct(ctx, def, storage))
 
-	// Classify each member up front so skip notes land in the type doc, then
-	// generate the accessors in the compile phase (after every type is
-	// registered) so member types referencing other records resolve regardless
-	// of declaration order.
+	// Collect the members that get an accessor, then generate the accessors in
+	// the compile phase (after every type is registered) so member types
+	// referencing other records resolve regardless of declaration order.
+	// Bit-fields and members whose type cannot be converted are skipped.
 	var members []clang.Cursor
 	inPublic := defaultInPublic
 	clang.VisitChildren(def, func(m, parent clang.Cursor) clang.ChildVisitResult {
@@ -115,28 +109,16 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 		case lc.CursorCXXAccessSpecifier:
 			inPublic = m.CXXAccessSpecifier() == lc.CXXPublic
 		case lc.CursorFieldDecl:
-			if !inPublic {
-				return clang.Continue
-			}
-			if m.IsBitField() != 0 {
-				// Bit-fields are left to the companion bit-field proposal.
-				doc = append(doc, &ast.Comment{Text: "// " + memberDoc(m) + " // bit-field: accessor omitted"})
-				return clang.Continue
-			}
-			if !aligned {
+			if !inPublic || m.IsBitField() != 0 || !aligned {
 				return clang.Continue
 			}
 			if _, ok := tryToType(ctx, pkgTypes, m.Type()); !ok {
-				doc = append(doc, &ast.Comment{Text: "// " + memberDoc(m) + " // unconvertible member type: accessor omitted"})
 				return clang.Continue
 			}
 			members = append(members, m)
 		}
 		return clang.Continue
 	})
-	if len(doc) > 0 {
-		defs.SetComments(&ast.CommentGroup{List: doc})
-	}
 
 	recvPtr := types.NewPointer(typNamed)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {

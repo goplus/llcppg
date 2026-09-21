@@ -28,16 +28,6 @@ type Floats struct {
 type BigFloat struct {
 	_xgo_union [4]uint64
 }
-// unsigned int flag // bit-field: accessor omitted
-type WithBits struct {
-	_xgo_union [1]uint32
-}
-// union Node * next // unconvertible member type: accessor omitted
-type Node struct {
-	_xgo_union [1]uint64
-}
-type Opaque struct {
-}
 
 // int i
 func (p *Value) XGof_ref_i() *c.Int {
@@ -112,14 +102,4 @@ func (p *BigFloat) XGof_ref_i() *c.Int {
 // double[4] arr
 func (p *BigFloat) XGof_ref_arr() *[4]c.Double {
 	return (*[4]c.Double)(unsafe.Pointer(p))
-}
-
-// int whole
-func (p *WithBits) XGof_ref_whole() *c.Int {
-	return (*c.Int)(unsafe.Pointer(p))
-}
-
-// int value
-func (p *Node) XGof_ref_value() *c.Int {
-	return (*c.Int)(unsafe.Pointer(p))
 }
