@@ -101,12 +101,36 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 		loadClassMember(ctx, pkgTypes, scope, origName, decl)
 		return clang.Continue
 	})
+	// A virtual base subobject exists exactly once in the most-derived object and,
+	// per the C++ Itanium ABI, is laid out after all non-virtual data. Append the
+	// transitive set of distinct virtual bases as embedded fields at the tail of
+	// the layout, deduplicated, so a class that virtually derives from a base keeps
+	// a single shared base subobject at its tail. This runs after the non-virtual
+	// members are collected above so the virtual bases follow them.
+	//
+	// This models the *complete-object* layout of a class that virtually inherits
+	// (e.g. istream / ostream): vptr, own fields, then the shared virtual base. It
+	// does NOT yet model the diamond *join* (e.g. iostream itself), where a class
+	// combines two non-virtual bases that each carry the same virtual base: there
+	// the ABI hoists the virtual base out of each base subobject into a single copy
+	// at the most-derived tail, so the base subobject layout differs from the
+	// base's complete-object layout and cannot be produced by embedding the base's
+	// Go struct as-is. Reject that case loudly rather than emit a struct whose size
+	// is wrong (it would double-store the shared base). See issue goplus/llcppg#759.
+	if base, ok := nonVirtualBaseWithVirtualBase(cls); ok {
+		panic("todo: diamond virtual base join is not supported yet (non-virtual base '" +
+			clang.String(base) + "' itself has a virtual base); see goplus/llcppg#759")
+	}
+	appendVirtualBases(ctx, pkgTypes, scope, cls)
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
 	// polymorphic class shares its vptr with its primary base (the first
 	// non-virtual *polymorphic* direct base in declaration order); that base is
 	// laid out first so the shared vptr sits at offset 0. If the class is
 	// polymorphic but has no such base to reuse, it introduces its own implicit
-	// vptr at the start of the layout instead.
+	// vptr at the start of the layout instead. A class with virtual bases is
+	// itself polymorphic — it needs a vptr to locate the virtual-base subobjects —
+	// so it owns a vptr when it has no non-virtual polymorphic primary base to
+	// reuse one from.
 	if primary, ok := primaryBase(cls); ok {
 		hoistPrimaryBase(ctx, scope, primary)
 		scope.polymorphic = true
@@ -184,10 +208,12 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		}
 
 	case lc.CursorCXXBaseSpecifier:
-		// A base class is treated the same as a member variable (field) - simply
-		// an embedded one. Virtual base classes are not supported for now.
+		// A non-virtual base class is treated the same as a member variable (field)
+		// - simply an embedded one at its declaration position. A virtual base is
+		// instead laid out once at the tail of the most-derived object (see
+		// appendVirtualBases), so it is skipped here.
 		if decl.IsVirtualBase() != 0 {
-			panic("todo: virtual base class is not supported")
+			return
 		}
 		base := baseClass(ctx, decl)
 		fld := types.NewField(goNodePos(ctx, decl), pkg, base.Name(), base.Type(), true)
@@ -242,8 +268,98 @@ func hoistPrimaryBase(ctx *pkgCtx, scope *classCtx, spec clang.Cursor) {
 	}
 }
 
+// appendVirtualBases appends the transitive set of distinct virtual base classes
+// of cls as embedded fields at the tail of scope.fields, deduplicated so each
+// virtual base subobject appears exactly once.
+//
+// Per the C++ Itanium ABI a virtual base is laid out once, after all non-virtual
+// data of the most-derived object; this is what makes the diamond pattern (e.g.
+// C++'s iostream, where istream and ostream both virtually derive from basic_ios)
+// share a single base subobject instead of holding two independent copies. The
+// bases are appended in the order collectVirtualBases discovers them (a
+// depth-first walk of the base graph), matching the ABI's virtual-base ordering.
+func appendVirtualBases(ctx *pkgCtx, pkg *types.Package, scope *classCtx, cls clang.Cursor) {
+	seen := make(map[string]bool)
+	for _, spec := range collectVirtualBases(cls, seen) {
+		base := baseClass(ctx, spec)
+		fld := types.NewField(goNodePos(ctx, spec), pkg, base.Name(), base.Type(), true)
+		scope.fields = append(scope.fields, fld)
+	}
+}
+
+// nonVirtualBaseWithVirtualBase reports the first non-virtual direct base of cls
+// that itself has (directly or transitively) a virtual base. Embedding such a
+// base's complete-object Go struct would carry a copy of the shared virtual base
+// inside it, so appending the same virtual base again at the tail double-stores
+// it — the diamond join the ABI resolves by hoisting a single copy to the most-
+// derived object. This is not supported yet (see the caller in loadClass).
+func nonVirtualBaseWithVirtualBase(cls clang.Cursor) (base clang.Cursor, ok bool) {
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		if decl.Kind == lc.CursorCXXBaseSpecifier && decl.IsVirtualBase() == 0 {
+			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 && hasVirtualBase(b) {
+				base, ok = decl, true
+				return clang.Break
+			}
+		}
+		return clang.Continue
+	})
+	return
+}
+
+// hasVirtualBase reports whether cls has a virtual base directly or through any
+// of its (virtual or non-virtual) bases.
+func hasVirtualBase(cls clang.Cursor) bool {
+	found := false
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		if decl.Kind == lc.CursorCXXBaseSpecifier {
+			if decl.IsVirtualBase() != 0 {
+				found = true
+				return clang.Break
+			}
+			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 && hasVirtualBase(b) {
+				found = true
+				return clang.Break
+			}
+		}
+		return clang.Continue
+	})
+	return found
+}
+
+// collectVirtualBases returns the base-specifier cursors of the distinct virtual
+// bases reachable from cls, in depth-first declaration order. seen tracks the
+// fully-qualified name of each virtual base already collected so a base shared
+// through several inheritance paths is emitted only once.
+//
+// Only direct virtual bases and, recursively, the virtual bases of a virtual
+// base are collected. Virtual bases reached through a *non-virtual* base are not
+// handled here: loadClass rejects that (the diamond join) up front, because
+// embedding the non-virtual base's complete-object struct would already store a
+// copy of the shared virtual base.
+func collectVirtualBases(cls clang.Cursor, seen map[string]bool) []clang.Cursor {
+	var specs []clang.Cursor
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		if decl.Kind != lc.CursorCXXBaseSpecifier || decl.IsVirtualBase() == 0 {
+			return clang.Continue
+		}
+		name := fullName(decl)
+		if !seen[name] {
+			seen[name] = true
+			specs = append(specs, decl)
+		}
+		// A virtual base can itself declare virtual bases; recurse into it to hoist
+		// those up as well (still deduplicated through seen).
+		if base := decl.Type().TypeDeclaration().Definition(); base.IsNull() == 0 {
+			specs = append(specs, collectVirtualBases(base, seen)...)
+		}
+		return clang.Continue
+	})
+	return specs
+}
+
 // isPolymorphic reports whether the class declares or inherits any virtual
-// method, i.e. whether it has (or shares) a vptr in its layout.
+// method, or has a virtual base — any of which means it carries (or shares) a
+// vptr in its layout.
 func isPolymorphic(cls clang.Cursor) bool {
 	found := false
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
@@ -254,6 +370,14 @@ func isPolymorphic(cls clang.Cursor) bool {
 				return clang.Break
 			}
 		case lc.CursorCXXBaseSpecifier:
+			// A virtual base requires a vptr to locate the shared base subobject, so
+			// the class is polymorphic regardless of whether that base has any virtual
+			// methods. A non-virtual base only contributes polymorphism when it is
+			// itself polymorphic.
+			if decl.IsVirtualBase() != 0 {
+				found = true
+				return clang.Break
+			}
 			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 && isPolymorphic(b) {
 				found = true
 				return clang.Break
