@@ -42,6 +42,15 @@ func loadVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 // compileVar compiles a C/C++ variable into a Go variable declared with a
 // //go:linkname directive that binds it to the external C/C++ symbol, similar
 // to how a global function is compiled in compileFuncOrMethod.
+//
+// A const-qualified variable (e.g. const int x;) is handled the same way: in
+// terms of C/C++ semantics a const is just an immutable var, and there is no
+// difference in the underlying binding logic. It maps to the same Go var linked
+// to the same C/C++ symbol; Go has no way to express a linkname-bound immutable
+// value, so the const-ness is not reflected in the generated declaration. The
+// const qualifier is a property of the type, not a distinct type kind, so
+// toType (which switches on the type kind) already yields the unqualified Go
+// type without any special casing here.
 func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	origName := ns + clang.String(decl)
 	manglingName := clang.Mangling(decl)
@@ -57,7 +66,11 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 
 	typ := toType(ctx, pkgTypes, decl.Type(), flagIsExtern)
 	if debugCompileDecl {
-		log.Println("var", origName, "-", clang.String(decl.Type()))
+		kind := "var"
+		if decl.Type().IsConstQualifiedType() != 0 {
+			kind = "const var"
+		}
+		log.Println(kind, origName, "-", clang.String(decl.Type()))
 	}
 
 	name, rewritten := ctx.getPubName(origName, -1)
