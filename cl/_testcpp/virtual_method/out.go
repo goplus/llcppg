@@ -27,7 +27,7 @@ type Button struct {
 	B c.Int
 }
 
-//llgo:type C
+// llgo:type C
 type _xgo_vtable_Shape struct {
 	Area              func(this *Shape) c.Int
 	XGo_dtor          func(this *Shape)
@@ -48,7 +48,7 @@ func (this *Shape) Area() c.Int {
 func (this *Shape) XGo_Dtor() {
 }
 
-//llgo:type C
+// llgo:type C
 type _xgo_vtable_Widget struct {
 	Paint             func(this *Widget) c.Int
 	XGo_dtor          func(this *Widget)
@@ -68,7 +68,7 @@ func (this *Widget) Paint() c.Int {
 func (this *Widget) XGo_Dtor() {
 }
 
-//llgo:type C
+// llgo:type C
 type _xgo_vtable_Circle struct {
 	Area              func(this *Circle) c.Int
 	XGo_dtor          func(this *Circle)
@@ -85,7 +85,7 @@ func (this *Circle) Area() c.Int {
 	return 0
 }
 
-//llgo:type C
+// llgo:type C
 type _xgo_vtable_Button struct {
 	Area              func(this *Button) c.Int
 	XGo_dtor          func(this *Button)

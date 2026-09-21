@@ -317,18 +317,15 @@ func VisitChildren(root Cursor, fn func(cur, parent Cursor) ChildVisitResult) ui
 //
 // The array libclang allocates is released before returning, so the returned
 // slice is a freshly copied, caller-owned []Cursor (empty when there are none).
-func OverriddenCursors(cur Cursor) []Cursor {
+func OverriddenCursors(cur Cursor) (ret []Cursor, dispose func()) {
 	var overridden *Cursor
 	var num c.Uint
 	cur.OverriddenCursors(&overridden, &num)
-	if overridden == nil || num == 0 {
-		return nil
+	ret = unsafe.Slice(overridden, int(num))
+	dispose = func() {
+		overridden.DisposeOverriddenCursors()
 	}
-	src := unsafe.Slice(overridden, int(num))
-	ret := make([]Cursor, len(src))
-	copy(ret, src)
-	overridden.DisposeOverriddenCursors()
-	return ret
+	return
 }
 
 // -----------------------------------------------------------------------------
