@@ -27,6 +27,12 @@ int sum(int values[10], int count);
 
 void fill(double buf[], int n);
 
+// Multidimensional and pointer-to-array parameters: only the outermost array
+// of a parameter decays. int matrix[3][4] decays its outer [3] to a pointer
+// but keeps the inner [4] (=> *[4]int); int (*p)[10] keeps the pointee [10]
+// (=> *[10]int).
+void transform(int matrix[3][4], int (*p)[10]);
+
 // Function-pointer parameters and results.
 int sort(void* a, void* b, int elementSize, int count, int (*cmp)(const void*, const void*));
 

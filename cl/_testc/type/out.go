@@ -34,6 +34,9 @@ func Sum(values *c.Int, count c.Int) c.Int
 //go:linkname Fill C.fill
 func Fill(buf *c.Double, n c.Int)
 
+//go:linkname Transform C.transform
+func Transform(matrix *[4]c.Int, p *[10]c.Int)
+
 //go:linkname Sort C.sort
 func Sort(a unsafe.Pointer, b unsafe.Pointer, elementSize c.Int, count c.Int, cmp func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 unsafe.Pointer) c.Int) c.Int
 

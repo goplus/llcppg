@@ -92,21 +92,28 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		if elem.Kind == lc.TypeFunctionProto {
 			return toFuncType(ctx, pkg, elem)
 		}
-		pointee := toType(ctx, pkg, elem, flags)
+		// flagIsParam only governs the outermost type of a parameter, so clear
+		// it before recursing so inner arrays are not wrongly decayed.
+		pointee := toType(ctx, pkg, elem, flags&^flagIsParam)
 		return newPointer(pointee)
 	case lc.TypeConstantArray:
 		// A fixed-size C array T[N] is a true array only when it has real
 		// storage, e.g. as a struct field. As a function parameter it is a
 		// pseudo-array that decays to a pointer T*, so honor that here since
 		// libclang reports the parameter type as an array, not a pointer.
-		elem := toType(ctx, pkg, typ.ArrayElementType(), flags)
+		//
+		// Decay applies only to the outermost array, so clear flagIsParam
+		// before recursing; otherwise a nested array like int matrix[3][4]
+		// would decay its inner [4] too, yielding **c.Int instead of *[4]c.Int.
+		elem := toType(ctx, pkg, typ.ArrayElementType(), flags&^flagIsParam)
 		if flags&flagIsParam != 0 {
 			return newPointer(elem)
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
 	case lc.TypeIncompleteArray, lc.TypeVariableArray:
-		// T[] (and VLAs) have no known extent, so they behave like T*.
-		elem := toType(ctx, pkg, typ.ArrayElementType(), flags)
+		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
+		// flagIsParam before recursing since decay applies only to this level.
+		elem := toType(ctx, pkg, typ.ArrayElementType(), flags&^flagIsParam)
 		return newPointer(elem)
 	case lc.TypeVoid:
 		return tyVoid
