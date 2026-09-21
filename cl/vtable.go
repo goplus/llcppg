@@ -313,7 +313,9 @@ func overriddenRoots(m clang.Cursor) []clang.Cursor {
 	var roots []clang.Cursor
 	var walk func(cur clang.Cursor)
 	walk = func(cur clang.Cursor) {
-		for _, base := range clang.OverriddenCursors(cur) {
+		overridden, dispose := clang.OverriddenCursors(cur)
+		defer dispose()
+		for _, base := range overridden {
 			roots = append(roots, base)
 			walk(base)
 		}
