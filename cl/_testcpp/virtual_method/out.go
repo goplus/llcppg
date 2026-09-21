@@ -29,7 +29,10 @@ type Button struct {
 
 //llgo:type C
 type _xgo_vtable_Shape struct {
-	Area func(this *Shape) c.Int
+	Area              func(this *Shape) c.Int
+	XGo_dtor          func(this *Shape)
+	XGo_dtor_deleting func(this *Shape)
+	_xgo_slot3        unsafe.Pointer
 }
 
 func (p *Shape) XGo_vptr() *_xgo_vtable_Shape {
@@ -41,9 +44,15 @@ func (this *Shape) Area() c.Int {
 	return 0
 }
 
+// llgo:link (*Shape).XGo_Dtor C._ZN5ShapeD1Ev
+func (this *Shape) XGo_Dtor() {
+}
+
 //llgo:type C
 type _xgo_vtable_Widget struct {
-	Paint func(this *Widget) c.Int
+	Paint             func(this *Widget) c.Int
+	XGo_dtor          func(this *Widget)
+	XGo_dtor_deleting func(this *Widget)
 }
 
 func (p *Widget) XGo_vptr() *_xgo_vtable_Widget {
@@ -55,9 +64,16 @@ func (this *Widget) Paint() c.Int {
 	return 0
 }
 
+// llgo:link (*Widget).XGo_Dtor C._ZN6WidgetD1Ev
+func (this *Widget) XGo_Dtor() {
+}
+
 //llgo:type C
 type _xgo_vtable_Circle struct {
-	Area func(this *Circle) c.Int
+	Area              func(this *Circle) c.Int
+	XGo_dtor          func(this *Circle)
+	XGo_dtor_deleting func(this *Circle)
+	_xgo_slot3        unsafe.Pointer
 }
 
 func (p *Circle) XGo_vptr() *_xgo_vtable_Circle {
@@ -71,8 +87,11 @@ func (this *Circle) Area() c.Int {
 
 //llgo:type C
 type _xgo_vtable_Button struct {
-	Area  func(this *Button) c.Int
-	Click func(this *Button) c.Int
+	Area              func(this *Button) c.Int
+	XGo_dtor          func(this *Button)
+	XGo_dtor_deleting func(this *Button)
+	_xgo_slot3        unsafe.Pointer
+	Click             func(this *Button) c.Int
 }
 
 func (p *Button) XGo_vptr() *_xgo_vtable_Button {

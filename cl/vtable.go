@@ -35,8 +35,10 @@ import (
 // layout:
 //
 //   - a typed vtable struct "_xgo_vtable_X", annotated "//llgo:type C", with one
-//     function-pointer field per virtual slot in vtable order. The first
-//     parameter of every field is "this *X".
+//     field per virtual slot in vtable order. A public method's slot is a
+//     function-pointer field whose first parameter is "this *X"; a reserved or
+//     non-public slot is instead an unexported "_xgo_slotN unsafe.Pointer"
+//     placeholder that only holds the slot's position (see vtableSlot).
 //   - an accessor method "func (p *X) XGo_vptr() *_xgo_vtable_X" that reinterprets
 //     the pointer stored at offset 0 as the typed vtable.
 //
@@ -56,12 +58,21 @@ func vtableName(clsName string) string {
 
 // vtableSlot describes one entry of a class vtable.
 //
-// A slot is either a named virtual method (decl set, the method cursor whose
-// Go name and signature the field takes) or an unexported placeholder that only
-// reserves the slot so later slots keep their index (decl null).
+// A slot is rendered as a named function-pointer field when named is true (its
+// Go name is name and its signature comes from decl); otherwise it is rendered
+// as an unexported "_xgo_slot<N> unsafe.Pointer" placeholder that only reserves
+// the slot so later slots keep their index. A placeholder is used for a slot
+// whose method is non-public: a private/protected virtual method still occupies
+// a vtable slot, but exposing a callable field for it would leak an inaccessible
+// member.
+//
+// decl is always the backing virtual method cursor (never null); a placeholder
+// is distinguished by named == false, not by an absent cursor, so its signature
+// is still available if a later pass needs it.
 type vtableSlot struct {
-	name string       // Go field name (method name, disambiguated for overloads)
-	decl clang.Cursor // the virtual method cursor providing the signature
+	name  string       // Go field name (method name, disambiguated for overloads)
+	decl  clang.Cursor // the virtual method cursor providing the signature (never null)
+	named bool         // render as a named field (public) vs a placeholder
 }
 
 // genVtable emits the "_xgo_vtable_X" struct and the "XGo_vptr()" accessor for a
@@ -88,7 +99,7 @@ func genVtable(ctx *pkgCtx, scope *classCtx, ownsVptr bool) {
 	for i, slot := range slots {
 		var fldType types.Type
 		var fldName string
-		if slot.decl.IsNull() == 0 {
+		if slot.named {
 			fldName = slot.name
 			fldType = vtableSlotFunc(ctx, pkgTypes, recvPtr, slot.decl)
 		} else {
@@ -172,42 +183,88 @@ func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clan
 // derived class); a virtual method of cls that overrides an inherited method
 // takes over that slot instead of adding a new one. New virtual methods follow,
 // in declaration order.
+//
+// Two slot rules beyond a plain public method (see issue goplus/llcppg#754):
+//
+//   - A virtual destructor occupies two consecutive Itanium slots: "XGo_dtor"
+//     (complete-object destructor) followed by "XGo_dtor_deleting". Both have the
+//     signature func(this *X).
+//   - A non-public (private/protected) virtual method still occupies a slot but
+//     is rendered as an unexported placeholder, so later slots keep their index
+//     without exposing an inaccessible member.
 func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
 	var slots []vtableSlot
 	if primary, ok := primaryBase(cls); ok {
 		base := primary.Type().TypeDeclaration().Definition()
 		slots = vtableSlots(ctx, nil, base)
 	}
-	own := ownVirtualMethods(cls)
-	for _, m := range own {
+	for _, m := range ownVirtualMethods(cls) {
+		public := m.CXXAccessSpecifier() == lc.CXXPublic
+		if m.Kind == lc.CursorDestructor {
+			// The destructor's two slots reuse the inherited destructor slots when
+			// present (a base virtual destructor always seeds a matching pair), so a
+			// derived destructor overrides rather than appends.
+			if idx := overriddenSlot(slots, m); idx >= 0 {
+				// The complete-object slot and the deleting slot are an inseparable
+				// Itanium pair, always seeded contiguously by dtorSlot below, so a
+				// matched override must have both. If the deleting slot is missing we
+				// would silently leave XGo_dtor_deleting pointing at the stale base
+				// entry (wrong "this" type and public flag); fail loudly instead so a
+				// broken invariant surfaces rather than emitting an incorrect vtable.
+				if idx+1 >= len(slots) {
+					panic("vtableSlots: virtual destructor override missing its deleting slot; the Itanium destructor pair is not contiguous")
+				}
+				setDtorSlot(&slots[idx], dtorSlotName, m, public)
+				setDtorSlot(&slots[idx+1], dtorDeletingSlotName, m, public)
+				continue
+			}
+			slots = append(slots,
+				dtorSlot(dtorSlotName, m, public),
+				dtorSlot(dtorDeletingSlotName, m, public),
+			)
+			continue
+		}
 		if idx := overriddenSlot(slots, m); idx >= 0 {
 			slots[idx].name = vtableMethodName(ctx, scope, cls, m)
 			slots[idx].decl = m
+			slots[idx].named = public
 			continue
 		}
 		slots = append(slots, vtableSlot{
-			name: vtableMethodName(ctx, scope, cls, m),
-			decl: m,
+			name:  vtableMethodName(ctx, scope, cls, m),
+			decl:  m,
+			named: public,
 		})
 	}
 	return slots
 }
 
-// ownVirtualMethods returns the virtual methods declared directly by cls (not
-// inherited), in declaration order.
-//
-// TODO(#754): a virtual destructor (CursorDestructor with CXXMethodIsVirtual)
-// occupies two Itanium slots (XGo_dtor, XGo_dtor_deleting) and non-public
-// virtual methods need unexported placeholder slots to keep later indices
-// aligned. Those are not emitted yet; a class whose only virtual member is a
-// destructor therefore keeps its vptr field but gets no typed vtable, which is
-// safe (no misaligned slots) though not yet friendly.
+// dtorSlot builds one of the two slots of a virtual destructor. Both slots take
+// the destructor cursor for their func(this *X) signature; only a public
+// destructor is exposed as a named field.
+func dtorSlot(name string, m clang.Cursor, public bool) vtableSlot {
+	return vtableSlot{name: name, decl: m, named: public}
+}
+
+// setDtorSlot rewrites an inherited destructor slot in place when a derived
+// class re-declares its virtual destructor.
+func setDtorSlot(s *vtableSlot, name string, m clang.Cursor, public bool) {
+	s.name, s.decl, s.named = name, m, public
+}
+
+// ownVirtualMethods returns the virtual methods and virtual destructor declared
+// directly by cls (not inherited), in declaration order. Static methods are not
+// virtual, so they never appear.
 func ownVirtualMethods(cls clang.Cursor) []clang.Cursor {
 	var methods []clang.Cursor
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
 		case lc.CursorCXXMethod:
 			if decl.CXXMethodIsVirtual() != 0 && decl.CXXMethodIsStatic() == 0 {
+				methods = append(methods, decl)
+			}
+		case lc.CursorDestructor:
+			if decl.CXXMethodIsVirtual() != 0 {
 				methods = append(methods, decl)
 			}
 		}
@@ -232,8 +289,11 @@ func overriddenSlot(slots []vtableSlot, m clang.Cursor) int {
 		return -1
 	}
 	for i, s := range slots {
+		// Every slot is seeded with a real backing cursor (see vtableSlot), so a
+		// null decl means a slot was built without one — a broken invariant. Assert
+		// rather than skip so it surfaces instead of silently missing an override.
 		if s.decl.IsNull() != 0 {
-			continue
+			panic("overriddenSlot: vtable slot has a null decl; every slot must carry its backing virtual method cursor")
 		}
 		for _, r := range roots {
 			if s.decl.Equal(r) != 0 {
