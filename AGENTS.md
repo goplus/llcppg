@@ -54,13 +54,6 @@ llgo test -v ./...
 
 Make the tests pass before submitting a change.
 
-## Code style
-
-- Format all Go code with `gofmt` (e.g. `gofmt -w .`) before committing.
-- Keep changes focused and minimal; avoid unrelated refactors in the same change.
-- Follow the conventions of the surrounding code (naming, structure, and the
-  existing Apache-2.0 license header at the top of new Go files).
-
 ## Issue title convention
 
 - Format: `feat(pkg): xxx`, `fix(pkg): xxx`, or `Proposal: xxx`.
