@@ -306,4 +306,29 @@ func VisitChildren(root Cursor, fn func(cur, parent Cursor) ChildVisitResult) ui
 		}, c.ClosureData(fn)))
 }
 
+// OverriddenCursors returns the set of methods that the given method cursor
+// immediately overrides, computed by libclang via clang_getOverriddenCursors.
+//
+// For a C++ virtual member function this is the set of virtual member functions
+// with the same signature declared in its (immediate) base classes; with
+// multiple inheritance a method can override several. libclang only reports the
+// immediate overridden methods, so walking the override graph transitively
+// requires calling this again on each result.
+//
+// The array libclang allocates is released before returning, so the returned
+// slice is a freshly copied, caller-owned []Cursor (empty when there are none).
+func OverriddenCursors(cur Cursor) []Cursor {
+	var overridden *Cursor
+	var num c.Uint
+	cur.OverriddenCursors(&overridden, &num)
+	if overridden == nil || num == 0 {
+		return nil
+	}
+	src := unsafe.Slice(overridden, int(num))
+	ret := make([]Cursor, len(src))
+	copy(ret, src)
+	overridden.DisposeOverriddenCursors()
+	return ret
+}
+
 // -----------------------------------------------------------------------------

@@ -29,7 +29,16 @@ import (
 // vptrName is the field name of the implicit vptr introduced by a polymorphic
 // (has-virtual-methods) C++ class. It is a pointer-sized slot placed at the
 // very beginning of the type layout, mirroring the C++ Itanium ABI.
-const vptrName = "XGo_vptr"
+//
+// The field is unexported so it can coexist with the exported "XGo_vptr()"
+// accessor method that returns the typed vtable (Go forbids a field and a
+// method sharing a name). See vtable.go and issue goplus/llcppg#754.
+const vptrName = "_xgo_vptr"
+
+// vptrAccessorName is the exported method that returns the typed vtable for a
+// polymorphic class, e.g. "func (p *X) XGo_vptr() *_xgo_vtable_X". It must
+// differ from vptrName so the method and the field can coexist.
+const vptrAccessorName = "XGo_vptr"
 
 type classCtx struct {
 	scopeCtx
@@ -38,10 +47,18 @@ type classCtx struct {
 	fields        []*types.Var
 	publicMethods []*funcObj
 	inPublic      bool
+	polymorphic   bool // declares or inherits virtual methods
+	ownsVptr      bool // owns the vptr field (polymorphic with no primary base)
 }
 
 func compileClass(ctx *pkgCtx, scope *classCtx) {
 	scope.reorder()
+	if scope.polymorphic {
+		// Emit the typed vtable and the XGo_vptr() accessor once method
+		// overload ordering is finalized (reorder above), so vtable field
+		// names match the generated method names.
+		genVtable(ctx, scope, scope.ownsVptr)
+	}
 	for _, method := range scope.publicMethods {
 		compileFuncOrMethod(ctx, method, scope)
 	}
@@ -79,10 +96,13 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	// vptr at the start of the layout instead.
 	if primary, ok := primaryBase(cls); ok {
 		hoistPrimaryBase(ctx, scope, primary)
+		scope.polymorphic = true
 	} else if isPolymorphic(cls) {
 		ctx.forceImportUnsafe()
 		vptr := types.NewField(goNodePos(ctx, cls), pkgTypes, vptrName, types.Typ[types.UnsafePointer], false)
 		scope.fields = append([]*types.Var{vptr}, scope.fields...)
+		scope.polymorphic = true
+		scope.ownsVptr = true
 	}
 	typStruc := types.NewStruct(scope.fields, nil)
 	typDecl.InitType(pkg, typStruc)
@@ -233,6 +253,12 @@ func isPolymorphic(cls clang.Cursor) bool {
 
 func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
 	t := decl.Type()
+	// Depending on the libclang version, a base specifier's type may be reported
+	// as an elaborated type (e.g. "struct Base") rather than the bare record;
+	// unwrap it so the record lookup below works in both cases.
+	if t.Kind == lc.TypeElaborated {
+		t = t.NamedType()
+	}
 	switch t.Kind {
 	case lc.TypeRecord:
 		cName := fullName(decl)
