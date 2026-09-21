@@ -50,6 +50,9 @@ union BigFloat {
 	double arr[4];
 };
 
+union Empty {
+}
+
 // A union that is only forward-declared has no body and no known size, so it
-// becomes an empty struct with no accessors.
+// produces no Go declaration at all.
 union Opaque;

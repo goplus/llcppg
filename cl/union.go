@@ -49,42 +49,29 @@ const unionRefPrefix = "XGof_ref_"
 // for each accessible member foo of a convertible type T. Member names are kept
 // verbatim (no PascalCase, no prefix trimming).
 //
-// A union with no body (forward-declared only) or of size 0 becomes an empty
-// struct with no accessors.
-//
 // Whether the union is global, in a namespace, or nested inside a class only
 // affects naming: ns carries the enclosing prefix, so the union type name goes
 // through getPubName like a struct's.
 func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) {
+	if decl.IsCursorDefinition() == 0 {
+		return
+	}
+
 	pkg := ctx.pkg
-	pkgTypes := pkg.Types
 	origName := ns + clang.String(decl)
 	if debugCompileDecl {
 		log.Println("union", origName)
 	}
 
-	// The definition carries the members; a forward declaration does not. Use the
-	// full definition when one exists so a forward-declared-then-defined union is
-	// generated from its definition (and a repeated declaration across headers is
-	// generated once).
-	def := decl.Definition()
-	if def.IsNull() != 0 {
-		def = decl
-	}
-
-	uName, rewritten := ctx.getPubName(origName, -1)
-	defs := pkg.NewTypeDefs()
-
-	typDecl := defs.NewType(uName, goNode(ctx, def))
+	uName, _ := ctx.getPubName(origName, -1)
+	typDecl := pkg.NewTypeDefs().NewType(uName, goNode(ctx, decl))
 	typNamed := typDecl.Type()
-	if rewritten {
-		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
-	}
+
 	// Register the union type under its C spelling so members that reference it
 	// (e.g. "union U *next") and typedef aliases resolve to the same X.
 	ctx.types[clang.String(decl.Type())] = typNamed.Obj()
 
-	typ := def.Type()
+	typ := decl.Type()
 	storage, aligned := unionStorageType(ctx, typ)
 	if storage == nil {
 		// A union with no body (forward-declared only) or of size 0 (GNU empty
@@ -93,7 +80,7 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 		return
 	}
 	ctx.forceImportUnsafe()
-	typDecl.InitType(pkg, unionStruct(ctx, def, storage))
+	typDecl.InitType(pkg, unionStruct(ctx, decl, storage))
 
 	// Collect the members that get an accessor, then generate the accessors in
 	// the compile phase (after every type is registered) so member types
@@ -102,7 +89,7 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 	// accessors at all.
 	var members []clang.Cursor
 	inPublic := defaultInPublic
-	clang.VisitChildren(def, func(m, parent clang.Cursor) clang.ChildVisitResult {
+	clang.VisitChildren(decl, func(m, parent clang.Cursor) clang.ChildVisitResult {
 		switch m.Kind {
 		case lc.CursorCXXAccessSpecifier:
 			inPublic = m.CXXAccessSpecifier() == lc.CXXPublic
