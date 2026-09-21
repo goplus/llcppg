@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/ast"
 	"go/token"
 	"go/types"
 	"log"
@@ -48,11 +47,10 @@ const unionRefPrefix = "XGof_ref_"
 //	func (p *X) XGof_ref_foo() *T { return (*T)(unsafe.Pointer(p)) }
 //
 // for each accessible member foo of a convertible type T. Member names are kept
-// verbatim (no PascalCase, no prefix trimming); each accessor carries the
-// original C member declaration as its doc comment.
+// verbatim (no PascalCase, no prefix trimming).
 //
-// A union with no body (forward-declared only) or of size 0 produces no Go
-// declaration at all.
+// A union with no body (forward-declared only) or of size 0 becomes an empty
+// struct with no accessors.
 //
 // Whether the union is global, in a namespace, or nested inside a class only
 // affects naming: ns carries the enclosing prefix, so the union type name goes
@@ -74,18 +72,10 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 		def = decl
 	}
 
-	// A union with no body (forward-declared only) or of size 0 (GNU empty
-	// union) has nothing to generate: emit no type and no accessors.
-	typ := def.Type()
-	size := int64(typ.SizeOf())
-	if size <= 0 || def.IsCursorDefinition() == 0 {
-		return
-	}
-
 	uName, rewritten := ctx.getPubName(origName, -1)
 	defs := pkg.NewTypeDefs()
 
-	typDecl := defs.NewType(uName, goNode(ctx, decl))
+	typDecl := defs.NewType(uName, goNode(ctx, def))
 	typNamed := typDecl.Type()
 	if rewritten {
 		substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
@@ -94,14 +84,22 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 	// (e.g. "union U *next") and typedef aliases resolve to the same X.
 	ctx.types[clang.String(decl.Type())] = typNamed.Obj()
 
+	typ := def.Type()
 	storage, aligned := unionStorageType(ctx, typ)
+	if storage == nil {
+		// A union with no body (forward-declared only) or of size 0 (GNU empty
+		// union) has no storage: emit an empty struct with no accessors.
+		typDecl.InitType(pkg, types.NewStruct(nil, nil))
+		return
+	}
 	ctx.forceImportUnsafe()
 	typDecl.InitType(pkg, unionStruct(ctx, def, storage))
 
 	// Collect the members that get an accessor, then generate the accessors in
 	// the compile phase (after every type is registered) so member types
 	// referencing other records resolve regardless of declaration order.
-	// Bit-fields and members whose type cannot be converted are skipped.
+	// Bit-fields are skipped; an under-aligned union (!aligned) generates no
+	// accessors at all.
 	var members []clang.Cursor
 	inPublic := defaultInPublic
 	clang.VisitChildren(def, func(m, parent clang.Cursor) clang.ChildVisitResult {
@@ -110,9 +108,6 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 			inPublic = m.CXXAccessSpecifier() == lc.CXXPublic
 		case lc.CursorFieldDecl:
 			if !inPublic || m.IsBitField() != 0 || !aligned {
-				return clang.Continue
-			}
-			if _, ok := tryToType(ctx, pkgTypes, m.Type()); !ok {
 				return clang.Continue
 			}
 			members = append(members, m)
@@ -143,6 +138,9 @@ func unionStruct(ctx *pkgCtx, decl clang.Cursor, storage types.Type) *types.Stru
 //   - A > 8 (long double, __int128, aligned(16)): [S/8]uint64 plus a warning.
 //     Exact alignment for these is out of scope (issue goplus/llcppg#775).
 //
+// It returns t == nil when the union has no storage (size 0 or a forward
+// declaration with no known layout); the caller then emits an empty struct.
+//
 // aligned is false when A is not a power of two the generator maps to an element
 // width (or A > 8); the caller then emits a byte array and skips accessors,
 // since a reinterpret cast into an under-aligned storage would be unsound.
@@ -150,7 +148,7 @@ func unionStorageType(ctx *pkgCtx, typ lc.Type) (t types.Type, aligned bool) {
 	size := int64(typ.SizeOf())
 	align := int64(typ.AlignOf())
 	if size <= 0 || align <= 0 {
-		return types.NewArray(types.Typ[types.Uint8], max64(size, 0)), false
+		return nil, false
 	}
 	switch align {
 	case 1, 2, 4, 8:
@@ -167,13 +165,6 @@ func unionStorageType(ctx *pkgCtx, typ lc.Type) (t types.Type, aligned bool) {
 		log.Printf("warning: union alignment %d > 8 is not fully supported; using [%d]uint64 (issue goplus/llcppg#775)", align, (size+7)/8)
 		return types.NewArray(types.Typ[types.Uint64], (size+7)/8), false
 	}
-}
-
-func max64(a, b int64) int64 {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 func uintOfWidth(width int64) types.Type {
@@ -235,18 +226,13 @@ func walkFloatLeaves(typ lc.Type, width int64, found *bool) bool {
 
 // genUnionAccessor emits, for a member foo of type T,
 //
-//	// <original C declaration>
 //	func (p *X) XGof_ref_foo() *T { return (*T)(unsafe.Pointer(p)) }
 func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	member := clang.String(m)
 
-	fldType, ok := tryToType(ctx, pkgTypes, m.Type())
-	if !ok {
-		// Should not happen: unconvertible members were filtered in loadUnion.
-		return
-	}
+	fldType := toType(ctx, pkgTypes, m.Type(), flagIsStructField)
 
 	name := unionRefPrefix + member
 	retType := types.NewPointer(fldType)
@@ -258,9 +244,6 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 	if err != nil {
 		log.Panicln("genUnionAccessor:", member, err)
 	}
-	f.SetComments(pkg, &ast.CommentGroup{
-		List: []*ast.Comment{{Text: "\n// " + memberDoc(m)}},
-	})
 	cb := f.BodyStart(pkg)
 	// return (*T)(unsafe.Pointer(p))
 	cb.Typ(retType).
@@ -268,24 +251,6 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 		Call(1).
 		Call(1).
 		Return(1).End()
-}
-
-// tryToType converts a C member type to its Go type, recovering from the panic
-// toType raises on a type it cannot yet convert so an unconvertible member only
-// loses its accessor rather than aborting the whole package.
-func tryToType(ctx *pkgCtx, pkg *types.Package, typ lc.Type) (t types.Type, ok bool) {
-	defer func() {
-		if recover() != nil {
-			t, ok = nil, false
-		}
-	}()
-	return toType(ctx, pkg, typ, flagIsStructField), true
-}
-
-// memberDoc renders the original C member declaration used as the accessor's doc
-// comment, e.g. "int foo" or "char *name".
-func memberDoc(m clang.Cursor) string {
-	return clang.String(m.Type()) + " " + clang.String(m)
 }
 
 // -----------------------------------------------------------------------------
