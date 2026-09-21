@@ -34,7 +34,7 @@ import (
 // methods) llcppg emits, in addition to the struct that mirrors the C++ data
 // layout:
 //
-//   - a typed vtable struct "_xgo_vtable_X", annotated "//llgo:type C", with one
+//   - a typed vtable struct `_xgo_vtable_X`, annotated `// llgo:type C`, with one
 //     field per virtual slot in vtable order. A public method's slot is a
 //     function-pointer field whose first parameter is "this *X"; a reserved or
 //     non-public slot is instead an unexported "_xgo_slotN unsafe.Pointer"
@@ -110,12 +110,12 @@ func genVtable(ctx *pkgCtx, scope *classCtx, ownsVptr bool) {
 	}
 	vtStruct := types.NewStruct(fields, nil)
 
-	// //llgo:type C keeps the struct laid out exactly as the C++ vtable so the
+	// `llgo:type C` keeps the struct laid out exactly as the C++ vtable so the
 	// reinterpret cast in the accessor is valid. The leading "\n" renders a
 	// blank line before the directive, matching the spacing of the generated
 	// method blocks.
 	vtDecl := pkg.NewTypeDefs().SetComments(&ast.CommentGroup{
-		List: []*ast.Comment{{Text: "\n//llgo:type C"}},
+		List: []*ast.Comment{{Text: "\n// llgo:type C"}},
 	}).NewType(vtableName(clsName), goNode(ctx, scope.decl))
 	vtNamed := vtDecl.InitType(pkg, vtStruct)
 	vtPtr := types.NewPointer(vtNamed)

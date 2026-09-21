@@ -2704,7 +2704,7 @@ func VisitChildren(
 	return
 }
 
-//llgo:type C
+// llgo:type C
 type Visitor func(cursor, parent Cursor, clientData ClientData) ChildVisitResult
 
 /**
@@ -2717,7 +2717,7 @@ type Visitor func(cursor, parent Cursor, clientData ClientData) ChildVisitResult
  * array is sorted in order of immediate inclusion.  For example,
  * the first element refers to the location that included 'included_file'.
  */
-//llgo:type C
+// llgo:type C
 type InclusionVisitor func(included_file File, inclusion_stack *SourceLocation, include_len c.Uint, client_data ClientData)
 
 /**
