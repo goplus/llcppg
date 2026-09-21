@@ -32,6 +32,12 @@ type OStream struct {
 	Ppos      c.Int
 	IosBase
 }
+type IOStream struct {
+	_xgo_vptr unsafe.Pointer
+	Gpos      c.Int
+	Ppos      c.Int
+	IosBase
+}
 
 // llgo:type C
 type _xgo_vtable_IosBase struct {

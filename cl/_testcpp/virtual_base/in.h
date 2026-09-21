@@ -53,3 +53,26 @@ class OStream : public virtual IosBase
 public:
 	int ppos;
 };
+
+// Case 5: an iostream-like class that virtually derives from the shared IosBase
+// and carries both a get and a put position. This is the *supported* shape of a
+// combined stream: a single class with one shared virtual base, so IosBase is
+// laid out once at the tail. Layout: vptr, gpos, ppos, IosBase (g++ size 32,
+// gpos@8, ppos@12, flags@24). Verified against the Itanium ABI.
+//
+// Note: the *true* C++ iostream — a diamond join that non-virtually combines
+// IStream and OStream (each already carrying a virtual IosBase) — is a different,
+// still-unsupported case. There the ABI hoists the shared IosBase out of both
+// base subobjects into a single copy at the most-derived tail (g++ size 48, not
+// 64), so the base subobject layout differs from IStream/OStream's complete-
+// object layout and cannot be produced by embedding their Go structs as-is. That
+// join is rejected loudly by loadClass (see baseWithVirtualBase); modelling it
+// needs per-class base-subobject types or offset-based flattening (the latter
+// would require binding clang_Type_getOffsetOf/getAlignOf, not yet bound). See
+// issue goplus/llcppg#759.
+class IOStream : public virtual IosBase
+{
+public:
+	int gpos;
+	int ppos;
+};
