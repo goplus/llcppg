@@ -56,12 +56,17 @@ func vtableName(clsName string) string {
 
 // vtableSlot describes one entry of a class vtable.
 //
-// A slot is either a named virtual method (decl set, the method cursor whose
-// Go name and signature the field takes) or an unexported placeholder that only
-// reserves the slot so later slots keep their index (decl null).
+// A slot is one of:
+//   - a named virtual method: decl is the method cursor whose Go name and
+//     signature the field takes (reserved == false).
+//   - a reserved placeholder: an unexported unsafe.Pointer field that only holds
+//     the slot so later slots keep their index (reserved == true). This covers
+//     the two slots of a virtual destructor (decl null) and non-public virtual
+//     methods (decl kept for override matching, but the field stays hidden).
 type vtableSlot struct {
-	name string       // Go field name (method name, disambiguated for overloads)
-	decl clang.Cursor // the virtual method cursor providing the signature
+	name     string       // Go field name (used only when !reserved)
+	decl     clang.Cursor // the virtual method cursor providing the signature/override identity; null for destructor slots
+	reserved bool         // emit as an unexported unsafe.Pointer placeholder
 }
 
 // genVtable emits the "_xgo_vtable_X" struct and the "XGo_vptr()" accessor for a
@@ -70,7 +75,10 @@ type vtableSlot struct {
 // which sits at offset 0.
 func genVtable(ctx *pkgCtx, scope *classCtx, ownsVptr bool) {
 	slots := vtableSlots(ctx, scope, scope.decl)
-	if len(slots) == 0 {
+	if len(slots) == 0 || allReserved(slots) {
+		// A class whose only virtual members are a destructor and/or non-public
+		// methods has no callable slots to expose. It keeps its vptr field but
+		// gets no typed vtable, which stays layout-safe (no misaligned slots).
 		return
 	}
 	pkg := ctx.pkg
@@ -88,7 +96,7 @@ func genVtable(ctx *pkgCtx, scope *classCtx, ownsVptr bool) {
 	for i, slot := range slots {
 		var fldType types.Type
 		var fldName string
-		if slot.decl.IsNull() == 0 {
+		if !slot.reserved {
 			fldName = slot.name
 			fldType = vtableSlotFunc(ctx, pkgTypes, recvPtr, slot.decl)
 		} else {
@@ -170,8 +178,13 @@ func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clan
 //
 // If cls has a primary base its slots come first (with "this" re-typed to the
 // derived class); a virtual method of cls that overrides an inherited method
-// takes over that slot instead of adding a new one. New virtual methods follow,
-// in declaration order.
+// takes over that slot instead of adding a new one. New virtual members follow,
+// in declaration order:
+//   - a public virtual method adds one named slot;
+//   - a non-public (private/protected) virtual method adds one reserved slot,
+//     keeping later indices aligned without exposing the method;
+//   - a virtual destructor adds two reserved slots (complete-object and
+//     deleting destructor, per the Itanium ABI).
 func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
 	var slots []vtableSlot
 	if primary, ok := primaryBase(cls); ok {
@@ -180,34 +193,70 @@ func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
 	}
 	own := ownVirtualMethods(cls)
 	for _, m := range own {
-		if idx := overriddenSlot(slots, m); idx >= 0 {
-			slots[idx].name = vtableMethodName(ctx, scope, cls, m)
-			slots[idx].decl = m
+		if m.Kind == lc.CursorDestructor {
+			// The two destructor entries never override a *method* slot; a
+			// derived virtual destructor maps onto the base's (already reserved)
+			// destructor slots, so re-declaring it does not add new ones.
+			if overriddenSlot(slots, m) < 0 {
+				slots = append(slots, vtableSlot{reserved: true}, vtableSlot{reserved: true})
+			}
 			continue
 		}
-		slots = append(slots, vtableSlot{
-			name: vtableMethodName(ctx, scope, cls, m),
-			decl: m,
-		})
+		reserved := !isPublicCursor(m)
+		name := ""
+		if !reserved {
+			name = vtableMethodName(ctx, scope, cls, m)
+		}
+		if idx := overriddenSlot(slots, m); idx >= 0 {
+			// An override takes over the inherited slot. A public override of a
+			// previously non-public slot re-exposes it (reserved flips to false).
+			slots[idx].name = name
+			slots[idx].decl = m
+			slots[idx].reserved = reserved
+			continue
+		}
+		slots = append(slots, vtableSlot{name: name, decl: m, reserved: reserved})
 	}
 	return slots
 }
 
-// ownVirtualMethods returns the virtual methods declared directly by cls (not
-// inherited), in declaration order.
-//
-// TODO(#754): a virtual destructor (CursorDestructor with CXXMethodIsVirtual)
-// occupies two Itanium slots (XGo_dtor, XGo_dtor_deleting) and non-public
-// virtual methods need unexported placeholder slots to keep later indices
-// aligned. Those are not emitted yet; a class whose only virtual member is a
-// destructor therefore keeps its vptr field but gets no typed vtable, which is
-// safe (no misaligned slots) though not yet friendly.
+// isPublicCursor reports whether a class member is declared with public access.
+// A member with no explicit access specifier reported by libclang (invalid) is
+// treated as public, matching how the rest of cl loads members.
+func isPublicCursor(m clang.Cursor) bool {
+	switch m.CXXAccessSpecifier() {
+	case lc.CXXPrivate, lc.CXXProtected:
+		return false
+	}
+	return true
+}
+
+// allReserved reports whether every slot is a reserved placeholder, i.e. the
+// vtable exposes no callable method field.
+func allReserved(slots []vtableSlot) bool {
+	for _, s := range slots {
+		if !s.reserved {
+			return false
+		}
+	}
+	return true
+}
+
+// ownVirtualMethods returns the virtual members declared directly by cls (not
+// inherited), in declaration order. This includes a virtual destructor
+// (CursorDestructor), which occupies two consecutive vtable slots in the
+// Itanium ABI and therefore must participate in slot ordering even though it is
+// not exposed as a callable field.
 func ownVirtualMethods(cls clang.Cursor) []clang.Cursor {
 	var methods []clang.Cursor
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
 		case lc.CursorCXXMethod:
 			if decl.CXXMethodIsVirtual() != 0 && decl.CXXMethodIsStatic() == 0 {
+				methods = append(methods, decl)
+			}
+		case lc.CursorDestructor:
+			if decl.CXXMethodIsVirtual() != 0 {
 				methods = append(methods, decl)
 			}
 		}

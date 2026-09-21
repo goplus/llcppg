@@ -26,6 +26,16 @@ type Button struct {
 	Tag
 	B c.Int
 }
+type Stream struct {
+	_xgo_vptr unsafe.Pointer
+	Fd        c.Int
+}
+type Canvas struct {
+	_xgo_vptr unsafe.Pointer
+}
+type Machine struct {
+	_xgo_vptr unsafe.Pointer
+}
 
 //llgo:type C
 type _xgo_vtable_Shape struct {
@@ -81,5 +91,50 @@ func (p *Button) XGo_vptr() *_xgo_vtable_Button {
 
 // llgo:link (*Button).Click C._ZN6Button5clickEv
 func (this *Button) Click() c.Int {
+	return 0
+}
+
+// llgo:link (*Stream).XGo_Dtor C._ZN6StreamD1Ev
+func (this *Stream) XGo_Dtor() {
+}
+
+//llgo:type C
+type _xgo_vtable_Canvas struct {
+	_xgo_slot0 unsafe.Pointer
+	_xgo_slot1 unsafe.Pointer
+	Draw       func(this *Canvas) c.Int
+}
+
+func (p *Canvas) XGo_vptr() *_xgo_vtable_Canvas {
+	return (*_xgo_vtable_Canvas)(p._xgo_vptr)
+}
+
+// llgo:link (*Canvas).XGo_Dtor C._ZN6CanvasD1Ev
+func (this *Canvas) XGo_Dtor() {
+}
+
+// llgo:link (*Canvas).Draw C._ZN6Canvas4drawEv
+func (this *Canvas) Draw() c.Int {
+	return 0
+}
+
+//llgo:type C
+type _xgo_vtable_Machine struct {
+	Start      func(this *Machine) c.Int
+	_xgo_slot1 unsafe.Pointer
+	Stop       func(this *Machine) c.Int
+}
+
+func (p *Machine) XGo_vptr() *_xgo_vtable_Machine {
+	return (*_xgo_vtable_Machine)(p._xgo_vptr)
+}
+
+// llgo:link (*Machine).Start C._ZN7Machine5startEv
+func (this *Machine) Start() c.Int {
+	return 0
+}
+
+// llgo:link (*Machine).Stop C._ZN7Machine4stopEv
+func (this *Machine) Stop() c.Int {
 	return 0
 }

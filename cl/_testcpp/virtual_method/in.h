@@ -41,3 +41,35 @@ public:
 	int b;
 	virtual int click();
 };
+
+// Case 5: a virtual destructor occupies two consecutive vtable slots (the
+// complete-object and deleting destructors, per the Itanium ABI). They are kept
+// as reserved placeholders so the following virtual method (Draw) lands at its
+// real slot index (2) rather than 0. Stream, whose only virtual member is the
+// destructor, keeps its vptr field but gets no typed vtable.
+class Stream
+{
+public:
+	int fd;
+	virtual ~Stream();
+};
+
+class Canvas
+{
+public:
+	virtual ~Canvas();
+	virtual int draw();
+};
+
+// Case 6: a non-public virtual method still occupies a vtable slot, but it is
+// reserved as an unexported placeholder rather than exposed. The private step()
+// keeps stop() at its real slot index (2) without leaking a private API.
+class Machine
+{
+public:
+	virtual int start();
+private:
+	virtual int step();
+public:
+	virtual int stop();
+};
