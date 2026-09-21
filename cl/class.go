@@ -183,6 +183,26 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 			loadEnum(ctx, decl, origName+"_")
 		}
 
+	case lc.CursorTypedefDecl:
+		// A typedef nested in a class acts like one nested in a namespace: it
+		// only affects naming, so it is emitted as a package-level type alias
+		// prefixed by the enclosing class name (the class name acts like a
+		// namespace), e.g. Bar_iterator.
+		if cls.inPublic {
+			loadTypedef(ctx, decl, origName+"_")
+		}
+
+	case lc.CursorClassDecl, lc.CursorStructDecl:
+		// A class/struct nested in a class acts like one nested in a namespace:
+		// it is emitted as a package-level type prefixed by the enclosing class
+		// name (the class name acts like a namespace), e.g. Outer_Inner. Its own
+		// members default to public for a nested struct and private for a nested
+		// class, matching the top-level rule in loadDecl.
+		if cls.inPublic {
+			defaultInPublic := decl.Kind == lc.CursorStructDecl
+			loadClass(ctx, decl, origName+"_", defaultInPublic)
+		}
+
 	case lc.CursorCXXBaseSpecifier:
 		// A base class is treated the same as a member variable (field) - simply
 		// an embedded one. Virtual base classes are not supported for now.
