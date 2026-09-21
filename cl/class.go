@@ -20,6 +20,7 @@ import (
 	"go/types"
 	"log"
 
+	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/goplus/llcppg/lib/clang"
 )
@@ -97,6 +98,16 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 		overloads: make(map[string]*overloads),
 		inPublic:  defaultInPublic,
 	}
+	// A diamond join — a class combining bases that each (directly or transitively)
+	// carry the same virtual base, e.g. C++'s iostream combining istream and
+	// ostream, which both virtually derive from basic_ios — needs a different
+	// layout than the plain member walk below produces. Detect it up front and
+	// hand it to loadDiamondClass, which flattens the base subobjects so the shared
+	// virtual base is stored exactly once. See flattenBaseSubobject and #759.
+	if _, ok := baseWithVirtualBase(cls); ok {
+		loadDiamondClass(ctx, pkg, typDecl, scope, cls)
+		return
+	}
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadClassMember(ctx, pkgTypes, scope, origName, decl)
 		return clang.Continue
@@ -107,23 +118,11 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	// deduplicated, so a class that virtually derives from a base keeps a single
 	// shared base subobject at its tail. This runs after the non-virtual members
 	// are collected above so the virtual bases follow them. (A base that itself
-	// carries a virtual base — the diamond join — is rejected just below, so only
-	// a single flat level of virtual bases is ever appended.)
+	// carries a virtual base — the diamond join — is handled above by
+	// loadDiamondClass, so only a single flat level of virtual bases reaches here.)
 	//
 	// This models the *complete-object* layout of a class that virtually inherits
-	// (e.g. istream / ostream): vptr, own fields, then the shared virtual base. It
-	// does NOT yet model the diamond *join* (e.g. iostream itself), where a class
-	// combines bases that each carry the same virtual base: there the ABI hoists
-	// the virtual base out of each base subobject into a single copy at the most-
-	// derived tail, so the base subobject layout differs from the base's complete-
-	// object layout and cannot be produced by embedding the base's Go struct as-is.
-	// Any direct base — virtual or non-virtual — that itself has a virtual base
-	// triggers this hoisting, so reject it loudly rather than emit a struct whose
-	// size is wrong (it would double-store the shared base). See goplus/llcppg#759.
-	if base, ok := baseWithVirtualBase(cls); ok {
-		panic("todo: diamond virtual base join is not supported yet (base '" +
-			fullName(base) + "' itself has a virtual base); see goplus/llcppg#759")
-	}
+	// (e.g. istream / ostream): vptr, own fields, then the shared virtual base.
 	appendVirtualBases(ctx, pkgTypes, scope, cls)
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
 	// polymorphic class shares its vptr with its primary base (the first
@@ -148,6 +147,135 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	typDecl.InitType(pkg, typStruc)
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
 		compileClass(ctx, scope)
+	})
+}
+
+// loadDiamondClass builds the layout of a *diamond join*: a class whose direct
+// bases each (directly or transitively) carry the same virtual base, so the C++
+// Itanium ABI stores that shared base exactly once, hoisted to the tail of the
+// most-derived object. C++'s iostream is the canonical example — it non-virtually
+// combines istream and ostream, which both virtually derive from basic_ios.
+//
+// The plain member walk in loadClass cannot express this, because embedding a
+// base's *complete-object* Go struct would carry that base's own copy of the
+// shared virtual base inside it (double-storing it), and Go embedding cannot
+// reproduce the ABI's tail-padding reuse (a base subobject occupies its
+// non-virtual size, which is smaller than its complete-object sizeof, so the
+// most-derived object's own fields pack into the base's tail padding).
+//
+// So the fields are *flattened* instead of embedded: each direct non-virtual base
+// contributes its base-subobject fields (its vptr and non-virtual data, excluding
+// the shared virtual base) inline, followed by the class's own fields, followed by
+// the shared virtual base embedded exactly once at the tail. A flat Go struct
+// packs consecutive fields with no per-subobject tail padding, so it reproduces
+// the Itanium layout byte-for-byte (verified against g++). See goplus/llcppg#759.
+//
+// Scope: this handles the data layout. The flattened class is treated as
+// polymorphic (it shares its primary base's vptr at offset 0) but no typed vtable
+// / XGo_vptr() accessor is synthesized for the join itself; the shared virtual
+// base at the tail keeps its own accessor. A join that introduces its own virtual
+// methods (a fresh secondary vtable) is beyond this and is rejected below.
+func loadDiamondClass(ctx *pkgCtx, pkg *gogen.Package, typDecl *gogen.TypeDecl, scope *classCtx, cls clang.Cursor) {
+	pkgTypes := pkg.Types
+	if len(ownVirtualMethods(cls)) != 0 {
+		panic("todo: a diamond virtual base join that declares its own virtual methods is not supported yet; see goplus/llcppg#759")
+	}
+	// Flatten each direct base in declaration order: a non-virtual base with a
+	// virtual base contributes its base-subobject fields inline (excluding the
+	// shared virtual base, which is hoisted to the tail); any other non-virtual
+	// base keeps the ordinary embedded-field treatment.
+	vptrSeen := false
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		switch decl.Kind {
+		case lc.CursorCXXAccessSpecifier:
+			scope.inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
+		case lc.CursorCXXBaseSpecifier:
+			if decl.IsVirtualBase() != 0 {
+				return clang.Continue // the shared virtual base is appended at the tail
+			}
+			base := decl.Type().TypeDeclaration().Definition()
+			if base.IsNull() == 0 && hasVirtualBase(base) {
+				flattenBaseSubobject(ctx, pkgTypes, scope, base, &vptrSeen)
+				return clang.Continue
+			}
+			// A plain non-virtual base with no virtual base of its own embeds as usual.
+			b := baseClass(ctx, decl)
+			scope.fields = append(scope.fields, types.NewField(goNodePos(ctx, decl), pkgTypes, b.Name(), b.Type(), true))
+		default:
+			loadClassMember(ctx, pkgTypes, scope, fullName(cls), decl)
+		}
+		return clang.Continue
+	})
+	// The shared virtual base(s), embedded exactly once at the tail. In a diamond
+	// join the virtual base is reached *through* the non-virtual bases (e.g. IosBase
+	// via IStream/OStream), not declared directly on cls, so collect it transitively
+	// and deduplicate. As the last member(s) their tail padding is not reused, so
+	// embedding the complete-object Go type is layout-correct and keeps field/method
+	// promotion (e.g. the base's own XGo_vptr() accessor).
+	seen := make(map[string]bool)
+	for _, spec := range collectVirtualBasesTransitive(cls, seen) {
+		base := baseClass(ctx, spec)
+		scope.fields = append(scope.fields, types.NewField(goNodePos(ctx, spec), pkgTypes, base.Name(), base.Type(), true))
+	}
+	scope.polymorphic = true
+	typStruc := types.NewStruct(scope.fields, nil)
+	typDecl.InitType(pkg, typStruc)
+	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+		compileClass(ctx, scope)
+	})
+}
+
+// flattenBaseSubobject appends the base-subobject fields of base to scope.fields,
+// inline (not embedded), in C++ Itanium ABI order: the base's own vptr (only if
+// the base owns one and no earlier subobject has already contributed the vptr at
+// offset 0), then its non-virtual base subobjects (recursively), then its own
+// data fields. The base's *virtual* bases are deliberately skipped — in a diamond
+// join they are hoisted to the most-derived tail and stored once.
+//
+// vptrSeen tracks whether the primary vptr (offset 0) has been emitted; the first
+// vptr-owning subobject takes the primary name (vptrName), and any later
+// vptr-owning subobject gets a unique secondary name so the two do not collide.
+func flattenBaseSubobject(ctx *pkgCtx, pkg *types.Package, scope *classCtx, base clang.Cursor, vptrSeen *bool) {
+	// A subobject owns a vptr when it is polymorphic and has no non-virtual
+	// polymorphic primary base to share one from (mirroring loadClass's own-vptr
+	// rule). istream / ostream each own one: polymorphic via their virtual base,
+	// with no non-virtual polymorphic base.
+	if _, ok := primaryBase(base); !ok && isPolymorphic(base) {
+		ctx.forceImportUnsafe()
+		name := vptrName
+		if *vptrSeen {
+			name = vptrName + "_" + baseClass(ctx, base).Name()
+		}
+		*vptrSeen = true
+		scope.fields = append(scope.fields, types.NewField(goNodePos(ctx, base), pkg, name, types.Typ[types.UnsafePointer], false))
+	}
+	// Recurse into the base's own members: non-virtual, non-virtual-base data in
+	// declaration order. Non-virtual bases of a non-virtual base flatten too; a
+	// virtual base is skipped (hoisted to the most-derived tail). The default
+	// member access is public for a struct and private for a class, mirroring how
+	// loadClass seeds defaultInPublic.
+	inPublic := base.Kind == lc.CursorStructDecl
+	clang.VisitChildren(base, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		switch decl.Kind {
+		case lc.CursorCXXAccessSpecifier:
+			inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
+		case lc.CursorCXXBaseSpecifier:
+			if decl.IsVirtualBase() != 0 {
+				return clang.Continue
+			}
+			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 {
+				flattenBaseSubobject(ctx, pkg, scope, b, vptrSeen)
+			}
+		case lc.CursorFieldDecl:
+			origName := clang.String(decl)
+			fldType := toType(ctx, pkg, decl.Type(), flagIsStructField)
+			fldName := origName
+			if inPublic {
+				fldName, _ = ctx.getPubName(origName, -1)
+			}
+			scope.fields = append(scope.fields, types.NewField(goNodePos(ctx, decl), pkg, fldName, fldType, false))
+		}
+		return clang.Continue
 	})
 }
 
@@ -295,20 +423,13 @@ func appendVirtualBases(ctx *pkgCtx, pkg *types.Package, scope *classCtx, cls cl
 }
 
 // baseWithVirtualBase reports the first direct base of cls — virtual or
-// non-virtual — that itself has (directly or transitively) a virtual base.
-//
-// Both cases are the diamond join the ABI resolves by hoisting a single shared
-// copy of the virtual base to the most-derived object, so the base subobject
-// omits the virtual base that the base's own complete-object layout includes:
-//   - A non-virtual base's complete-object Go struct already embeds a copy of
-//     the shared virtual base, so appending it again at the tail double-stores it.
-//   - A virtual base that itself has a virtual base would likewise be embedded
-//     (by appendVirtualBases) with its own virtual base inside it, while that
-//     nested virtual base is also collected and appended at the tail — again a
-//     double-store.
-//
-// Neither can be produced by embedding the base's Go struct as-is, so loadClass
-// rejects this up front rather than emitting a struct of the wrong size.
+// non-virtual — that itself has (directly or transitively) a virtual base. Its
+// presence means cls is a diamond join: the ABI hoists a single shared copy of
+// the deeper virtual base to the most-derived object, so the base subobject omits
+// the virtual base that the base's own complete-object layout includes, and cls
+// cannot be built by embedding the base's Go struct as-is (that would double-store
+// the shared base). loadClass uses this only to detect the join and route it to
+// loadDiamondClass, which flattens the base subobjects instead.
 func baseWithVirtualBase(cls clang.Cursor) (base clang.Cursor, ok bool) {
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		if decl.Kind == lc.CursorCXXBaseSpecifier {
@@ -379,6 +500,40 @@ func collectVirtualBases(cls clang.Cursor, seen map[string]bool) []clang.Cursor 
 		if !seen[name] {
 			seen[name] = true
 			specs = append(specs, decl)
+		}
+		return clang.Continue
+	})
+	return specs
+}
+
+// collectVirtualBasesTransitive returns the base-specifier cursors of the
+// distinct virtual bases reachable from cls through *any* path — directly, or
+// through a non-virtual base that (directly or transitively) virtually derives
+// from them. seen deduplicates by fully-qualified name so a base shared through
+// several paths (the whole point of a diamond join) is emitted exactly once.
+//
+// Unlike collectVirtualBases (direct virtual bases only), this descends into
+// non-virtual bases too, because the shared virtual base of a diamond join is
+// declared on the intermediate bases (e.g. IosBase on IStream/OStream), not on
+// the most-derived class. It is used only by loadDiamondClass to place the single
+// shared subobject at the tail.
+func collectVirtualBasesTransitive(cls clang.Cursor, seen map[string]bool) []clang.Cursor {
+	var specs []clang.Cursor
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		if decl.Kind != lc.CursorCXXBaseSpecifier {
+			return clang.Continue
+		}
+		if decl.IsVirtualBase() != 0 {
+			name := fullName(decl)
+			if !seen[name] {
+				seen[name] = true
+				specs = append(specs, decl)
+			}
+			return clang.Continue
+		}
+		// A non-virtual base may itself carry virtual bases; descend to hoist them.
+		if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 {
+			specs = append(specs, collectVirtualBasesTransitive(b, seen)...)
 		}
 		return clang.Continue
 	})

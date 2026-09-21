@@ -33,9 +33,10 @@ type OStream struct {
 	IosBase
 }
 type IOStream struct {
-	_xgo_vptr unsafe.Pointer
-	Gpos      c.Int
-	Ppos      c.Int
+	_xgo_vptr         unsafe.Pointer
+	Gpos              c.Int
+	_xgo_vptr_OStream unsafe.Pointer
+	Ppos              c.Int
 	IosBase
 }
 

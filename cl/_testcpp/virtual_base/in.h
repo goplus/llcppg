@@ -54,25 +54,19 @@ public:
 	int ppos;
 };
 
-// Case 5: an iostream-like class that virtually derives from the shared IosBase
-// and carries both a get and a put position. This is the *supported* shape of a
-// combined stream: a single class with one shared virtual base, so IosBase is
-// laid out once at the tail. Layout: vptr, gpos, ppos, IosBase (g++ size 32,
-// gpos@8, ppos@12, flags@24). Verified against the Itanium ABI.
+// Case 5: the iostream *diamond join*. IOStream non-virtually combines IStream
+// and OStream, which each virtually derive from the same IosBase. Per the C++
+// Itanium ABI the shared IosBase is stored exactly once, hoisted to the tail of
+// the most-derived object; each base subobject keeps its own vptr but omits its
+// copy of IosBase, and IOStream's own fields pack into the base subobjects' tail
+// padding.
 //
-// Note: the *true* C++ iostream — a diamond join that non-virtually combines
-// IStream and OStream (each already carrying a virtual IosBase) — is a different,
-// still-unsupported case. There the ABI hoists the shared IosBase out of both
-// base subobjects into a single copy at the most-derived tail (g++ size 48, not
-// 64), so the base subobject layout differs from IStream/OStream's complete-
-// object layout and cannot be produced by embedding their Go structs as-is. That
-// join is rejected loudly by loadClass (see baseWithVirtualBase); modelling it
-// needs per-class base-subobject types or offset-based flattening (the latter
-// would require binding clang_Type_getOffsetOf/getAlignOf, not yet bound). See
-// issue goplus/llcppg#759.
-class IOStream : public virtual IosBase
+// This cannot be modelled by embedding IStream/OStream's Go structs (that would
+// double-store IosBase, and Go embedding cannot reuse a subobject's tail
+// padding), so loadDiamondClass flattens the base subobjects instead. The
+// resulting flat Go struct reproduces the ABI layout byte-for-byte:
+//   {_xgo_vptr, Gpos, _xgo_vptr_OStream, Ppos, IosBase}
+// g++: size 48, gpos@8, OStream-vptr@16, ppos@24, IosBase@32 (flags@40). See #759.
+class IOStream : public IStream, public OStream
 {
-public:
-	int gpos;
-	int ppos;
 };
