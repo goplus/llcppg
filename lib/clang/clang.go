@@ -1632,6 +1632,22 @@ func (t Type) SizeOf() (ret c.LongLong) {
 }
 
 /**
+ * Return the alignment of a type in bytes as per C++[expr.alignof] standard.
+ *
+ * If the type declaration is invalid, CXTypeLayoutError_Invalid is returned.
+ * If the type declaration is an incomplete type, CXTypeLayoutError_Incomplete
+ *   is returned.
+ * If the type declaration is a dependent type, CXTypeLayoutError_Dependent is
+ *   returned.
+ * If the type declaration is not a constant size type,
+ *   CXTypeLayoutError_NotConstantSize is returned.
+ */
+// llgo:link Type.AlignOf C.clang_Type_getAlignOf
+func (t Type) AlignOf() (ret c.LongLong) {
+	return
+}
+
+/**
  * Return the canonical type for a CXType.
  *
  * Clang's type system explicitly models typedefs and all the ways
@@ -2260,6 +2276,15 @@ func (c Cursor) IsAnonymous() (ret c.Uint) {
  */
 // llgo:link Cursor.IsAnonymousRecordDecl C.clang_Cursor_isAnonymousRecordDecl
 func (c Cursor) IsAnonymousRecordDecl() (ret c.Uint) {
+	return
+}
+
+/**
+ * Returns non-zero if the cursor specifies a Record member that is a
+ * bitfield.
+ */
+// llgo:link Cursor.IsBitField C.clang_Cursor_isBitField
+func (c Cursor) IsBitField() (ret c.Uint) {
 	return
 }
 
