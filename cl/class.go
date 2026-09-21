@@ -203,6 +203,15 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 			loadClass(ctx, decl, origName+"_", defaultInPublic)
 		}
 
+	case lc.CursorUnionDecl:
+		// A tagged union nested in a class is emitted as a package-level type
+		// prefixed by the enclosing class name, like a nested struct. A tagless
+		// inline union has no tag name here; its own hoisting is out of scope for
+		// this change and handled by the union proposal's D-series follow-up.
+		if cls.inPublic && decl.IsAnonymousRecordDecl() == 0 {
+			loadUnion(ctx, decl, origName+"_", true)
+		}
+
 	case lc.CursorCXXBaseSpecifier:
 		// A base class is treated the same as a member variable (field) - simply
 		// an embedded one. Virtual base classes are not supported for now.
