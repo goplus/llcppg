@@ -28,7 +28,7 @@ type Floats struct {
 type BigFloat struct {
 	_xgo_union [4]uint64
 }
-type Opaque struct {
+type Empty struct {
 }
 
 func (p *Value) XGof_ref_i() *c.Int {
