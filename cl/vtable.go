@@ -35,8 +35,10 @@ import (
 // layout:
 //
 //   - a typed vtable struct "_xgo_vtable_X", annotated "//llgo:type C", with one
-//     function-pointer field per virtual slot in vtable order. The first
-//     parameter of every field is "this *X".
+//     field per virtual slot in vtable order. A public method's slot is a
+//     function-pointer field whose first parameter is "this *X"; a reserved or
+//     non-public slot is instead an unexported "_xgo_slotN unsafe.Pointer"
+//     placeholder that only holds the slot's position (see vtableSlot).
 //   - an accessor method "func (p *X) XGo_vptr() *_xgo_vtable_X" that reinterprets
 //     the pointer stored at offset 0 as the typed vtable.
 //
@@ -60,12 +62,16 @@ func vtableName(clsName string) string {
 // Go name is name and its signature comes from decl); otherwise it is rendered
 // as an unexported "_xgo_slot<N> unsafe.Pointer" placeholder that only reserves
 // the slot so later slots keep their index. A placeholder is used for a slot
-// with no backing cursor (decl null) and for one whose method is non-public: a
-// private/protected virtual method still occupies a vtable slot, but exposing a
-// callable field for it would leak an inaccessible member.
+// whose method is non-public: a private/protected virtual method still occupies
+// a vtable slot, but exposing a callable field for it would leak an inaccessible
+// member.
+//
+// decl is always the backing virtual method cursor (never null); a placeholder
+// is distinguished by named == false, not by an absent cursor, so its signature
+// is still available if a later pass needs it.
 type vtableSlot struct {
 	name  string       // Go field name (method name, disambiguated for overloads)
-	decl  clang.Cursor // the virtual method cursor providing the signature
+	decl  clang.Cursor // the virtual method cursor providing the signature (never null)
 	named bool         // render as a named field (public) vs a placeholder
 }
 
@@ -199,15 +205,22 @@ func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
 			// present (a base virtual destructor always seeds a matching pair), so a
 			// derived destructor overrides rather than appends.
 			if idx := overriddenSlot(slots, m); idx >= 0 {
-				setDtorSlot(&slots[idx], "XGo_dtor", m, public)
-				if idx+1 < len(slots) {
-					setDtorSlot(&slots[idx+1], "XGo_dtor_deleting", m, public)
+				// The complete-object slot and the deleting slot are an inseparable
+				// Itanium pair, always seeded contiguously by dtorSlot below, so a
+				// matched override must have both. If the deleting slot is missing we
+				// would silently leave XGo_dtor_deleting pointing at the stale base
+				// entry (wrong "this" type and public flag); fail loudly instead so a
+				// broken invariant surfaces rather than emitting an incorrect vtable.
+				if idx+1 >= len(slots) {
+					panic("vtableSlots: virtual destructor override missing its deleting slot; the Itanium destructor pair is not contiguous")
 				}
+				setDtorSlot(&slots[idx], dtorSlotName, m, public)
+				setDtorSlot(&slots[idx+1], dtorDeletingSlotName, m, public)
 				continue
 			}
 			slots = append(slots,
-				dtorSlot("XGo_dtor", m, public),
-				dtorSlot("XGo_dtor_deleting", m, public),
+				dtorSlot(dtorSlotName, m, public),
+				dtorSlot(dtorDeletingSlotName, m, public),
 			)
 			continue
 		}
@@ -276,8 +289,11 @@ func overriddenSlot(slots []vtableSlot, m clang.Cursor) int {
 		return -1
 	}
 	for i, s := range slots {
+		// Every slot is seeded with a real backing cursor (see vtableSlot), so a
+		// null decl means a slot was built without one — a broken invariant. Assert
+		// rather than skip so it surfaces instead of silently missing an override.
 		if s.decl.IsNull() != 0 {
-			continue
+			panic("overriddenSlot: vtable slot has a null decl; every slot must carry its backing virtual method cursor")
 		}
 		for _, r := range roots {
 			if s.decl.Equal(r) != 0 {

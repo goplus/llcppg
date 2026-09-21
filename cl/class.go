@@ -40,6 +40,19 @@ const vptrName = "_xgo_vptr"
 // differ from vptrName so the method and the field can coexist.
 const vptrAccessorName = "XGo_vptr"
 
+// dtorSlotName and dtorDeletingSlotName are the vtable field names of the two
+// consecutive Itanium slots a virtual destructor occupies: the complete-object
+// destructor followed by the deleting destructor. Both have the signature
+// func(this *X). See vtable.go and issue goplus/llcppg#754.
+//
+// The lowercase "dtor" here is deliberately distinct from the "XGo_Dtor" method
+// generated in loadClassMember (uppercase "D"): these are vtable slot fields,
+// not the destructor method, so the differing case is intentional and not a typo.
+const (
+	dtorSlotName         = "XGo_dtor"
+	dtorDeletingSlotName = "XGo_dtor_deleting"
+)
+
 type classCtx struct {
 	scopeCtx
 	decl          clang.Cursor
