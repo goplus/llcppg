@@ -155,6 +155,10 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 
 	case lc.CursorFieldDecl:
 		origName := clang.String(decl)
+		if fld, ok := hoistUnionField(ctx, pkg, cls, decl, origName); ok {
+			cls.fields = append(cls.fields, fld)
+			return
+		}
 		fldType := toType(ctx, pkg, decl.Type(), flagIsStructField)
 		fldName := origName
 		if cls.inPublic {
@@ -201,6 +205,16 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		if cls.inPublic {
 			defaultInPublic := decl.Kind == lc.CursorStructDecl
 			loadClass(ctx, decl, origName+"_", defaultInPublic)
+		}
+
+	case lc.CursorUnionDecl:
+		// A tagged union nested in a class is a named type, emitted at package
+		// scope prefixed by the enclosing class name (like a nested struct). A
+		// tagless inline union has no name of its own; it is hoisted from the
+		// field that uses it (see hoistUnionField), so the bare decl is ignored
+		// here.
+		if cls.inPublic && clang.String(decl) != "" && decl.IsAnonymous() == 0 {
+			loadUnion(ctx, decl, origName+"_", "")
 		}
 
 	case lc.CursorCXXBaseSpecifier:

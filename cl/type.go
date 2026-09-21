@@ -209,6 +209,20 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	if debugCompileDecl {
 		log.Println("typedef", origName, "-", clang.String(underlying))
 	}
+	// A "typedef union { ... } Name;" wraps a tagless union that has no name of
+	// its own; give the union the typedef name directly (a real named struct
+	// with accessors) instead of an alias to a hoisted "_llcppg_union_N", so
+	// the accessors read "func (p *Name) XGo_union_foo()". See union.go and
+	// issue goplus/llcppg#764.
+	if underlying.Kind == lc.TypeRecord {
+		rec := underlying.TypeDeclaration()
+		if rec.Kind == lc.CursorUnionDecl && (clang.String(rec) == "" || rec.IsAnonymous() != 0) {
+			if _, ok := ctx.typeOf(clang.String(underlying)); !ok {
+				loadUnion(ctx, rec, ns, origName)
+				return
+			}
+		}
+	}
 	tunder := toType(ctx, pkgTypes, underlying, flagIsTypedef)
 	name, rewritten := ctx.getPubName(origName, -1)
 	t := pkg.NewTypeDefs().AliasType(name, tunder).(*types.Alias)

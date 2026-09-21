@@ -113,6 +113,11 @@ type pkgCtx struct {
 	pubs     []Entry
 
 	unsafeImported bool
+
+	// unionSeq is the package-wide counter used to name hoisted (tagless,
+	// inline) unions "_llcppg_union_<n>", starting at 0. See union.go and
+	// issue goplus/llcppg#764.
+	unionSeq int
 }
 
 func (p *pkgCtx) forceImportUnsafe() {
@@ -120,6 +125,13 @@ func (p *pkgCtx) forceImportUnsafe() {
 		p.unsafeImported = true
 		p.pkg.ForceImport("unsafe")
 	}
+}
+
+// unsafeAdd returns the "unsafe.Add" function object, for building
+// unsafe.Add(ptr, off) expressions. The caller must have imported unsafe
+// (forceImportUnsafe).
+func (p *pkgCtx) unsafeAdd() gogen.Ref {
+	return gogen.PkgRef{Types: types.Unsafe}.Ref("Add")
 }
 
 func (p *pkgCtx) importPkg(pkgPath string) {

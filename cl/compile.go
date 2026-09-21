@@ -209,6 +209,14 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		defaultInPublic := decl.Kind == lc.CursorStructDecl
 		loadClass(ctx, decl, ns, defaultInPublic)
+	case lc.CursorUnionDecl:
+		// A tagless union at file scope carries no name to attach accessors to;
+		// it is only reachable through the typedef that wraps it, so let
+		// loadTypedef create it under the typedef name (see loadTypedef). A
+		// tagged union is loaded here under its tag name.
+		if clang.String(decl) != "" && decl.IsAnonymous() == 0 {
+			loadUnion(ctx, decl, ns, "")
+		}
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.CursorTypedefDecl:

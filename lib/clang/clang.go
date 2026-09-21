@@ -1632,6 +1632,22 @@ func (t Type) SizeOf() (ret c.LongLong) {
 }
 
 /**
+ * Return the alignment of a type in bytes as per C++[expr.alignof] standard.
+ *
+ * If the type declaration is invalid, CXTypeLayoutError_Invalid is returned.
+ * If the type declaration is an incomplete type, CXTypeLayoutError_Incomplete
+ *   is returned.
+ * If the type declaration is a dependent type, CXTypeLayoutError_Dependent is
+ *   returned.
+ * If the type declaration is not a constant size type,
+ *   CXTypeLayoutError_NotConstantSize is returned.
+ */
+// llgo:link Type.AlignOf C.clang_Type_getAlignOf
+func (t Type) AlignOf() (ret c.LongLong) {
+	return
+}
+
+/**
  * Return the canonical type for a CXType.
  *
  * Clang's type system explicitly models typedefs and all the ways
@@ -2260,6 +2276,37 @@ func (c Cursor) IsAnonymous() (ret c.Uint) {
  */
 // llgo:link Cursor.IsAnonymousRecordDecl C.clang_Cursor_isAnonymousRecordDecl
 func (c Cursor) IsAnonymousRecordDecl() (ret c.Uint) {
+	return
+}
+
+/**
+ * Return the offset of the field represented by the Cursor.
+ *
+ * If the cursor is not a field declaration, -1 is returned.
+ * If the cursor semantic parent is not a record field declaration,
+ *   CXTypeLayoutError_Invalid is returned.
+ * If the field's type declaration is an incomplete type,
+ *   CXTypeLayoutError_Incomplete is returned.
+ * If the field's type declaration is a dependent type,
+ *   CXTypeLayoutError_Dependent is returned.
+ * If the field's name S is not found,
+ *   CXTypeLayoutError_InvalidFieldName is returned.
+ *
+ * The offset is returned in bits.
+ */
+// llgo:link Cursor.OffsetOfField C.clang_Cursor_getOffsetOfField
+func (c Cursor) OffsetOfField() (ret c.LongLong) {
+	return
+}
+
+/**
+ * Retrieve the bit width of a bit-field declaration as an integer.
+ *
+ * If the cursor does not reference a bit-field, or if the bit-field's width
+ * expression cannot be evaluated, -1 is returned.
+ */
+// llgo:link Cursor.FieldDeclBitWidth C.clang_getFieldDeclBitWidth
+func (c Cursor) FieldDeclBitWidth() (ret c.Int) {
 	return
 }
 
