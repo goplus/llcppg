@@ -6,10 +6,10 @@ inputs:
     default: "1.27"
   llvm:
     description: "LLVM version to install (e.g. 18)"
-    default: "19"
+    default: "22"
   llgo:
     description: "LLGo version to install (e.g. v1.0.1)"
-    default: "v1.0.1"
+    default: "v1.0.4"
 runs:
   using: "composite"
   steps:
