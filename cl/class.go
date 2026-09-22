@@ -229,6 +229,8 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 			hoisted := emitUnion(ctx, decl, ctx.nextAnonUnionName())
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
 			cls.fields = append(cls.fields, fld)
+		case decl.IsAnonymous() != 0:
+			// noop
 		default:
 			if cls.inPublic {
 				loadUnion(ctx, decl, origName+"_")
@@ -238,12 +240,6 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 	default:
 		log.Panicln("loadClassMember: unknown kind =", decl.Kind)
 	}
-}
-
-func addUnionField(ctx *pkgCtx, pkg *types.Package, cls *classCtx, decl clang.Cursor, embedded bool) {
-	hoisted := emitUnion(ctx, decl, ctx.nextAnonUnionName())
-	fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
-	cls.fields = append(cls.fields, fld)
 }
 
 // primaryBase returns the base-specifier cursor of the primary base class of
