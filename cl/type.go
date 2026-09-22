@@ -145,19 +145,6 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	panic("todo: toType " + clang.String(typ))
 }
 
-func fullName(decl clang.Cursor) string {
-	name := clang.String(decl)
-	for {
-		parent := decl.SemanticParent()
-		if kind := parent.Kind; kind != lc.CursorNamespace && kind != lc.CursorClassDecl && kind != lc.CursorStructDecl {
-			break
-		}
-		name = clang.String(parent) + "::" + name
-		decl = parent
-	}
-	return name
-}
-
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type) *types.Signature {
 	params, variadic := toFuncParams(ctx, pkg, fn)
 	results := toFuncResults(ctx, pkg, fn.ResultType())

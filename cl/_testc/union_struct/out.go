@@ -8,10 +8,14 @@ import (
 const XGoPackage = true
 
 type Foo struct {
-	_llcppg_union_0
+	U      _llcppg_union_0
+	Shorts Foo_Shorts
 }
 type Foo_Shorts struct {
 	_xgo_union [1]uint16
+}
+type Foo_union (unnamed at /Users/xushiwei/work/llcppg/cl/_testc/union_struct/in.h:6:2) struct {
+	_xgo_union [1]float32
 }
 type _llcppg_union_0 struct {
 	_xgo_union [1]float32
@@ -29,10 +33,10 @@ func (p *Foo_Shorts) XGof_ref_s() *int16 {
 func (p *Foo_Shorts) XGof_ref_us() *uint16 {
 	return (*uint16)(unsafe.Pointer(p))
 }
-func (p *_llcppg_union_0) XGof_ref_x() *c.Float {
+func (p *Foo_union (unnamed at /Users/xushiwei/work/llcppg/cl/_testc/union_struct/in.h:6:2)) XGof_ref_x() *c.Float {
 	return (*c.Float)(unsafe.Pointer(p))
 }
-func (p *_llcppg_union_0) XGof_ref_y() *c.Float {
+func (p *Foo_union (unnamed at /Users/xushiwei/work/llcppg/cl/_testc/union_struct/in.h:6:2)) XGof_ref_y() *c.Float {
 	return (*c.Float)(unsafe.Pointer(p))
 }
 func (p *_llcppg_union_1) XGof_ref_s() *int16 {

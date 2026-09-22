@@ -51,7 +51,7 @@ union BigFloat {
 };
 
 union Empty {
-}
+};
 
 // A union that is only forward-declared has no body and no known size, so it
 // produces no Go declaration at all.
