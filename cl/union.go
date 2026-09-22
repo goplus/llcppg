@@ -40,14 +40,6 @@ const unionStorageName = "_xgo_union"
 // method derived from a C function must never start with them.
 const unionRefPrefix = "XGof_ref_"
 
-// anonUnionPrefix is the reserved prefix of the Go type a tagless inline union
-// is hoisted to: "_llcppg_union_<n>", numbered per package in source order (see
-// pkgCtx.nextAnonUnionName). The leading underscore keeps the hoisted type
-// unexported, so an anonymous C11 union (no field name) can be embedded in its
-// parent struct without introducing an exported field. See issue
-// goplus/llcppg#775 (the union proposal's D-series).
-const anonUnionPrefix = "_llcppg_union_"
-
 // loadUnion translates a C/C++ union declaration into Go declarations.
 //
 // For a union U it emits a Go struct X with a single unexported storage field
