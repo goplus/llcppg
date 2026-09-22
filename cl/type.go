@@ -106,25 +106,18 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 			return t
 		}
 	case lc.TypeRecord:
-		cName := fullName(typ.TypeDeclaration())
+		// A record type registers under its declaration's type spelling
+		// (clang.String(decl.Type()); see loadClass/emitUnion). Resolve through
+		// the same key via the type's declaration cursor, which also covers a
+		// tagless inline union hoisted to "_llcppg_union_<n>" whose tag-less
+		// fullName would otherwise miss. See issue goplus/llcppg#775.
+		cName := clang.String(typ.TypeDeclaration().Type())
 		if t, ok := ctx.typeOf(cName); ok {
-			return t
-		}
-		// A tagless inline union/struct has no tag name, so fullName yields the
-		// enclosing prefix with an empty leaf and misses. emitUnion registers a
-		// hoisted union under its declaration's type spelling, which carries the
-		// enclosing scope (e.g. "union Foo::(unnamed at ...)"); the field's own
-		// type spelling drops that scope ("union (unnamed at ...)"), so resolve
-		// via the declaration cursor's type here. See issue goplus/llcppg#775.
-		if t, ok := ctx.typeOf(clang.String(typ.TypeDeclaration().Type())); ok {
 			return t
 		}
 	case lc.TypeElaborated:
 		cName := clang.String(typ.NamedType())
 		if t, ok := ctx.typeOf(cName); ok {
-			return t
-		}
-		if t, ok := ctx.typeOf(clang.String(typ.TypeDeclaration().Type())); ok {
 			return t
 		}
 	case lc.TypeConstantArray:
