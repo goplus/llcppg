@@ -78,13 +78,36 @@ func compileClass(ctx *pkgCtx, scope *classCtx) {
 }
 
 func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
 	origName := ns + clang.String(cls)
 	if debugCompileDecl {
 		log.Println("class", origName)
 	}
 	clsName, rewritten := ctx.getPubName(origName, -1)
+	emitClass(ctx, cls, clsName, origName, rewritten, defaultInPublic)
+}
+
+// emitStruct hoists an anonymous struct (a tagless inline "struct { ... }"
+// used as a field type, with or without a field name) to a named Go struct
+// "_llcppg_struct_<n>" with its members as real Go fields, mirroring how
+// emitUnion hoists an anonymous union. It is the struct counterpart of the
+// anonymous-union hoisting in loadClassMember. The returned named type is
+// registered under the record's C spelling so toType resolves references to it.
+func emitStruct(ctx *pkgCtx, decl clang.Cursor, name string) *types.Named {
+	// An anonymous struct has no enclosing-name prefix and no verbatim
+	// spelling, so its members follow the same public-field naming as a C
+	// struct's (defaultInPublic = true).
+	return emitClass(ctx, decl, name, name, false, true)
+}
+
+// emitClass generates the Go struct type for a C struct / C++ class (or a
+// hoisted anonymous struct) under the explicit Go name clsName, registers it
+// under its C spelling (cName) so references resolve, and schedules its method
+// compilation. loadClass computes clsName via getPubName for a named record;
+// emitStruct passes a generated "_llcppg_struct_<n>" for an anonymous one.
+func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName, cName string, rewritten, defaultInPublic bool) *types.Named {
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	origName := cName
 	typDecl := pkg.NewTypeDefs().NewType(clsName, goNode(ctx, cls))
 	typNamed := typDecl.Type()
 	if rewritten {
@@ -122,6 +145,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
 		compileClass(ctx, scope)
 	})
+	return typNamed
 }
 
 func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName string, decl clang.Cursor) {
@@ -158,8 +182,20 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		var anonymous bool
 		var ft = decl.Type()
 		if ft.Kind == lc.TypeRecord {
+			// A field whose type is a tagless inline "union { ... }" / "struct
+			// { ... }" (e.g. "struct { float x; float y; } u;") has an
+			// anonymous record type with no name we can reference. Hoist it to a
+			// generated "_llcppg_union_<n>" / "_llcppg_struct_<n>" type and use
+			// that as the field type. A named/tagged nested record is emitted
+			// separately by the CursorStructDecl/CursorUnionDecl branches and
+			// resolved here via toType instead.
 			if ftd := ft.TypeDeclaration(); ftd.IsAnonymous() != 0 {
-				fldType, anonymous = emitUnion(ctx, ftd, ctx.nextAnonUnionName()), true
+				if ftd.Kind == lc.CursorUnionDecl {
+					fldType = emitUnion(ctx, ftd, ctx.nextAnonUnionName())
+				} else {
+					fldType = emitStruct(ctx, ftd, ctx.nextAnonStructName())
+				}
+				anonymous = true
 			}
 		}
 		if !anonymous {
@@ -215,7 +251,14 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
-			// TODO(xsw):
+			// A truly anonymous struct member with no field name (e.g.
+			// "struct { short s; unsigned short us; };" inside another struct)
+			// injects its members into the enclosing record. Hoist it to a
+			// "_llcppg_struct_<n>" type and embed it, mirroring the anonymous
+			// union case below.
+			hoisted := emitStruct(ctx, decl, ctx.nextAnonStructName())
+			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
+			cls.fields = append(cls.fields, fld)
 		case decl.IsAnonymous() != 0:
 			// noop
 		default:
