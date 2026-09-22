@@ -110,9 +110,20 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
+		// A tagless inline union/struct has no tag name, so fullName yields the
+		// enclosing prefix with an empty leaf and misses. Such a type is
+		// registered under its type spelling (e.g. the placeholder
+		// "union Foo::(unnamed at ...)") by emitUnion when it is hoisted, so fall
+		// back to that key here. See issue goplus/llcppg#775.
+		if t, ok := ctx.typeOf(clang.String(typ)); ok {
+			return t
+		}
 	case lc.TypeElaborated:
 		cName := clang.String(typ.NamedType())
 		if t, ok := ctx.typeOf(cName); ok {
+			return t
+		}
+		if t, ok := ctx.typeOf(clang.String(typ)); ok {
 			return t
 		}
 	case lc.TypeConstantArray:

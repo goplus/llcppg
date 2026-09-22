@@ -214,11 +214,36 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		cls.fields = append(cls.fields, fld)
 
 	case lc.CursorUnionDecl:
-		// A tagged union nested in a class is emitted as a package-level type
-		// prefixed by the enclosing class name, like a nested struct. A tagless
-		// inline union has no tag name here; its own hoisting is out of scope for
-		// this change and handled by the union proposal's D-series follow-up.
-		if cls.inPublic && decl.IsAnonymousRecordDecl() == 0 {
+		// A union nested in a struct/class comes in three shapes (issue
+		// goplus/llcppg#775, the union proposal's D-series):
+		//
+		//   1. Tagged (union Shorts { ... };): a package-level type prefixed by
+		//      the enclosing name, like a nested struct. isAnonymousRecordDecl
+		//      and isAnonymous are both false.
+		//   2. Tagless with a field name (union { ... } u;): D3. isAnonymous is
+		//      true but isAnonymousRecordDecl is false (an object of the type was
+		//      declared). The union type is hoisted to "_llcppg_union_<n>"; the
+		//      sibling CursorFieldDecl "u" is a normal named field that resolves
+		//      to that hoisted type via toType.
+		//   3. C11 anonymous (union { ... };): D4. isAnonymousRecordDecl is true
+		//      (no name and no object). The union type is hoisted and then
+		//      embedded in the parent, so its accessor methods promote onto the
+		//      parent (the D4 "embed in the parent" path).
+		if !cls.inPublic {
+			return
+		}
+		switch {
+		case decl.IsAnonymousRecordDecl() != 0:
+			hoisted := emitUnion(ctx, decl, ctx.nextAnonUnionName())
+			// Embed the hoisted (unexported) type so its XGof_ref_* accessors
+			// promote onto the parent without adding an exported field.
+			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
+			cls.fields = append(cls.fields, fld)
+		case decl.IsAnonymous() != 0:
+			// D3: hoist the type; the sibling field binds to it. No field added
+			// here — the CursorFieldDecl below contributes the named field.
+			emitUnion(ctx, decl, ctx.nextAnonUnionName())
+		default:
 			loadUnion(ctx, decl, origName+"_")
 		}
 
