@@ -2,8 +2,6 @@ package foo
 
 import "github.com/goplus/lib/c"
 
-const XGoPackage = true
-
 type Foo struct {
 	U      _llcppg_struct_0
 	Shorts Foo_Shorts

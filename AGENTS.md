@@ -54,8 +54,11 @@ Each fixture directory has an input header (`in.h`) and a golden `out.go`. The
 Go, and diffs it against `out.go`. When adding or changing a fixture:
 
 1. Implement the generator change, then run the fixture test.
-2. On the first run with no/stale golden, the harness writes the actual output
-   to `out.go.txt` (gitignored via the `*.txt` rule) instead of failing loudly.
+2. When the generated Go differs from the golden (including a missing or stale
+   `out.go`), the harness writes the actual output to `out.go.txt` (gitignored
+   via the `*.txt` rule) **and fails the test** — it does not silently accept a
+   mismatch. Do not hand-write or hand-edit `out.go`; always let the harness
+   produce it so the golden matches the generator byte-for-byte.
 3. Inspect `out.go.txt`, and once correct promote it: `mv out.go.txt out.go`.
 4. Re-run until the fixture passes with no `out.go.txt` produced.
 
