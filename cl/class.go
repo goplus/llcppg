@@ -155,14 +155,14 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 
 	case lc.CursorFieldDecl:
 		var fldType types.Type
-		var annonymous bool
+		var anonymous bool
 		var ft = decl.Type()
 		if ft.Kind == lc.TypeRecord {
 			if ftd := ft.TypeDeclaration(); ftd.IsAnonymous() != 0 {
-				fldType, annonymous = emitUnion(ctx, decl, ctx.nextAnonUnionName()), true
+				fldType, anonymous = emitUnion(ctx, decl, ctx.nextAnonUnionName()), true
 			}
 		}
-		if !annonymous {
+		if !anonymous {
 			fldType = toType(ctx, pkg, ft, flagIsStructField)
 		}
 		origName := clang.String(decl)
