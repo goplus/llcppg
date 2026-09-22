@@ -99,7 +99,7 @@ func LoadIncludes(headerFile string) (includes iter.Seq[Include], err error) {
 
 // -----------------------------------------------------------------------------
 
-func searchIncludeFiles(headerFile string, includeDirs []string) (includeFiles iter.Seq[string], err error) {
+func listIncludeFiles(headerFile string, includeDirs []string) (includeFiles iter.Seq[string], err error) {
 	includes, err := LoadIncludes(headerFile)
 	if err != nil {
 		return
@@ -125,7 +125,7 @@ func calcHeaderDeps(headerFiles map[string]bool, headerDir string, includeDirs [
 		if included {
 			continue
 		}
-		includeFiles, err := searchIncludeFiles(headerFile, includeDirs)
+		includeFiles, err := listIncludeFiles(headerFile, includeDirs)
 		if err != nil {
 			log.Panicln("[FATAL] searchIncludeFiles failed:", err)
 		}
