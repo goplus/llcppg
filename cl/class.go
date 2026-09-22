@@ -228,10 +228,16 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		case decl.IsAnonymous() != 0:
 			// noop
 		default:
-			if cls.inPublic {
-				defaultInPublic := decl.Kind == lc.CursorStructDecl
-				loadClass(ctx, decl, clsName+"_", defaultInPublic)
-			}
+			// A named nested class/struct is emitted as a package-level type
+			// prefixed by the enclosing class name (the class name acts like a
+			// namespace), e.g. Foo_Shorts. It is emitted regardless of the
+			// enclosing access specifier: even a private nested type may be the
+			// declared type of a field (e.g. "struct Shorts shorts;"), and that
+			// field's type must resolve to a generated Go type. Its own members'
+			// default visibility still follows C++ rules (struct: public,
+			// class: private).
+			defaultInPublic := decl.Kind == lc.CursorStructDecl
+			loadClass(ctx, decl, clsName+"_", defaultInPublic)
 		}
 	case lc.CursorUnionDecl:
 		switch {
@@ -242,9 +248,10 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		case decl.IsAnonymous() != 0:
 			// noop
 		default:
-			if cls.inPublic {
-				loadUnion(ctx, decl, clsName+"_")
-			}
+			// A named nested union is emitted at package level for the same
+			// reason as a named nested class/struct above: a field may use it
+			// as its type even when declared in a private section.
+			loadUnion(ctx, decl, clsName+"_")
 		}
 
 	default:
