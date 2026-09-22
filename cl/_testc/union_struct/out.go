@@ -8,7 +8,8 @@ import (
 const XGoPackage = true
 
 type Foo struct {
-	_llcppg_union_0
+	U      _llcppg_union_0
+	Shorts Foo_Shorts
 }
 type Foo_Shorts struct {
 	_xgo_union [1]uint16

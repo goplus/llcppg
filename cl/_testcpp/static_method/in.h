@@ -6,6 +6,6 @@ public:
 	static int create(int a);
 };
 
-inline static int Bar::create() {
-	reurn 0;
+inline int Bar::create() {
+	return 0;
 }
