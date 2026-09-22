@@ -111,11 +111,12 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 			return t
 		}
 		// A tagless inline union/struct has no tag name, so fullName yields the
-		// enclosing prefix with an empty leaf and misses. Such a type is
-		// registered under its type spelling (e.g. the placeholder
-		// "union Foo::(unnamed at ...)") by emitUnion when it is hoisted, so fall
-		// back to that key here. See issue goplus/llcppg#775.
-		if t, ok := ctx.typeOf(clang.String(typ)); ok {
+		// enclosing prefix with an empty leaf and misses. emitUnion registers a
+		// hoisted union under its declaration's type spelling, which carries the
+		// enclosing scope (e.g. "union Foo::(unnamed at ...)"); the field's own
+		// type spelling drops that scope ("union (unnamed at ...)"), so resolve
+		// via the declaration cursor's type here. See issue goplus/llcppg#775.
+		if t, ok := ctx.typeOf(clang.String(typ.TypeDeclaration().Type())); ok {
 			return t
 		}
 	case lc.TypeElaborated:
@@ -123,7 +124,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
-		if t, ok := ctx.typeOf(clang.String(typ)); ok {
+		if t, ok := ctx.typeOf(clang.String(typ.TypeDeclaration().Type())); ok {
 			return t
 		}
 	case lc.TypeConstantArray:
