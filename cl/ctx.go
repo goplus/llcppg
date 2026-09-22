@@ -113,6 +113,21 @@ type pkgCtx struct {
 	pubs     []Entry
 
 	unsafeImported bool
+
+	// anonUnionSeq is the per-package counter that names tagless inline unions
+	// hoisted to a Go type "_llcppg_union_<n>", starting at 0 in source order.
+	// See issue goplus/llcppg#775 (the union proposal's D-series).
+	anonUnionSeq int
+}
+
+// nextAnonUnionName returns the next hoisted-union type name
+// "_llcppg_union_<n>", incrementing the per-package counter. A tagless inline
+// union (with or without a field name) is hoisted to such a type; a tagged or
+// named union consumes no number. See issue goplus/llcppg#775.
+func (p *pkgCtx) nextAnonUnionName() string {
+	name := anonUnionPrefix + strconv.Itoa(p.anonUnionSeq)
+	p.anonUnionSeq++
+	return name
 }
 
 func (p *pkgCtx) forceImportUnsafe() {

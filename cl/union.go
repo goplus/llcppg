@@ -40,6 +40,14 @@ const unionStorageName = "_xgo_union"
 // method derived from a C function must never start with them.
 const unionRefPrefix = "XGof_ref_"
 
+// anonUnionPrefix is the reserved prefix of the Go type a tagless inline union
+// is hoisted to: "_llcppg_union_<n>", numbered per package in source order (see
+// pkgCtx.nextAnonUnionName). The leading underscore keeps the hoisted type
+// unexported, so an anonymous C11 union (no field name) can be embedded in its
+// parent struct without introducing an exported field. See issue
+// goplus/llcppg#775 (the union proposal's D-series).
+const anonUnionPrefix = "_llcppg_union_"
+
 // loadUnion translates a C/C++ union declaration into Go declarations.
 //
 // For a union U it emits a Go struct X with a single unexported storage field
@@ -63,8 +71,18 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		log.Println("union", origName)
 	}
 
-	pkg := ctx.pkg
 	uName, _ := ctx.getPubName(origName, -1)
+	emitUnion(ctx, decl, uName)
+}
+
+// emitUnion generates the Go struct "type uName struct { _xgo_union <storage> }"
+// for a union declaration together with its XGof_ref_<member> accessors, and
+// returns the named type. It is shared by loadUnion (named/tagged unions, where
+// uName comes from getPubName) and by the anonymous-union hoisting in
+// loadClassMember (where uName is a "_llcppg_union_<n>" from
+// pkgCtx.nextAnonUnionName). See issue goplus/llcppg#775.
+func emitUnion(ctx *pkgCtx, decl clang.Cursor, uName string) *types.Named {
+	pkg := ctx.pkg
 	typDecl := pkg.NewTypeDefs().NewType(uName, goNode(ctx, decl))
 	typNamed := typDecl.Type()
 
@@ -78,7 +96,7 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		// A union with no body (GNU empty union) has no storage: emit an empty
 		// struct with no accessors.
 		typDecl.InitType(pkg, types.NewStruct(nil, nil))
-		return
+		return typNamed
 	}
 	ctx.forceImportUnsafe()
 	typDecl.InitType(pkg, unionStruct(ctx, decl, storage))
@@ -103,6 +121,7 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
 			genUnionAccessor(ctx, recvPtr, m)
 		}
 	})
+	return typNamed
 }
 
 // unionStruct builds the "type X struct { _xgo_union <storage> }" definition.

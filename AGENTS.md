@@ -44,6 +44,46 @@ CI uses the `.github/actions/setup-llgo` composite action, which:
 Match the versions pinned in the workflow matrix (Go, LLVM, and LLGo) when
 reproducing CI locally.
 
+### Reproduce the toolchain locally (Linux, verified)
+
+The steps below are the concrete, verified commands for an Ubuntu (jammy)
+x86_64 host — they mirror `.github/actions/setup-llgo` exactly and are what a
+fresh environment (including CI-like sandboxes) needs before `llgo` can build or
+test this repo. Read the pinned versions from `.github/workflows/llgo.yml`
+(currently LLVM `22`, LLGo `v1.0.4`, Go `1.27`) rather than hard-coding them.
+
+```bash
+LLVM=22          # from workflows/llgo.yml matrix
+LLGO=v1.0.4      # from workflows/llgo.yml matrix
+
+# 1. LLVM/Clang + system libraries (provides libclang, which the clang/ and
+#    lib/clang/ bindings link against via //go:linkname C.clang_*).
+echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${LLVM} main" \
+  | sudo tee /etc/apt/sources.list.d/llvm.list
+wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install -y clang-${LLVM} pkg-config libgc-dev libssl-dev \
+  zlib1g-dev libffi-dev libuv1-dev
+
+# 2. Pinned LLGo release into ./.llgo (gitignored).
+bash .github/actions/setup-llgo/download-llgo.sh ${LLGO} .llgo
+
+# 3. Put both on PATH for this shell.
+export PATH="$PWD/.llgo/bin:/usr/lib/llvm-${LLVM}/bin:$PATH"
+export LLGO_ROOT="$PWD/.llgo"
+
+# 4. Verify.
+llgo version    # -> llgo v1.0.4 ...
+clang --version # -> clang version 22.x
+```
+
+> Why `llgo`, not `go`: the clang bindings are linked with
+> `//go:linkname C.clang_*` and llgo runtime relocations (`llgo.string`,
+> `llgo.allocaCStr`). Plain `go test ./cl/...` fails to even link
+> (`relocation target C.clang_createIndex not defined`). `go build ./cl/...`
+> still works and is a fast way to check the generator compiles, but the tests
+> only run under `llgo`.
+
 ### Run the tests
 
 Once `llgo` is installed and on `PATH`, run the same command as CI:
@@ -51,6 +91,31 @@ Once `llgo` is installed and on `PATH`, run the same command as CI:
 ```bash
 llgo test -v ./...
 ```
+
+Only the `cl` package has tests; it drives every fixture under `cl/_testc`
+(C, via `TestC`), `cl/_testcpp` (C++, via `TestCpp`), and `cl/_testpp`
+(`TestPreprocessor`). To iterate on one fixture, filter by name:
+
+```bash
+llgo test -v -run 'TestC/union_struct' ./cl/
+```
+
+Some fixtures intentionally contain malformed C/C++ (e.g. a missing `;` or a
+deliberate typo) to exercise diagnostics; libclang prints `error:`/`warning:`
+lines for those to stderr, which is expected and does not fail the run — trust
+the `PASS`/`ok` summary and the process exit code.
+
+#### Fixtures and golden files
+
+Each fixture directory has an input header (`in.h`) and a golden `out.go`. The
+`cl` test harness (`cl/compile_test.go`) parses `in.h` with libclang, generates
+Go, and diffs it against `out.go`. When adding or changing a fixture:
+
+1. Implement the generator change, then run the fixture test.
+2. On the first run with no/stale golden, the harness writes the actual output
+   to `out.go.txt` (gitignored via the `*.txt` rule) instead of failing loudly.
+3. Inspect `out.go.txt`, and once correct promote it: `mv out.go.txt out.go`.
+4. Re-run until the fixture passes with no `out.go.txt` produced.
 
 Make the tests pass before submitting a change.
 

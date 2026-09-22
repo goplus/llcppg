@@ -154,6 +154,14 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		}
 
 	case lc.CursorFieldDecl:
+		// A tagless inline union declared with a field name (D3, e.g.
+		// "union { ... } u;") is embedded by the CursorUnionDecl branch below,
+		// which already adds the hoisted type to the layout. libclang still emits
+		// this sibling field for the object, so skip it here to avoid a duplicate
+		// field. See issue goplus/llcppg#775.
+		if ft := decl.Type(); ft.Kind == lc.TypeRecord && ft.TypeDeclaration().IsAnonymous() != 0 {
+			return
+		}
 		origName := clang.String(decl)
 		fldType := toType(ctx, pkg, decl.Type(), flagIsStructField)
 		fldName := origName
@@ -214,12 +222,34 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		cls.fields = append(cls.fields, fld)
 
 	case lc.CursorUnionDecl:
-		// A tagged union nested in a class is emitted as a package-level type
-		// prefixed by the enclosing class name, like a nested struct. A tagless
-		// inline union has no tag name here; its own hoisting is out of scope for
-		// this change and handled by the union proposal's D-series follow-up.
-		if cls.inPublic && decl.IsAnonymousRecordDecl() == 0 {
-			loadUnion(ctx, decl, origName+"_")
+		// A union nested in a struct/class comes in three shapes (issue
+		// goplus/llcppg#775, the union proposal's D-series):
+		//
+		//   1. Tagged (union Shorts { ... };): no instance, so no storage in the
+		//      parent — emitted as a package-level type prefixed by the enclosing
+		//      name, like a nested struct. isAnonymousRecordDecl and isAnonymous
+		//      are both false.
+		//   2. Tagless with a field name (union { ... } u;): D3. isAnonymous is
+		//      true (isAnonymousRecordDecl is false, since an object was declared).
+		//   3. C11 anonymous (union { ... };): D4. isAnonymousRecordDecl is true.
+		//
+		// A tagless inline union (D3 or D4) always contributes storage to the
+		// parent, so it is hoisted to "_llcppg_union_<n>" and embedded here
+		// regardless of visibility — a private field still occupies space and
+		// cannot be skipped. Embedding promotes the hoisted type's XGof_ref_*
+		// accessors onto the parent. For D3 the sibling CursorFieldDecl is skipped
+		// (see the CursorFieldDecl branch) so the storage is not counted twice.
+		switch {
+		case decl.IsAnonymousRecordDecl() != 0 || decl.IsAnonymous() != 0:
+			hoisted := emitUnion(ctx, decl, ctx.nextAnonUnionName())
+			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
+			cls.fields = append(cls.fields, fld)
+		default:
+			// A tagged nested union has no instance here, so it only affects
+			// naming; emit it as a package-level type when the scope is public.
+			if cls.inPublic {
+				loadUnion(ctx, decl, origName+"_")
+			}
 		}
 
 	default:
