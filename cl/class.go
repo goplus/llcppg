@@ -236,8 +236,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// field's type must resolve to a generated Go type. Its own members'
 			// default visibility still follows C++ rules (struct: public,
 			// class: private).
-			defaultInPublic := decl.Kind == lc.CursorStructDecl
-			loadClass(ctx, decl, clsName+"_", defaultInPublic)
+			loadClass(ctx, decl, clsName+"_", decl.Kind == lc.CursorStructDecl)
 		}
 	case lc.CursorUnionDecl:
 		switch {

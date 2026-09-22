@@ -207,8 +207,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorFunctionDecl:
 		loadGlobalFunc(ctx, scope, decl, ns)
 	case lc.CursorClassDecl, lc.CursorStructDecl:
-		defaultInPublic := decl.Kind == lc.CursorStructDecl
-		loadClass(ctx, decl, ns, defaultInPublic)
+		loadClass(ctx, decl, ns, decl.Kind == lc.CursorStructDecl)
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.CursorTypedefDecl:
