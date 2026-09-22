@@ -59,6 +59,8 @@ func newPointer(typ types.Type) types.Type {
 
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
 	switch typ.Kind {
+	case lc.TypeVoid:
+		return tyVoid
 	case lc.TypeBool:
 		return types.Typ[types.Bool]
 	case lc.TypeCharS:
@@ -96,6 +98,23 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		// it before recursing so inner arrays are not wrongly decayed.
 		pointee := toType(ctx, pkg, elem, flags&^flagIsParam)
 		return newPointer(pointee)
+	case lc.TypeFunctionProto:
+		return toFuncType(ctx, pkg, typ)
+	case lc.TypeEnum:
+		cName := clang.String(typ)
+		if t, ok := ctx.typeOf(cName); ok {
+			return t
+		}
+	case lc.TypeRecord:
+		cName := fullName(typ.TypeDeclaration())
+		if t, ok := ctx.typeOf(cName); ok {
+			return t
+		}
+	case lc.TypeElaborated:
+		cName := clang.String(typ.NamedType())
+		if t, ok := ctx.typeOf(cName); ok {
+			return t
+		}
 	case lc.TypeConstantArray:
 		// A fixed-size C array T[N] is a true array only when it has real
 		// storage, e.g. as a struct field. As a function parameter it is a
@@ -115,25 +134,6 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		// flagIsParam before recursing since decay applies only to this level.
 		elem := toType(ctx, pkg, typ.ArrayElementType(), flags&^flagIsParam)
 		return newPointer(elem)
-	case lc.TypeVoid:
-		return tyVoid
-	case lc.TypeRecord:
-		cName := fullName(typ.TypeDeclaration())
-		if t, ok := ctx.typeOf(cName); ok {
-			return t
-		}
-	case lc.TypeEnum:
-		cName := clang.String(typ)
-		if t, ok := ctx.typeOf(cName); ok {
-			return t
-		}
-	case lc.TypeElaborated:
-		cName := clang.String(typ.NamedType())
-		if t, ok := ctx.typeOf(cName); ok {
-			return t
-		}
-	case lc.TypeFunctionProto:
-		return toFuncType(ctx, pkg, typ)
 	default:
 		log.Println("==> toType: unknown Kind -", typ.Kind)
 	}
@@ -197,25 +197,6 @@ func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type) (results *t
 func cmpType(ta, tb lc.Type) int {
 	// TODO(xsw): c++ overload support
 	return int(ta.Kind - tb.Kind)
-}
-
-// -----------------------------------------------------------------------------
-
-func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
-	origName := ns + clang.String(decl)
-	underlying := decl.TypedefDeclUnderlyingType()
-	if debugCompileDecl {
-		log.Println("typedef", origName, "-", clang.String(underlying))
-	}
-	tunder := toType(ctx, pkgTypes, underlying, flagIsTypedef)
-	name, rewritten := ctx.getPubName(origName, -1)
-	t := pkg.NewTypeDefs().AliasType(name, tunder).(*types.Alias)
-	if rewritten {
-		pkgTypes.Scope().Insert(types.NewTypeName(token.NoPos, pkgTypes, origName, t))
-	}
-	ctx.types[clang.String(decl.Type())] = t.Obj()
 }
 
 // -----------------------------------------------------------------------------
