@@ -16,13 +16,26 @@
 
 package tool
 
+import (
+	"github.com/goplus/llcppg/cl"
+	"github.com/goplus/llcppg/clang"
+)
+
 // -----------------------------------------------------------------------------
 
 type Config struct {
-	LLGoPackage    string   `json:"LLGoPackage"`
-	WrapFileHeader string   `json:"WrapFileHeader"`
-	CFlags         string   `json:"CFlags"`
-	Files          []string `json:"Files"`
+	LLGoPackage    string `json:"LLGoPackage"`
+	WrapFileHeader string `json:"WrapFileHeader"`
+	CFlags         string `json:"CFlags"`
+	Dir            string `json:"Dir"` // dir or dir/... (recursive)
+}
+
+// -----------------------------------------------------------------------------
+
+// LoadSources parses the given source files and returns the translation units corresponding
+// to those files.
+func LoadSources(index clang.Index, headerFiles []string, args ...string) (files []cl.Source) {
+	return index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, args...)
 }
 
 // -----------------------------------------------------------------------------

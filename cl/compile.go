@@ -114,11 +114,7 @@ type Config struct {
 // -----------------------------------------------------------------------------
 
 // Source represents a source file to be processed by llcppg.
-type Source struct {
-	TU clang.TranslationUnit
-}
-
-// -----------------------------------------------------------------------------
+type Source = clang.TranslationUnit
 
 // NewPackage loads a translation unit and generates a Go package with the given package
 // path, name and configuration.
@@ -180,8 +176,7 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
 	pkgOf := ctx.pkgOf
 	scope := &ctx.scopeCtx
-	for _, file := range files {
-		tu := file.TU
+	for _, tu := range files {
 		clang.VisitChildren(tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			if pkgOf != nil {
 				at := clang.PresumedFile(decl.Location())
