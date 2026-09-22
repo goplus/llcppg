@@ -36,10 +36,10 @@ union Shorts {
 
 // All-float, width 4: every scalar leaf is a float of width 4, so the storage
 // element is float32.
-union Floats {
+typedef union {
 	float x;
 	float y;
-};
+} Floats;
 
 // A non-float leaf defeats the all-float rule even when the alignment is 8: the
 // int member is not a float, so the storage falls back to an unsigned integer

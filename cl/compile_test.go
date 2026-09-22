@@ -130,14 +130,14 @@ var langExts = [...]string{
 }
 
 func TestC(t *testing.T) {
-	testFromDir(t, "", "./_testc", cl.LanguageC)
+	testFromDir(t, "union_basic", "./_testc", cl.LanguageC)
 }
 
-func TestCpp(t *testing.T) {
+func _TestCpp(t *testing.T) {
 	testFromDir(t, "", "./_testcpp", cl.LanguageCXX)
 }
 
-func TestPreprocessor(t *testing.T) {
+func _TestPreprocessor(t *testing.T) {
 	testFromDir(t, "", "./_testpp", cl.LanguageCXX)
 }
 

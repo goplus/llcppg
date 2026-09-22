@@ -209,8 +209,6 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		defaultInPublic := decl.Kind == lc.CursorStructDecl
 		loadClass(ctx, decl, ns, defaultInPublic)
-	case lc.CursorUnionDecl:
-		loadUnion(ctx, decl, ns, true)
 	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.CursorTypedefDecl:
@@ -225,6 +223,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadNamespace(ctx, scope, decl, ns)
 	case lc.CursorVarDecl:
 		loadVar(ctx, decl, ns)
+	case lc.CursorUnionDecl:
+		loadUnion(ctx, decl, ns)
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}

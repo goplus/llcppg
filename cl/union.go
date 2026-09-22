@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"fmt"
 	"go/token"
 	"go/types"
 	"log"
@@ -52,17 +53,17 @@ const unionRefPrefix = "XGof_ref_"
 // Whether the union is global, in a namespace, or nested inside a class only
 // affects naming: ns carries the enclosing prefix, so the union type name goes
 // through getPubName like a struct's.
-func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) {
+func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	if decl.IsCursorDefinition() == 0 {
 		return
 	}
 
-	pkg := ctx.pkg
 	origName := ns + clang.String(decl)
 	if debugCompileDecl {
 		log.Println("union", origName)
 	}
 
+	pkg := ctx.pkg
 	uName, _ := ctx.getPubName(origName, -1)
 	typDecl := pkg.NewTypeDefs().NewType(uName, goNode(ctx, decl))
 	typNamed := typDecl.Type()
@@ -72,10 +73,10 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 	ctx.types[clang.String(decl.Type())] = typNamed.Obj()
 
 	typ := decl.Type()
-	storage, aligned := unionStorageType(ctx, typ)
-	if storage == nil {
-		// A union with no body (forward-declared only) or of size 0 (GNU empty
-		// union) has no storage: emit an empty struct with no accessors.
+	storage, ok := unionStorageType(typ)
+	if !ok {
+		// A union with no body (GNU empty union) has no storage: emit an empty
+		// struct with no accessors.
 		typDecl.InitType(pkg, types.NewStruct(nil, nil))
 		return
 	}
@@ -88,15 +89,9 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string, defaultInPublic bool) 
 	// Bit-fields are skipped; an under-aligned union (!aligned) generates no
 	// accessors at all.
 	var members []clang.Cursor
-	inPublic := defaultInPublic
 	clang.VisitChildren(decl, func(m, parent clang.Cursor) clang.ChildVisitResult {
 		switch m.Kind {
-		case lc.CursorCXXAccessSpecifier:
-			inPublic = m.CXXAccessSpecifier() == lc.CXXPublic
 		case lc.CursorFieldDecl:
-			if !inPublic || m.IsBitField() != 0 || !aligned {
-				return clang.Continue
-			}
 			members = append(members, m)
 		}
 		return clang.Continue
@@ -131,7 +126,7 @@ func unionStruct(ctx *pkgCtx, decl clang.Cursor, storage types.Type) *types.Stru
 // aligned is false when A is not a power of two the generator maps to an element
 // width (or A > 8); the caller then emits a byte array and skips accessors,
 // since a reinterpret cast into an under-aligned storage would be unsound.
-func unionStorageType(ctx *pkgCtx, typ lc.Type) (t types.Type, aligned bool) {
+func unionStorageType(typ lc.Type) (t types.Type, aligned bool) {
 	size := int64(typ.SizeOf())
 	align := int64(typ.AlignOf())
 	if size <= 0 || align <= 0 {
@@ -149,8 +144,7 @@ func unionStorageType(ctx *pkgCtx, typ lc.Type) (t types.Type, aligned bool) {
 		}
 		return types.NewArray(elem, size/align), true
 	default:
-		log.Printf("warning: union alignment %d > 8 is not fully supported; using [%d]uint64 (issue goplus/llcppg#775)", align, (size+7)/8)
-		return types.NewArray(types.Typ[types.Uint64], (size+7)/8), false
+		panic(fmt.Sprintf("[WARN] union alignment %d > 8 is not fully supported", align))
 	}
 }
 
