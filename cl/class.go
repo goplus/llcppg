@@ -159,7 +159,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, origName st
 		var ft = decl.Type()
 		if ft.Kind == lc.TypeRecord {
 			if ftd := ft.TypeDeclaration(); ftd.IsAnonymous() != 0 {
-				fldType, anonymous = emitUnion(ctx, decl, ctx.nextAnonUnionName()), true
+				fldType, anonymous = emitUnion(ctx, ftd, ctx.nextAnonUnionName()), true
 			}
 		}
 		if !anonymous {
