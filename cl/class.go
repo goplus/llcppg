@@ -164,7 +164,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 				if ftd.Kind == lc.CursorUnionDecl {
 					fldType = emitUnion(ctx, ftd, ctx.nextAnonUnionName())
 				} else {
-					fldType = emitClass(ctx, ftd, ctx.nextAnonStructName(), cls.inPublic)
+					fldType = emitClass(ctx, ftd, ctx.nextAnonStructName(), ftd.Kind == lc.CursorStructDecl)
 				}
 				anonymous = true
 			}
@@ -222,7 +222,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
-			hoisted := emitClass(ctx, decl, ctx.nextAnonStructName(), cls.inPublic)
+			hoisted := emitClass(ctx, decl, ctx.nextAnonStructName(), cls.inPublic && decl.Kind == lc.CursorStructDecl)
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
 			cls.fields = append(cls.fields, fld)
 		case decl.IsAnonymous() != 0:
