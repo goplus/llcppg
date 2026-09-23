@@ -107,7 +107,7 @@ type pkgCtx struct {
 	macroVals map[string]any             // macroName => value
 	funcs     map[string]*funcObj        // manglingName => func object
 	types     map[string]*types.TypeName // c/c++ fullName => type name object
-	includes  map[string]none            // includeFile Set
+	lastSeen  map[string]none            // last seen include file set (loaded include files)
 
 	compiles []compileFunc
 	pubs     []Entry

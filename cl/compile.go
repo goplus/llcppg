@@ -20,6 +20,7 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"maps"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -157,7 +158,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
-		includes: make(map[string]none),
+		lastSeen: make(map[string]none),
 	}
 	loadFiles(ctx, files, pkgPath)
 	ctx.compile()
@@ -176,17 +177,24 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
 	pkgOf := ctx.pkgOf
 	scope := &ctx.scopeCtx
+	lastSeen := ctx.lastSeen
 	for _, tu := range files {
+		thisSeen := make(map[string]none)
 		clang.VisitChildren(tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			if pkgOf != nil {
 				at := clang.PresumedFile(decl.Location())
 				if pkgPath, ok := pkgOf(at); !ok || pkgPath != myPkgPath {
 					return clang.Continue
 				}
+				if _, ok := lastSeen[at]; ok {
+					return clang.Continue // already loaded
+				}
+				thisSeen[at] = none{}
 			}
 			loadDecl(ctx, scope, decl, "")
 			return clang.Continue
 		})
+		maps.Copy(lastSeen, thisSeen)
 	}
 	scope.reorder()
 }
