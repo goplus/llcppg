@@ -35,6 +35,22 @@ import (
 	lc "github.com/goplus/llcppg/lib/clang"
 )
 
+const (
+	DbgFlagLoadSource = 1 << iota
+	DbgFlagLoadDeps
+	DbgFlagAll = DbgFlagLoadSource | DbgFlagLoadDeps
+)
+
+var (
+	debugLoadSource bool
+	debugLoadDeps   bool
+)
+
+func SetDebug(flags int) {
+	debugLoadSource = (flags & DbgFlagLoadSource) != 0
+	debugLoadDeps = (flags & DbgFlagLoadDeps) != 0
+}
+
 // -----------------------------------------------------------------------------
 
 type Config struct {
@@ -75,8 +91,7 @@ const includeSuffix = string(os.PathSeparator) + "include"
 // topHeaders lists the top-level header files according to the configuration. If the
 // Dir field ends with "/...", it will recursively list all header files in the directory
 // and its subdirectories.
-func (cfg *Config) topHeaders(workDir string, includeDirs []string) (headerFiles []string, err error) {
-	dir := cfg.Dir
+func topHeaders(dir, workDir string, includeDirs []string) (headerFiles []string, err error) {
 	recursive := strings.HasSuffix(dir, "/...")
 	if recursive {
 		dir = dir[:len(dir)-4]
@@ -94,7 +109,7 @@ func (cfg *Config) topHeaders(workDir string, includeDirs []string) (headerFiles
 
 // NewPackage loads the source files and converts them into a Go package according to the
 // configuration.
-func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret cl.Package, lang cl.Language, err error) {
+func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.Index) (ret cl.Package, lang cl.Language, err error) {
 	lang, ok := cfg.Lang()
 	if !ok {
 		err = fmt.Errorf("invalid language: %q", cfg.Language)
@@ -116,15 +131,21 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		imp.SetCache(c)
 	}
 
-	includeDirs, pkgPaths := mod.includeDirs(imp, deps, 1)
-	topHeaders, err := cfg.topHeaders(workDir, includeDirs)
-	pkgPaths[0] = pkgPath
+	includeDirs, pkgPaths := mod.includeDirs(imp, deps, 2)
+	topHeaders, err := topHeaders(cfg.Dir, workDir, includeDirs)
 	if err != nil {
 		return
 	}
+	pkgPaths[0] = pkgPath
+	pkgPaths[1] = "github.com/goplus/lib/c"
+	includeDirs[1] = stdlibDir
 
-	files := ParseSources(index, topHeaders, cfg.Language)
+	files := ParseSources(index, topHeaders, includeDirs, cfg.Language)
 	defer DisposeSources(files)
+
+	if debugLoadSource {
+		// dumpSources(files)
+	}
 
 	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
 		Fset:           fset,
@@ -202,10 +223,17 @@ func (p Module) includeDirs(imp *packages.Importer, deps []string, reserved int)
 
 // ParseSources parses the given source files and returns the translation units corresponding
 // to those files.
-func ParseSources(index clang.Index, headerFiles []string, lang string) []cl.Source {
+func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) []cl.Source {
 	options := lc.DefaultDiagnosticDisplayOptions()
+	n := len(includeDirs)
+	flags := make([]string, n+2)
+	for i, dir := range includeDirs {
+		flags[i] = "-I" + dir
+	}
+	flags[n] = "-x"
+	flags[n+1] = lang
 	files := make([]cl.Source, 0, len(headerFiles))
-	for tu := range index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, "-x", lang) {
+	for tu := range index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, flags...) {
 		files = append(files, tu)
 		tu.VisitDiagnostics(func(diag clang.Diagnostic) {
 			fmt.Fprintln(os.Stderr, diag.Format(options))

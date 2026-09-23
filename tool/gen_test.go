@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -33,6 +34,7 @@ import (
 
 func init() {
 	cl.SetDebug(cl.DbgFlagAll)
+	tool.SetDebug(tool.DbgFlagAll)
 }
 
 func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp any) {
@@ -66,7 +68,7 @@ func testFromDir(t *testing.T, sel, relDir string) {
 			log.Fatal("LoadConf failed:", err)
 		}
 
-		pkg, lang, err := conf.NewPackage("", pkgDir, idx)
+		pkg, lang, err := conf.NewPackage("", pkgDir, stdlibDir(t), idx)
 		if err != nil {
 			t.Error("conf.NewPackage:", err)
 			return
@@ -81,11 +83,24 @@ func testFromDir(t *testing.T, sel, relDir string) {
 	})
 }
 
+func stdlibDir(t *testing.T) string {
+	b, err := exec.Command("llgo", "env", "LLGO_LLVM_CONFIG").Output()
+	if err != nil {
+		t.Fatal("exec llgo env LLGO_LLVM_CONFIG failed:", err)
+	}
+	llvmConfig := string(bytes.TrimSpace(b))
+	b, err = exec.Command(llvmConfig, "--libdir").Output()
+	if err != nil {
+		t.Fatal("exec llvm-config --libdir failed:", err)
+	}
+	return string(bytes.TrimSpace(b)) + "/clang/22/include"
+}
+
 var langExts = [...]string{
 	cl.LanguageC:   ".c",
 	cl.LanguageCXX: ".cpp",
 }
 
-func _TestC(t *testing.T) {
+func TestC(t *testing.T) {
 	testFromDir(t, "", "./_testc")
 }

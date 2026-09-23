@@ -24,39 +24,10 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/clang"
+	"github.com/goplus/llcppg/tool"
+
 	lc "github.com/goplus/llcppg/lib/clang"
 )
-
-func dump(node clang.Cursor, ns, dir string) {
-	clang.VisitChildren(node, func(cur, parent clang.Cursor) clang.ChildVisitResult {
-		at := clang.PresumedFile(cur.Location())
-		if filepath.Dir(at) != dir {
-			return clang.Continue
-		}
-		kind := cur.Kind
-		if kind == lc.CursorCXXAccessSpecifier {
-			log.Println("==>", kind, "CXXAccessSpecifier", cur.CXXAccessSpecifier())
-			return clang.Continue
-		}
-		name := ns + clang.String(cur)
-		log.Println("==>", kind, clang.String(kind), name, typeOf(cur.Type()))
-		switch kind {
-		case lc.CursorFunctionDecl, lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
-		case lc.CursorClassDecl, lc.CursorNamespace:
-			dump(cur, name+"::", dir)
-		}
-		return clang.Continue
-	})
-}
-
-func typeOf(t lc.Type) string {
-	switch t.Kind {
-	case lc.TypeElaborated:
-		return typeOf(t.NamedType())
-	default:
-		return clang.String(t)
-	}
-}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -83,5 +54,5 @@ func main() {
 	})
 
 	root := u.Cursor()
-	dump(root, "", filepath.Dir(filename))
+	tool.Dump(root, "", filepath.Dir(filename))
 }
