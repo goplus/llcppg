@@ -21,7 +21,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/goplus/llcppg/tool/listth"
@@ -68,7 +67,6 @@ func main() {
 	files, err := listth.TopHeaders(headerDir, false, true, includeDirs)
 	check(err)
 
-	sort.Strings(files)
 	for _, file := range files {
 		fmt.Println(file)
 	}

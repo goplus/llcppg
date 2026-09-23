@@ -22,6 +22,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -121,10 +122,7 @@ func listIncludeFiles(headerFile string, includeDirs []string) (includeFiles ite
 }
 
 func calcHeaderDeps(headerFiles map[string]bool, headerDir string, includeDirs []string) {
-	for headerFile, included := range headerFiles {
-		if included {
-			continue
-		}
+	for headerFile := range headerFiles {
 		includeFiles, err := listIncludeFiles(headerFile, includeDirs)
 		if err != nil {
 			log.Panicln("[FATAL] searchIncludeFiles failed:", err)
@@ -193,6 +191,7 @@ func TopHeaders(headerDir string, recursive, rel bool, includeDirs []string) (to
 			topHeaders = append(topHeaders, headerFile)
 		}
 	}
+	sort.Strings(topHeaders)
 	return
 }
 

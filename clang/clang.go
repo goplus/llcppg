@@ -26,7 +26,7 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func toGoStringAndDispose(str clang.String) string {
+func GoStringAndDispose(str clang.String) string {
 	s := c.GoString(str.CStr())
 	str.Dispose()
 	return s
@@ -38,7 +38,7 @@ type stringer interface {
 
 // String returns the Go string of a value whose String() returns a clang String.
 func String[T stringer](v T) string {
-	return toGoStringAndDispose(v.String())
+	return GoStringAndDispose(v.String())
 }
 
 // -----------------------------------------------------------------------------
@@ -142,7 +142,7 @@ const (
  * Retrieve the name of a particular source file.
  */
 func FileName(f clang.File) string {
-	return toGoStringAndDispose(f.FileName())
+	return GoStringAndDispose(f.FileName())
 }
 
 // -----------------------------------------------------------------------------
@@ -156,21 +156,21 @@ type Diagnostic struct {
  * Returns a string that describes the diagnostic.
  */
 func (e Diagnostic) String() string {
-	return toGoStringAndDispose(e.Diagnostic.String())
+	return GoStringAndDispose(e.Diagnostic.String())
 }
 
 /**
  * Returns the category text for the given diagnostic.
  */
 func (e Diagnostic) CategoryText() string {
-	return toGoStringAndDispose(e.Diagnostic.CategoryText())
+	return GoStringAndDispose(e.Diagnostic.CategoryText())
 }
 
 /**
  * Format the given diagnostic according to the specified display options.
  */
 func (e Diagnostic) Format(options clang.DiagnosticDisplayOptions) string {
-	return toGoStringAndDispose(e.Diagnostic.Format(options))
+	return GoStringAndDispose(e.Diagnostic.Format(options))
 }
 
 // -----------------------------------------------------------------------------
@@ -215,7 +215,7 @@ func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, 
  * the text of an identifier or keyword.
  */
 func (u TranslationUnit) Token(tok clang.Token) string {
-	return toGoStringAndDispose(u.TranslationUnit.Token(tok))
+	return GoStringAndDispose(u.TranslationUnit.Token(tok))
 }
 
 /**
@@ -271,7 +271,7 @@ type SourceLocation = clang.SourceLocation
 func PresumedFile(loc SourceLocation) string {
 	var filename clang.String
 	loc.PresumedLocation(&filename, nil, nil)
-	return toGoStringAndDispose(filename)
+	return GoStringAndDispose(filename)
 }
 
 /**
@@ -282,7 +282,7 @@ func PresumedFile(loc SourceLocation) string {
  * class template specialization.
  */
 func DisplayName(entity clang.Cursor) string {
-	return toGoStringAndDispose(entity.DisplayName())
+	return GoStringAndDispose(entity.DisplayName())
 }
 
 /**
