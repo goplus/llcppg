@@ -171,7 +171,7 @@ func isHeaderFile(name string) bool {
 }
 
 // TopHeaders returns the top-level header files in the specified directory.
-func TopHeaders(headerDir string, recursive bool, includeDirs []string) (topHeaders []string, err error) {
+func TopHeaders(headerDir string, recursive, rel bool, includeDirs []string) (topHeaders []string, err error) {
 	headerDir, err = filepath.Abs(headerDir)
 	if err != nil {
 		return
@@ -187,7 +187,10 @@ func TopHeaders(headerDir string, recursive bool, includeDirs []string) (topHead
 	topHeaders = make([]string, 0, len(headerFiles))
 	for headerFile, included := range headerFiles {
 		if !included {
-			topHeaders = append(topHeaders, headerFile[len(headerDir):])
+			if rel {
+				headerFile = headerFile[len(headerDir):]
+			}
+			topHeaders = append(topHeaders, headerFile)
 		}
 	}
 	return

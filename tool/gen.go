@@ -87,7 +87,7 @@ func (cfg *Config) topHeaders(workDir string, includeDirs []string) (headerFiles
 		incDir = incDir[:pos+8]
 	}
 	includeDirs[0] = incDir
-	return listth.TopHeaders(dir, recursive, includeDirs)
+	return listth.TopHeaders(dir, recursive, false, includeDirs)
 }
 
 // NewPackage loads the source files and converts them into a Go package according to the
