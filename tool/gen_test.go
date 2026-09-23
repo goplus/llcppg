@@ -93,7 +93,7 @@ func stdlibDir(t *testing.T) string {
 	if err != nil {
 		t.Fatal("exec llvm-config --libdir failed:", err)
 	}
-	return string(bytes.TrimSpace(b)) + "/clang/22/include"
+	return string(bytes.TrimSpace(b)) + "/clang/22/include/llvm_libc_wrappers"
 }
 
 var langExts = [...]string{

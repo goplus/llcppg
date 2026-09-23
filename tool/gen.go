@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/token"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -90,7 +91,8 @@ const includeSuffix = string(os.PathSeparator) + "include"
 
 // topHeaders lists the top-level header files according to the configuration. If the
 // Dir field ends with "/...", it will recursively list all header files in the directory
-// and its subdirectories.
+// and its subdirectories. includeDirs[0] will be set to the include directory for the
+// package.
 func topHeaders(dir, workDir string, includeDirs []string) (headerFiles []string, err error) {
 	recursive := strings.HasSuffix(dir, "/...")
 	if recursive {
@@ -104,6 +106,9 @@ func topHeaders(dir, workDir string, includeDirs []string) (headerFiles []string
 		incDir = incDir[:pos+len(includeSuffix)]
 	}
 	includeDirs[0] = incDir
+	if debugLoadSource {
+		log.Println("==> includeDirs:", includeDirs)
+	}
 	return listth.TopHeaders(dir, recursive, false, includeDirs)
 }
 
@@ -114,6 +119,10 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 	if !ok {
 		err = fmt.Errorf("invalid language: %q", cfg.Language)
 		return
+	}
+
+	if debugLoadSource {
+		log.Println("==> workDir:", workDir)
 	}
 
 	mod, err := LoadModuleFrom(workDir)
@@ -132,19 +141,24 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 	}
 
 	includeDirs, pkgPaths := mod.includeDirs(imp, deps, 2)
+	includeDirs[1] = stdlibDir
+	pkgPaths[0] = pkgPath
+	pkgPaths[1] = "github.com/goplus/lib/c"
+
+	// includeDirs[0] is set by topHeaders
 	topHeaders, err := topHeaders(cfg.Dir, workDir, includeDirs)
 	if err != nil {
 		return
 	}
-	pkgPaths[0] = pkgPath
-	pkgPaths[1] = "github.com/goplus/lib/c"
-	includeDirs[1] = stdlibDir
+	/* if debugLoadSource {
+		log.Println("==> topHeaders:", topHeaders)
+	} */
 
 	files := ParseSources(index, topHeaders, includeDirs, cfg.Language)
 	defer DisposeSources(files)
 
 	if debugLoadSource {
-		// dumpSources(files)
+		dumpSources(topHeaders, files)
 	}
 
 	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
