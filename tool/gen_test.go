@@ -137,7 +137,7 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 					continue
 				}
 				name := fi.Name()
-				if strings.HasPrefix(name, "_") || !isHeaderFile(name) {
+				if !strings.HasSuffix(name, ".h") {
 					continue
 				}
 				pkgName := name[:len(name)-2]
@@ -165,16 +165,6 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			testDiff(t, pkgDir, wrapFile+".txt", &pkg.Wrap.Content, wrap)
 		}
 	})
-}
-
-func isHeaderFile(name string) bool {
-	ext := filepath.Ext(name)
-	switch ext {
-	case ".h", ".hpp", ".hh", ".hxx":
-		return true
-	default:
-		return false
-	}
 }
 
 func stdlibDir(t *testing.T) string {
