@@ -107,13 +107,17 @@ type Config struct {
 	PubFileLookup func(pkgPath string) (pubFile string, ok bool)
 
 	// PackageOf returns the package path for a given header file. If ok is false, it means
-	// we don't know the package path for the header file. If not specified, llcppg will assume
-	// all header files belong to the same package.
+	// we don't know the package path for the header file. If not specified, llcppg will
+	// assume all header files belong to the same package.
 	PackageOf func(headerFile string) (pkgPath string, ok bool)
 
-	// TypePrefix specifies the prefix to remove from C/C++ type names when generating Go type
-	// names.
+	// TypePrefix specifies the prefix to remove from C/C++ type names when generating Go
+	// type names (optional).
 	TypePrefix []string
+
+	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
+	// generating Go function names (optional).
+	FuncPrefix []string
 }
 
 // -----------------------------------------------------------------------------
@@ -156,9 +160,10 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		nameLookup = defaultNameLookup
 	}
 	ctx := &pkgCtx{
-		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(), llgo: llgo,
-		fset: pkg.Fset, c: c, lang: conf.Language, typePrefix: conf.TypePrefix,
+		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
+		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
+		typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
