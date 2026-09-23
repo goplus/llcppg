@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/goplus/gogen/packages"
+	"github.com/goplus/gogen/packages/cache"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool/listth"
@@ -36,12 +37,13 @@ import (
 // -----------------------------------------------------------------------------
 
 type Config struct {
-	Name           string `json:"Name"`
-	LLGoPackage    string `json:"LLGoPackage"`
-	WrapFileHeader string `json:"WrapFileHeader"`
-	CFlags         string `json:"CFlags"`
-	Language       string `json:"Language"` // c, c++, etc.
-	Dir            string `json:"Dir"`      // dir or dir/... (recursive)
+	Name           string   `json:"Name"`
+	LLGoPackage    string   `json:"LLGoPackage"`
+	WrapFileHeader string   `json:"WrapFileHeader"`
+	CFlags         string   `json:"CFlags"`
+	Language       string   `json:"Language"` // c, c++, etc.
+	Dir            string   `json:"Dir"`      // dir or dir/... (recursive)
+	Deps           []string `json:"Deps"`     // dependencies (package paths)
 }
 
 // Lang returns the language of the configuration.
@@ -56,26 +58,21 @@ func (cfg *Config) Lang() (lang cl.Language, ok bool) {
 	}
 }
 
-// IncludeDirs returns the include directories for the configuration.
-func (cfg *Config) IncludeDirs() (includeDirs []string) {
-	return nil // TODO(xsw)
-}
-
-// TopHeaders lists the top-level header files according to the configuration. If the
+// topHeaders lists the top-level header files according to the configuration. If the
 // Dir field ends with "/...", it will recursively list all header files in the directory
 // and its subdirectories.
-func (cfg *Config) TopHeaders() (headerFiles []string, err error) {
+func (cfg *Config) topHeaders(includeDirs []string) (headerFiles []string, err error) {
 	dir := cfg.Dir
 	recursive := strings.HasSuffix(dir, "/...")
 	if recursive {
 		dir = dir[:len(dir)-4]
 	}
-	return listth.TopHeaders(dir, recursive, cfg.IncludeDirs())
+	return listth.TopHeaders(dir, recursive, includeDirs)
 }
 
-// ParseSources loads the source files according to the configuration.
-func (cfg *Config) ParseSources(index clang.Index) (files []cl.Source, err error) {
-	headerFiles, err := cfg.TopHeaders()
+// parseSources loads the source files according to the configuration.
+func (cfg *Config) parseSources(includeDirs []string, index clang.Index) (files []cl.Source, err error) {
+	headerFiles, err := cfg.topHeaders(includeDirs)
 	if err != nil {
 		return
 	}
@@ -96,14 +93,23 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		return
 	}
 
-	files, err := cfg.ParseSources(index)
+	fset := token.NewFileSet()
+	imp := packages.NewImporter(fset, workDir)
+
+	deps := cfg.Deps
+	if len(deps) > 0 {
+		c := cache.New(pkgHash)
+		c.Prepare(workDir, deps...)
+		imp.SetCache(c)
+	}
+
+	includeDirs, pkgPaths := mod.includeDirs(imp, deps)
+	files, err := cfg.parseSources(includeDirs, index)
 	if err != nil {
 		return
 	}
 	defer DisposeSources(files)
 
-	fset := token.NewFileSet()
-	imp := packages.NewImporter(fset, workDir)
 	return cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
 		Fset:           fset,
 		Importer:       imp,
@@ -113,8 +119,20 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		WrapFileHeader: cfg.WrapFileHeader,
 		NameLookup:     nil,
 		PubFileLookup:  mod.PubFileLookup,
-		PackageOf:      nil,
+		PackageOf: func(headerFile string) (pkgPath string, ok bool) {
+			for i, includeDir := range includeDirs {
+				if strings.HasPrefix(headerFile, includeDir) {
+					return pkgPaths[i], true
+				}
+			}
+			return
+		},
 	})
+}
+
+func pkgHash(pkgPath string, self bool) string {
+	// don't need calc hash since we only load all packages once.
+	return cache.HashSkip
 }
 
 // -----------------------------------------------------------------------------
@@ -122,6 +140,16 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 // Module represents a llcppg module.
 type Module struct {
 	mod *xgomod.Module
+}
+
+// LoadModuleFrom loads a llcppg module from the specified directory.
+func LoadModuleFrom(dir string) (ret Module, err error) {
+	_, gomod, err := mod.FindGoMod(dir)
+	if err != nil {
+		return
+	}
+	m, err := xgomod.LoadFrom(gomod, "")
+	return Module{mod: m}, err
 }
 
 // PubFileLookup looks up the public file for the given package.
@@ -133,14 +161,21 @@ func (p Module) PubFileLookup(pkgPath string) (pubFile string, ok bool) {
 	return
 }
 
-// LoadModuleFrom loads a llcppg module from the specified directory.
-func LoadModuleFrom(dir string) (ret Module, err error) {
-	_, gomod, err := mod.FindGoMod(dir)
-	if err != nil {
-		return
+func (p Module) includeDirs(imp *packages.Importer, deps []string) (incDirs, pkgPaths []string) {
+	incDirs = make([]string, 0, len(deps))
+	for _, dep := range deps {
+		pkgTypes, err := imp.Import(dep)
+		if err == nil {
+			if o := pkgTypes.Scope().Lookup("LLGoFiles"); o != nil {
+				pkg, err := p.mod.Lookup(dep)
+				if err == nil {
+					incDirs = append(incDirs, filepath.Join(pkg.Dir, "_wrap/include"))
+					pkgPaths = append(pkgPaths, dep)
+				}
+			}
+		}
 	}
-	m, err := xgomod.LoadFrom(gomod, "")
-	return Module{mod: m}, err
+	return
 }
 
 // -----------------------------------------------------------------------------
