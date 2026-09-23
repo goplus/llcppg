@@ -20,12 +20,15 @@ import (
 	"fmt"
 	"go/token"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/goplus/gogen/packages"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool/listth"
+	"github.com/goplus/mod"
+	"github.com/goplus/mod/xgomod"
 
 	lc "github.com/goplus/llcppg/lib/clang"
 )
@@ -37,7 +40,7 @@ type Config struct {
 	LLGoPackage    string `json:"LLGoPackage"`
 	WrapFileHeader string `json:"WrapFileHeader"`
 	CFlags         string `json:"CFlags"`
-	Language       string `json:"Language"` // c, c++, objc, objc++
+	Language       string `json:"Language"` // c, c++, etc.
 	Dir            string `json:"Dir"`      // dir or dir/... (recursive)
 }
 
@@ -70,8 +73,8 @@ func (cfg *Config) TopHeaders() (headerFiles []string, err error) {
 	return listth.TopHeaders(dir, recursive, cfg.IncludeDirs())
 }
 
-// LoadSources loads the source files according to the configuration.
-func (cfg *Config) LoadSources(index clang.Index) (files []cl.Source, err error) {
+// ParseSources loads the source files according to the configuration.
+func (cfg *Config) ParseSources(index clang.Index) (files []cl.Source, err error) {
 	headerFiles, err := cfg.TopHeaders()
 	if err != nil {
 		return
@@ -87,10 +90,18 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		err = fmt.Errorf("invalid language: %q", cfg.Language)
 		return
 	}
-	files, err := cfg.LoadSources(index)
+
+	mod, err := LoadModuleFrom(workDir)
 	if err != nil {
 		return
 	}
+
+	files, err := cfg.ParseSources(index)
+	if err != nil {
+		return
+	}
+	defer DisposeSources(files)
+
 	fset := token.NewFileSet()
 	imp := packages.NewImporter(fset, workDir)
 	return cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
@@ -101,9 +112,35 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		CFlags:         cfg.CFlags,
 		WrapFileHeader: cfg.WrapFileHeader,
 		NameLookup:     nil,
-		PubFileLookup:  nil,
+		PubFileLookup:  mod.PubFileLookup,
 		PackageOf:      nil,
 	})
+}
+
+// -----------------------------------------------------------------------------
+
+// Module represents a llcppg module.
+type Module struct {
+	mod *xgomod.Module
+}
+
+// PubFileLookup looks up the public file for the given package.
+func (p Module) PubFileLookup(pkgPath string) (pubFile string, ok bool) {
+	pkg, err := p.mod.Lookup(pkgPath)
+	if err == nil {
+		pubFile, ok = filepath.Join(pkg.Dir, "llcppg.pub"), true
+	}
+	return
+}
+
+// LoadModuleFrom loads a llcppg module from the specified directory.
+func LoadModuleFrom(dir string) (ret Module, err error) {
+	_, gomod, err := mod.FindGoMod(dir)
+	if err != nil {
+		return
+	}
+	m, err := xgomod.LoadFrom(gomod, "")
+	return Module{mod: m}, err
 }
 
 // -----------------------------------------------------------------------------

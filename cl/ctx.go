@@ -150,31 +150,33 @@ func (p *pkgCtx) forceImportUnsafe() {
 }
 
 func (p *pkgCtx) importPkg(pkgPath string) {
-	if pubFile, ok := p.pubLookup(pkgPath); ok {
-		if debugCompileDecl {
-			log.Println("==> importPkg", pkgPath)
-		}
-		pkg := p.pkg.Import(pkgPath)
-		scope := pkg.Types.Scope()
-		if it, _, e := loadPubFile(pubFile); e == nil {
-			for e := range it {
-				switch e.Kind {
-				case 'T': // type
-					if e.GoName == "" {
-						e.GoName, _ = p.getPubName(strings.ReplaceAll(e.Name, "::", "_"), -1)
-					}
-					if o := scope.Lookup(e.GoName); o != nil {
-						if t, ok := o.(*types.TypeName); ok {
-							p.types[e.Name] = t
-						}
-					}
-				default:
-					panic("todo: importPubFile " + e.Name)
+	pubFile, ok := p.pubLookup(pkgPath)
+	if !ok {
+		log.Panicln("[ERROR] pubFile not found for", pkgPath)
+	}
+	entries, _, err := loadPubFile(pubFile)
+	if err != nil {
+		log.Panicln("[ERROR] loadPubFile failed:", err)
+	}
+	if debugCompileDecl {
+		log.Println("==> importPkg", pkgPath)
+	}
+	pkg := p.pkg.Import(pkgPath)
+	scope := pkg.Types.Scope()
+	for e := range entries {
+		switch e.Kind {
+		case 'T': // type
+			if e.GoName == "" {
+				e.GoName, _ = p.getPubName(strings.ReplaceAll(e.Name, "::", "_"), -1)
+			}
+			if o := scope.Lookup(e.GoName); o != nil {
+				if t, ok := o.(*types.TypeName); ok {
+					p.types[e.Name] = t
 				}
 			}
+		default:
+			panic("todo: importPubFile " + e.Name)
 		}
-	} else {
-		log.Panicln("[ERROR] importPkg failed: pubFile not found for", pkgPath)
 	}
 }
 
