@@ -100,6 +100,7 @@ type pkgCtx struct {
 
 	typePrefix []string
 	fnPrefix   []string
+	rename     map[string]string
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -174,7 +175,7 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 		switch e.Kind {
 		case 'T': // type
 			if e.GoName == "" {
-				e.GoName, _ = p.getPubName(strings.ReplaceAll(e.Name, "::", "_"), -1)
+				e.GoName = p.typeName(strings.ReplaceAll(e.Name, "::", "_"), true)
 			}
 			if o := scope.Lookup(e.GoName); o != nil {
 				if t, ok := o.(*types.TypeName); ok {
@@ -220,12 +221,15 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 }
 
 func (p *pkgCtx) typeName(name string, _ bool) string {
-	return cPubName(rmPrefix(name, p.typePrefix))
+	return p.cstyleToGo(rmPrefix(name, p.typePrefix), true)
 }
 
 func (p *pkgCtx) funcName(name string, order int, global, _ bool) string {
 	if global {
 		name = rmPrefix(name, p.fnPrefix)
+	}
+	if !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
+		name = p.cstyleToGo(name, true)
 	}
 	ret, _ := p.getPubName(name, order)
 	return ret
@@ -233,6 +237,10 @@ func (p *pkgCtx) funcName(name string, order int, global, _ bool) string {
 
 func (p *pkgCtx) fieldName(name string, public bool) string {
 	return p.cstyleToGo(name, public)
+}
+
+func (p *pkgCtx) enumvalName(name string) string {
+	return p.cstyleToGo(name, true)
 }
 
 func (p *pkgCtx) getPubName(cName string, order int) (pubName string, rewritten bool) {
@@ -245,10 +253,19 @@ func (p *pkgCtx) getPubName(cName string, order int) (pubName string, rewritten 
 }
 
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
+	rename := p.rename
 	parts := strings.Split(cName, "_")
-	for i, part := range parts {
+	for i := 0; i < len(parts); i++ {
+		part := parts[i]
 		if part == "" {
-			parts[i] = "_"
+			if i == 0 && public {
+				parts[i] = "X_"
+				i++ // skip next part
+			} else {
+				parts[i] = "_"
+			}
+		} else if v, ok := rename[part]; ok {
+			parts[i] = v
 		} else if i > 0 || public {
 			parts[i] = cPubName(part)
 		}

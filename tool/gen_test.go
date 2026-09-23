@@ -88,6 +88,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		Language:    lang,
 		TypePrefix:  conf.TypePrefix,
 		FuncPrefix:  conf.FuncPrefix,
+		Rename:      conf.Rename,
 		NameLookup:  nil,
 		PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
 			if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {

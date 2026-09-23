@@ -3,12 +3,12 @@ package foo
 import "github.com/goplus/lib/c"
 
 type Outer struct {
-	Inner Outer_Inner
+	Inner OuterInner
 }
-type Outer_value_type = c.Int
-type Outer_Inner struct {
+type OuterValueType = c.Int
+type OuterInner struct {
 	X c.Int
 }
-type Outer_Detail struct {
+type OuterDetail struct {
 	secret c.Int
 }

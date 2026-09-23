@@ -55,15 +55,16 @@ func SetDebug(flags int) {
 // -----------------------------------------------------------------------------
 
 type Config struct {
-	Name           string   `json:"Name"`
-	LLGoPackage    string   `json:"LLGoPackage"`
-	WrapFileHeader string   `json:"WrapFileHeader"`
-	CFlags         string   `json:"CFlags"`
-	Language       string   `json:"Language"`   // c, c++, etc.
-	Dir            string   `json:"Dir"`        // dir or dir/... (recursive)
-	Deps           []string `json:"Deps"`       // dependencies (package paths)
-	TypePrefix     []string `json:"TypePrefix"` // type prefix to remove
-	FuncPrefix     []string `json:"FuncPrefix"` // global function prefix to remove
+	Name           string            `json:"Name"`
+	LLGoPackage    string            `json:"LLGoPackage"`
+	WrapFileHeader string            `json:"WrapFileHeader"`
+	CFlags         string            `json:"CFlags"`
+	Language       string            `json:"Language"`   // c, c++, etc.
+	Dir            string            `json:"Dir"`        // dir or dir/... (recursive)
+	Deps           []string          `json:"Deps"`       // dependencies (package paths)
+	TypePrefix     []string          `json:"TypePrefix"` // type prefix to remove
+	FuncPrefix     []string          `json:"FuncPrefix"` // global function prefix to remove
+	Rename         map[string]string `json:"Rename"`     // renaming of C/C++ names to Go names
 }
 
 // LoadConf loads the llcppg configuration.

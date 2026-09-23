@@ -67,7 +67,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 			return clang.Continue
 		}
 		origName := ns + clang.String(item)
-		name, _ := ctx.getPubName(origName, -1)
+		name := ctx.enumvalName(origName)
 		val := int(item.EnumConstantDeclValue()) // TODO(xsw): use int64 for 64-bit enums?
 		defs.New(func(cb *gogen.CodeBuilder) int {
 			cb.Val(val)
