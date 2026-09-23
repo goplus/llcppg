@@ -82,7 +82,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 	if debugCompileDecl {
 		log.Println("class", origName)
 	}
-	clsName, _ := ctx.getPubName(origName, -1)
+	clsName := ctx.typeName(origName, true)
 	emitClass(ctx, cls, clsName, defaultInPublic)
 }
 
@@ -170,7 +170,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			}
 		}
 		if !anonymous {
-			fldType = toType(ctx, pkg, ft, flagIsStructField)
+			fldType = toType(ctx, pkg, ft, flagIsVarDef)
 		}
 		origName := clang.String(decl)
 		fldName := origName

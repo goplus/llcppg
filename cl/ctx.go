@@ -98,6 +98,8 @@ type pkgCtx struct {
 
 	wrapFileHeader string
 
+	typePrefix []string
+
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
 
@@ -214,6 +216,20 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 		return o.Type(), true
 	}
 	return nil, false
+}
+
+func (p *pkgCtx) typeName(name string, _ bool) string {
+	ret, _ := p.getPubName(p.rmTypePrefix(name), -1)
+	return ret
+}
+
+func (p *pkgCtx) rmTypePrefix(name string) string {
+	for _, prefix := range p.typePrefix {
+		if strings.HasPrefix(name, prefix) {
+			return name[len(prefix):]
+		}
+	}
+	return name
 }
 
 func (p *pkgCtx) getPubName(cName string, order int) (pubName string, rewritten bool) {

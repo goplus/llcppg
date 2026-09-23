@@ -64,7 +64,7 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 
-	typ := toType(ctx, pkgTypes, decl.Type(), flagIsExtern)
+	typ := toType(ctx, pkgTypes, decl.Type(), flagIsVarDef)
 	if debugCompileDecl {
 		kind := "var"
 		if decl.Type().IsConstQualifiedType() != 0 {
