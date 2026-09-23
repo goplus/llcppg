@@ -152,10 +152,22 @@ func collectHeaders(headerDir string, recursive bool) (headerFiles map[string]bo
 			continue
 		}
 		name := fi.Name()
-		headerFile := filepath.Join(headerDir, name)
-		headerFiles[headerFile] = false
+		if isHeaderFile(name) {
+			headerFile := filepath.Join(headerDir, name)
+			headerFiles[headerFile] = false
+		}
 	}
 	return
+}
+
+func isHeaderFile(name string) bool {
+	ext := filepath.Ext(name)
+	switch ext {
+	case ".h", ".hpp", ".hh", ".hxx":
+		return true
+	default:
+		return false
+	}
 }
 
 // TopHeaders returns the top-level header files in the specified directory.

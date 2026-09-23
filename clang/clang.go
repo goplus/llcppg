@@ -17,6 +17,7 @@
 package clang
 
 import (
+	"iter"
 	"unsafe"
 
 	"github.com/goplus/lib/c"
@@ -107,19 +108,22 @@ func (i Index) ParseTranslationUnit(options uint, filename string, args ...strin
 
 // ParseTranslationUnits parses the given source files and returns the translation units corresponding
 // to those files.
-func (i Index) ParseTranslationUnits(options uint, filenames []string, args ...string) []TranslationUnit {
+func (i Index) ParseTranslationUnits(options uint, filenames []string, args ...string) iter.Seq[TranslationUnit] {
 	cArgs := make([]*c.Char, len(args))
 	for i, arg := range args {
 		cArgs[i] = c.AllocaCStr(arg)
 	}
-	tus := make([]TranslationUnit, len(filenames))
-	for j, filename := range filenames {
-		tus[j] = TranslationUnit{
-			TranslationUnit: i.Index.ParseTranslationUnit(
-				c.AllocaCStr(filename), unsafe.SliceData(cArgs), c.Int(len(cArgs)), nil, 0, c.Uint(options)),
+	return func(yield func(TranslationUnit) bool) {
+		for _, filename := range filenames {
+			u := TranslationUnit{
+				TranslationUnit: i.Index.ParseTranslationUnit(
+					c.AllocaCStr(filename), unsafe.SliceData(cArgs), c.Int(len(cArgs)), nil, 0, c.Uint(options)),
+			}
+			if !yield(u) {
+				return
+			}
 		}
 	}
-	return tus
 }
 
 // -----------------------------------------------------------------------------
