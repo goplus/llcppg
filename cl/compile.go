@@ -102,7 +102,7 @@ type Config struct {
 
 	// PubFileLookup looks up the public file for a given package path. A public file is
 	// a text file that contains a list of public C/C++ names and their corresponding Go
-	// names.
+	// names (required).
 	PubFileLookup func(pkgPath string) (pubFile string, ok bool)
 
 	// PackageOf returns the package path for a given header file. If ok is false, it means

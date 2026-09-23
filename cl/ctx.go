@@ -150,12 +150,9 @@ func (p *pkgCtx) forceImportUnsafe() {
 }
 
 func (p *pkgCtx) importPkg(pkgPath string) {
-	if debugCompileDecl {
-		log.Println("==> importPkg", pkgPath)
-	}
 	if pubFile, ok := p.pubLookup(pkgPath); ok {
 		if debugCompileDecl {
-			log.Println("==> pubFile", pubFile)
+			log.Println("==> importPkg", pkgPath)
 		}
 		pkg := p.pkg.Import(pkgPath)
 		scope := pkg.Types.Scope()
@@ -176,6 +173,8 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 				}
 			}
 		}
+	} else {
+		log.Panicln("[ERROR] importPkg failed: pubFile not found for", pkgPath)
 	}
 }
 
