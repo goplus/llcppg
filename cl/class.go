@@ -173,10 +173,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			fldType = toType(ctx, pkg, ft, flagIsVarDef)
 		}
 		origName := clang.String(decl)
-		fldName := origName
-		if cls.inPublic {
-			fldName, _ = ctx.getPubName(origName, -1)
-		}
+		fldName := ctx.fieldName(origName, cls.inPublic)
 		fld := types.NewField(goNodePos(ctx, decl), pkg, fldName, fldType, false)
 		cls.fields = append(cls.fields, fld)
 

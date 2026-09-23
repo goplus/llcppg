@@ -8,8 +8,8 @@ import (
 const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
 
 type String struct {
-	Data          unsafe.Pointer
-	Private_flags c.Uint
+	Data         unsafe.Pointer
+	PrivateFlags c.Uint
 }
 type StringSet struct {
 	Strings *String

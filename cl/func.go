@@ -73,8 +73,9 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 
 	var recv *types.Var
 	var nameInPkg string
-	var fnName = ctx.funcName(origName, obj.order(), true)
-	if cls == nil {
+	var global = cls == nil
+	var fnName = ctx.funcName(origName, obj.order(), global, true)
+	if global {
 		nameInPkg = fnName
 	} else {
 		typNamed := cls.typNamed
@@ -90,7 +91,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 		log.Panicln("compileFunc:", origName, err)
 	}
 
-	if cls == nil {
+	if global {
 		ctx.forceImportUnsafe()
 		f.SetComments(pkg, &ast.CommentGroup{
 			List: []*ast.Comment{
