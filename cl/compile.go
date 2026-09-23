@@ -183,11 +183,11 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
 		clang.VisitChildren(tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			if pkgOf != nil {
 				at := clang.PresumedFile(decl.Location())
-				if pkgPath, ok := pkgOf(at); !ok || pkgPath != myPkgPath {
-					return clang.Continue
-				}
 				if _, ok := lastSeen[at]; ok {
 					return clang.Continue // already loaded
+				}
+				if pkgPath, ok := pkgOf(at); !ok || pkgPath != myPkgPath {
+					return clang.Continue
 				}
 				thisSeen[at] = none{}
 			}
