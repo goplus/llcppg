@@ -18,16 +18,20 @@ package tool_test
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/gogen/packages"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cl/cltest"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/goplus/llcppg/lib/clang"
 	"github.com/goplus/llcppg/tool"
 	"github.com/qiniu/x/test"
 )
@@ -57,8 +61,62 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 	testDiff(t, dir, "/out.go.txt", &b, exp)
 }
 
-func testFromDir(t *testing.T, sel, relDir string) {
-	cltest.TestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
+func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile string, conf *tool.Config) {
+	myPkgName := headerFile[len(headerDir) : len(headerFile)-2]
+	log.Println("==> testSingleFile: package", myPkgName)
+
+	lang, ok := conf.Lang()
+	if !ok {
+		t.Errorf("invalid language: %q", conf.Language)
+		return
+	}
+
+	options := lc.DefaultDiagnosticDisplayOptions()
+	u := idx.ParseTranslationUnit(
+		clang.DetailedPreprocessingRecord, headerFile, "-x", conf.Language)
+	defer u.Dispose()
+	u.VisitDiagnostics(func(diag clang.Diagnostic) {
+		fmt.Fprintln(os.Stderr, diag.Format(options))
+	})
+
+	const pkgPrefix = "clang/"
+	files := []cl.Source{u}
+	imp := packages.NewImporter(nil, headerDir)
+	pkg, err := cl.NewPackage(pkgPrefix+myPkgName, myPkgName, files, &cl.Config{
+		Importer:    imp,
+		LLGoPackage: conf.LLGoPackage,
+		Language:    lang,
+		NameLookup:  nil,
+		PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
+			if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {
+				return filepath.Join(pkgDir, name, "llcppg.pub"), true
+			}
+			return
+		},
+		PackageOf: func(headerFile string) (pkgPath string, ok bool) {
+			tRootDir, tPkgName := filepath.Split(headerFile)
+			if ok = tRootDir == headerDir; ok {
+				pkgPath = pkgPrefix + tPkgName[:len(tPkgName)-2]
+			}
+			return
+		},
+	})
+	if err != nil {
+		t.Error("cl.NewPackage:", err)
+		return
+	}
+	pkgDir = filepath.Join(pkgDir, myPkgName)
+	os.Mkdir(pkgDir, 0755)
+	exp, _ := os.ReadFile(pkgDir + "/out.go")
+	testGenGo(t, pkg.Package, pkgDir, exp)
+}
+
+func testFromDir(t *testing.T, sel, relDir string, single bool) {
+	dirSel := sel
+	if single {
+		dirSel = ""
+	}
+	cltest.TestFromDir(t, dirSel, relDir, func(t *testing.T, pkgDir string) {
 		idx := clang.CreateIndex(0, 0)
 		defer idx.Dispose()
 
@@ -66,6 +124,32 @@ func testFromDir(t *testing.T, sel, relDir string) {
 		conf, err := tool.LoadConf(pkgDir + "/llcppg.cfg")
 		if err != nil {
 			log.Fatal("LoadConf failed:", err)
+		}
+		if single {
+			headerDir := filepath.Join(pkgDir, conf.Dir)
+			fis, err := os.ReadDir(headerDir)
+			if err != nil {
+				return
+			}
+			headerDir += string(os.PathSeparator)
+			for _, fi := range fis {
+				if fi.IsDir() {
+					continue
+				}
+				name := fi.Name()
+				if strings.HasPrefix(name, "_") || !isHeaderFile(name) {
+					continue
+				}
+				pkgName := name[:len(name)-2]
+				if sel != "" && pkgName != sel {
+					continue
+				}
+				headerFile := headerDir + name
+				t.Run(pkgName, func(t *testing.T) {
+					testSingleFile(t, idx, pkgDir, headerDir, headerFile, &conf)
+				})
+			}
+			return
 		}
 
 		pkg, lang, err := conf.NewPackage("", pkgDir, stdlibDir(t), idx)
@@ -81,6 +165,16 @@ func testFromDir(t *testing.T, sel, relDir string) {
 			testDiff(t, pkgDir, wrapFile+".txt", &pkg.Wrap.Content, wrap)
 		}
 	})
+}
+
+func isHeaderFile(name string) bool {
+	ext := filepath.Ext(name)
+	switch ext {
+	case ".h", ".hpp", ".hh", ".hxx":
+		return true
+	default:
+		return false
+	}
 }
 
 func stdlibDir(t *testing.T) string {
@@ -101,6 +195,6 @@ var langExts = [...]string{
 	cl.LanguageCXX: ".cpp",
 }
 
-func _TestC(t *testing.T) {
-	testFromDir(t, "", "./_testc")
+func TestSingleC(t *testing.T) {
+	testFromDir(t, "ExternC", "./_testc", true)
 }

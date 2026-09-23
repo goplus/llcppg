@@ -151,7 +151,7 @@ func collectHeaders(headerDir string, recursive bool) (headerFiles map[string]bo
 		}
 		name := fi.Name()
 		if name[0] != '_' && isHeaderFile(name) {
-			headerFile := filepath.Join(headerDir, name)
+			headerFile := headerDir + name
 			headerFiles[headerFile] = false
 		}
 	}

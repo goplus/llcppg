@@ -227,6 +227,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadVar(ctx, decl, ns)
 	case lc.CursorUnionDecl:
 		loadUnion(ctx, decl, ns)
+	case lc.CursorMacroExpansion:
+		// noop
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}

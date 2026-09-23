@@ -69,11 +69,11 @@ func TestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, p
 		if strings.HasPrefix(name, "_") {
 			continue
 		}
+		if sel != "" && name != sel {
+			continue
+		}
 		t.Run(name, func(t *testing.T) {
 			pkgDir := dir + "/" + name
-			if sel != "" && !strings.Contains(pkgDir, sel) {
-				return
-			}
 			testFunc(t, pkgDir)
 		})
 	}
