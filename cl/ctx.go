@@ -21,6 +21,7 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -154,14 +155,17 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 	if !ok {
 		log.Panicln("[ERROR] pubFile not found for", pkgPath)
 	}
-	entries, _, err := loadPubFile(pubFile)
-	if err != nil {
-		log.Panicln("[ERROR] loadPubFile failed:", err)
-	}
 	if debugCompileDecl {
 		log.Println("==> importPkg", pkgPath)
 	}
 	pkg := p.pkg.Import(pkgPath)
+	entries, err := loadPubFile(pubFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return // ignore missing pub file
+		}
+		log.Panicln("[ERROR] loadPubFile failed:", err)
+	}
 	scope := pkg.Types.Scope()
 	for e := range entries {
 		switch e.Kind {
