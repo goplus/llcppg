@@ -27,7 +27,7 @@ import (
 // -----------------------------------------------------------------------------
 
 // loadPubFile loads a public file and returns an iterator that yields each public entry.
-func loadPubFile(pubfile string) (it iter.Seq[Entry], n int, err error) {
+func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 	b, err := os.ReadFile(pubfile)
 	if err != nil {
 		return
@@ -49,7 +49,6 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], n int, err error) {
 				err = fmt.Errorf("line %d: too few/many fields - %s\n", i+1, line)
 				return
 			}
-			n++
 			if !yield(Entry{Kind: flds[0][0], Name: flds[1], GoName: goName}) {
 				return
 			}
