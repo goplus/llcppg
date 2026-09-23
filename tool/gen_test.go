@@ -129,7 +129,7 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			headerDir := filepath.Join(pkgDir, conf.Dir)
 			fis, err := os.ReadDir(headerDir)
 			if err != nil {
-				return
+				log.Fatal("os.ReadDir failed:", err)
 			}
 			headerDir += string(os.PathSeparator)
 			for _, fi := range fis {
