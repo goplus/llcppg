@@ -220,13 +220,19 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 }
 
 func (p *pkgCtx) typeName(name string, _ bool) string {
-	ret, _ := p.getPubName(rmPrefix(name, p.typePrefix), -1)
+	return cPubName(rmPrefix(name, p.typePrefix))
+}
+
+func (p *pkgCtx) funcName(name string, order int, global, _ bool) string {
+	if global {
+		name = rmPrefix(name, p.fnPrefix)
+	}
+	ret, _ := p.getPubName(name, order)
 	return ret
 }
 
-func (p *pkgCtx) funcName(name string, order int, _ bool) string {
-	ret, _ := p.getPubName(rmPrefix(name, p.fnPrefix), order)
-	return ret
+func (p *pkgCtx) fieldName(name string, public bool) string {
+	return p.cstyleToGo(name, public)
 }
 
 func (p *pkgCtx) getPubName(cName string, order int) (pubName string, rewritten bool) {
@@ -236,6 +242,18 @@ func (p *pkgCtx) getPubName(cName string, order int) (pubName string, rewritten 
 	}
 	rewritten = cName != pubName
 	return
+}
+
+func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
+	parts := strings.Split(cName, "_")
+	for i, part := range parts {
+		if part == "" {
+			parts[i] = "_"
+		} else if i > 0 || public {
+			parts[i] = cPubName(part)
+		}
+	}
+	return strings.Join(parts, "")
 }
 
 func cPubName(name string) string {

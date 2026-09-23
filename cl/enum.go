@@ -51,15 +51,12 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	var enumType types.Type
 	if name := clang.String(decl); name != "" && decl.IsAnonymous() == 0 {
 		origName := ns + name
-		typeName, rewritten := ctx.getPubName(origName, -1)
+		typeName := ctx.typeName(origName, true)
 		// C enums decay to int; use the same C int type the rest of the
 		// generator uses so enum-typed values interoperate with C APIs.
 		underlying := ctx.c.Ref("Int").Type()
 		typDecl := pkg.NewTypeDefs().NewType(typeName, goNode(ctx, decl))
 		typNamed := typDecl.InitType(pkg, underlying)
-		if rewritten {
-			substObj(pkgTypes, pkgTypes.Scope(), origName, typNamed.Obj())
-		}
 		ctx.types[clang.String(decl.Type())] = typNamed.Obj()
 		enumType = typNamed
 	}
