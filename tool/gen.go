@@ -47,7 +47,7 @@ type Config struct {
 	Deps           []string `json:"Deps"`     // dependencies (package paths)
 }
 
-// LoadConf loads the lltest configuration.
+// LoadConf loads the llcppg configuration.
 func LoadConf(filename string) (conf Config, err error) {
 	b, err := os.ReadFile(filename)
 	if err != nil {
@@ -178,6 +178,8 @@ func (p Module) PubFileLookup(pkgPath string) (pubFile string, ok bool) {
 	return
 }
 
+// includeDirs returns the include directories and package paths for the given dependencies.
+// The reserved parameter specifies the number of reserved slots in the returned slices.
 func (p Module) includeDirs(imp *packages.Importer, deps []string, reserved int) (incDirs, pkgPaths []string) {
 	incDirs = make([]string, reserved, len(deps)+reserved)
 	pkgPaths = make([]string, reserved, len(deps)+reserved)
