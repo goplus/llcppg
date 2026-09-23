@@ -111,6 +111,10 @@ type Config struct {
 	// assume all header files belong to the same package.
 	PackageOf func(headerFile string) (pkgPath string, ok bool)
 
+	// Rename specifies a mapping of C/C++ names to Go names. If a name is present in the
+	// map, it will be renamed to the corresponding Go name (optional).
+	Rename map[string]string
+
 	// TypePrefix specifies the prefix to remove from C/C++ type names when generating Go
 	// type names (optional).
 	TypePrefix []string
@@ -163,7 +167,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
-		typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
+		typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix, rename: conf.Rename,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),

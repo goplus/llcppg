@@ -4,9 +4,9 @@ import "github.com/goplus/lib/c"
 
 type Foo struct {
 	u      _llcppg_struct_0
-	shorts Foo_Shorts
+	shorts FooShorts
 }
-type Foo_Shorts struct {
+type FooShorts struct {
 	S  int16
 	Us uint16
 }

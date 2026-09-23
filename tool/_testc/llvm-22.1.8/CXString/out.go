@@ -16,8 +16,8 @@ type StringSet struct {
 	Count   c.Uint
 }
 
-//go:linkname GetCString C.clang_getCString
-func GetCString(string String) *c.Char
+//go:linkname CStr C.clang_getCString
+func CStr(string String) *c.Char
 
 //go:linkname DisposeString C.clang_disposeString
 func DisposeString(string String)

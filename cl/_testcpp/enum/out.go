@@ -9,20 +9,20 @@ const (
 	GB Global = 1
 )
 
-type Bar_Color c.Int
+type BarColor c.Int
 
 const (
-	Bar_Red   Bar_Color = 0
-	Bar_Green Bar_Color = 5
-	Bar_Blue  Bar_Color = 6
+	BarRed   BarColor = 0
+	BarGreen BarColor = 5
+	BarBlue  BarColor = 6
 )
 
 type Shape struct {
 }
-type Shape_Kind c.Int
+type ShapeKind c.Int
 
 const (
-	Shape_Circle   Shape_Kind = 0
-	Shape_Square   Shape_Kind = 1
-	Shape_Triangle Shape_Kind = 2
+	ShapeCircle   ShapeKind = 0
+	ShapeSquare   ShapeKind = 1
+	ShapeTriangle ShapeKind = 2
 )

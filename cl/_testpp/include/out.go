@@ -1,11 +1,11 @@
 package foo
 
-type Bar_base struct {
+type BarBase struct {
 }
-type Bar_derived struct {
-	b Bar_base
+type BarDerived struct {
+	b BarBase
 }
 
-// llgo:link (*Bar_base).XGo_Dtor C._ZN3bar4baseD1Ev
-func (this *Bar_base) XGo_Dtor() {
+// llgo:link (*BarBase).XGo_Dtor C._ZN3bar4baseD1Ev
+func (this *BarBase) XGo_Dtor() {
 }
