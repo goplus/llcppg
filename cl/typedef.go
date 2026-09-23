@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/token"
 	"go/types"
 	"log"
 
@@ -34,17 +33,14 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	if debugCompileDecl {
 		log.Println("typedef", origName, "-", clang.String(underlying))
 	}
-	name, rewritten := ctx.getPubName(origName, -1)
-	tunder := toType(ctx, pkgTypes, underlying, flagIsTypedef)
+	name := ctx.typeName(origName, true)
+	tunder := toType(ctx, pkgTypes, underlying, flagIsTypeDef)
 	if tn, ok := tunder.(*types.Named); ok {
 		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == name {
 			return // already defined
 		}
 	}
 	t := pkg.NewTypeDefs().AliasType(name, tunder).(*types.Alias)
-	if rewritten {
-		pkgTypes.Scope().Insert(types.NewTypeName(token.NoPos, pkgTypes, origName, t))
-	}
 	ctx.types[clang.String(decl.Type())] = t.Obj()
 }
 

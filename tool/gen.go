@@ -59,9 +59,10 @@ type Config struct {
 	LLGoPackage    string   `json:"LLGoPackage"`
 	WrapFileHeader string   `json:"WrapFileHeader"`
 	CFlags         string   `json:"CFlags"`
-	Language       string   `json:"Language"` // c, c++, etc.
-	Dir            string   `json:"Dir"`      // dir or dir/... (recursive)
-	Deps           []string `json:"Deps"`     // dependencies (package paths)
+	Language       string   `json:"Language"`   // c, c++, etc.
+	Dir            string   `json:"Dir"`        // dir or dir/... (recursive)
+	Deps           []string `json:"Deps"`       // dependencies (package paths)
+	TypePrefix     []string `json:"TypePrefix"` // type prefix to remove
 }
 
 // LoadConf loads the llcppg configuration.

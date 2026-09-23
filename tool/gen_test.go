@@ -86,6 +86,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		Importer:    imp,
 		LLGoPackage: conf.LLGoPackage,
 		Language:    lang,
+		TypePrefix:  conf.TypePrefix,
 		NameLookup:  nil,
 		PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
 			if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {
@@ -186,5 +187,5 @@ var langExts = [...]string{
 }
 
 func TestSingleC(t *testing.T) {
-	testFromDir(t, "Platform", "./_testc", true)
+	testFromDir(t, "CXString", "./_testc", true)
 }

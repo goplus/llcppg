@@ -63,7 +63,7 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		log.Println("union", origName)
 	}
 
-	uName, _ := ctx.getPubName(origName, -1)
+	uName := ctx.typeName(origName, true)
 	emitUnion(ctx, decl, uName)
 }
 
@@ -224,7 +224,7 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 	pkgTypes := pkg.Types
 	member := clang.String(m)
 
-	fldType := toType(ctx, pkgTypes, m.Type(), flagIsStructField)
+	fldType := toType(ctx, pkgTypes, m.Type(), flagIsVarDef)
 
 	name := unionRefPrefix + member
 	retType := types.NewPointer(fldType)

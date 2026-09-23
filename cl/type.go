@@ -32,9 +32,8 @@ import (
 
 const (
 	flagIsParam = 1 << iota
-	flagIsStructField
-	flagIsExtern
-	flagIsTypedef
+	flagIsVarDef
+	flagIsTypeDef
 	flagRetType
 )
 
@@ -49,8 +48,8 @@ func newPointer(typ types.Type) types.Type {
 			return types.Typ[types.UnsafePointer]
 		}
 	case *types.Named:
-		panic("todo: newPointer for named type")
-		/* if typ == ValistTag {
+		/* TODO(xsw):
+		if typ == ValistTag {
 			return Valist
 		} */
 	}
@@ -96,7 +95,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		}
 		// flagIsParam only governs the outermost type of a parameter, so clear
 		// it before recursing so inner arrays are not wrongly decayed.
-		pointee := toType(ctx, pkg, elem, flags&^flagIsParam)
+		pointee := toType(ctx, pkg, elem, flagIsTypeDef)
 		return newPointer(pointee)
 	case lc.TypeFunctionProto:
 		return toFuncType(ctx, pkg, typ)
@@ -105,7 +104,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
-	case lc.TypeRecord:
+	case lc.TypeRecord, lc.TypeTypedef:
 		// A record type registers under its declaration's type spelling
 		// (clang.String(decl.Type()); see loadClass/emitUnion). Resolve through
 		// the same key via the type's declaration cursor, which also covers a
@@ -129,7 +128,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		// Decay applies only to the outermost array, so clear flagIsParam
 		// before recursing; otherwise a nested array like int matrix[3][4]
 		// would decay its inner [4] too, yielding **c.Int instead of *[4]c.Int.
-		elem := toType(ctx, pkg, typ.ArrayElementType(), flags&^flagIsParam)
+		elem := toType(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef)
 		if flags&flagIsParam != 0 {
 			return newPointer(elem)
 		}
@@ -137,7 +136,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	case lc.TypeIncompleteArray, lc.TypeVariableArray:
 		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
 		// flagIsParam before recursing since decay applies only to this level.
-		elem := toType(ctx, pkg, typ.ArrayElementType(), flags&^flagIsParam)
+		elem := toType(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef)
 		return newPointer(elem)
 	default:
 		log.Println("==> toType: unknown Kind -", typ.Kind)
