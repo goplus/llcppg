@@ -70,6 +70,8 @@ func (cfg *Config) Lang() (lang cl.Language, ok bool) {
 	}
 }
 
+const includeSuffix = string(os.PathSeparator) + "include"
+
 // topHeaders lists the top-level header files according to the configuration. If the
 // Dir field ends with "/...", it will recursively list all header files in the directory
 // and its subdirectories.
@@ -83,8 +85,8 @@ func (cfg *Config) topHeaders(workDir string, includeDirs []string) (headerFiles
 		dir = filepath.Join(workDir, dir)
 	}
 	incDir := dir
-	if pos := strings.LastIndex(incDir, "/include"); pos >= 0 {
-		incDir = incDir[:pos+8]
+	if pos := strings.LastIndex(incDir, includeSuffix); pos >= 0 {
+		incDir = incDir[:pos+len(includeSuffix)]
 	}
 	includeDirs[0] = incDir
 	return listth.TopHeaders(dir, recursive, false, includeDirs)
