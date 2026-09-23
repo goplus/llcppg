@@ -225,13 +225,13 @@ func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
 			continue
 		}
 		if idx := overriddenSlot(slots, m); idx >= 0 {
-			slots[idx].name = vtableMethodName(ctx, scope, cls, m)
+			slots[idx].name = vtableMethodName(ctx, scope, m)
 			slots[idx].decl = m
 			slots[idx].named = public
 			continue
 		}
 		slots = append(slots, vtableSlot{
-			name:  vtableMethodName(ctx, scope, cls, m),
+			name:  vtableMethodName(ctx, scope, m),
 			decl:  m,
 			named: public,
 		})
@@ -329,7 +329,7 @@ func overriddenRoots(m clang.Cursor) []clang.Cursor {
 // method is one of scope's registered funcs) the already-computed overloaded Go
 // name is reused; otherwise the name is derived the same way loadClassMember
 // derives it.
-func vtableMethodName(ctx *pkgCtx, scope *classCtx, cls clang.Cursor, m clang.Cursor) string {
+func vtableMethodName(ctx *pkgCtx, scope *classCtx, m clang.Cursor) string {
 	if scope != nil {
 		if fn, ok := ctx.funcs[clang.Mangling(m)]; ok {
 			name, _ := ctx.getPubName(fn.name, fn.order())

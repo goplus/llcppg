@@ -73,7 +73,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 
 	var recv *types.Var
 	var nameInPkg string
-	var fnName, rewritten = ctx.getPubName(origName, obj.order())
+	var fnName = ctx.funcName(origName, obj.order(), true)
 	if cls == nil {
 		nameInPkg = fnName
 	} else {
@@ -97,9 +97,6 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 				{Text: "\n//go:linkname " + nameInPkg + " C." + manglingName},
 			},
 		})
-		if rewritten {
-			substObj(pkgTypes, pkgTypes.Scope(), origName, f)
-		}
 	} else {
 		f.SetComments(pkg, &ast.CommentGroup{
 			List: []*ast.Comment{

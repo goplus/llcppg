@@ -63,6 +63,7 @@ type Config struct {
 	Dir            string   `json:"Dir"`        // dir or dir/... (recursive)
 	Deps           []string `json:"Deps"`       // dependencies (package paths)
 	TypePrefix     []string `json:"TypePrefix"` // type prefix to remove
+	FuncPrefix     []string `json:"FuncPrefix"` // global function prefix to remove
 }
 
 // LoadConf loads the llcppg configuration.
