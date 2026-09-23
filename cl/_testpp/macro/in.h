@@ -1,3 +1,5 @@
+#define FOO_H
+
 #define f()  1
 #define g(x) x
 
