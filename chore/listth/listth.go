@@ -65,7 +65,7 @@ func main() {
 		return
 	}
 
-	files, err := listth.TopHeaders(headerDir, false, includeDirs)
+	files, err := listth.TopHeaders(headerDir, false, true, includeDirs)
 	check(err)
 
 	sort.Strings(files)

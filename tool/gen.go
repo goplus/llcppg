@@ -17,6 +17,7 @@
 package tool
 
 import (
+	"encoding/json"
 	"fmt"
 	"go/token"
 	"os"
@@ -46,6 +47,17 @@ type Config struct {
 	Deps           []string `json:"Deps"`     // dependencies (package paths)
 }
 
+// LoadConf loads the llcppg configuration.
+func LoadConf(filename string) (conf Config, err error) {
+	b, err := os.ReadFile(filename)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(b, &conf)
+	return
+}
+
 // Lang returns the language of the configuration.
 func (cfg *Config) Lang() (lang cl.Language, ok bool) {
 	switch cfg.Language {
@@ -58,30 +70,31 @@ func (cfg *Config) Lang() (lang cl.Language, ok bool) {
 	}
 }
 
+const includeSuffix = string(os.PathSeparator) + "include"
+
 // topHeaders lists the top-level header files according to the configuration. If the
 // Dir field ends with "/...", it will recursively list all header files in the directory
 // and its subdirectories.
-func (cfg *Config) topHeaders(includeDirs []string) (headerFiles []string, err error) {
+func (cfg *Config) topHeaders(workDir string, includeDirs []string) (headerFiles []string, err error) {
 	dir := cfg.Dir
 	recursive := strings.HasSuffix(dir, "/...")
 	if recursive {
 		dir = dir[:len(dir)-4]
 	}
-	return listth.TopHeaders(dir, recursive, includeDirs)
-}
-
-// parseSources loads the source files according to the configuration.
-func (cfg *Config) parseSources(includeDirs []string, index clang.Index) (files []cl.Source, err error) {
-	headerFiles, err := cfg.topHeaders(includeDirs)
-	if err != nil {
-		return
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(workDir, dir)
 	}
-	return ParseSources(index, headerFiles, cfg.Language), nil
+	incDir := dir
+	if pos := strings.LastIndex(incDir, includeSuffix); pos >= 0 {
+		incDir = incDir[:pos+len(includeSuffix)]
+	}
+	includeDirs[0] = incDir
+	return listth.TopHeaders(dir, recursive, false, includeDirs)
 }
 
 // NewPackage loads the source files and converts them into a Go package according to the
 // configuration.
-func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret cl.Package, err error) {
+func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret cl.Package, lang cl.Language, err error) {
 	lang, ok := cfg.Lang()
 	if !ok {
 		err = fmt.Errorf("invalid language: %q", cfg.Language)
@@ -103,14 +116,17 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		imp.SetCache(c)
 	}
 
-	includeDirs, pkgPaths := mod.includeDirs(imp, deps)
-	files, err := cfg.parseSources(includeDirs, index)
+	includeDirs, pkgPaths := mod.includeDirs(imp, deps, 1)
+	topHeaders, err := cfg.topHeaders(workDir, includeDirs)
+	pkgPaths[0] = pkgPath
 	if err != nil {
 		return
 	}
+
+	files := ParseSources(index, topHeaders, cfg.Language)
 	defer DisposeSources(files)
 
-	return cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
+	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
 		Fset:           fset,
 		Importer:       imp,
 		LLGoPackage:    cfg.LLGoPackage,
@@ -128,6 +144,7 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 			return
 		},
 	})
+	return
 }
 
 func pkgHash(pkgPath string, self bool) string {
@@ -161,8 +178,11 @@ func (p Module) PubFileLookup(pkgPath string) (pubFile string, ok bool) {
 	return
 }
 
-func (p Module) includeDirs(imp *packages.Importer, deps []string) (incDirs, pkgPaths []string) {
-	incDirs = make([]string, 0, len(deps))
+// includeDirs returns the include directories and package paths for the given dependencies.
+// The reserved parameter specifies the number of reserved slots in the returned slices.
+func (p Module) includeDirs(imp *packages.Importer, deps []string, reserved int) (incDirs, pkgPaths []string) {
+	incDirs = make([]string, reserved, len(deps)+reserved)
+	pkgPaths = make([]string, reserved, len(deps)+reserved)
 	for _, dep := range deps {
 		pkgTypes, err := imp.Import(dep)
 		if err == nil {
