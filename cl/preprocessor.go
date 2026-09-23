@@ -19,7 +19,6 @@ package cl
 import (
 	"go/token"
 	"log"
-	"path/filepath"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -32,12 +31,12 @@ func loadInclude(ctx *pkgCtx, decl clang.Cursor) {
 	if file == clang.InvalidFile {
 		return
 	}
-	includeFile, err := filepath.Abs(clang.FileName(file))
-	if err != nil {
-		log.Panicln("loadInclude:", err)
-	}
+	includeFile := clang.FileName(file) // already absolute path
 	if debugCompileDecl {
 		log.Println("include", includeFile)
+	}
+	if _, ok := ctx.lastSeen[includeFile]; ok {
+		return // already loaded
 	}
 	pkgPath, ok := ctx.pkgOf(includeFile)
 	if !ok {
