@@ -20,6 +20,7 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -40,36 +41,49 @@ import (
 // or "Shape_"), so a constant Red becomes bar_Red / Shape_Red and then goes
 // through getPubName for the final Go name.
 func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
+	name := clang.String(decl)
+	origName := nameWithNS(name, ns)
+	anonymous := decl.IsAnonymous() != 0
 	if debugCompileDecl {
-		log.Println("enum", ns+clang.String(decl))
+		log.Println("enum", origName, "anonymous:", anonymous)
 	}
+
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 
 	// Preserve the enum type name for a named enum. An anonymous enum has no
 	// name, so its constants stay untyped.
 	var enumType types.Type
-	if name := clang.String(decl); name != "" && decl.IsAnonymous() == 0 {
-		origName := nameWithNS(name, ns)
-		typeName := ctx.typeName(origName, true)
-		// C enums decay to int; use the same C int type the rest of the
-		// generator uses so enum-typed values interoperate with C APIs.
-		underlying := ctx.c.Ref("Int").Type()
+	if !anonymous {
 		typDefs := pkg.NewTypeDefs()
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			typDefs.SetComments(doc)
 		}
+
+		// C enums decay to int; use the same C int type the rest of the
+		// generator uses so enum-typed values interoperate with C APIs.
+		underlying := ctx.c.Ref("Int").Type()
+
+		typeName := ctx.typeName(origName, true)
 		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
 		typNamed := typDecl.InitType(pkg, underlying)
+
 		cName := clang.String(decl.Type())
-		ctx.types[cName] = typNamed.Obj()
+		typObj := typNamed.Obj()
+		ctx.types[cName] = typObj
+
+		// name of typedef enum may be "m" instead of "enum m"
+		if !strings.HasPrefix(cName, "enum ") {
+			ctx.types["enum "+cName] = typObj
+		}
+
 		enumType = typNamed
 	}
 
 	defs := pkg.NewConstDefs(pkgTypes.Scope())
 	// For an anonymous enum there is no type to carry the doc, so attach the
 	// enum's doc comment to the generated const block instead.
-	if enumType == nil {
+	if anonymous {
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			defs.SetComments(doc)
 		}

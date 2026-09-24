@@ -178,16 +178,16 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 	for e := range entries {
 		switch e.Kind {
 		case 'T': // type
+			name, isEnum := strings.CutPrefix(e.Name, "enum ")
 			if e.GoName == "" {
-				name := e.Name
-				if v, ok := strings.CutPrefix(name, "enum "); ok {
-					name = v
-				}
 				e.GoName = p.typeName(strings.ReplaceAll(name, "::", "_"), true)
 			}
 			if o := scope.Lookup(e.GoName); o != nil {
 				if t, ok := o.(*types.TypeName); ok {
 					p.types[e.Name] = t
+					if isEnum {
+						p.types[name] = t
+					}
 				}
 			}
 		default:
@@ -323,14 +323,13 @@ func isAllUpperStart(parts []string) bool {
 }
 
 func cutMethodPrefix(name, objName string) string {
-	after, ok := strings.CutPrefix(name, "Get")
-	if ok {
-		if after2, ok2 := strings.CutPrefix(after, objName); ok2 {
-			after = after2
-		}
-	} else {
-		after, ok = strings.CutPrefix(name, objName)
-	}
+	name = cutPrefix(name, objName)
+	name = cutPrefix(name, "Get")
+	return cutPrefix(name, objName)
+}
+
+func cutPrefix(name, prefix string) string {
+	after, ok := strings.CutPrefix(name, prefix)
 	if ok && after != "" {
 		if c := after[0]; 'A' <= c && c <= 'Z' {
 			return after
