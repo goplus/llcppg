@@ -179,7 +179,11 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 		switch e.Kind {
 		case 'T': // type
 			if e.GoName == "" {
-				e.GoName = p.typeName(strings.ReplaceAll(e.Name, "::", "_"), true)
+				name := e.Name
+				if v, ok := strings.CutPrefix(name, "enum "); ok {
+					name = v
+				}
+				e.GoName = p.typeName(strings.ReplaceAll(name, "::", "_"), true)
 			}
 			if o := scope.Lookup(e.GoName); o != nil {
 				if t, ok := o.(*types.TypeName); ok {

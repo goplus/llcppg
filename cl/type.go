@@ -105,11 +105,6 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 			return t
 		}
 	case lc.TypeRecord, lc.TypeTypedef:
-		// A record type registers under its declaration's type spelling
-		// (clang.String(decl.Type()); see loadClass/emitUnion). Resolve through
-		// the same key via the type's declaration cursor, which also covers a
-		// tagless inline union hoisted to "_llcppg_union_<n>" whose tag-less
-		// fullName would otherwise miss. See issue goplus/llcppg#775.
 		cName := clang.String(typ.TypeDeclaration().Type())
 		if t, ok := ctx.typeOf(cName); ok {
 			return t

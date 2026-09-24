@@ -194,5 +194,5 @@ var langExts = [...]string{
 }
 
 func TestSingleC(t *testing.T) {
-	testFromDir(t, "CXErrorCode", "./_testc", true)
+	testFromDir(t, "CXDiagnostic", "./_testc", true)
 }

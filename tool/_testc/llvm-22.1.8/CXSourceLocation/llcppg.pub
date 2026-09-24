@@ -1,0 +1,3 @@
+T CXSourceLocation
+T CXSourceRange
+T CXSourceRangeList
