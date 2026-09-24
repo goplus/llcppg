@@ -224,12 +224,18 @@ func (p *pkgCtx) typeName(name string, _ bool) string {
 	return p.cstyleToGo(rmPrefix(name, p.typePrefix), true)
 }
 
-func (p *pkgCtx) funcName(name string, order int, global, _ bool) string {
+func (p *pkgCtx) funcName(name string, order int, typNamed *types.Named, global, _ bool) string {
 	if global {
 		name = rmPrefix(name, p.fnPrefix)
+	} else {
+		// don't remove type name suffix for a method
+		typNamed = nil
 	}
 	if !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
 		name = p.cstyleToGo(name, true)
+		if typNamed != nil {
+			name = strings.TrimSuffix(name, typNamed.Obj().Name())
+		}
 	}
 	if order >= 0 {
 		name = name + "__" + strconv.FormatInt(int64(order), 36)

@@ -178,10 +178,10 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clang.Cursor) types.Type {
 	this := types.NewParam(token.NoPos, pkg, "this", recvPtr)
 	rest, variadic := newParams(ctx, pkg, fn)
-	params := make([]*types.Var, 0, 1+rest.Len())
+	params := make([]*types.Var, 0, 1+len(rest))
 	params = append(params, this)
-	for i := 0; i < rest.Len(); i++ {
-		params = append(params, rest.At(i))
+	for _, param := range rest {
+		params = append(params, param)
 	}
 	results := toFuncResults(ctx, pkg, fn.ResultType())
 	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
@@ -332,7 +332,7 @@ func overriddenRoots(m clang.Cursor) []clang.Cursor {
 func vtableMethodName(ctx *pkgCtx, m clang.Cursor) string {
 	manglingName := clang.Mangling(m)
 	if fn, ok := ctx.funcs[manglingName]; ok {
-		return ctx.funcName(fn.name, fn.order(), false, true)
+		return ctx.funcName(fn.name, fn.order(), nil, false, true)
 	}
 	panic("vtableMethodName: method not found - " + manglingName)
 }

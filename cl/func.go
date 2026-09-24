@@ -70,28 +70,39 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-
-	var recv *types.Var
-	var nameInPkg string
-	var global = cls == nil
-	var fnName = ctx.funcName(origName, obj.order(), global, true)
-	if global {
-		nameInPkg = fnName
-	} else {
-		typNamed := cls.typNamed
-		nameInPkg = "(*" + typNamed.Obj().Name() + ")." + fnName
-		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
-	}
-
 	params, variadic := newParams(ctx, pkgTypes, fn)
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType())
-	sig := types.NewSignatureType(recv, nil, nil, params, results, variadic)
+
+	var recv *types.Var
+	var typNamed *types.Named
+	var nameInPkg string
+	if cls == nil {
+		if ctx.lang == LanguageC {
+			// try to method for C functions
+			params, recv, typNamed = tryToMethod(pkgTypes, params)
+		}
+	} else {
+		typNamed = cls.typNamed
+		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
+	}
+	fnName := ctx.funcName(origName, obj.order(), typNamed, cls == nil, true)
+	if recv == nil {
+		nameInPkg = fnName
+	} else {
+		objName := typNamed.Obj().Name()
+		if _, ok := recv.Type().(*types.Pointer); ok {
+			nameInPkg = "(*" + objName + ")." + fnName
+		} else {
+			nameInPkg = objName + "." + fnName
+		}
+	}
+	sig := types.NewSignatureType(recv, nil, nil, types.NewTuple(params...), results, variadic)
 	f, err := pkg.NewFuncWith(goNodePos(ctx, fn), fnName, sig, nil)
 	if err != nil {
 		log.Panicln("compileFunc:", origName, err)
 	}
 
-	if global {
+	if recv == nil {
 		ctx.forceImportUnsafe()
 		f.SetComments(pkg, &ast.CommentGroup{
 			List: []*ast.Comment{
@@ -112,9 +123,22 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	}
 }
 
-func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor) (ret *types.Tuple, variadic bool) {
+func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named) {
+	if len(params) > 0 {
+		first := params[0]
+		t := first.Type()
+		if tp, ok := t.(*types.Pointer); ok {
+			t = tp.Elem()
+		}
+		if tn, ok := t.(*types.Named); ok && tn.Obj().Pkg() == pkgTypes {
+			return params[1:], first, tn // can be a method
+		}
+	}
+	return params, nil, nil
+}
+
+func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor) (params []*types.Var, variadic bool) {
 	n := fn.NumArguments()
-	var params []*types.Var
 	for i := range n {
 		item := fn.Argument(c.Uint(i))
 		param := newParam(ctx, pkg, item, i)
@@ -124,7 +148,6 @@ func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor) (ret *types.Tup
 	if variadic {
 		params = append(params, newVariadicParam(pkg))
 	}
-	ret = types.NewTuple(params...)
 	return
 }
 

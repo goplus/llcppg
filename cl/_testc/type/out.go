@@ -25,8 +25,10 @@ type Matrix struct {
 //go:linkname Primitives C.primitives
 func Primitives(ch c.Char, uc uint8, sc int8, s int16, us uint16, i c.Int, ui c.Uint, l c.Long, ul c.Ulong, ll c.LongLong, ull c.UlongLong, flt c.Float) c.Double
 
-//go:linkname Pick C.pick
-func Pick(c Color) Color
+// llgo:link Color.Pick C.pick
+func (c Color) Pick() Color {
+	return 0
+}
 
 //go:linkname Sum C.sum
 func Sum(values *c.Int, count c.Int) c.Int

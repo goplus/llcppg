@@ -16,11 +16,15 @@ type StringSet struct {
 	Count   c.Uint
 }
 
-//go:linkname CStr C.clang_getCString
-func CStr(string String) *c.Char
+// llgo:link String.CStr C.clang_getCString
+func (string String) CStr() *c.Char {
+	return nil
+}
 
-//go:linkname DisposeString C.clang_disposeString
-func DisposeString(string String)
+// llgo:link String.Dispose C.clang_disposeString
+func (string String) Dispose() {
+}
 
-//go:linkname DisposeStringSet C.clang_disposeStringSet
-func DisposeStringSet(set *StringSet)
+// llgo:link (*StringSet).Dispose C.clang_disposeStringSet
+func (set *StringSet) Dispose() {
+}
