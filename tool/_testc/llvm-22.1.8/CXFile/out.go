@@ -4,11 +4,14 @@ import (
 	"clang/CXString"
 	"clang/cstdlib"
 	"github.com/goplus/lib/c"
+	_ "unsafe"
 )
 
 const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
+
 // A particular source file that is part of a translation unit.
 type File uintptr
+
 // Uniquely identifies a CXFile, that refers to the same underlying file,
 // across an indexing session.
 type FileUniqueID struct {
@@ -16,12 +19,14 @@ type FileUniqueID struct {
 }
 
 // Retrieve the complete file and path name of the given file.
+//
 // llgo:link File.Name C.clang_getFileName
 func (SFile File) Name() CXString.String {
 	return CXString.String{}
 }
 
 // Retrieve the last modification time of the given file.
+//
 // llgo:link File.Time C.clang_getFileTime
 func (SFile File) Time() cstdlib.TimeT {
 	return 0
@@ -33,6 +38,7 @@ func (SFile File) Time() cstdlib.TimeT {
 // \param outID stores the returned CXFileUniqueID.
 // \returns If there was a failure getting the unique ID, returns non-zero,
 // otherwise returns 0.
+//
 // llgo:link File.UniqueID C.clang_getFileUniqueID
 func (file File) UniqueID(outID *FileUniqueID) c.Int {
 	return 0
@@ -40,14 +46,14 @@ func (file File) UniqueID(outID *FileUniqueID) c.Int {
 
 // Returns non-zero if the \c file1 and \c file2 point to the same file,
 // or they are both NULL.
-// llgo:link File.IsEqual C.clang_File_isEqual
-func (file1 File) IsEqual(file2 File) c.Int {
-	return 0
-}
+//
+//go:linkname FileIsEqual C.clang_File_isEqual
+func FileIsEqual(file1 File, file2 File) c.Int
 
 // Returns the real path name of \c file.
 //
 // An empty string may be returned. Use \c clang_getFileName() in that case.
+//
 // llgo:link File.TryGetRealPathName C.clang_File_tryGetRealPathName
 func (file File) TryGetRealPathName() CXString.String {
 	return CXString.String{}
