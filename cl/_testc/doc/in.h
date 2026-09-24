@@ -1,7 +1,10 @@
 /// A documented enum type.
 enum Color {
+	/// The red primary color.
 	Red,
+	/// The green primary color.
 	Green,
+	/// The blue primary color.
 	Blue
 };
 
@@ -23,3 +26,9 @@ typedef int MyInt;
 
 /// A documented global variable.
 extern int counter;
+
+/// Maximum size limit.
+#define MAX_SIZE 100
+
+/// Default timeout value.
+#define TIMEOUT 30
