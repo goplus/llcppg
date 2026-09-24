@@ -113,9 +113,10 @@ func toLineComments(raw string) []*ast.Comment {
 // directive needs to be preserved alongside it.
 func (p *pkgCtx) docCommentGroup(decl clang.Cursor) *ast.CommentGroup {
 	comments := p.docComments(decl)
-	if comments == nil {
+	if len(comments) == 0 {
 		return nil
 	}
+	comments[0].Text = "\n" + comments[0].Text
 	return &ast.CommentGroup{List: comments}
 }
 
@@ -134,10 +135,10 @@ func (p *pkgCtx) directiveComments(decl clang.Cursor, directive string) *ast.Com
 	if len(doc) == 0 {
 		return &ast.CommentGroup{List: []*ast.Comment{{Text: directive}}}
 	}
-	list := make([]*ast.Comment, 0, len(doc)+1)
+	list := make([]*ast.Comment, 0, len(doc)+2)
 	list = append(list, &ast.Comment{Text: "\n" + doc[0].Text})
 	list = append(list, doc[1:]...)
-	list = append(list, &ast.Comment{Text: strings.TrimPrefix(directive, "\n")})
+	list = append(list, &ast.Comment{Text: "//"}, &ast.Comment{Text: strings.TrimPrefix(directive, "\n")})
 	return &ast.CommentGroup{List: list}
 }
 

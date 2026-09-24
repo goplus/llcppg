@@ -4,6 +4,10 @@ import "github.com/goplus/lib/c"
 
 const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
 
+// Error codes returned by libclang routines.
+//
+// Zero (\c CXError_Success) is the only error code indicating success.  Other
+// error codes, including not yet assigned non-zero values, indicate errors.
 type ErrorCode c.Int
 
 const (
