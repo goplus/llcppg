@@ -11,11 +11,11 @@ const LLGoPackage = "link: -L/path/foo -lfoo"
 type Color c.Int
 
 const (
-// The red primary color.
+	// The red primary color.
 	Red Color = 0
-// The green primary color.
+	// The green primary color.
 	Green Color = 1
-// The blue primary color.
+	// The blue primary color.
 	Blue Color = 2
 )
 
