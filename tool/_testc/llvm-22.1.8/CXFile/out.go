@@ -4,7 +4,6 @@ import (
 	"clang/CXString"
 	"clang/cstdlib"
 	"github.com/goplus/lib/c"
-	"unsafe"
 )
 
 const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
@@ -16,10 +15,7 @@ type FileUniqueID struct {
 
 // llgo:link File.GetFileName C.clang_getFileName
 func (SFile File) GetFileName() CXString.String {
-	return struct {
-		Data         unsafe.Pointer
-		PrivateFlags c.Uint
-	}{}
+	return CXString.String{}
 }
 
 // llgo:link File.GetFileTime C.clang_getFileTime
@@ -39,8 +35,5 @@ func (file1 File) FileIsEqual(file2 File) c.Int {
 
 // llgo:link File.FileTryGetRealPathName C.clang_File_tryGetRealPathName
 func (file File) FileTryGetRealPathName() CXString.String {
-	return struct {
-		Data         unsafe.Pointer
-		PrivateFlags c.Uint
-	}{}
+	return CXString.String{}
 }
