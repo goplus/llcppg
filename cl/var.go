@@ -52,7 +52,7 @@ func loadVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 // toType (which switches on the type kind) already yields the unqualified Go
 // type without any special casing here.
 func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
-	origName := ns + clang.String(decl)
+	origName := nameWithNS(clang.String(decl), ns)
 	manglingName := clang.Mangling(decl)
 	if _, ok := ctx.nameLookup(manglingName); !ok {
 		if debugCompileDecl {

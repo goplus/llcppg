@@ -28,7 +28,7 @@ import (
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	origName := ns + clang.String(decl)
+	origName := nameWithNS(clang.String(decl), ns)
 	underlying := decl.TypedefDeclUnderlyingType()
 	if debugCompileDecl {
 		log.Println("typedef", origName, "-", clang.String(underlying))

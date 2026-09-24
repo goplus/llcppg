@@ -98,6 +98,7 @@ type pkgCtx struct {
 
 	wrapFileHeader string
 
+	enumPrefix []string
 	typePrefix []string
 	fnPrefix   []string
 	rename     map[string]string
@@ -222,8 +223,24 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 	return nil, false
 }
 
+func (p *pkgCtx) fieldName(name string, public bool) string {
+	return p.cstyleToGo(name, public)
+}
+
+func (p *pkgCtx) varName(name string) string {
+	return p.cstyleToGo(name, true)
+}
+
+func (p *pkgCtx) macroName(name string) string {
+	return p.cstyleToGo(name, true)
+}
+
 func (p *pkgCtx) typeName(name string, _ bool) string {
 	return p.cstyleToGo(rmPrefix(name, p.typePrefix), true)
+}
+
+func (p *pkgCtx) enumvalName(name string) string {
+	return p.cstyleToGo(rmPrefix(name, p.enumPrefix), true)
 }
 
 func (p *pkgCtx) funcName(name string, order int, typNamed *types.Named, global, _ bool) string {
@@ -246,25 +263,15 @@ func (p *pkgCtx) funcName(name string, order int, typNamed *types.Named, global,
 	return name
 }
 
-func (p *pkgCtx) fieldName(name string, public bool) string {
-	return p.cstyleToGo(name, public)
-}
-
-func (p *pkgCtx) varName(name string) string {
-	return p.cstyleToGo(name, true)
-}
-
-func (p *pkgCtx) macroName(name string) string {
-	return p.cstyleToGo(name, true)
-}
-
-func (p *pkgCtx) enumvalName(name string) string {
-	return p.cstyleToGo(name, true)
-}
-
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 	rename := p.rename
 	parts := strings.Split(cName, "_")
+	if isAllUpperStart(parts) {
+		if parts[0] == "" && public {
+			return "X" + cName
+		}
+		return cName
+	}
 	for i := 0; i < len(parts); i++ {
 		part := parts[i]
 		if part == "" {
@@ -281,6 +288,31 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 		}
 	}
 	return strings.Join(parts, "")
+}
+
+func nsName(ns, inner string) string {
+	if c := inner[0]; 'a' <= c && c <= 'z' {
+		return ns + string(c-'a'+'A') + inner[1:]
+	}
+	return ns + inner
+}
+
+func nameWithNS(name, ns string) string {
+	if ns == "" {
+		return name
+	}
+	return nsName(ns, name)
+}
+
+func isAllUpperStart(parts []string) bool {
+	for _, part := range parts {
+		if part != "" {
+			if r := part[0]; 'a' <= r && r <= 'z' {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func cutMethodPrefix(name, objName string) string {
