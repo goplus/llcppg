@@ -81,7 +81,11 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		origName := nameWithNS(clang.String(item), ns)
 		name := ctx.enumvalName(origName)
 		val := int(item.EnumConstantDeclValue()) // TODO(xsw): use int64 for 64-bit enums?
-		defs.New(func(cb *gogen.CodeBuilder) int {
+		at := defs.NewPos()
+		if doc := ctx.docCommentGroup(item); doc != nil {
+			at.Doc = doc
+		}
+		defs.NewAt(at, func(cb *gogen.CodeBuilder) int {
 			cb.Val(val)
 			return 1
 		}, 0, token.NoPos, enumType, name)

@@ -6,14 +6,19 @@ import (
 )
 
 const LLGoPackage = "link: -L/path/foo -lfoo"
+const MAX_SIZE = 100
+const TIMEOUT = 30
 
 // A documented enum type.
 type Color c.Int
 
 const (
-	Red   Color = 0
+	// The red primary color.
+	Red Color = 0
+	// The green primary color.
 	Green Color = 1
-	Blue  Color = 2
+	// The blue primary color.
+	Blue Color = 2
 )
 
 // A documented struct type.
