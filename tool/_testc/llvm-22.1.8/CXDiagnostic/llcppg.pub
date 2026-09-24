@@ -1,5 +1,5 @@
-T CXDiagnosticSeverity
 T CXDiagnostic
 T CXDiagnosticSet
-T CXLoadDiag_Error
-T CXDiagnosticDisplayOptions
+T enum CXDiagnosticSeverity
+T enum CXLoadDiag_Error
+T enum CXDiagnosticDisplayOptions
