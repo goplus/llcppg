@@ -86,6 +86,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		Importer:    imp,
 		LLGoPackage: conf.LLGoPackage,
 		Language:    lang,
+		Class:       conf.Class,
 		TypePrefix:  conf.TypePrefix,
 		FuncPrefix:  conf.FuncPrefix,
 		Rename:      conf.Rename,

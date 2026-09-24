@@ -115,6 +115,9 @@ type Config struct {
 	// map, it will be renamed to the corresponding Go name (optional).
 	Rename map[string]string
 
+	// Class specifies a list of C/C++ typedef names to be treated as classes.
+	Class []string
+
 	// TypePrefix specifies the prefix to remove from C/C++ type names when generating Go
 	// type names (optional).
 	TypePrefix []string
@@ -163,11 +166,15 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	if nameLookup == nil {
 		nameLookup = defaultNameLookup
 	}
+	classes := make(map[string]none)
+	for _, name := range conf.Class {
+		classes[name] = none{}
+	}
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
-		typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix, rename: conf.Rename,
+		typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix, rename: conf.Rename, classes: classes,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
