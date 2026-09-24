@@ -235,7 +235,8 @@ func (p *pkgCtx) funcName(name string, order int, typNamed *types.Named, global,
 	if !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
 		name = p.cstyleToGo(name, true)
 		if typNamed != nil {
-			name = strings.TrimSuffix(name, typNamed.Obj().Name())
+			objName := typNamed.Obj().Name()
+			name = cutMethodPrefix(strings.TrimSuffix(name, objName), objName)
 		}
 	}
 	if order >= 0 {
@@ -279,6 +280,21 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 		}
 	}
 	return strings.Join(parts, "")
+}
+
+func cutMethodPrefix(name, objName string) string {
+	after, ok := strings.CutPrefix(name, "Get")
+	if ok {
+		after, ok = strings.CutPrefix(after, objName)
+	} else {
+		after, ok = strings.CutPrefix(name, objName)
+	}
+	if ok && after != "" {
+		if c := after[0]; 'A' <= c && c <= 'Z' {
+			return after
+		}
+	}
+	return name
 }
 
 func cPubName(name string) string {
