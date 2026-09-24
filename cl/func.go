@@ -127,6 +127,10 @@ func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *t
 	if len(params) > 0 {
 		first := params[0]
 		t := first.Type()
+		if len(params) == 2 && params[1].Type() == t {
+			// don't convert to method if the first two params have the same type
+			return params, nil, nil
+		}
 		if tp, ok := t.(*types.Pointer); ok {
 			t = tp.Elem()
 		}

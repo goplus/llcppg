@@ -318,7 +318,9 @@ func isAllUpperStart(parts []string) bool {
 func cutMethodPrefix(name, objName string) string {
 	after, ok := strings.CutPrefix(name, "Get")
 	if ok {
-		after, ok = strings.CutPrefix(after, objName)
+		if after2, ok2 := strings.CutPrefix(after, objName); ok2 {
+			after = after2
+		}
 	} else {
 		after, ok = strings.CutPrefix(name, objName)
 	}

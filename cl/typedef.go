@@ -43,10 +43,13 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	var obj *types.TypeName
 	var typDefs = pkg.NewTypeDefs()
 	var cName = clang.String(decl.Type())
-	if _, ok := ctx.classes[cName]; ok {
-		if tunder == types.Typ[types.UnsafePointer] {
-			tunder = types.Typ[types.Uintptr] // unsafe.Pointer => uintptr
-		}
+	var isClass bool
+	if tunder == types.Typ[types.UnsafePointer] {
+		tunder, isClass = types.Typ[types.Uintptr], true // unsafe.Pointer => uintptr
+	} else {
+		_, isClass = ctx.classes[cName]
+	}
+	if isClass {
 		t := typDefs.NewType(name).InitType(pkg, tunder)
 		obj = t.Obj()
 	} else {
