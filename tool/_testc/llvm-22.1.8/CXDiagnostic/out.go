@@ -13,18 +13,18 @@ const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
 type DiagnosticSeverity c.Int
 
 const (
-// A diagnostic that has been suppressed, e.g., by a command-line
+	// A diagnostic that has been suppressed, e.g., by a command-line
 	// option.
 	Diagnostic_Ignored DiagnosticSeverity = 0
-// This diagnostic is a note that should be attached to the
+	// This diagnostic is a note that should be attached to the
 	// previous (non-note) diagnostic.
 	Diagnostic_Note DiagnosticSeverity = 1
-// This diagnostic indicates suspicious code that may not be
+	// This diagnostic indicates suspicious code that may not be
 	// wrong.
 	Diagnostic_Warning DiagnosticSeverity = 2
-// This diagnostic indicates that the code is ill-formed.
+	// This diagnostic indicates that the code is ill-formed.
 	Diagnostic_Error DiagnosticSeverity = 3
-// This diagnostic indicates that the code is ill-formed such
+	// This diagnostic indicates that the code is ill-formed such
 	// that future parser recovery is unlikely to produce useful
 	// results.
 	Diagnostic_Fatal DiagnosticSeverity = 4
@@ -42,15 +42,15 @@ type DiagnosticSet uintptr
 type LoadDiag_Error c.Int
 
 const (
-// Indicates that no error occurred.
+	// Indicates that no error occurred.
 	LoadDiag_None LoadDiag_Error = 0
-// Indicates that an unknown error occurred while attempting to
+	// Indicates that an unknown error occurred while attempting to
 	// deserialize diagnostics.
 	LoadDiag_Unknown LoadDiag_Error = 1
-// Indicates that the file containing the serialized diagnostics
+	// Indicates that the file containing the serialized diagnostics
 	// could not be opened.
 	LoadDiag_CannotLoad LoadDiag_Error = 2
-// Indicates that the serialized diagnostics file is invalid or
+	// Indicates that the serialized diagnostics file is invalid or
 	// corrupt.
 	LoadDiag_InvalidFile LoadDiag_Error = 3
 )
@@ -62,7 +62,7 @@ const (
 type DiagnosticDisplayOptions c.Int
 
 const (
-// Display the source-location information where the
+	// Display the source-location information where the
 	// diagnostic was located.
 	//
 	// When set, diagnostics will be prefixed by the file, line, and
@@ -74,31 +74,31 @@ const (
 	//
 	// This option corresponds to the clang flag \c -fshow-source-location.
 	Diagnostic_DisplaySourceLocation DiagnosticDisplayOptions = 1
-// If displaying the source-location information of the
+	// If displaying the source-location information of the
 	// diagnostic, also include the column number.
 	//
 	// This option corresponds to the clang flag \c -fshow-column.
 	Diagnostic_DisplayColumn DiagnosticDisplayOptions = 2
-// If displaying the source-location information of the
+	// If displaying the source-location information of the
 	// diagnostic, also include information about source ranges in a
 	// machine-parsable format.
 	//
 	// This option corresponds to the clang flag
 	// \c -fdiagnostics-print-source-range-info.
 	Diagnostic_DisplaySourceRanges DiagnosticDisplayOptions = 4
-// Display the option name associated with this diagnostic, if any.
+	// Display the option name associated with this diagnostic, if any.
 	//
 	// The option name displayed (e.g., -Wconversion) will be placed in brackets
 	// after the diagnostic text. This option corresponds to the clang flag
 	// \c -fdiagnostics-show-option.
 	Diagnostic_DisplayOption DiagnosticDisplayOptions = 8
-// Display the category number associated with this diagnostic, if any.
+	// Display the category number associated with this diagnostic, if any.
 	//
 	// The category number is displayed within brackets after the diagnostic text.
 	// This option corresponds to the clang flag
 	// \c -fdiagnostics-show-category=id.
 	Diagnostic_DisplayCategoryId DiagnosticDisplayOptions = 16
-// Display the category name associated with this diagnostic, if any.
+	// Display the category name associated with this diagnostic, if any.
 	//
 	// The category name is displayed within brackets after the diagnostic text.
 	// This option corresponds to the clang flag
