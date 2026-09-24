@@ -95,6 +95,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			WrapFileHeader: conf.WrapFileHeader,
 			CFlags:         conf.CFlags,
 			NameLookup:     nil,
+			DontKeepDoc:    !conf.KeepDoc,
 			PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
 				if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {
 					return filepath.Join(rootDir, name, "llcppg.pub"), true

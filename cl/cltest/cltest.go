@@ -34,6 +34,7 @@ type Config struct {
 	WrapFileHeader string   `json:"WrapFileHeader"`
 	CFlags         string   `json:"CFlags"`
 	Files          []string `json:"Files"`
+	KeepDoc        bool     `json:"KeepDoc"`
 }
 
 // LoadConf loads the lltest configuration.

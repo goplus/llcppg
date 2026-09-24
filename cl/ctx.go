@@ -125,6 +125,7 @@ type pkgCtx struct {
 	anonStructSeq int
 
 	unsafeImported bool
+	keepDoc        bool
 }
 
 const (
