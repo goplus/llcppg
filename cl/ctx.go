@@ -98,6 +98,7 @@ type pkgCtx struct {
 
 	wrapFileHeader string
 
+	enumPrefix []string
 	typePrefix []string
 	fnPrefix   []string
 	rename     map[string]string
@@ -222,8 +223,24 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 	return nil, false
 }
 
+func (p *pkgCtx) fieldName(name string, public bool) string {
+	return p.cstyleToGo(name, public)
+}
+
+func (p *pkgCtx) varName(name string) string {
+	return p.cstyleToGo(name, true)
+}
+
+func (p *pkgCtx) macroName(name string) string {
+	return p.cstyleToGo(name, true)
+}
+
 func (p *pkgCtx) typeName(name string, _ bool) string {
 	return p.cstyleToGo(rmPrefix(name, p.typePrefix), true)
+}
+
+func (p *pkgCtx) enumvalName(name string) string {
+	return p.cstyleToGo(rmPrefix(name, p.enumPrefix), true)
 }
 
 func (p *pkgCtx) funcName(name string, order int, typNamed *types.Named, global, _ bool) string {
@@ -246,23 +263,12 @@ func (p *pkgCtx) funcName(name string, order int, typNamed *types.Named, global,
 	return name
 }
 
-func (p *pkgCtx) fieldName(name string, public bool) string {
-	return p.cstyleToGo(name, public)
-}
-
-func (p *pkgCtx) varName(name string) string {
-	return p.cstyleToGo(name, true)
-}
-
-func (p *pkgCtx) macroName(name string) string {
-	return p.cstyleToGo(name, true)
-}
-
-func (p *pkgCtx) enumvalName(name string) string {
-	return p.cstyleToGo(name, true)
-}
-
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
+	if cName != "" {
+		if c := cName[0]; 'A' <= c && c <= 'Z' {
+			return cName
+		}
+	}
 	rename := p.rename
 	parts := strings.Split(cName, "_")
 	for i := 0; i < len(parts); i++ {

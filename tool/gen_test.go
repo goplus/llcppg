@@ -87,6 +87,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		LLGoPackage: conf.LLGoPackage,
 		Language:    lang,
 		Class:       conf.Class,
+		EnumPrefix:  conf.EnumPrefix,
 		TypePrefix:  conf.TypePrefix,
 		FuncPrefix:  conf.FuncPrefix,
 		Rename:      conf.Rename,
@@ -192,5 +193,5 @@ var langExts = [...]string{
 }
 
 func TestSingleC(t *testing.T) {
-	testFromDir(t, "CXFile", "./_testc", true)
+	testFromDir(t, "CXErrorCode", "./_testc", true)
 }

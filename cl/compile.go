@@ -122,6 +122,10 @@ type Config struct {
 	// type names (optional).
 	TypePrefix []string
 
+	// EnumPrefix specifies the prefix to remove from C/C++ enum value names when generating
+	// Go const names (optional).
+	EnumPrefix []string
+
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
 	// generating Go function names (optional).
 	FuncPrefix []string
@@ -177,7 +181,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(), llgo: llgo,
 		fset: pkg.Fset, c: c, lang: conf.Language, keepDoc: !conf.DontKeepDoc,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
+		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, enumPrefix: conf.EnumPrefix,
 		typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix, rename: conf.Rename, classes: classes,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
