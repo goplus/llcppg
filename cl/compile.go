@@ -125,6 +125,10 @@ type Config struct {
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
 	// generating Go function names (optional).
 	FuncPrefix []string
+
+	// DontKeepDoc specifies whether to keep the documentation comments in the generated
+	// Go package. If true, the documentation comments will be removed (optional).
+	DontKeepDoc bool
 }
 
 // -----------------------------------------------------------------------------
@@ -171,8 +175,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		classes[name] = none{}
 	}
 	ctx := &pkgCtx{
-		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
-		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
+		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(), llgo: llgo,
+		fset: pkg.Fset, c: c, lang: conf.Language, keepDoc: !conf.DontKeepDoc,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix, rename: conf.Rename, classes: classes,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
@@ -220,12 +224,6 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
 }
 
 func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
-	/* if global {
-		ctx.logFile(decl)
-		if decl.IsImplicit || ctx.inDepPkg {
-			continue
-		}
-	} */
 	switch decl.Kind {
 	case lc.CursorFunctionDecl:
 		loadGlobalFunc(ctx, scope, decl, ns)
