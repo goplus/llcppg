@@ -61,16 +61,16 @@ func IsBeforeInTranslationUnit(loc1 SourceLocation, loc2 SourceLocation) c.Uint
 
 // Returns non-zero if the given source location is in a system header.
 //
-// llgo:link SourceLocation.LocationIsInSystemHeader C.clang_Location_isInSystemHeader
-func (location SourceLocation) LocationIsInSystemHeader() c.Int {
+// llgo:link SourceLocation.IsInSystemHeader C.clang_Location_isInSystemHeader
+func (location SourceLocation) IsInSystemHeader() c.Int {
 	return 0
 }
 
 // Returns non-zero if the given source location is in the main file of
 // the corresponding translation unit.
 //
-// llgo:link SourceLocation.LocationIsFromMainFile C.clang_Location_isFromMainFile
-func (location SourceLocation) LocationIsFromMainFile() c.Int {
+// llgo:link SourceLocation.IsFromMainFile C.clang_Location_isFromMainFile
+func (location SourceLocation) IsFromMainFile() c.Int {
 	return 0
 }
 
@@ -94,8 +94,8 @@ func EqualRanges(range1 SourceRange, range2 SourceRange) c.Uint
 
 // Returns non-zero if \p range is null.
 //
-// llgo:link SourceRange.RangeIsNull C.clang_Range_isNull
-func (range_ SourceRange) RangeIsNull() c.Int {
+// llgo:link SourceRange.IsNull C.clang_Range_isNull
+func (range_ SourceRange) IsNull() c.Int {
 	return 0
 }
 
@@ -120,8 +120,8 @@ func (range_ SourceRange) RangeIsNull() c.Int {
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.ExpansionLocation C.clang_getExpansionLocation
-func (location SourceLocation) ExpansionLocation(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+// llgo:link SourceLocation.Expansion C.clang_getExpansionLocation
+func (location SourceLocation) Expansion(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the file, line and column represented by the given source
@@ -163,8 +163,8 @@ func (location SourceLocation) ExpansionLocation(file *CXFile.File, line *c.Uint
 // \param column [out] if non-NULL, will be set to the column number of the
 // source location. For an invalid source location, zero is returned.
 //
-// llgo:link SourceLocation.PresumedLocation C.clang_getPresumedLocation
-func (location SourceLocation) PresumedLocation(filename *CXString.String, line *c.Uint, column *c.Uint) {
+// llgo:link SourceLocation.Presumed C.clang_getPresumedLocation
+func (location SourceLocation) Presumed(filename *CXString.String, line *c.Uint, column *c.Uint) {
 }
 
 // Legacy API to retrieve the file, line, column, and offset represented
@@ -174,8 +174,8 @@ func (location SourceLocation) PresumedLocation(filename *CXString.String, line 
 // #clang_getExpansionLocation(). See that interface's documentation for
 // details.
 //
-// llgo:link SourceLocation.InstantiationLocation C.clang_getInstantiationLocation
-func (location SourceLocation) InstantiationLocation(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+// llgo:link SourceLocation.Instantiation C.clang_getInstantiationLocation
+func (location SourceLocation) Instantiation(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the file, line, column, and offset represented by
@@ -199,8 +199,8 @@ func (location SourceLocation) InstantiationLocation(file *CXFile.File, line *c.
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.SpellingLocation C.clang_getSpellingLocation
-func (location SourceLocation) SpellingLocation(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+// llgo:link SourceLocation.Spelling C.clang_getSpellingLocation
+func (location SourceLocation) Spelling(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the file, line, column, and offset represented by
@@ -225,23 +225,23 @@ func (location SourceLocation) SpellingLocation(file *CXFile.File, line *c.Uint,
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.FileLocation C.clang_getFileLocation
-func (location SourceLocation) FileLocation(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+// llgo:link SourceLocation.File C.clang_getFileLocation
+func (location SourceLocation) File(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve a source location representing the first character within a
 // source range.
 //
-// llgo:link SourceRange.RangeStart C.clang_getRangeStart
-func (range_ SourceRange) RangeStart() SourceLocation {
+// llgo:link SourceRange.Start C.clang_getRangeStart
+func (range_ SourceRange) Start() SourceLocation {
 	return SourceLocation{}
 }
 
 // Retrieve a source location representing the last character within a
 // source range.
 //
-// llgo:link SourceRange.RangeEnd C.clang_getRangeEnd
-func (range_ SourceRange) RangeEnd() SourceLocation {
+// llgo:link SourceRange.End C.clang_getRangeEnd
+func (range_ SourceRange) End() SourceLocation {
 	return SourceLocation{}
 }
 

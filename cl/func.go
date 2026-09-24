@@ -73,26 +73,26 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType())
 
 	var recv *types.Var
-	var typNamed *types.Named
+	var typName string
 	var nameInPkg string
 	if cls == nil {
 		if ctx.lang == LanguageC {
 			// try to method for C functions
-			params, recv, typNamed = tryToMethod(pkgTypes, params)
+			params, recv, typName = tryToMethod(pkgTypes, params)
 		}
 	} else {
-		typNamed = cls.typNamed
+		typNamed := cls.typNamed
 		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
+		typName = typNamed.Obj().Name()
 	}
-	fnName := ctx.funcName(origName, obj.order(), typNamed, cls == nil, true)
+	fnName := ctx.funcName(origName, obj.order(), typName, cls == nil, true)
 	if recv == nil {
 		nameInPkg = fnName
 	} else {
-		objName := typNamed.Obj().Name()
 		if _, ok := recv.Type().(*types.Pointer); ok {
-			nameInPkg = "(*" + objName + ")." + fnName
+			nameInPkg = "(*" + typName + ")." + fnName
 		} else {
-			nameInPkg = objName + "." + fnName
+			nameInPkg = typName + "." + fnName
 		}
 	}
 	sig := types.NewSignatureType(recv, nil, nil, types.NewTuple(params...), results, variadic)
@@ -116,22 +116,22 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	}
 }
 
-func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named) {
+func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, string) {
 	if len(params) > 0 {
 		first := params[0]
 		t := first.Type()
 		if len(params) == 2 && params[1].Type() == t {
 			// don't convert to method if the first two params have the same type
-			return params, nil, nil
+			return params, nil, ""
 		}
 		if tp, ok := t.(*types.Pointer); ok {
 			t = tp.Elem()
 		}
 		if tn, ok := t.(*types.Named); ok && tn.Obj().Pkg() == pkgTypes {
-			return params[1:], first, tn // can be a method
+			return params[1:], first, tn.Obj().Name() // can be a method
 		}
 	}
-	return params, nil, nil
+	return params, nil, ""
 }
 
 func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor) (params []*types.Var, variadic bool) {

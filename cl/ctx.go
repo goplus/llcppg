@@ -98,11 +98,12 @@ type pkgCtx struct {
 
 	wrapFileHeader string
 
+	fnPrefix   []string
 	enumPrefix []string
 	typePrefix []string
-	fnPrefix   []string
-	rename     map[string]string
-	classes    map[string]none // typedef names to be treated as classes
+	typeAbbr   map[string]string // Go type name => abbreviated name, used in function names
+	classes    map[string]none   // typedef names to be treated as classes
+	rename     map[string]string // C/C++ name => Go name
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -243,18 +244,20 @@ func (p *pkgCtx) enumvalName(name string) string {
 	return p.cstyleToGo(rmPrefix(name, p.enumPrefix), true)
 }
 
-func (p *pkgCtx) funcName(name string, order int, typNamed *types.Named, global, _ bool) string {
+func (p *pkgCtx) funcName(name string, order int, typName string, global, _ bool) string {
 	if global {
 		name = rmPrefix(name, p.fnPrefix)
 	} else {
 		// don't remove type name suffix for a method
-		typNamed = nil
+		typName = ""
 	}
 	if !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
 		name = p.cstyleToGo(name, true)
-		if typNamed != nil {
-			objName := typNamed.Obj().Name()
-			name = cutMethodPrefix(strings.TrimSuffix(name, objName), objName)
+		if typName != "" {
+			if v, ok := p.typeAbbr[typName]; ok { // Go type name => abbreviated name
+				typName = v
+			}
+			name = cutMethodPrefix(strings.TrimSuffix(name, typName), typName)
 		}
 	}
 	if order >= 0 {

@@ -115,8 +115,9 @@ type Config struct {
 	// map, it will be renamed to the corresponding Go name (optional).
 	Rename map[string]string
 
-	// Class specifies a list of C/C++ typedef names to be treated as classes.
-	Class []string
+	// TypeAbbr specifies a mapping of Go type name to its abbreviated name. The abbreviated
+	// name will be used in function names (optional).
+	TypeAbbr map[string]string
 
 	// TypePrefix specifies the prefix to remove from C/C++ type names when generating Go
 	// type names (optional).
@@ -129,6 +130,9 @@ type Config struct {
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
 	// generating Go function names (optional).
 	FuncPrefix []string
+
+	// Class specifies a list of C/C++ typedef names to be treated as classes.
+	Class []string
 
 	// DontKeepDoc specifies whether to keep the documentation comments in the generated
 	// Go package. If true, the documentation comments will be removed (optional).
@@ -182,7 +186,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(), llgo: llgo,
 		fset: pkg.Fset, c: c, lang: conf.Language, keepDoc: !conf.DontKeepDoc,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, enumPrefix: conf.EnumPrefix,
-		typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix, rename: conf.Rename, classes: classes,
+		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
+		rename: conf.Rename, classes: classes,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
