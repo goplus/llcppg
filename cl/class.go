@@ -90,6 +90,9 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, defaultInPublic bo
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	typDecl := pkg.NewTypeDefs().NewType(clsName, goNode(ctx, cls))
+	if doc := ctx.docCommentGroup(cls); doc != nil {
+		typDecl.SetComments(pkg, doc)
+	}
 	typNamed := typDecl.Type()
 	ctx.types[clang.String(cls.Type())] = typNamed.Obj()
 	scope := &classCtx{

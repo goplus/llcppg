@@ -285,6 +285,13 @@ func DisplayName(entity clang.Cursor) string {
 	return GoStringAndDispose(entity.DisplayName())
 }
 
+// RawComment returns the raw documentation comment associated with the given
+// cursor, including the comment markers (e.g. "/** ... */" or "///"). It returns
+// an empty string if the cursor has no associated comment.
+func RawComment(entity clang.Cursor) string {
+	return GoStringAndDispose(entity.RawCommentText())
+}
+
 /**
  * Retrieve the translation unit that a cursor originated from.
  */

@@ -76,6 +76,9 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
 func emitUnion(ctx *pkgCtx, decl clang.Cursor, uName string) *types.Named {
 	pkg := ctx.pkg
 	typDecl := pkg.NewTypeDefs().NewType(uName, goNode(ctx, decl))
+	if doc := ctx.docCommentGroup(decl); doc != nil {
+		typDecl.SetComments(pkg, doc)
+	}
 	typNamed := typDecl.Type()
 
 	// Register the union type under its C spelling so members that reference it

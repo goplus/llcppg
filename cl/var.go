@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/ast"
 	"log"
 
 	"github.com/goplus/llcppg/clang"
@@ -76,11 +75,8 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	name := ctx.varName(origName)
 
 	ctx.forceImportUnsafe()
-	defs := pkg.NewVarDefs(pkgTypes.Scope()).SetComments(&ast.CommentGroup{
-		List: []*ast.Comment{
-			{Text: "\n//go:linkname " + name + " C." + manglingName},
-		},
-	})
+	defs := pkg.NewVarDefs(pkgTypes.Scope()).SetComments(
+		ctx.directiveComments(decl, "\n//go:linkname "+name+" C."+manglingName))
 	defs.New(goNodePos(ctx, decl), typ, name)
 }
 

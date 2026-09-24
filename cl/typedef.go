@@ -42,14 +42,22 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	}
 	var obj *types.TypeName
 	var typDefs = pkg.NewTypeDefs()
+	doc := ctx.docCommentGroup(decl)
 	var cName = clang.String(decl.Type())
 	if _, ok := ctx.classes[cName]; ok {
 		if tunder == types.Typ[types.UnsafePointer] {
 			tunder = types.Typ[types.Uintptr] // unsafe.Pointer => uintptr
 		}
-		t := typDefs.NewType(name).InitType(pkg, tunder)
+		td := typDefs.NewType(name)
+		if doc != nil {
+			td.SetComments(pkg, doc)
+		}
+		t := td.InitType(pkg, tunder)
 		obj = t.Obj()
 	} else {
+		if doc != nil {
+			typDefs.SetComments(doc)
+		}
 		t := typDefs.AliasType(name, tunder).(*types.Alias)
 		obj = t.Obj()
 	}
