@@ -27,6 +27,11 @@ import (
 // -----------------------------------------------------------------------------
 
 // loadPubFile loads a public file and returns an iterator that yields each public entry.
+//
+// T cName
+// T cName goName
+// T enum cName
+// T enum cName goName
 func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 	b, err := os.ReadFile(pubfile)
 	if err != nil {
@@ -38,18 +43,35 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 	it = func(yield func(Entry) bool) {
 		for i, line := range lines {
 			flds := strings.Fields(line)
+			if len(flds) == 0 {
+				continue
+			}
+			kind := flds[0][0]
 			goName := ""
 			switch len(flds) {
-			case 2:
+			case 2: // T cName
 			case 3:
-				goName = flds[1]
-			case 0:
-				continue
+				if kind == 'T' && flds[1] == "enum" {
+					// T enum cName
+					flds[1] = "enum " + flds[2]
+				} else {
+					// T cName goName
+					goName = flds[2]
+				}
+			case 4:
+				if kind == 'T' && flds[1] == "enum" {
+					// T enum cName goName
+					flds[1] = "enum " + flds[2]
+					goName = flds[3]
+				} else {
+					err = fmt.Errorf("line %d: too few/many fields - %s\n", i+1, line)
+					return
+				}
 			default:
 				err = fmt.Errorf("line %d: too few/many fields - %s\n", i+1, line)
 				return
 			}
-			if !yield(Entry{Kind: flds[0][0], Name: flds[1], GoName: goName}) {
+			if !yield(Entry{Kind: kind, Name: flds[1], GoName: goName}) {
 				return
 			}
 		}

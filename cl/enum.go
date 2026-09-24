@@ -61,7 +61,8 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		}
 		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
 		typNamed := typDecl.InitType(pkg, underlying)
-		ctx.types[clang.String(decl.Type())] = typNamed.Obj()
+		cName := clang.String(decl.Type())
+		ctx.types[cName] = typNamed.Obj()
 		enumType = typNamed
 	}
 

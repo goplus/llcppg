@@ -1,0 +1,5 @@
+T CXDiagnosticSeverity
+T CXDiagnostic
+T CXDiagnosticSet
+T CXLoadDiag_Error
+T CXDiagnosticDisplayOptions

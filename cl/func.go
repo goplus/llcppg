@@ -127,8 +127,15 @@ func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *t
 		if tp, ok := t.(*types.Pointer); ok {
 			t = tp.Elem()
 		}
-		if tn, ok := t.(*types.Named); ok && tn.Obj().Pkg() == pkgTypes {
-			return params[1:], first, tn.Obj().Name() // can be a method
+		switch t := t.(type) {
+		case *types.Named:
+			if t.Obj().Pkg() == pkgTypes {
+				return params[1:], first, t.Obj().Name()
+			}
+		case *types.Alias:
+			if t.Obj().Pkg() == pkgTypes {
+				return params[1:], first, t.Obj().Name()
+			}
 		}
 	}
 	return params, nil, ""
