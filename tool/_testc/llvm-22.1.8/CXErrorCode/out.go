@@ -11,9 +11,18 @@ const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
 type ErrorCode c.Int
 
 const (
-	Error_Success          ErrorCode = 0
-	Error_Failure          ErrorCode = 1
-	Error_Crashed          ErrorCode = 2
+// No error.
+	Error_Success ErrorCode = 0
+// A generic error code, no further details are available.
+	//
+	// Errors of this kind can get their own specific error codes in future
+	// libclang versions.
+	Error_Failure ErrorCode = 1
+// libclang crashed while performing the requested operation.
+	Error_Crashed ErrorCode = 2
+// The function detected that the arguments violate the function
+	// contract.
 	Error_InvalidArguments ErrorCode = 3
-	Error_ASTReadError     ErrorCode = 4
+// An AST deserialization error has occurred.
+	Error_ASTReadError ErrorCode = 4
 )

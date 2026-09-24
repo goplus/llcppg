@@ -6,6 +6,8 @@ import (
 )
 
 const LLGoPackage = "link: -L/path/foo -lfoo"
+const MAX_SIZE = 100
+const TIMEOUT = 30
 
 // A documented enum type.
 type Color c.Int
@@ -27,12 +29,6 @@ type Point struct {
 
 // A documented typedef alias.
 type MyInt = c.Int
-
-// Maximum size limit.
-const MAX_SIZE = 100
-
-// Default timeout value.
-const TIMEOUT = 30
 
 // A documented function.
 //
