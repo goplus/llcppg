@@ -75,10 +75,11 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
 // pkgCtx.nextAnonUnionName). See issue goplus/llcppg#775.
 func emitUnion(ctx *pkgCtx, decl clang.Cursor, uName string) *types.Named {
 	pkg := ctx.pkg
-	typDecl := pkg.NewTypeDefs().NewType(uName, goNode(ctx, decl))
+	typDefs := pkg.NewTypeDefs()
 	if doc := ctx.docCommentGroup(decl); doc != nil {
-		typDecl.SetComments(pkg, doc)
+		typDefs.SetComments(doc)
 	}
+	typDecl := typDefs.NewType(uName, goNode(ctx, decl))
 	typNamed := typDecl.Type()
 
 	// Register the union type under its C spelling so members that reference it

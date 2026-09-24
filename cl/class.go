@@ -89,10 +89,14 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
 func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, defaultInPublic bool) *types.Named {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	typDecl := pkg.NewTypeDefs().NewType(clsName, goNode(ctx, cls))
+	typDefs := pkg.NewTypeDefs()
+	// Attach the doc at the TypeDefs (GenDecl) level rather than on the
+	// TypeSpec; see the note in loadTypedef for why a spec-level doc renders as
+	// "type// doc" here.
 	if doc := ctx.docCommentGroup(cls); doc != nil {
-		typDecl.SetComments(pkg, doc)
+		typDefs.SetComments(doc)
 	}
+	typDecl := typDefs.NewType(clsName, goNode(ctx, cls))
 	typNamed := typDecl.Type()
 	ctx.types[clang.String(cls.Type())] = typNamed.Obj()
 	scope := &classCtx{

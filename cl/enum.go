@@ -55,10 +55,11 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		// C enums decay to int; use the same C int type the rest of the
 		// generator uses so enum-typed values interoperate with C APIs.
 		underlying := ctx.c.Ref("Int").Type()
-		typDecl := pkg.NewTypeDefs().NewType(typeName, goNode(ctx, decl))
+		typDefs := pkg.NewTypeDefs()
 		if doc := ctx.docCommentGroup(decl); doc != nil {
-			typDecl.SetComments(pkg, doc)
+			typDefs.SetComments(doc)
 		}
+		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
 		typNamed := typDecl.InitType(pkg, underlying)
 		ctx.types[clang.String(decl.Type())] = typNamed.Obj()
 		enumType = typNamed

@@ -1,11 +1,11 @@
-// A documented enum type.
+/// A documented enum type.
 enum Color {
 	Red,
 	Green,
 	Blue
 };
 
-// A documented struct type.
+/// A documented struct type.
 struct Point {
 	int x;
 	int y;
@@ -21,5 +21,5 @@ int add(int a, int b);
 /// A documented typedef alias.
 typedef int MyInt;
 
-// A documented global variable.
+/// A documented global variable.
 extern int counter;
