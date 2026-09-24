@@ -75,6 +75,17 @@ type vtableSlot struct {
 	named bool         // render as a named field (public) vs a placeholder
 }
 
+func vtableSlotOf(ctx *pkgCtx, m clang.Cursor, named bool) vtableSlot {
+	if !named {
+		return vtableSlot{decl: m}
+	}
+	return vtableSlot{
+		name:  vtableMethodName(ctx, m),
+		decl:  m,
+		named: named,
+	}
+}
+
 // genVtable emits the "_xgo_vtable_X" struct and the "XGo_vptr()" accessor for a
 // polymorphic class. ownsVptr reports whether the class declares its own vptr
 // field (no primary base); when false the class shares its primary base's vptr,
@@ -225,16 +236,10 @@ func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
 			continue
 		}
 		if idx := overriddenSlot(slots, m); idx >= 0 {
-			slots[idx].name = vtableMethodName(ctx, scope, m)
-			slots[idx].decl = m
-			slots[idx].named = public
+			slots[idx] = vtableSlotOf(ctx, m, public)
 			continue
 		}
-		slots = append(slots, vtableSlot{
-			name:  vtableMethodName(ctx, scope, m),
-			decl:  m,
-			named: public,
-		})
+		slots = append(slots, vtableSlotOf(ctx, m, public))
 	}
 	return slots
 }
@@ -324,20 +329,12 @@ func overriddenRoots(m clang.Cursor) []clang.Cursor {
 	return roots
 }
 
-// vtableMethodName returns the Go field name of a virtual method slot. When the
-// method belongs to the class currently being compiled (scope != nil and the
-// method is one of scope's registered funcs) the already-computed overloaded Go
-// name is reused; otherwise the name is derived the same way loadClassMember
-// derives it.
-func vtableMethodName(ctx *pkgCtx, scope *classCtx, m clang.Cursor) string {
-	if scope != nil {
-		if fn, ok := ctx.funcs[clang.Mangling(m)]; ok {
-			name, _ := ctx.getPubName(fn.name, fn.order())
-			return name
-		}
+func vtableMethodName(ctx *pkgCtx, m clang.Cursor) string {
+	manglingName := clang.Mangling(m)
+	if fn, ok := ctx.funcs[manglingName]; ok {
+		return ctx.funcName(fn.name, fn.order(), false, true)
 	}
-	name, _ := ctx.getPubName(clang.String(m), -1)
-	return name
+	panic("vtableMethodName: method not found - " + manglingName)
 }
 
 // placeholderSlotName returns the field name of an anonymous (reserved) slot at

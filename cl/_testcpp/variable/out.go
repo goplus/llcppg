@@ -14,14 +14,14 @@ var Total c.Int
 //go:linkname MaxValue C.maxValue
 var MaxValue c.Int
 
-//go:linkname Bar_value C._ZN3bar5valueE
-var Bar_value c.Int
+//go:linkname BarValue C._ZN3bar5valueE
+var BarValue c.Int
 
-//go:linkname Bar_ratio C._ZN3bar5ratioE
-var Bar_ratio c.Double
+//go:linkname BarRatio C._ZN3bar5ratioE
+var BarRatio c.Double
 
-//go:linkname Config_count C._ZN6Config5countE
-var Config_count c.Int
+//go:linkname ConfigCount C._ZN6Config5countE
+var ConfigCount c.Int
 
-//go:linkname Config_name C._ZN6Config4nameE
-var Config_name *c.Char
+//go:linkname ConfigName C._ZN6Config4nameE
+var ConfigName *c.Char
