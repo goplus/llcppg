@@ -87,9 +87,10 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		LLGoPackage: conf.LLGoPackage,
 		Language:    lang,
 		Class:       conf.Class,
+		FuncPrefix:  conf.FuncPrefix,
 		EnumPrefix:  conf.EnumPrefix,
 		TypePrefix:  conf.TypePrefix,
-		FuncPrefix:  conf.FuncPrefix,
+		TypeAbbr:    conf.TypeAbbr,
 		Rename:      conf.Rename,
 		NameLookup:  nil,
 		PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {

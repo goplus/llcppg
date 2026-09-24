@@ -63,9 +63,10 @@ type Config struct {
 	Dir            string            `json:"Dir"`        // dir or dir/... (recursive)
 	Deps           []string          `json:"Deps"`       // dependencies (package paths)
 	Class          []string          `json:"Class"`      // typedef names to be treated as classes
+	FuncPrefix     []string          `json:"FuncPrefix"` // global function prefix to remove
 	EnumPrefix     []string          `json:"EnumPrefix"` // enum value prefix to remove
 	TypePrefix     []string          `json:"TypePrefix"` // type prefix to remove
-	FuncPrefix     []string          `json:"FuncPrefix"` // global function prefix to remove
+	TypeAbbr       map[string]string `json:"TypeAbbr"`   // Go type name to its abbreviated name, used in function names
 	Rename         map[string]string `json:"Rename"`     // renaming of C/C++ names to Go names
 }
 
