@@ -73,7 +73,7 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		log.Println(kind, origName, "-", clang.String(decl.Type()))
 	}
 
-	name, rewritten := ctx.getPubName(origName, -1)
+	name := ctx.varName(origName)
 
 	ctx.forceImportUnsafe()
 	defs := pkg.NewVarDefs(pkgTypes.Scope()).SetComments(&ast.CommentGroup{
@@ -81,10 +81,7 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 			{Text: "\n//go:linkname " + name + " C." + manglingName},
 		},
 	})
-	v := defs.New(goNodePos(ctx, decl), typ, name)
-	if rewritten {
-		substObj(pkgTypes, pkgTypes.Scope(), origName, v.Ref(name))
-	}
+	defs.New(goNodePos(ctx, decl), typ, name)
 }
 
 // -----------------------------------------------------------------------------

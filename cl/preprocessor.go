@@ -65,7 +65,7 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 			pkg := ctx.pkg
 			pkgTypes := pkg.Types
 			ctx.macroVals[origName] = v
-			name, _ := ctx.getPubName(origName, -1)
+			name := ctx.macroName(origName)
 			pkg.NewConstDefs(pkgTypes.Scope()).New(func(cb *gogen.CodeBuilder) int {
 				cb.Val(v)
 				return 1

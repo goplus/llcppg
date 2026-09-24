@@ -231,25 +231,26 @@ func (p *pkgCtx) funcName(name string, order int, global, _ bool) string {
 	if !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
 		name = p.cstyleToGo(name, true)
 	}
-	ret, _ := p.getPubName(name, order)
-	return ret
+	if order >= 0 {
+		name = name + "__" + strconv.FormatInt(int64(order), 36)
+	}
+	return name
 }
 
 func (p *pkgCtx) fieldName(name string, public bool) string {
 	return p.cstyleToGo(name, public)
 }
 
-func (p *pkgCtx) enumvalName(name string) string {
+func (p *pkgCtx) varName(name string) string {
 	return p.cstyleToGo(name, true)
 }
 
-func (p *pkgCtx) getPubName(cName string, order int) (pubName string, rewritten bool) {
-	pubName = cPubName(cName)
-	if order >= 0 {
-		return pubName + "__" + strconv.FormatInt(int64(order), 36), true
-	}
-	rewritten = cName != pubName
-	return
+func (p *pkgCtx) macroName(name string) string {
+	return p.cstyleToGo(name, true)
+}
+
+func (p *pkgCtx) enumvalName(name string) string {
+	return p.cstyleToGo(name, true)
 }
 
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
