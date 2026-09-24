@@ -73,7 +73,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 
 	options := lc.DefaultDiagnosticDisplayOptions()
 	u := idx.ParseTranslationUnit(
-		clang.DetailedPreprocessingRecord, headerFile, "-I"+pkgDir+"/include", "-x", conf.Language)
+		clang.DetailedPreprocessingRecord, headerFile, "-I"+pkgDir+"/include", "-I"+pkgDir+"/cstdlib", "-x", conf.Language)
 	defer u.Dispose()
 	u.VisitDiagnostics(func(diag clang.Diagnostic) {
 		fmt.Fprintln(os.Stderr, diag.Format(options))
@@ -100,6 +100,8 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 			tRootDir, tPkgName := filepath.Split(headerFile)
 			if ok = tRootDir == headerDir; ok {
 				pkgPath = pkgPrefix + tPkgName[:len(tPkgName)-2]
+			} else if ok = tRootDir == pkgDir+"/cstdlib/"; ok {
+				pkgPath = pkgPrefix + "cstdlib"
 			}
 			return
 		},
@@ -189,5 +191,5 @@ var langExts = [...]string{
 }
 
 func TestSingleC(t *testing.T) {
-	testFromDir(t, "CXString", "./_testc", true)
+	testFromDir(t, "CXFile", "./_testc", true)
 }
