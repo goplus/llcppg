@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/ast"
 	"go/token"
 	"go/types"
 	"log"
@@ -104,17 +103,11 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 
 	if recv == nil {
 		ctx.forceImportUnsafe()
-		f.SetComments(pkg, &ast.CommentGroup{
-			List: []*ast.Comment{
-				{Text: "\n//go:linkname " + nameInPkg + " C." + manglingName},
-			},
-		})
+		f.SetComments(pkg, ctx.directiveComments(fn,
+			"\n//go:linkname "+nameInPkg+" C."+manglingName))
 	} else {
-		f.SetComments(pkg, &ast.CommentGroup{
-			List: []*ast.Comment{
-				{Text: "\n// llgo:link " + nameInPkg + " C." + manglingName},
-			},
-		})
+		f.SetComments(pkg, ctx.directiveComments(fn,
+			"\n// llgo:link "+nameInPkg+" C."+manglingName))
 		cb := f.BodyStart(pkg)
 		if n := results.Len(); n > 0 {
 			cb.ZeroLit(results.At(0).Type()).Return(1)

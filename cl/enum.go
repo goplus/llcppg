@@ -55,13 +55,24 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		// C enums decay to int; use the same C int type the rest of the
 		// generator uses so enum-typed values interoperate with C APIs.
 		underlying := ctx.c.Ref("Int").Type()
-		typDecl := pkg.NewTypeDefs().NewType(typeName, goNode(ctx, decl))
+		typDefs := pkg.NewTypeDefs()
+		if doc := ctx.docCommentGroup(decl); doc != nil {
+			typDefs.SetComments(doc)
+		}
+		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
 		typNamed := typDecl.InitType(pkg, underlying)
 		ctx.types[clang.String(decl.Type())] = typNamed.Obj()
 		enumType = typNamed
 	}
 
 	defs := pkg.NewConstDefs(pkgTypes.Scope())
+	// For an anonymous enum there is no type to carry the doc, so attach the
+	// enum's doc comment to the generated const block instead.
+	if enumType == nil {
+		if doc := ctx.docCommentGroup(decl); doc != nil {
+			defs.SetComments(doc)
+		}
+	}
 	clang.VisitChildren(decl, func(item, parent clang.Cursor) clang.ChildVisitResult {
 		if item.Kind != lc.CursorEnumConstantDecl {
 			return clang.Continue
