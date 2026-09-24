@@ -47,13 +47,14 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 				continue
 			}
 			kind := flds[0][0]
+			cName := flds[1]
 			goName := ""
 			switch len(flds) {
 			case 2: // T cName
 			case 3:
 				if kind == 'T' && flds[1] == "enum" {
 					// T enum cName
-					flds[1] = "enum " + flds[2]
+					cName = "enum " + flds[2]
 				} else {
 					// T cName goName
 					goName = flds[2]
@@ -61,22 +62,26 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 			case 4:
 				if kind == 'T' && flds[1] == "enum" {
 					// T enum cName goName
-					flds[1] = "enum " + flds[2]
+					cName = "enum " + flds[2]
 					goName = flds[3]
 				} else {
-					err = fmt.Errorf("line %d: too few/many fields - %s\n", i+1, line)
-					return
+					tooFewOrManyFields(i, "many", line)
 				}
+			case 1:
+				tooFewOrManyFields(i, "few", line)
 			default:
-				err = fmt.Errorf("line %d: too few/many fields - %s\n", i+1, line)
-				return
+				tooFewOrManyFields(i, "many", line)
 			}
-			if !yield(Entry{Kind: kind, Name: flds[1], GoName: goName}) {
+			if !yield(Entry{Kind: kind, Name: cName, GoName: goName}) {
 				return
 			}
 		}
 	}
 	return
+}
+
+func tooFewOrManyFields(i int, fewOrMany, line string) {
+	panic(fmt.Errorf("line %d: too %s fields - %s", i+1, fewOrMany, line))
 }
 
 // -----------------------------------------------------------------------------
