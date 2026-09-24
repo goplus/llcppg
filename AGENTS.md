@@ -39,9 +39,11 @@ Once `llgo` is installed and on `PATH`, run the same command as CI:
 llgo test -v ./...
 ```
 
-Only the `cl` package has tests; it drives every fixture under `cl/_testc`
-(C, via `TestC`), `cl/_testcpp` (C++, via `TestCpp`), and `cl/_testpp`
-(`TestPreprocessor`). To iterate on one fixture, filter by name:
+Both the `cl` and `tool` packages have tests. The `cl` package drives every
+fixture under `cl/_testc` (C, via `TestC`), `cl/_testcpp` (C++, via `TestCpp`),
+and `cl/_testpp` (`TestPreprocessor`). The `tool` package drives the fixtures
+under `tool/_testc` (e.g. `TestSingleC`, which generates one Go package per C
+header). To iterate on one fixture, filter by name:
 
 ```bash
 llgo test -v -run 'TestC/union_struct' ./cl/
@@ -51,7 +53,10 @@ llgo test -v -run 'TestC/union_struct' ./cl/
 
 Each fixture directory has an input header (`in.h`) and a golden `out.go`. The
 `cl` test harness (`cl/compile_test.go`) parses `in.h` with libclang, generates
-Go, and diffs it against `out.go`. When adding or changing a fixture:
+Go, and diffs it against `out.go`. The `tool` harness (`tool/gen_test.go`)
+works the same way for its own fixtures. Both harnesses run `format.Source`
+(gofmt) on the generated Go before diffing, so goldens are gofmt-clean. When
+adding or changing a fixture:
 
 1. Implement the generator change, then run the fixture test.
 2. When the generated Go differs from the golden (including a missing or stale

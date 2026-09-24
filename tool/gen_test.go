@@ -19,6 +19,7 @@ package tool_test
 import (
 	"bytes"
 	"fmt"
+	"go/format"
 	"log"
 	"os"
 	"os/exec"
@@ -58,6 +59,12 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 	if err != nil {
 		t.Fatal("gogen.WriteTo failed:", err)
 	}
+	// Format the generated code to ensure it's gofmt-clean
+	formatted, err := format.Source(b.Bytes())
+	if err != nil {
+		t.Fatal("format.Source failed:", err)
+	}
+	b = *bytes.NewBuffer(formatted)
 	testDiff(t, dir, "/out.go.txt", &b, exp)
 }
 
