@@ -17,10 +17,14 @@
 package cl
 
 import (
+	"bytes"
+	"go/format"
 	"go/token"
 	"go/types"
+	"io"
 	"log"
 	"maps"
+	"os"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -57,6 +61,44 @@ type Package struct {
 	*gogen.Package
 	Wrap   *WrapFile
 	Public []Entry // public entries
+}
+
+// WriteTo writes the generated Go source to dst. Unlike gogen's WriteTo, it
+// runs the result through go/format so the output is gofmt-clean.
+//
+// gogen emits a declaration's doc comment by prepending a "\n" to the comment
+// text; its printer places that comment on its own line but does not re-indent
+// it, which leaves per-spec doc comments (e.g. enum constants inside a const
+// block) flush against the left margin. Running go/format normalizes the
+// indentation, matching how the generated package would look on disk.
+func (p Package) WriteTo(dst io.Writer, fname ...string) error {
+	var b bytes.Buffer
+	if err := p.Package.WriteTo(&b, fname...); err != nil {
+		return err
+	}
+	out, err := format.Source(b.Bytes())
+	if err != nil {
+		// Fall back to the unformatted output rather than losing the code;
+		// go/format only fails on syntactically invalid Go.
+		out = b.Bytes()
+	}
+	_, err = dst.Write(out)
+	return err
+}
+
+// WriteFile writes the generated Go source to a file. Like WriteTo, it runs
+// the result through go/format so the file on disk is gofmt-clean.
+func (p Package) WriteFile(file string, fname ...string) error {
+	f, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if err = p.WriteTo(f, fname...); err != nil {
+		os.Remove(file)
+		return err
+	}
+	return nil
 }
 
 // -----------------------------------------------------------------------------

@@ -26,7 +26,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goplus/gogen"
 	"github.com/goplus/gogen/packages"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cl/cltest"
@@ -52,11 +51,11 @@ func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp an
 	}
 }
 
-func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
+func testGenGo(t *testing.T, pkg cl.Package, dir string, exp any) {
 	var b bytes.Buffer
 	err := pkg.WriteTo(&b)
 	if err != nil {
-		t.Fatal("gogen.WriteTo failed:", err)
+		t.Fatal("cl.Package.WriteTo failed:", err)
 	}
 	testDiff(t, dir, "/out.go.txt", &b, exp)
 }
@@ -116,7 +115,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	pkgDir = filepath.Join(pkgDir, myPkgName)
 	os.Mkdir(pkgDir, 0755)
 	exp, _ := os.ReadFile(pkgDir + "/out.go")
-	testGenGo(t, pkg.Package, pkgDir, exp)
+	testGenGo(t, pkg, pkgDir, exp)
 }
 
 func testFromDir(t *testing.T, sel, relDir string, single bool) {
@@ -166,7 +165,7 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			return
 		}
 		exp, _ := os.ReadFile(pkgDir + "/out.go")
-		testGenGo(t, pkg.Package, pkgDir, exp)
+		testGenGo(t, pkg, pkgDir, exp)
 		wrapFile := "/wrap" + langExts[lang]
 		wrap, _ := os.ReadFile(pkgDir + wrapFile)
 		if pkg.Wrap != nil {

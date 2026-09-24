@@ -133,9 +133,11 @@ func (location SourceLocation) Expansion(file *CXFile.File, line *c.Uint, column
 // #123 "dummy.c" 1
 //
 // static int func(void)
-// {
-//     return 0;
-// }
+//
+//	{
+//	    return 0;
+//	}
+//
 // \endcode
 //
 // the location information returned by this function would be
