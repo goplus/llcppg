@@ -78,7 +78,7 @@ func compileClass(ctx *pkgCtx, scope *classCtx) {
 }
 
 func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
-	origName := ns + clang.String(cls)
+	origName := nameWithNS(clang.String(cls), ns)
 	if debugCompileDecl {
 		log.Println("class", origName)
 	}
@@ -142,7 +142,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// nil class in compileClass.
 			if decl.CXXMethodIsStatic() != 0 {
 				if cls.inPublic {
-					loadGlobalFunc(ctx, &ctx.scopeCtx, decl, clsName+"_")
+					loadGlobalFunc(ctx, &ctx.scopeCtx, decl, clsName)
 				}
 				return
 			}
@@ -183,7 +183,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		// by the enclosing class name (the class name acts like a namespace),
 		// mirroring how a static method is handled above.
 		if cls.inPublic {
-			loadVar(ctx, decl, clsName+"_")
+			loadVar(ctx, decl, clsName)
 		}
 
 	case lc.CursorCXXAccessSpecifier:
@@ -194,7 +194,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		// emitted as global consts prefixed by the enclosing class name (the
 		// class name acts like a namespace), e.g. Color_Red.
 		if cls.inPublic {
-			loadEnum(ctx, decl, clsName+"_")
+			loadEnum(ctx, decl, clsName)
 		}
 
 	case lc.CursorTypedefDecl:
@@ -203,7 +203,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		// prefixed by the enclosing class name (the class name acts like a
 		// namespace), e.g. Bar_iterator.
 		if cls.inPublic {
-			loadTypedef(ctx, decl, clsName+"_")
+			loadTypedef(ctx, decl, clsName)
 		}
 
 	case lc.CursorCXXBaseSpecifier:
@@ -233,7 +233,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// field's type must resolve to a generated Go type. Its own members'
 			// default visibility still follows C++ rules (struct: public,
 			// class: private).
-			loadClass(ctx, decl, clsName+"_", decl.Kind == lc.CursorStructDecl)
+			loadClass(ctx, decl, clsName, decl.Kind == lc.CursorStructDecl)
 		}
 	case lc.CursorUnionDecl:
 		switch {
@@ -247,7 +247,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// A named nested union is emitted at package level for the same
 			// reason as a named nested class/struct above: a field may use it
 			// as its type even when declared in a private section.
-			loadUnion(ctx, decl, clsName+"_")
+			loadUnion(ctx, decl, clsName)
 		}
 
 	default:

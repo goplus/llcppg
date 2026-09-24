@@ -257,7 +257,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 }
 
 func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns string) {
-	ns = ns + clang.String(namespace) + "_"
+	ns = nsName(ns, clang.String(namespace))
 	clang.VisitChildren(namespace, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadDecl(ctx, scope, decl, ns)
 		return clang.Continue

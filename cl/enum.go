@@ -50,7 +50,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	// name, so its constants stay untyped.
 	var enumType types.Type
 	if name := clang.String(decl); name != "" && decl.IsAnonymous() == 0 {
-		origName := ns + name
+		origName := nameWithNS(name, ns)
 		typeName := ctx.typeName(origName, true)
 		// C enums decay to int; use the same C int type the rest of the
 		// generator uses so enum-typed values interoperate with C APIs.
@@ -66,7 +66,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		if item.Kind != lc.CursorEnumConstantDecl {
 			return clang.Continue
 		}
-		origName := ns + clang.String(item)
+		origName := nameWithNS(clang.String(item), ns)
 		name := ctx.enumvalName(origName)
 		val := int(item.EnumConstantDeclValue()) // TODO(xsw): use int64 for 64-bit enums?
 		defs.New(func(cb *gogen.CodeBuilder) int {

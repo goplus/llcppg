@@ -58,7 +58,7 @@ func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		return
 	}
 
-	origName := ns + clang.String(decl)
+	origName := nameWithNS(clang.String(decl), ns)
 	if debugCompileDecl {
 		log.Println("union", origName)
 	}

@@ -264,13 +264,14 @@ func (p *pkgCtx) funcName(name string, order int, typNamed *types.Named, global,
 }
 
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
-	if cName != "" {
-		if c := cName[0]; 'A' <= c && c <= 'Z' {
-			return cName
-		}
-	}
 	rename := p.rename
 	parts := strings.Split(cName, "_")
+	if isAllUpperStart(parts) {
+		if parts[0] == "" && public {
+			return "X" + cName
+		}
+		return cName
+	}
 	for i := 0; i < len(parts); i++ {
 		part := parts[i]
 		if part == "" {
@@ -287,6 +288,31 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 		}
 	}
 	return strings.Join(parts, "")
+}
+
+func nsName(ns, inner string) string {
+	if c := inner[0]; 'a' <= c && c <= 'z' {
+		return ns + string(c-'a'+'A') + inner[1:]
+	}
+	return ns + inner
+}
+
+func nameWithNS(name, ns string) string {
+	if ns == "" {
+		return name
+	}
+	return nsName(ns, name)
+}
+
+func isAllUpperStart(parts []string) bool {
+	for _, part := range parts {
+		if part != "" {
+			if r := part[0]; 'a' <= r && r <= 'z' {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func cutMethodPrefix(name, objName string) string {
