@@ -101,6 +101,7 @@ type pkgCtx struct {
 	typePrefix []string
 	fnPrefix   []string
 	rename     map[string]string
+	classes    map[string]none // typedef names to be treated as classes
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)

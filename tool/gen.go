@@ -62,6 +62,7 @@ type Config struct {
 	Language       string            `json:"Language"`   // c, c++, etc.
 	Dir            string            `json:"Dir"`        // dir or dir/... (recursive)
 	Deps           []string          `json:"Deps"`       // dependencies (package paths)
+	Class          []string          `json:"Class"`      // typedef names to be treated as classes
 	TypePrefix     []string          `json:"TypePrefix"` // type prefix to remove
 	FuncPrefix     []string          `json:"FuncPrefix"` // global function prefix to remove
 	Rename         map[string]string `json:"Rename"`     // renaming of C/C++ names to Go names
