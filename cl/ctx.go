@@ -92,6 +92,7 @@ type pkgCtx struct {
 	wrap *WrapFile
 	fset *token.FileSet
 	c    gogen.PkgRef
+	ctyp [cBasicMax]types.Type
 
 	cflags string
 	lang   Language
@@ -211,6 +212,32 @@ func (p *pkgCtx) getFileBase(c clang.Cursor, file clang.File) int {
 func (p *pkgCtx) compile() {
 	for _, compile := range p.compiles {
 		compile(p)
+	}
+}
+
+func (p *pkgCtx) basicTyp(kind basicKind) types.Type {
+	typ := p.ctyp[kind]
+	if typ == nil {
+		typ = p.c.Ref(ctypBasic[kind]).Type()
+	}
+	return typ
+}
+
+func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named) {
+	cName := clang.String(decl.Type())
+	typObj := typNamed.Obj()
+	p.types[cName] = typObj
+
+	if debugCompileDecl {
+		log.Println("==> addType", cName, typObj.Name())
+	}
+
+	// name of typedef <tag> may be "m" instead of "<tag> m"
+	tag := tagStrvals[kind]
+	if strings.HasPrefix(cName, tag) {
+		p.types[cName[len(tag):]] = typObj
+	} else {
+		p.types[tag+cName] = typObj
 	}
 }
 

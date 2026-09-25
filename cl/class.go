@@ -77,33 +77,36 @@ func compileClass(ctx *pkgCtx, scope *classCtx) {
 	}
 }
 
-func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, defaultInPublic bool) {
+func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag) {
 	origName := nameWithNS(clang.String(cls), ns)
 	if debugCompileDecl {
-		log.Println("class", origName)
+		log.Println(tagStrvals[kind] + origName)
 	}
 	clsName := ctx.typeName(origName, true)
-	emitClass(ctx, cls, clsName, defaultInPublic)
+	emitClass(ctx, cls, clsName, kind)
 }
 
-func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, defaultInPublic bool) *types.Named {
+func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *types.Named {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	typDefs := pkg.NewTypeDefs()
+
 	// Attach the doc at the TypeDefs (GenDecl) level rather than on the
 	// TypeSpec; see the note in loadTypedef for why a spec-level doc renders as
 	// "type// doc" here.
 	if doc := ctx.docCommentGroup(cls); doc != nil {
 		typDefs.SetComments(doc)
 	}
+
 	typDecl := typDefs.NewType(clsName, goNode(ctx, cls))
 	typNamed := typDecl.Type()
-	ctx.types[clang.String(cls.Type())] = typNamed.Obj()
+	ctx.addType(kind, cls, typNamed)
+
 	scope := &classCtx{
 		decl:      cls,
 		typNamed:  typNamed,
 		overloads: make(map[string]*overloads),
-		inPublic:  defaultInPublic,
+		inPublic:  kind == tagStruct,
 	}
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadClassMember(ctx, pkgTypes, scope, clsName, decl)
@@ -171,7 +174,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 				if ftd.Kind == lc.CursorUnionDecl {
 					fldType = emitUnion(ctx, ftd, ctx.nextAnonUnionName())
 				} else {
-					fldType = emitClass(ctx, ftd, ctx.nextAnonStructName(), ftd.Kind == lc.CursorStructDecl)
+					fldType = emitClass(ctx, ftd, ctx.nextAnonStructName(), ftd.Kind)
 				}
 				anonymous = true
 			}
@@ -226,7 +229,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 	case lc.CursorClassDecl, lc.CursorStructDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
-			hoisted := emitClass(ctx, decl, ctx.nextAnonStructName(), cls.inPublic && decl.Kind == lc.CursorStructDecl)
+			hoisted := emitClass(ctx, decl, ctx.nextAnonStructName(), decl.Kind)
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
 			cls.fields = append(cls.fields, fld)
 		case decl.IsAnonymous() != 0:
@@ -240,7 +243,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// field's type must resolve to a generated Go type. Its own members'
 			// default visibility still follows C++ rules (struct: public,
 			// class: private).
-			loadClass(ctx, decl, clsName, decl.Kind == lc.CursorStructDecl)
+			loadClass(ctx, decl, clsName, decl.Kind)
 		}
 	case lc.CursorUnionDecl:
 		switch {

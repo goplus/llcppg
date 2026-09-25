@@ -20,7 +20,6 @@ import (
 	"go/token"
 	"go/types"
 	"log"
-	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -59,24 +58,12 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			typDefs.SetComments(doc)
 		}
-
 		// C enums decay to int; use the same C int type the rest of the
 		// generator uses so enum-typed values interoperate with C APIs.
-		underlying := ctx.c.Ref("Int").Type()
-
 		typeName := ctx.typeName(origName, true)
 		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
-		typNamed := typDecl.InitType(pkg, underlying)
-
-		cName := clang.String(decl.Type())
-		typObj := typNamed.Obj()
-		ctx.types[cName] = typObj
-
-		// name of typedef enum may be "m" instead of "enum m"
-		if !strings.HasPrefix(cName, "enum ") {
-			ctx.types["enum "+cName] = typObj
-		}
-
+		typNamed := typDecl.InitType(pkg, ctx.basicTyp(cInt))
+		ctx.addType(tagEnum, decl, typNamed)
 		enumType = typNamed
 	}
 
