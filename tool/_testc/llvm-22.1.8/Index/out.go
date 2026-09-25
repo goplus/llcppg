@@ -1870,69 +1870,69 @@ const (
 
 // Represents the C++ access control level to a base class for a
 // cursor with kind CX_CXXBaseSpecifier.
-type X_CXXAccessSpecifier c.Int
+type CXXAccessSpecifier c.Int
 
 const (
-	X_CXXInvalidAccessSpecifier X_CXXAccessSpecifier = 0
-	X_CXXPublic                 X_CXXAccessSpecifier = 1
-	X_CXXProtected              X_CXXAccessSpecifier = 2
-	X_CXXPrivate                X_CXXAccessSpecifier = 3
+	CXXInvalidAccessSpecifier CXXAccessSpecifier = 0
+	CXXPublic                 CXXAccessSpecifier = 1
+	CXXProtected              CXXAccessSpecifier = 2
+	CXXPrivate                CXXAccessSpecifier = 3
 )
 
 // Represents the storage classes as declared in the source. CX_SC_Invalid
 // was added for the case that the passed cursor in not a declaration.
-type X_StorageClass c.Int
+type StorageClass c.Int
 
 const (
-	X_SC_Invalid              X_StorageClass = 0
-	X_SC_None                 X_StorageClass = 1
-	X_SC_Extern               X_StorageClass = 2
-	X_SC_Static               X_StorageClass = 3
-	X_SC_PrivateExtern        X_StorageClass = 4
-	X_SC_OpenCLWorkGroupLocal X_StorageClass = 5
-	X_SC_Auto                 X_StorageClass = 6
-	X_SC_Register             X_StorageClass = 7
+	SC_Invalid              StorageClass = 0
+	SC_None                 StorageClass = 1
+	SC_Extern               StorageClass = 2
+	SC_Static               StorageClass = 3
+	SC_PrivateExtern        StorageClass = 4
+	SC_OpenCLWorkGroupLocal StorageClass = 5
+	SC_Auto                 StorageClass = 6
+	SC_Register             StorageClass = 7
 )
 
 // Represents a specific kind of binary operator which can appear at a cursor.
 type X_BinaryOperatorKind c.Int
 
 const (
-	X_BO_Invalid   X_BinaryOperatorKind = 0
-	X_BO_PtrMemD   X_BinaryOperatorKind = 1
-	X_BO_PtrMemI   X_BinaryOperatorKind = 2
-	X_BO_Mul       X_BinaryOperatorKind = 3
-	X_BO_Div       X_BinaryOperatorKind = 4
-	X_BO_Rem       X_BinaryOperatorKind = 5
-	X_BO_Add       X_BinaryOperatorKind = 6
-	X_BO_Sub       X_BinaryOperatorKind = 7
-	X_BO_Shl       X_BinaryOperatorKind = 8
-	X_BO_Shr       X_BinaryOperatorKind = 9
-	X_BO_Cmp       X_BinaryOperatorKind = 10
-	X_BO_LT        X_BinaryOperatorKind = 11
-	X_BO_GT        X_BinaryOperatorKind = 12
-	X_BO_LE        X_BinaryOperatorKind = 13
-	X_BO_GE        X_BinaryOperatorKind = 14
-	X_BO_EQ        X_BinaryOperatorKind = 15
-	X_BO_NE        X_BinaryOperatorKind = 16
-	X_BO_And       X_BinaryOperatorKind = 17
-	X_BO_Xor       X_BinaryOperatorKind = 18
-	X_BO_Or        X_BinaryOperatorKind = 19
-	X_BO_LAnd      X_BinaryOperatorKind = 20
-	X_BO_LOr       X_BinaryOperatorKind = 21
-	X_BO_Assign    X_BinaryOperatorKind = 22
-	X_BO_MulAssign X_BinaryOperatorKind = 23
-	X_BO_DivAssign X_BinaryOperatorKind = 24
-	X_BO_RemAssign X_BinaryOperatorKind = 25
-	X_BO_AddAssign X_BinaryOperatorKind = 26
-	X_BO_SubAssign X_BinaryOperatorKind = 27
-	X_BO_ShlAssign X_BinaryOperatorKind = 28
-	X_BO_ShrAssign X_BinaryOperatorKind = 29
-	X_BO_AndAssign X_BinaryOperatorKind = 30
-	X_BO_XorAssign X_BinaryOperatorKind = 31
-	X_BO_OrAssign  X_BinaryOperatorKind = 32
-	X_BO_Comma     X_BinaryOperatorKind = 33
-	X_BO_LAST      X_BinaryOperatorKind = 33
+	BO_Invalid   X_BinaryOperatorKind = 0
+	BO_PtrMemD   X_BinaryOperatorKind = 1
+	BO_PtrMemI   X_BinaryOperatorKind = 2
+	BO_Mul       X_BinaryOperatorKind = 3
+	BO_Div       X_BinaryOperatorKind = 4
+	BO_Rem       X_BinaryOperatorKind = 5
+	BO_Add       X_BinaryOperatorKind = 6
+	BO_Sub       X_BinaryOperatorKind = 7
+	BO_Shl       X_BinaryOperatorKind = 8
+	BO_Shr       X_BinaryOperatorKind = 9
+	BO_Cmp       X_BinaryOperatorKind = 10
+	BO_LT        X_BinaryOperatorKind = 11
+	BO_GT        X_BinaryOperatorKind = 12
+	BO_LE        X_BinaryOperatorKind = 13
+	BO_GE        X_BinaryOperatorKind = 14
+	BO_EQ        X_BinaryOperatorKind = 15
+	BO_NE        X_BinaryOperatorKind = 16
+	BO_And       X_BinaryOperatorKind = 17
+	BO_Xor       X_BinaryOperatorKind = 18
+	BO_Or        X_BinaryOperatorKind = 19
+	BO_LAnd      X_BinaryOperatorKind = 20
+	BO_LOr       X_BinaryOperatorKind = 21
+	BO_Assign    X_BinaryOperatorKind = 22
+	BO_MulAssign X_BinaryOperatorKind = 23
+	BO_DivAssign X_BinaryOperatorKind = 24
+	BO_RemAssign X_BinaryOperatorKind = 25
+	BO_AddAssign X_BinaryOperatorKind = 26
+	BO_SubAssign X_BinaryOperatorKind = 27
+	BO_ShlAssign X_BinaryOperatorKind = 28
+	BO_ShrAssign X_BinaryOperatorKind = 29
+	BO_AndAssign X_BinaryOperatorKind = 30
+	BO_XorAssign X_BinaryOperatorKind = 31
+	BO_OrAssign  X_BinaryOperatorKind = 32
+	BO_Comma     X_BinaryOperatorKind = 33
+	BO_LAST      X_BinaryOperatorKind = 33
 )
 
 // Describes how the traversal of the children of a particular
@@ -4607,7 +4607,7 @@ func GetOffsetOfBase(Parent Cursor, Base Cursor) c.LongLong
 // specifier or access specifier, the specifier itself is returned.
 //
 // llgo:link Cursor.CXXAccessSpecifier C.clang_getCXXAccessSpecifier
-func (_llcppg_param1 Cursor) CXXAccessSpecifier() X_CXXAccessSpecifier {
+func (_llcppg_param1 Cursor) CXXAccessSpecifier() CXXAccessSpecifier {
 	return 0
 }
 
@@ -4635,7 +4635,7 @@ func (Op X_BinaryOperatorKind) CursorGetBinaryOpcodeStr() CXString.String {
 // CX_SC_Invalid is returned else the storage class.
 //
 // llgo:link Cursor.StorageClass C.clang_Cursor_getStorageClass
-func (_llcppg_param1 Cursor) StorageClass() X_StorageClass {
+func (_llcppg_param1 Cursor) StorageClass() StorageClass {
 	return 0
 }
 

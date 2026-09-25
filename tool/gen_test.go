@@ -38,7 +38,7 @@ import (
 
 func init() {
 	cl.SetDebug(cl.DbgFlagAll)
-	tool.SetDebug(tool.DbgFlagAll)
+	// tool.SetDebug(tool.DbgFlagAll)
 }
 
 func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp any) {
