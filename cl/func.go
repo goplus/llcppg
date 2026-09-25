@@ -119,7 +119,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 		cb := f.BodyStart(pkg)
 		if n := results.Len(); n > 0 {
 			retType := results.At(0).Type()
-			if recv.Type() == retType {
+			if types.Identical(recv.Type(), retType) {
 				cb.Val(recv)
 			} else {
 				cb.ZeroLit(retType)
