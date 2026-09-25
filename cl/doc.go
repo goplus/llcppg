@@ -143,3 +143,12 @@ func (p *pkgCtx) directiveComments(decl clang.Cursor, directive string) *ast.Com
 }
 
 // -----------------------------------------------------------------------------
+
+func (p *pkgCtx) directiveTypeC(decl clang.Cursor, hasCallback bool) *ast.CommentGroup {
+	if hasCallback {
+		return p.directiveComments(decl, "\n// llgo:type C")
+	}
+	return p.docCommentGroup(decl)
+}
+
+// -----------------------------------------------------------------------------

@@ -57,6 +57,11 @@ func newPointer(typ types.Type) types.Type {
 }
 
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
+	var hasCallback bool
+	return toTypeEx(ctx, pkg, typ, flags, &hasCallback)
+}
+
+func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallback *bool) types.Type {
 	switch typ.Kind {
 	case lc.TypeVoid:
 		return tyVoid
@@ -91,13 +96,15 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	case lc.TypePointer:
 		elem := typ.PointeeType()
 		if elem.Kind == lc.TypeFunctionProto {
+			*hasCallback = true
 			return toFuncType(ctx, pkg, elem)
 		}
 		// flagIsParam only governs the outermost type of a parameter, so clear
 		// it before recursing so inner arrays are not wrongly decayed.
-		pointee := toType(ctx, pkg, elem, flagIsTypeDef)
+		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, hasCallback)
 		return newPointer(pointee)
 	case lc.TypeFunctionProto:
+		*hasCallback = true
 		return toFuncType(ctx, pkg, typ)
 	case lc.TypeEnum:
 		cName := clang.String(typ)
@@ -123,7 +130,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		// Decay applies only to the outermost array, so clear flagIsParam
 		// before recursing; otherwise a nested array like int matrix[3][4]
 		// would decay its inner [4] too, yielding **c.Int instead of *[4]c.Int.
-		elem := toType(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef, hasCallback)
 		if flags&flagIsParam != 0 {
 			return newPointer(elem)
 		}
@@ -131,7 +138,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	case lc.TypeIncompleteArray, lc.TypeVariableArray:
 		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
 		// flagIsParam before recursing since decay applies only to this level.
-		elem := toType(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef, hasCallback)
 		return newPointer(elem)
 	case lc.TypeBlockPointer:
 		log.Println("==> toType: C blocks is unsupported, use void* as workaround")
@@ -187,6 +194,8 @@ func cmpType(ta, tb lc.Type) int {
 	// TODO(xsw): c++ overload support
 	return int(ta.Kind - tb.Kind)
 }
+
+// -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
 
