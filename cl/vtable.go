@@ -210,7 +210,7 @@ func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
 		slots = vtableSlots(ctx, nil, base)
 	}
 	for _, m := range ownVirtualMethods(cls) {
-		public := m.CXXAccessSpecifier() == lc.X_CXXPublic
+		public := m.CXXAccessSpecifier() == lc.CXXPublic
 		if m.Kind == lc.Cursor_Destructor {
 			// The destructor's two slots reuse the inherited destructor slots when
 			// present (a base virtual destructor always seeds a matching pair), so a

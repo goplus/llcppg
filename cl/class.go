@@ -193,7 +193,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		}
 
 	case lc.Cursor_CXXAccessSpecifier:
-		cls.inPublic = decl.CXXAccessSpecifier() == lc.X_CXXPublic
+		cls.inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
 
 	case lc.Cursor_EnumDecl:
 		// An enum nested in a class only affects naming: its constants are
