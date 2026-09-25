@@ -62,6 +62,6 @@ func dumpSources(filenames []string, files []cl.Source) {
 	for i, f := range files {
 		filename := filenames[i]
 		log.Println("==> dump", filename)
-		Dump(f.Cursor(), "", filepath.Dir(filename))
+		Dump(f.TU.Cursor(), "", filepath.Dir(filename))
 	}
 }

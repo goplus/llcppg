@@ -79,7 +79,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			u := idx.ParseTranslationUnit(
 				clang.DetailedPreprocessingRecord, presumedFile, "-x", cltest.LanguageOf(lang))
 			defer u.Dispose()
-			files[i] = u
+			files[i] = cl.Source{TU: u}
 			u.VisitDiagnostics(func(diag clang.Diagnostic) {
 				fmt.Fprintln(os.Stderr, diag.Format(options))
 			})

@@ -255,7 +255,7 @@ func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang str
 	flags[n+1] = lang
 	files := make([]cl.Source, 0, len(headerFiles))
 	for tu := range index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, flags...) {
-		files = append(files, tu)
+		files = append(files, cl.Source{TU: tu})
 		tu.VisitDiagnostics(func(diag clang.Diagnostic) {
 			fmt.Fprintln(os.Stderr, diag.Format(options))
 		})
@@ -265,8 +265,8 @@ func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang str
 
 // DisposeSources disposes the given translation units.
 func DisposeSources(sources []cl.Source) {
-	for _, tu := range sources {
-		tu.Dispose()
+	for _, f := range sources {
+		f.TU.Dispose()
 	}
 }
 
