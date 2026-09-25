@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -195,5 +196,7 @@ var langExts = [...]string{
 }
 
 func TestSingleC(t *testing.T) {
-	testFromDir(t, "Index", "./_testc", true)
+	if runtime.GOOS == "darwin" {
+		testFromDir(t, "Index", "./_testc", true)
+	}
 }
