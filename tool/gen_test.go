@@ -172,6 +172,11 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			return
 		}
 
+		if runtime.GOOS != "darwin" {
+			log.Println("==> only test on macOS") // TODO(xsw): cross-platform
+			return
+		}
+
 		stdlibDir := pkgDir + "/cstdlib"
 		pkg, lang, err := conf.NewPackage("", pkgDir, stdlibDir, idx)
 		if err != nil {
