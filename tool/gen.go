@@ -166,21 +166,23 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 	}
 
 	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
-		Fset:           fset,
-		Importer:       imp,
-		LLGoPackage:    cfg.LLGoPackage,
-		Language:       lang,
-		CFlags:         cfg.CFlags,
-		WrapFileHeader: cfg.WrapFileHeader,
-		Class:          cfg.Class,
-		NonClass:       cfg.NonClass,
-		FuncPrefix:     cfg.FuncPrefix,
-		EnumPrefix:     cfg.EnumPrefix,
-		TypePrefix:     cfg.TypePrefix,
-		TypeAbbr:       cfg.TypeAbbr,
-		Rename:         cfg.Rename,
-		NameLookup:     nil,
-		PubFileLookup:  mod.PubFileLookup,
+		Fset:            fset,
+		Importer:        imp,
+		LLGoPackage:     cfg.LLGoPackage,
+		Language:        lang,
+		CFlags:          cfg.CFlags,
+		WrapFileHeader:  cfg.WrapFileHeader,
+		Class:           cfg.Class,
+		NonClass:        cfg.NonClass,
+		FuncPrefix:      cfg.FuncPrefix,
+		EnumPrefix:      cfg.EnumPrefix,
+		TypePrefix:      cfg.TypePrefix,
+		TypeAbbr:        cfg.TypeAbbr,
+		Rename:          cfg.Rename,
+		DefaultGoFile:   "llcppg.i.go",
+		GenMultiGoFiles: true,
+		NameLookup:      nil,
+		PubFileLookup:   mod.PubFileLookup,
 		PackageOf: func(headerFile string) (pkgPath string, ok bool) {
 			for i, includeDir := range includeDirs {
 				if strings.HasPrefix(headerFile, includeDir) {
@@ -261,14 +263,8 @@ func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang str
 	flags[n] = "-x"
 	flags[n+1] = lang
 	files := make([]cl.Source, 0, len(headerFiles))
-	for headerFile, tu := range index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, flags...) {
-		fname := filepath.Base(headerFile)
-		if pos := strings.LastIndex(fname, "."); pos >= 0 {
-			fname = fname[:pos] + ".go"
-		} else {
-			fname += ".go"
-		}
-		files = append(files, cl.Source{TU: tu, GoFile: fname})
+	for _, tu := range index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, flags...) {
+		files = append(files, tu)
 		tu.VisitDiagnostics(func(diag clang.Diagnostic) {
 			fmt.Fprintln(os.Stderr, diag.Format(options))
 		})
@@ -279,7 +275,7 @@ func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang str
 // DisposeSources disposes the given translation units.
 func DisposeSources(sources []cl.Source) {
 	for _, f := range sources {
-		f.TU.Dispose()
+		f.Dispose()
 	}
 }
 

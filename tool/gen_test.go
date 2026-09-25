@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -53,13 +52,19 @@ func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp an
 	}
 }
 
-func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
+func testGenGo(t *testing.T, pkg *gogen.Package, dir, fname string, exp any) {
 	var b bytes.Buffer
-	err := pkg.WriteTo(&b)
+	err := pkg.WriteTo(&b, fname)
 	if err != nil {
 		t.Fatal("gogen.WriteTo failed:", err)
 	}
-	testDiff(t, dir, "/out.go.txt", &b, exp)
+	var outfname string
+	if fname == "" {
+		outfname = "/out.go.txt"
+	} else {
+		outfname = "/" + fname + ".txt"
+	}
+	testDiff(t, dir, outfname, &b, exp)
 }
 
 func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile string, conf *tool.Config) {
@@ -86,7 +91,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	})
 
 	const pkgPrefix = "clang/"
-	files := []cl.Source{{TU: u}}
+	files := []cl.Source{u}
 	imp := packages.NewImporter(nil, headerDir)
 	pkg, err := cl.NewPackage(pkgPrefix+myPkgName, myPkgName, files, &cl.Config{
 		Importer:    imp,
@@ -123,7 +128,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	pkgDir = filepath.Join(pkgDir, myPkgName)
 	os.Mkdir(pkgDir, 0755)
 	exp, _ := os.ReadFile(pkgDir + "/out.go")
-	testGenGo(t, pkg.Package, pkgDir, exp)
+	testGenGo(t, pkg.Package, pkgDir, "", exp)
 }
 
 func testFromDir(t *testing.T, sel, relDir string, single bool) {
@@ -167,13 +172,16 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			return
 		}
 
-		pkg, lang, err := conf.NewPackage("", pkgDir, stdlibDir(t), idx)
+		stdlibDir := pkgDir + "/cstdlib"
+		pkg, lang, err := conf.NewPackage("", pkgDir, stdlibDir, idx)
 		if err != nil {
 			t.Error("conf.NewPackage:", err)
 			return
 		}
-		exp, _ := os.ReadFile(pkgDir + "/out.go")
-		testGenGo(t, pkg.Package, pkgDir, exp)
+		pkg.ForEachFile(func(fname string, file *gogen.File) {
+			exp, _ := os.ReadFile(pkgDir + "/" + fname)
+			testGenGo(t, pkg.Package, pkgDir, fname, exp)
+		})
 		wrapFile := "/wrap" + langExts[lang]
 		wrap, _ := os.ReadFile(pkgDir + wrapFile)
 		if pkg.Wrap != nil {
@@ -182,22 +190,13 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 	})
 }
 
-func stdlibDir(t *testing.T) string {
-	b, err := exec.Command("llgo", "env", "LLGO_LLVM_CONFIG").Output()
-	if err != nil {
-		t.Fatal("exec llgo env LLGO_LLVM_CONFIG failed:", err)
-	}
-	llvmConfig := string(bytes.TrimSpace(b))
-	b, err = exec.Command(llvmConfig, "--libdir").Output()
-	if err != nil {
-		t.Fatal("exec llvm-config --libdir failed:", err)
-	}
-	return string(bytes.TrimSpace(b)) + "/clang/22/include/llvm_libc_wrappers"
-}
-
 var langExts = [...]string{
 	cl.LanguageC:   ".c",
 	cl.LanguageCXX: ".cpp",
+}
+
+func _TestC(t *testing.T) {
+	testFromDir(t, "", "./_testc", false)
 }
 
 func TestSingleC(t *testing.T) {
