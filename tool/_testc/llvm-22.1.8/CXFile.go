@@ -1,0 +1,56 @@
+package clang
+
+import (
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/time"
+)
+
+// A particular source file that is part of a translation unit.
+type File uintptr
+
+// Uniquely identifies a CXFile, that refers to the same underlying file,
+// across an indexing session.
+type FileUniqueID struct {
+	Data [3]c.UlongLong
+}
+
+// Retrieve the complete file and path name of the given file.
+//
+// llgo:link File.Name C.clang_getFileName
+func (SFile File) Name() String {
+	return String{}
+}
+
+// Retrieve the last modification time of the given file.
+//
+// llgo:link File.Time C.clang_getFileTime
+func (SFile File) Time() time.TimeT {
+	return 0
+}
+
+// Retrieve the unique ID for the given \c file.
+//
+// \param file the file to get the ID for.
+// \param outID stores the returned CXFileUniqueID.
+// \returns If there was a failure getting the unique ID, returns non-zero,
+// otherwise returns 0.
+//
+// llgo:link File.UniqueID C.clang_getFileUniqueID
+func (file File) UniqueID(outID *FileUniqueID) c.Int {
+	return 0
+}
+
+// Returns non-zero if the \c file1 and \c file2 point to the same file,
+// or they are both NULL.
+//
+//go:linkname FileIsEqual C.clang_File_isEqual
+func FileIsEqual(file1 File, file2 File) c.Int
+
+// Returns the real path name of \c file.
+//
+// An empty string may be returned. Use \c clang_getFileName() in that case.
+//
+// llgo:link File.TryGetRealPathName C.clang_File_tryGetRealPathName
+func (file File) TryGetRealPathName() String {
+	return String{}
+}

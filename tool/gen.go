@@ -189,9 +189,6 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 					return pkgPaths[i], true
 				}
 			}
-			if debugImport {
-				log.Println("==> pkgOf: not found -", headerFile)
-			}
 			return
 		},
 	})
@@ -262,12 +259,13 @@ func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang str
 	}
 	flags[n] = "-x"
 	flags[n+1] = lang
-	files := make([]cl.Source, 0, len(headerFiles))
-	for _, tu := range index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, flags...) {
-		files = append(files, tu)
+	files := make([]cl.Source, len(headerFiles))
+	for i, headerFile := range headerFiles {
+		tu := index.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)
 		tu.VisitDiagnostics(func(diag clang.Diagnostic) {
 			fmt.Fprintln(os.Stderr, diag.Format(options))
 		})
+		files[i] = tu
 	}
 	return files
 }
