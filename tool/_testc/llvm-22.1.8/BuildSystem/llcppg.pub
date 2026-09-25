@@ -1,3 +1,4 @@
+D clang/CXErrorCode
 T CXVirtualFileOverlayImpl
 T CXVirtualFileOverlay
 T CXModuleMapDescriptorImpl

@@ -1,3 +1,8 @@
+D clang/CXDiagnostic
+D clang/CXErrorCode
+D clang/CXFile
+D clang/CXSourceLocation
+D clang/CXString
 T CXIndex
 T CXTargetInfo
 T CXTranslationUnit

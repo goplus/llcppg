@@ -1,2 +1,2 @@
-T CXString
-T CXStringSet
+T struct CXString
+T struct CXStringSet

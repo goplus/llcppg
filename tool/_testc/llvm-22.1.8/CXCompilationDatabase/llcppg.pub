@@ -1,3 +1,4 @@
+D clang/CXString
 T CXCompilationDatabase
 T CXCompileCommands
 T CXCompileCommand
