@@ -3599,7 +3599,7 @@ func (availability *PlatformAvailability) DisposeCX() {
 //
 // llgo:link Cursor.VarDeclInitializer C.clang_Cursor_getVarDeclInitializer
 func (cursor Cursor) VarDeclInitializer() Cursor {
-	return Cursor{}
+	return cursor
 }
 
 // If cursor refers to a variable declaration that has global storage returns 1.
@@ -3705,7 +3705,7 @@ func (cset CursorSet) CXCursorSetInsert(cursor Cursor) c.Uint {
 //
 // llgo:link Cursor.SemanticParent C.clang_getCursorSemanticParent
 func (cursor Cursor) SemanticParent() Cursor {
-	return Cursor{}
+	return cursor
 }
 
 // Determine the lexical parent of the given cursor.
@@ -3743,7 +3743,7 @@ func (cursor Cursor) SemanticParent() Cursor {
 //
 // llgo:link Cursor.LexicalParent C.clang_getCursorLexicalParent
 func (cursor Cursor) LexicalParent() Cursor {
-	return Cursor{}
+	return cursor
 }
 
 // Determine the set of methods that are overridden by the given
@@ -3962,7 +3962,7 @@ func (C Cursor) NumArguments() c.Int {
 //
 // llgo:link Cursor.Argument C.clang_Cursor_getArgument
 func (C Cursor) Argument(i c.Uint) Cursor {
-	return Cursor{}
+	return C
 }
 
 // Returns the number of template args of a function, struct, or class decl
@@ -4089,7 +4089,7 @@ func EqualTypes(A Type, B Type) c.Uint
 //
 // llgo:link Type.Canonical C.clang_getCanonicalType
 func (T Type) Canonical() Type {
-	return Type{}
+	return T
 }
 
 // Determine whether a CXType has the "const" qualifier set,
@@ -4161,7 +4161,7 @@ func (CT Type) TypedefName() CXString.String {
 //
 // llgo:link Type.Pointee C.clang_getPointeeType
 func (T Type) Pointee() Type {
-	return Type{}
+	return T
 }
 
 // Retrieve the unqualified variant of the given type, removing as
@@ -4200,7 +4200,7 @@ func (T Type) Pointee() Type {
 //
 // llgo:link Type.Unqualified C.clang_getUnqualifiedType
 func (CT Type) Unqualified() Type {
-	return Type{}
+	return CT
 }
 
 // For reference types (e.g., "const int&"), returns the type that the
@@ -4213,7 +4213,7 @@ func (CT Type) Unqualified() Type {
 //
 // llgo:link Type.NonReference C.clang_getNonReferenceType
 func (CT Type) NonReference() Type {
-	return Type{}
+	return CT
 }
 
 // Return the cursor for the declaration of the given type.
@@ -4259,7 +4259,7 @@ func (T Type) FunctionTypeCallingConv() CallingConv {
 //
 // llgo:link Type.Result C.clang_getResultType
 func (T Type) Result() Type {
-	return Type{}
+	return T
 }
 
 // Retrieve the exception specification type associated with a function type.
@@ -4289,7 +4289,7 @@ func (T Type) NumArgTypes() c.Int {
 //
 // llgo:link Type.Arg C.clang_getArgType
 func (T Type) Arg(i c.Uint) Type {
-	return Type{}
+	return T
 }
 
 // Retrieves the base type of the ObjCObjectType.
@@ -4298,7 +4298,7 @@ func (T Type) Arg(i c.Uint) Type {
 //
 // llgo:link Type.ObjCObjectBase C.clang_Type_getObjCObjectBaseType
 func (T Type) ObjCObjectBase() Type {
-	return Type{}
+	return T
 }
 
 // Retrieve the number of protocol references associated with an ObjC object/id.
@@ -4336,7 +4336,7 @@ func (T Type) NumObjCTypeArgs() c.Uint {
 //
 // llgo:link Type.ObjCTypeArg C.clang_Type_getObjCTypeArg
 func (T Type) ObjCTypeArg(i c.Uint) Type {
-	return Type{}
+	return T
 }
 
 // Return 1 if the CXType is a variadic function type, and 0 otherwise.
@@ -4381,7 +4381,7 @@ func (T Type) IsPOD() c.Uint {
 //
 // llgo:link Type.Element C.clang_getElementType
 func (T Type) Element() Type {
-	return Type{}
+	return T
 }
 
 // Return the number of elements of an array or vector type.
@@ -4400,7 +4400,7 @@ func (T Type) NumElements() c.LongLong {
 //
 // llgo:link Type.ArrayElement C.clang_getArrayElementType
 func (T Type) ArrayElement() Type {
-	return Type{}
+	return T
 }
 
 // Return the array size of a constant array.
@@ -4418,7 +4418,7 @@ func (T Type) ArraySize() c.LongLong {
 //
 // llgo:link Type.Named C.clang_Type_getNamedType
 func (T Type) Named() Type {
-	return Type{}
+	return T
 }
 
 // Determine if a typedef is 'transparent' tag.
@@ -4462,7 +4462,7 @@ func (T Type) AlignOf() c.LongLong {
 //
 // llgo:link Type.Class C.clang_Type_getClassType
 func (T Type) Class() Type {
-	return Type{}
+	return T
 }
 
 // Return the size of a type in bytes as per C++[expr.sizeof] standard.
@@ -4501,7 +4501,7 @@ func (T Type) OffsetOf(S *c.Char) c.LongLong {
 //
 // llgo:link Type.Modified C.clang_Type_getModifiedType
 func (T Type) Modified() Type {
-	return Type{}
+	return T
 }
 
 // Gets the type contained by this atomic type.
@@ -4510,7 +4510,7 @@ func (T Type) Modified() Type {
 //
 // llgo:link Type.Value C.clang_Type_getValueType
 func (CT Type) Value() Type {
-	return Type{}
+	return CT
 }
 
 // Return the offset of the field represented by the Cursor.
@@ -4570,7 +4570,7 @@ func (T Type) NumTemplateArguments() c.Int {
 //
 // llgo:link Type.TemplateArgumentAs C.clang_Type_getTemplateArgumentAsType
 func (T Type) TemplateArgumentAs(i c.Uint) Type {
-	return Type{}
+	return T
 }
 
 // Retrieve the ref-qualifier kind of a function or method.
@@ -4667,7 +4667,7 @@ func (cursor Cursor) NumOverloadedDecls() c.Uint {
 //
 // llgo:link Cursor.OverloadedDecl C.clang_getOverloadedDecl
 func (cursor Cursor) OverloadedDecl(index c.Uint) Cursor {
-	return Cursor{}
+	return cursor
 }
 
 // For cursors representing an iboutletcollection attribute,
@@ -4869,7 +4869,7 @@ func (_llcppg_param1 Cursor) DisplayName() CXString.String {
 //
 // llgo:link Cursor.Referenced C.clang_getCursorReferenced
 func (_llcppg_param1 Cursor) Referenced() Cursor {
-	return Cursor{}
+	return _llcppg_param1
 }
 
 //  For a cursor that is either a reference to or a declaration
@@ -4901,7 +4901,7 @@ func (_llcppg_param1 Cursor) Referenced() Cursor {
 //
 // llgo:link Cursor.Definition C.clang_getCursorDefinition
 func (_llcppg_param1 Cursor) Definition() Cursor {
-	return Cursor{}
+	return _llcppg_param1
 }
 
 // Determine whether the declaration pointed to by this cursor
@@ -4937,7 +4937,7 @@ func (_llcppg_param1 Cursor) IsCursorDefinition() c.Uint {
 //
 // llgo:link Cursor.Canonical C.clang_getCanonicalCursor
 func (_llcppg_param1 Cursor) Canonical() Cursor {
-	return Cursor{}
+	return _llcppg_param1
 }
 
 // If the cursor points to a selector identifier in an Objective-C
@@ -5240,7 +5240,7 @@ func (Module Module) ASTFile() CXFile.File {
 //
 // llgo:link Module.Parent C.clang_Module_getParent
 func (Module Module) Parent() Module {
-	return 0
+	return Module
 }
 
 // \param Module a module object.
@@ -5539,7 +5539,7 @@ func (C Cursor) TemplateCursorKind() CursorKind {
 //
 // llgo:link Cursor.SpecializedCursorTemplate C.clang_getSpecializedCursorTemplate
 func (C Cursor) SpecializedCursorTemplate() Cursor {
-	return Cursor{}
+	return C
 }
 
 // Given a cursor that references something else, return the source range
@@ -5729,7 +5729,7 @@ func (completion_string CompletionString) CompletionChunkText(chunk_number c.Uin
 //
 // llgo:link CompletionString.CompletionChunk C.clang_getCompletionChunkCompletionString
 func (completion_string CompletionString) CompletionChunk(chunk_number c.Uint) CompletionString {
-	return 0
+	return completion_string
 }
 
 // Retrieve the number of chunks in the given code-completion string.
