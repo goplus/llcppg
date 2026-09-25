@@ -56,9 +56,11 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	var cName = clang.String(decl.Type())
 	var isClass bool
 	if tunder == types.Typ[types.UnsafePointer] {
-		tunder, isClass = types.Typ[types.Uintptr], true // unsafe.Pointer => uintptr
+		if !contains(cName, ctx.nonClasses) {
+			tunder, isClass = types.Typ[types.Uintptr], true // unsafe.Pointer => uintptr
+		}
 	} else {
-		_, isClass = ctx.classes[cName]
+		isClass = contains(cName, ctx.classes)
 	}
 	if isClass {
 		t := typDefs.NewType(name).InitType(pkg, tunder)
@@ -68,6 +70,15 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		obj = t.Obj()
 	}
 	ctx.types[cName] = obj
+}
+
+func contains(v string, names []string) bool {
+	for _, name := range names {
+		if name == v {
+			return true
+		}
+	}
+	return false
 }
 
 // -----------------------------------------------------------------------------

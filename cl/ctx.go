@@ -102,8 +102,9 @@ type pkgCtx struct {
 	fnPrefix   []string
 	enumPrefix []string
 	typePrefix []string
+	classes    []string          // typedef names to be treated as classes
+	nonClasses []string          // typedef names to be treated as non-classes
 	typeAbbr   map[string]string // Go type name => abbreviated name, used in function names
-	classes    map[string]none   // typedef names to be treated as classes
 	rename     map[string]string // C/C++ name => Go name
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)

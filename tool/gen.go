@@ -63,6 +63,7 @@ type Config struct {
 	Dir            string            `json:"Dir"`        // dir or dir/... (recursive)
 	Deps           []string          `json:"Deps"`       // dependencies (package paths)
 	Class          []string          `json:"Class"`      // typedef names to be treated as classes
+	NonClass       []string          `json:"NonClass"`   // typedef names to be treated as non-classes
 	FuncPrefix     []string          `json:"FuncPrefix"` // global function prefix to remove
 	EnumPrefix     []string          `json:"EnumPrefix"` // enum value prefix to remove
 	TypePrefix     []string          `json:"TypePrefix"` // type prefix to remove

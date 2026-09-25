@@ -64,6 +64,11 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 
 func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile string, conf *tool.Config) {
 	myPkgName := headerFile[len(headerDir) : len(headerFile)-2]
+	if myPkgName == "Index" && runtime.GOOS != "darwin" {
+		log.Println("==> only test Index on macOS")
+		return
+	}
+
 	log.Println("==> testSingleFile: package", myPkgName)
 
 	lang, ok := conf.Lang()
@@ -89,6 +94,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		Language:    lang,
 		Deps:        conf.Deps,
 		Class:       conf.Class,
+		NonClass:    conf.NonClass,
 		FuncPrefix:  conf.FuncPrefix,
 		EnumPrefix:  conf.EnumPrefix,
 		TypePrefix:  conf.TypePrefix,
@@ -196,7 +202,5 @@ var langExts = [...]string{
 }
 
 func TestSingleC(t *testing.T) {
-	if runtime.GOOS == "darwin" {
-		testFromDir(t, "Index", "./_testc", true)
-	}
+	testFromDir(t, "Index", "./_testc", true)
 }

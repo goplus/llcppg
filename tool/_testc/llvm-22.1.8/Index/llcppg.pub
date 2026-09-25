@@ -1,0 +1,94 @@
+T CXIndex
+T CXTargetInfo
+T CXTranslationUnit
+T CXClientData
+T struct CXUnsavedFile
+T enum CXAvailabilityKind
+T struct CXVersion
+T enum CXCursor_ExceptionSpecificationKind
+T enum CXChoice
+T enum CXGlobalOptFlags
+T struct CXIndexOptions
+T enum CXTranslationUnit_Flags
+T enum CXSaveTranslationUnit_Flags
+T enum CXSaveError
+T enum CXReparse_Flags
+T enum CXTUResourceUsageKind
+T struct CXTUResourceUsageEntry
+T struct CXTUResourceUsage
+T enum CXCursorKind
+T struct CXCursor
+T enum CXLinkageKind
+T enum CXVisibilityKind
+T struct CXPlatformAvailability
+T enum CXLanguageKind
+T enum CXTLSKind
+T CXCursorSet
+T enum CXTypeKind
+T enum CXCallingConv
+T struct CXType
+T enum CXTemplateArgumentKind
+T enum CXTypeNullabilityKind
+T enum CXTypeLayoutError
+T enum CXRefQualifierKind
+T enum CX_CXXAccessSpecifier
+T enum CX_StorageClass
+T enum CX_BinaryOperatorKind
+T enum CXChildVisitResult
+T CXCursorVisitor
+T CXPrintingPolicy
+T enum CXPrintingPolicyProperty
+T enum CXObjCPropertyAttrKind
+T enum CXObjCDeclQualifierKind
+T CXModule
+T enum CXNameRefFlags
+T enum CXTokenKind
+T struct CXToken
+T CXCompletionString
+T struct CXCompletionResult
+T enum CXCompletionChunkKind
+T struct CXCodeCompleteResults
+T enum CXCodeComplete_Flags
+T enum CXCompletionContext
+T CXInclusionVisitor
+T enum CXEvalResultKind
+T CXEvalResult
+T enum CXVisitorResult
+T struct CXCursorAndRangeVisitor
+T enum CXResult
+T CXIdxClientFile
+T CXIdxClientEntity
+T CXIdxClientContainer
+T CXIdxClientASTFile
+T struct CXIdxLoc
+T struct CXIdxIncludedFileInfo
+T struct CXIdxImportedASTFileInfo
+T enum CXIdxEntityKind
+T enum CXIdxEntityLanguage
+T enum CXIdxEntityCXXTemplateKind
+T enum CXIdxAttrKind
+T struct CXIdxAttrInfo
+T struct CXIdxEntityInfo
+T struct CXIdxContainerInfo
+T struct CXIdxIBOutletCollectionAttrInfo
+T enum CXIdxDeclInfoFlags
+T struct CXIdxDeclInfo
+T enum CXIdxObjCContainerKind
+T struct CXIdxObjCContainerDeclInfo
+T struct CXIdxBaseClassInfo
+T struct CXIdxObjCProtocolRefInfo
+T struct CXIdxObjCProtocolRefListInfo
+T struct CXIdxObjCInterfaceDeclInfo
+T struct CXIdxObjCCategoryDeclInfo
+T struct CXIdxObjCPropertyDeclInfo
+T struct CXIdxCXXClassDeclInfo
+T enum CXIdxEntityRefKind
+T enum CXSymbolRole
+T struct CXIdxEntityRefInfo
+T struct IndexerCallbacks
+T CXIndexAction
+T enum CxIndexOptFlags
+T CXFieldVisitor
+T enum CXBinaryOperatorKind
+T enum CXUnaryOperatorKind
+T CXRemapping
