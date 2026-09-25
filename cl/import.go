@@ -142,10 +142,7 @@ func savePubFile(file string, it iter.Seq[Entry], n int) (err error) {
 // -----------------------------------------------------------------------------
 
 func (p *pkgCtx) forceImportUnsafe() {
-	if !p.unsafeImported {
-		p.unsafeImported = true
-		p.pkg.ForceImport("unsafe")
-	}
+	p.pkg.ForceImport("unsafe")
 }
 
 func (p *pkgCtx) importPkg(pkgPath string) {

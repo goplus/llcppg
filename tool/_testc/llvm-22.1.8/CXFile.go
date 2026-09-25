@@ -3,6 +3,7 @@ package clang
 import (
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/time"
+	_ "unsafe"
 )
 
 // A particular source file that is part of a translation unit.
