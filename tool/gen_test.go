@@ -86,7 +86,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	})
 
 	const pkgPrefix = "clang/"
-	files := []cl.Source{u}
+	files := []cl.Source{{TU: u}}
 	imp := packages.NewImporter(nil, headerDir)
 	pkg, err := cl.NewPackage(pkgPrefix+myPkgName, myPkgName, files, &cl.Config{
 		Importer:    imp,

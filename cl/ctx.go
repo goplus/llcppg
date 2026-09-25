@@ -82,6 +82,10 @@ func (p *nodeInterp) LoadExpr(v ast.Node) string {
 
 type none struct{}
 type compileFunc = func(ctx *pkgCtx)
+type compileUnit struct {
+	fn compileFunc
+	at *gogen.File
+}
 
 type pkgCtx struct {
 	scopeCtx
@@ -120,7 +124,7 @@ type pkgCtx struct {
 	lastSeen  map[string]none            // last seen include file set (loaded include files)
 	thisSeen  map[string]none            // include file set seen in this translation unit
 
-	compiles []compileFunc
+	compiles []compileUnit
 	pubs     []Entry
 
 	// anonUnionSeq is the per-package counter that names tagless inline unions
@@ -166,9 +170,18 @@ func (p *pkgCtx) getFileBase(c clang.Cursor, file clang.File) int {
 	return base
 }
 
+func (p *pkgCtx) addCompileUnit(f compileFunc) {
+	p.compiles = append(p.compiles, compileUnit{
+		fn: f,
+		at: p.pkg.CurFile(),
+	})
+}
+
 func (p *pkgCtx) compile() {
-	for _, compile := range p.compiles {
-		compile(p)
+	pkg := p.pkg
+	for _, c := range p.compiles {
+		pkg.RestoreCurFile(c.at)
+		c.fn(p)
 	}
 }
 

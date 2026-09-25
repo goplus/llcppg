@@ -88,6 +88,9 @@ type Config struct {
 	// wrapper file (optional).
 	WrapFileHeader string
 
+	// DefaultGoFile specifies default file name (optional).
+	DefaultGoFile string
+
 	// NameLookup looks up the archive path for a given mangling name. It returns the
 	// archive path and a boolean indicating whether the lookup was successful. If not
 	// specified, llcppg uses a default lookup function that returns an empty archivePath
@@ -138,7 +141,10 @@ type Config struct {
 // -----------------------------------------------------------------------------
 
 // Source represents a source file to be processed by llcppg.
-type Source = clang.TranslationUnit
+type Source struct {
+	TU     clang.TranslationUnit
+	GoFile string
+}
 
 // NewPackage loads a translation unit and generates a Go package with the given package
 // path, name and configuration.
@@ -155,7 +161,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		NewBuiltin:      nil,
 		NodeInterpreter: interp,
 		CanImplicitCast: nil,
-		DefaultGoFile:   "",
+		DefaultGoFile:   conf.DefaultGoFile,
 	}
 	pkg := gogen.NewPackage(pkgPath, pkgName, confGox)
 	pkg.SetRedeclarable(true)
@@ -200,12 +206,14 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 // -----------------------------------------------------------------------------
 
 func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
+	pkg := ctx.pkg
 	pkgOf := ctx.pkgOf
 	scope := &ctx.scopeCtx
 	lastSeen := ctx.lastSeen
-	for _, tu := range files {
+	for _, f := range files {
+		pkg.SetCurFile(f.GoFile, true)
 		ctx.thisSeen = make(map[string]none) // reset for each file
-		clang.VisitChildren(tu.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		clang.VisitChildren(f.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			if pkgOf != nil {
 				at := clang.PresumedFile(decl.Location())
 				if _, ok := lastSeen[at]; ok {

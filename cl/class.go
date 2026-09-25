@@ -130,7 +130,7 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *typ
 	}
 	typStruc := types.NewStruct(scope.fields, nil)
 	typDecl.InitType(pkg, typStruc)
-	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		compileClass(ctx, scope)
 	})
 	return typNamed
