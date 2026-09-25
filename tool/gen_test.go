@@ -31,7 +31,6 @@ import (
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cl/cltest"
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
 	"github.com/goplus/llcppg/tool"
 	"github.com/qiniu/x/test"
 )
@@ -82,7 +81,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		return
 	}
 
-	options := lc.DefaultDiagnosticDisplayOptions()
+	options := clang.DefaultDiagnosticDisplayOptions()
 	u := idx.ParseTranslationUnit(
 		clang.DetailedPreprocessingRecord, headerFile, "-I"+pkgDir+"/include", "-I"+pkgDir+"/cstdlib", "-x", conf.Language)
 	defer u.Dispose()

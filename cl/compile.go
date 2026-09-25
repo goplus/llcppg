@@ -26,7 +26,7 @@ import (
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 const (
@@ -244,27 +244,27 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, genMultiGoFiles bo
 
 func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	switch decl.Kind {
-	case lc.CursorFunctionDecl:
+	case lc.Cursor_FunctionDecl:
 		loadGlobalFunc(ctx, scope, decl, ns)
-	case lc.CursorClassDecl, lc.CursorStructDecl:
+	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
 		loadClass(ctx, decl, ns, decl.Kind)
-	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
+	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
 		loadOutsideMethod(ctx, decl)
-	case lc.CursorTypedefDecl:
+	case lc.Cursor_TypedefDecl:
 		loadTypedef(ctx, decl, ns)
-	case lc.CursorEnumDecl:
+	case lc.Cursor_EnumDecl:
 		loadEnum(ctx, decl, ns)
-	case lc.CursorMacroDefinition:
+	case lc.Cursor_MacroDefinition:
 		loadMacro(ctx, decl)
-	case lc.CursorInclusionDirective:
+	case lc.Cursor_InclusionDirective:
 		loadInclude(ctx, decl)
-	case lc.CursorNamespace:
+	case lc.Cursor_Namespace:
 		loadNamespace(ctx, scope, decl, ns)
-	case lc.CursorVarDecl:
+	case lc.Cursor_VarDecl:
 		loadVar(ctx, decl, ns)
-	case lc.CursorUnionDecl:
+	case lc.Cursor_UnionDecl:
 		loadUnion(ctx, decl, ns)
-	case lc.CursorMacroExpansion:
+	case lc.Cursor_MacroExpansion:
 		// noop
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)

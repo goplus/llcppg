@@ -20,7 +20,7 @@ import (
 	"unsafe"
 
 	"github.com/goplus/lib/c"
-	"github.com/goplus/llcppg/lib/clang"
+	"github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -32,12 +32,12 @@ func GoStringAndDispose(str clang.String) string {
 }
 
 type stringer interface {
-	String() clang.String
+	Spelling() clang.String
 }
 
 // String returns the Go string of a value whose String() returns a clang String.
 func String[T stringer](v T) string {
-	return GoStringAndDispose(v.String())
+	return GoStringAndDispose(v.Spelling())
 }
 
 // -----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ func String[T stringer](v T) string {
  * typically be linked together into an executable or library.
  */
 type Index struct {
-	*clang.Index
+	clang.Index
 }
 
 /**
@@ -89,12 +89,12 @@ const (
 	 * applications that require more detailed information about the
 	 * behavior of the preprocessor.
 	 */
-	DetailedPreprocessingRecord = clang.DetailedPreprocessingRecord
+	DetailedPreprocessingRecord = clang.TranslationUnit_DetailedPreprocessingRecord
 )
 
 // ParseTranslationUnit parses the given source file and returns the translation unit corresponding
 // to that file.
-func (i Index) ParseTranslationUnit(options uint, filename string, args ...string) TranslationUnit {
+func (i Index) ParseTranslationUnit(options clang.TranslationUnit_Flags, filename string, args ...string) TranslationUnit {
 	cArgs := make([]*c.Char, len(args))
 	for i, arg := range args {
 		cArgs[i] = c.AllocaCStr(arg)
@@ -121,21 +121,21 @@ const (
  * Retrieve the name of a particular source file.
  */
 func FileName(f clang.File) string {
-	return GoStringAndDispose(f.FileName())
+	return GoStringAndDispose(f.Name())
 }
 
 // -----------------------------------------------------------------------------
 
 // Diagnostic represents a diagnostic message, such as a compiler warning or error.
 type Diagnostic struct {
-	*clang.Diagnostic
+	clang.Diagnostic
 }
 
 /**
  * Returns a string that describes the diagnostic.
  */
 func (e Diagnostic) String() string {
-	return GoStringAndDispose(e.Diagnostic.String())
+	return GoStringAndDispose(e.Diagnostic.Spelling())
 }
 
 /**
@@ -149,8 +149,11 @@ func (e Diagnostic) CategoryText() string {
  * Format the given diagnostic according to the specified display options.
  */
 func (e Diagnostic) Format(options clang.DiagnosticDisplayOptions) string {
-	return GoStringAndDispose(e.Diagnostic.Format(options))
+	return GoStringAndDispose(e.Diagnostic.Format(c.Uint(options)))
 }
+
+//go:linkname DefaultDiagnosticDisplayOptions C.clang_defaultDiagnosticDisplayOptions
+func DefaultDiagnosticDisplayOptions() clang.DiagnosticDisplayOptions
 
 // -----------------------------------------------------------------------------
 
@@ -158,7 +161,7 @@ func (e Diagnostic) Format(options clang.DiagnosticDisplayOptions) string {
  * A single translation unit, which resides in an index.
  */
 type TranslationUnit struct {
-	*clang.TranslationUnit
+	clang.TranslationUnit
 }
 
 // File returns the File object corresponding to the given filename in the translation unit.
@@ -193,8 +196,8 @@ func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, 
  * The spelling of a token is the textual representation of that token, e.g.,
  * the text of an identifier or keyword.
  */
-func (u TranslationUnit) Token(tok clang.Token) string {
-	return GoStringAndDispose(u.TranslationUnit.Token(tok))
+func (u TranslationUnit) TokenSpelling(tok clang.Token) string {
+	return GoStringAndDispose(u.TranslationUnit.TokenSpelling(tok))
 }
 
 /**
@@ -249,7 +252,7 @@ type SourceLocation = clang.SourceLocation
 // PresumedFile returns the presumed file name for the given source location.
 func PresumedFile(loc SourceLocation) string {
 	var filename clang.String
-	loc.PresumedLocation(&filename, nil, nil)
+	loc.Presumed(&filename, nil, nil)
 	return GoStringAndDispose(filename)
 }
 
@@ -275,7 +278,7 @@ func RawComment(entity clang.Cursor) string {
  * Retrieve the translation unit that a cursor originated from.
  */
 func TU(c Cursor) (ret TranslationUnit) {
-	return TranslationUnit{TranslationUnit: c.TU()}
+	return TranslationUnit{TranslationUnit: c.TranslationUnit()}
 }
 
 /**
@@ -307,8 +310,8 @@ const (
 // visitor function for each child cursor. The traversal may be recursive,
 // depending on the return value of the visitor function.
 func VisitChildren(root Cursor, fn func(cur, parent Cursor) ChildVisitResult) uint {
-	return uint(clang.VisitChildren(
-		root, func(cur, parent Cursor, param clang.ClientData) ChildVisitResult {
+	return uint(clang.VisitChildren(root,
+		func(cur, parent Cursor, param clang.ClientData) ChildVisitResult {
 			return c.GoClosure[func(cur, parent Cursor) ChildVisitResult](param)(cur, parent)
 		}, c.ClosureData(fn)))
 }

@@ -23,7 +23,7 @@ import (
 	"log"
 
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -102,7 +102,7 @@ func emitUnion(ctx *pkgCtx, decl clang.Cursor, uName string) *types.Named {
 	var members []clang.Cursor
 	clang.VisitChildren(decl, func(m, parent clang.Cursor) clang.ChildVisitResult {
 		switch m.Kind {
-		case lc.CursorFieldDecl:
+		case lc.Cursor_FieldDecl:
 			members = append(members, m)
 		}
 		return clang.Continue
@@ -188,21 +188,21 @@ func allFloatLeaves(typ lc.Type, width int64) bool {
 
 func walkFloatLeaves(typ lc.Type, width int64, found *bool) bool {
 	switch typ.Kind {
-	case lc.TypeFloat, lc.TypeDouble, lc.TypeLongDouble, lc.TypeFloat128, lc.TypeFloat16:
+	case lc.Type_Float, lc.Type_Double, lc.Type_LongDouble, lc.Type_Float128, lc.Type_Float16:
 		if int64(typ.SizeOf()) != width {
 			return false
 		}
 		*found = true
 		return true
-	case lc.TypeConstantArray:
-		return walkFloatLeaves(typ.ArrayElementType(), width, found)
-	case lc.TypeElaborated:
-		return walkFloatLeaves(typ.NamedType(), width, found)
-	case lc.TypeRecord:
-		decl := typ.TypeDeclaration()
+	case lc.Type_ConstantArray:
+		return walkFloatLeaves(typ.ArrayElement(), width, found)
+	case lc.Type_Elaborated:
+		return walkFloatLeaves(typ.Named(), width, found)
+	case lc.Type_Record:
+		decl := typ.Declaration()
 		ok := true
 		clang.VisitChildren(decl, func(m, parent clang.Cursor) clang.ChildVisitResult {
-			if m.Kind != lc.CursorFieldDecl {
+			if m.Kind != lc.Cursor_FieldDecl {
 				return clang.Continue
 			}
 			if !walkFloatLeaves(m.Type(), width, found) {

@@ -25,7 +25,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -63,39 +63,39 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 
 func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallback *bool) types.Type {
 	switch typ.Kind {
-	case lc.TypeVoid:
+	case lc.Type_Void:
 		return tyVoid
-	case lc.TypeBool:
+	case lc.Type_Bool:
 		return types.Typ[types.Bool]
-	case lc.TypeCharS:
+	case lc.Type_Char_S:
 		return ctx.c.Ref("Char").Type()
-	case lc.TypeSChar:
+	case lc.Type_SChar:
 		return types.Typ[types.Int8]
-	case lc.TypeCharU, lc.TypeUChar:
+	case lc.Type_Char_U, lc.Type_UChar:
 		return types.Typ[types.Uint8]
-	case lc.TypeShort:
+	case lc.Type_Short:
 		return types.Typ[types.Int16]
-	case lc.TypeUShort:
+	case lc.Type_UShort:
 		return types.Typ[types.Uint16]
-	case lc.TypeInt:
+	case lc.Type_Int:
 		return ctx.c.Ref("Int").Type()
-	case lc.TypeUInt:
+	case lc.Type_UInt:
 		return ctx.c.Ref("Uint").Type()
-	case lc.TypeLong:
+	case lc.Type_Long:
 		return ctx.c.Ref("Long").Type()
-	case lc.TypeULong:
+	case lc.Type_ULong:
 		return ctx.c.Ref("Ulong").Type()
-	case lc.TypeLongLong:
+	case lc.Type_LongLong:
 		return ctx.c.Ref("LongLong").Type()
-	case lc.TypeULongLong:
+	case lc.Type_ULongLong:
 		return ctx.c.Ref("UlongLong").Type()
-	case lc.TypeFloat:
+	case lc.Type_Float:
 		return ctx.c.Ref("Float").Type()
-	case lc.TypeDouble:
+	case lc.Type_Double:
 		return ctx.c.Ref("Double").Type()
-	case lc.TypePointer:
-		elem := typ.PointeeType()
-		if elem.Kind == lc.TypeFunctionProto {
+	case lc.Type_Pointer:
+		elem := typ.Pointee()
+		if elem.Kind == lc.Type_FunctionProto {
 			*hasCallback = true
 			return toFuncType(ctx, pkg, elem)
 		}
@@ -103,28 +103,28 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 		// it before recursing so inner arrays are not wrongly decayed.
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, hasCallback)
 		return newPointer(pointee)
-	case lc.TypeFunctionProto:
+	case lc.Type_FunctionProto:
 		*hasCallback = true
 		return toFuncType(ctx, pkg, typ)
-	case lc.TypeEnum:
+	case lc.Type_Enum:
 		cName := clang.String(typ)
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
-	case lc.TypeRecord, lc.TypeTypedef:
-		cName := clang.String(typ.TypeDeclaration().Type())
+	case lc.Type_Record, lc.Type_Typedef:
+		cName := clang.String(typ.Declaration().Type())
 		if o, ok := ctx.types[cName]; ok {
 			if o.hasCallback {
 				*hasCallback = true
 			}
 			return o.Type()
 		}
-	case lc.TypeElaborated:
-		cName := clang.String(typ.NamedType())
+	case lc.Type_Elaborated:
+		cName := clang.String(typ.Named())
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
-	case lc.TypeConstantArray:
+	case lc.Type_ConstantArray:
 		// A fixed-size C array T[N] is a true array only when it has real
 		// storage, e.g. as a struct field. As a function parameter it is a
 		// pseudo-array that decays to a pointer T*, so honor that here since
@@ -133,17 +133,17 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 		// Decay applies only to the outermost array, so clear flagIsParam
 		// before recursing; otherwise a nested array like int matrix[3][4]
 		// would decay its inner [4] too, yielding **c.Int instead of *[4]c.Int.
-		elem := toTypeEx(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef, hasCallback)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, hasCallback)
 		if flags&flagIsParam != 0 {
 			return newPointer(elem)
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
-	case lc.TypeIncompleteArray, lc.TypeVariableArray:
+	case lc.Type_IncompleteArray, lc.Type_VariableArray:
 		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
 		// flagIsParam before recursing since decay applies only to this level.
-		elem := toTypeEx(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef, hasCallback)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, hasCallback)
 		return newPointer(elem)
-	case lc.TypeBlockPointer:
+	case lc.Type_BlockPointer:
 		log.Println("==> toType: C blocks is unsupported, use void* as workaround")
 		return types.Typ[types.UnsafePointer]
 	default:
@@ -154,7 +154,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type) *types.Signature {
 	params, variadic := toFuncParams(ctx, pkg, fn)
-	results := toFuncResults(ctx, pkg, fn.ResultType())
+	results := toFuncResults(ctx, pkg, fn.Result())
 	return types.NewSignatureType(nil, nil, nil, params, results, variadic)
 }
 
@@ -162,7 +162,7 @@ func toFuncParams(ctx *pkgCtx, pkg *types.Package, fn lc.Type) (ret *types.Tuple
 	n := fn.NumArgTypes()
 	var params []*types.Var
 	for i := range n {
-		item := fn.ArgType(c.Uint(i))
+		item := fn.Arg(c.Uint(i))
 		tyParam := toType(ctx, pkg, item, flagIsParam)
 		nameParam := "_llcppg_param" + strconv.Itoa(int(i)+1)
 		params = append(params, types.NewParam(token.NoPos, pkg, nameParam, tyParam))
@@ -184,7 +184,7 @@ func newVariadicParam(pkg *types.Package) *types.Var {
 }
 
 func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type) (results *types.Tuple) {
-	if retType.Kind != lc.TypeVoid {
+	if retType.Kind != lc.Type_Void {
 		tyRet := toType(ctx, pkg, retType, flagRetType)
 		results = types.NewTuple(types.NewParam(token.NoPos, pkg, "", tyRet))
 	}
@@ -237,10 +237,10 @@ var ctypBasic = [cBasicMax]string{
 type typeTag = lc.CursorKind
 
 const (
-	tagStruct typeTag = lc.CursorStructDecl
-	tagUnion  typeTag = lc.CursorUnionDecl
-	tagClass  typeTag = lc.CursorClassDecl
-	tagEnum   typeTag = lc.CursorEnumDecl
+	tagStruct typeTag = lc.Cursor_StructDecl
+	tagUnion  typeTag = lc.Cursor_UnionDecl
+	tagClass  typeTag = lc.Cursor_ClassDecl
+	tagEnum   typeTag = lc.Cursor_EnumDecl
 )
 
 var tagStrvals = [...]string{
