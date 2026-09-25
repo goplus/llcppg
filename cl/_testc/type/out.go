@@ -27,7 +27,7 @@ func Primitives(ch c.Char, uc uint8, sc int8, s int16, us uint16, i c.Int, ui c.
 
 // llgo:link Color.Pick C.pick
 func (c Color) Pick() Color {
-	return 0
+	return c
 }
 
 //go:linkname Sum C.sum
