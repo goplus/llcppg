@@ -35,7 +35,8 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		log.Println("typedef", origName, "-", clang.String(underlying))
 	}
 
-	tunder := toType(ctx, pkgTypes, underlying, flagIsTypeDef)
+	hasCallback := false
+	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &hasCallback)
 	name := ctx.typeName(origName, true)
 	if tn, ok := tunder.(*types.Named); ok {
 		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == name {
@@ -45,12 +46,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 
 	var obj *types.TypeName
 	var typDefs = pkg.NewTypeDefs()
-	// Attach the doc at the TypeDefs (GenDecl) level rather than on the
-	// individual TypeSpec: cl never calls TypeDefs.Complete (which would hoist a
-	// lone spec's doc up to the GenDecl), and gogen's printer emits a spec-level
-	// doc inline right after the "type" keyword ("type// doc"). Setting it on the
-	// GenDecl renders it correctly as a leading doc comment.
-	if doc := ctx.docCommentGroup(decl); doc != nil {
+	if doc := ctx.directiveTypeC(decl, hasCallback); doc != nil {
 		typDefs.SetComments(doc)
 	}
 	var cName = clang.String(decl.Type())

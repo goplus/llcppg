@@ -1956,6 +1956,8 @@ const (
 //
 // The visitor should return one of the \c CXChildVisitResult values
 // to direct clang_visitCursorChildren().
+//
+// llgo:type C
 type CursorVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 Cursor, _llcppg_param3 ClientData) ChildVisitResult
 type CursorVisitorBlock = unsafe.Pointer
 
@@ -2349,6 +2351,8 @@ const (
 // the second and third arguments provide the inclusion stack.  The
 // array is sorted in order of immediate inclusion.  For example,
 // the first element refers to the location that included 'included_file'.
+//
+// llgo:type C
 type InclusionVisitor = func(_llcppg_param1 File, _llcppg_param2 *SourceLocation, _llcppg_param3 c.Uint, _llcppg_param4 ClientData)
 type EvalResultKind c.Int
 
@@ -2683,6 +2687,8 @@ const (
 //
 // The visitor should return one of the \c CXVisitorResult values
 // to direct \c clang_Type_visitFields.
+//
+// llgo:type C
 type FieldVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 ClientData) VisitorResult
 
 // Describes the kind of binary operators.
