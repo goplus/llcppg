@@ -31,7 +31,7 @@ import (
 func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	name := nameWithNS(clang.String(decl), ns)
 	if obj, ok := scope.addFunc(ctx, name, decl); ok {
-		ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+		ctx.addCompileUnit(func(ctx *pkgCtx) {
 			compileFuncOrMethod(ctx, obj, nil)
 		})
 	}

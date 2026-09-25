@@ -33,7 +33,7 @@ import (
 // handled). Non-static class member variables are fields, not VarDecls, and are
 // handled separately in loadClassMember.
 func loadVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
-	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		compileVar(ctx, decl, ns)
 	})
 }

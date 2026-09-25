@@ -206,10 +206,12 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 // -----------------------------------------------------------------------------
 
 func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
+	pkg := ctx.pkg
 	pkgOf := ctx.pkgOf
 	scope := &ctx.scopeCtx
 	lastSeen := ctx.lastSeen
 	for _, f := range files {
+		pkg.SetCurFile(f.GoFile, true)
 		ctx.thisSeen = make(map[string]none) // reset for each file
 		clang.VisitChildren(f.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			if pkgOf != nil {

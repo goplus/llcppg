@@ -109,7 +109,7 @@ func emitUnion(ctx *pkgCtx, decl clang.Cursor, uName string) *types.Named {
 	})
 
 	recvPtr := types.NewPointer(typNamed)
-	ctx.compiles = append(ctx.compiles, func(ctx *pkgCtx) {
+	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		for _, m := range members {
 			genUnionAccessor(ctx, recvPtr, m)
 		}
