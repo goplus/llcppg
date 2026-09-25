@@ -3054,8 +3054,8 @@ func (Unit *TranslationUnitImpl) DiagnosticSetFromTU() DiagnosticSet {
 
 // Get the original translation unit source file name.
 //
-// llgo:link (*TranslationUnitImpl).TranslationUnitSpelling C.clang_getTranslationUnitSpelling
-func (CTUnit *TranslationUnitImpl) TranslationUnitSpelling() String {
+// llgo:link (*TranslationUnitImpl).Spelling C.clang_getTranslationUnitSpelling
+func (CTUnit *TranslationUnitImpl) Spelling() String {
 	return String{}
 }
 
@@ -3241,8 +3241,8 @@ func (TU *TranslationUnitImpl) DefaultSaveOptions() c.Uint {
 // enumeration. Zero (CXSaveError_None) indicates that the translation unit was
 // saved successfully, while a non-zero value indicates that a problem occurred.
 //
-// llgo:link (*TranslationUnitImpl).SaveTranslationUnit C.clang_saveTranslationUnit
-func (TU *TranslationUnitImpl) SaveTranslationUnit(FileName *c.Char, options c.Uint) c.Int {
+// llgo:link (*TranslationUnitImpl).Save C.clang_saveTranslationUnit
+func (TU *TranslationUnitImpl) Save(FileName *c.Char, options c.Uint) c.Int {
 	return 0
 }
 
@@ -3252,15 +3252,15 @@ func (TU *TranslationUnitImpl) SaveTranslationUnit(FileName *c.Char, options c.U
 // side does not support any other calls than \c clang_reparseTranslationUnit
 // to resume it or \c clang_disposeTranslationUnit to dispose it completely.
 //
-// llgo:link (*TranslationUnitImpl).SuspendTranslationUnit C.clang_suspendTranslationUnit
-func (_llcppg_param1 *TranslationUnitImpl) SuspendTranslationUnit() c.Uint {
+// llgo:link (*TranslationUnitImpl).Suspend C.clang_suspendTranslationUnit
+func (_llcppg_param1 *TranslationUnitImpl) Suspend() c.Uint {
 	return 0
 }
 
 // Destroy the specified CXTranslationUnit object.
 //
-// llgo:link (*TranslationUnitImpl).DisposeTranslationUnit C.clang_disposeTranslationUnit
-func (_llcppg_param1 *TranslationUnitImpl) DisposeTranslationUnit() {
+// llgo:link (*TranslationUnitImpl).Dispose C.clang_disposeTranslationUnit
+func (_llcppg_param1 *TranslationUnitImpl) Dispose() {
 }
 
 // Returns the set of flags that is suitable for reparsing a translation
@@ -3315,8 +3315,8 @@ func (TU *TranslationUnitImpl) DefaultReparseOptions() c.Uint {
 // \c clang_disposeTranslationUnit(TU).  The error codes returned by this
 // routine are described by the \c CXErrorCode enum.
 //
-// llgo:link (*TranslationUnitImpl).ReparseTranslationUnit C.clang_reparseTranslationUnit
-func (TU *TranslationUnitImpl) ReparseTranslationUnit(num_unsaved_files c.Uint, unsaved_files *UnsavedFile, options c.Uint) c.Int {
+// llgo:link (*TranslationUnitImpl).Reparse C.clang_reparseTranslationUnit
+func (TU *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *UnsavedFile, options c.Uint) c.Int {
 	return 0
 }
 
@@ -3344,23 +3344,23 @@ func (usage TUResourceUsage) DisposeCX() {
 //
 // The CXTargetInfo object cannot outlive the CXTranslationUnit object.
 //
-// llgo:link (*TranslationUnitImpl).TranslationUnitTargetInfo C.clang_getTranslationUnitTargetInfo
-func (CTUnit *TranslationUnitImpl) TranslationUnitTargetInfo() TargetInfo {
+// llgo:link (*TranslationUnitImpl).TargetInfo C.clang_getTranslationUnitTargetInfo
+func (CTUnit *TranslationUnitImpl) TargetInfo() TargetInfo {
 	return nil
 }
 
 // Destroy the CXTargetInfo object.
 //
-// llgo:link (*TargetInfoImpl).TargetInfoDispose C.clang_TargetInfo_dispose
-func (Info *TargetInfoImpl) TargetInfoDispose() {
+// llgo:link (*TargetInfoImpl).Dispose C.clang_TargetInfo_dispose
+func (Info *TargetInfoImpl) Dispose() {
 }
 
 // Get the normalized target triple as a string.
 //
 // Returns the empty string in case of any error.
 //
-// llgo:link (*TargetInfoImpl).TargetInfoGetTriple C.clang_TargetInfo_getTriple
-func (Info *TargetInfoImpl) TargetInfoGetTriple() String {
+// llgo:link (*TargetInfoImpl).Triple C.clang_TargetInfo_getTriple
+func (Info *TargetInfoImpl) Triple() String {
 	return String{}
 }
 
@@ -3368,8 +3368,8 @@ func (Info *TargetInfoImpl) TargetInfoGetTriple() String {
 //
 // Returns -1 in case of error.
 //
-// llgo:link (*TargetInfoImpl).TargetInfoGetPointerWidth C.clang_TargetInfo_getPointerWidth
-func (Info *TargetInfoImpl) TargetInfoGetPointerWidth() c.Int {
+// llgo:link (*TargetInfoImpl).PointerWidth C.clang_TargetInfo_getPointerWidth
+func (Info *TargetInfoImpl) PointerWidth() c.Int {
 	return 0
 }
 
@@ -3383,8 +3383,8 @@ func GetNullCursor() Cursor
 // The translation unit cursor can be used to start traversing the
 // various declarations within the given translation unit.
 //
-// llgo:link (*TranslationUnitImpl).TranslationUnitCursor C.clang_getTranslationUnitCursor
-func (_llcppg_param1 *TranslationUnitImpl) TranslationUnitCursor() Cursor {
+// llgo:link (*TranslationUnitImpl).Cursor C.clang_getTranslationUnitCursor
+func (_llcppg_param1 *TranslationUnitImpl) Cursor() Cursor {
 	return Cursor{}
 }
 
@@ -3642,8 +3642,8 @@ func CreateCXCursorSet() CursorSet
 
 // Disposes a CXCursorSet and releases its associated memory.
 //
-// llgo:link (*CursorSetImpl).DisposeCXCursorSet C.clang_disposeCXCursorSet
-func (cset *CursorSetImpl) DisposeCXCursorSet() {
+// llgo:link (*CursorSetImpl).DisposeCX C.clang_disposeCXCursorSet
+func (cset *CursorSetImpl) DisposeCX() {
 }
 
 // Queries a CXCursorSet to see if it contains a specific CXCursor.
@@ -3814,8 +3814,8 @@ func (cursor Cursor) IncludedFile() File {
 // \returns a cursor representing the entity at the given source location, or
 // a NULL cursor if no such entity can be found.
 //
-// llgo:link (*TranslationUnitImpl).Cursor C.clang_getCursor
-func (_llcppg_param1 *TranslationUnitImpl) Cursor(_llcppg_param2 SourceLocation) Cursor {
+// llgo:link (*TranslationUnitImpl).GetCursor C.clang_getCursor
+func (_llcppg_param1 *TranslationUnitImpl) GetCursor(_llcppg_param2 SourceLocation) Cursor {
 	return Cursor{}
 }
 

@@ -79,7 +79,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	if cls == nil {
 		if ctx.lang == LanguageC {
 			// try to method for C functions
-			params, recv, typRecv, typName = tryToMethod(pkgTypes, params)
+			params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
 		}
 	} else {
 		typNamed := cls.typNamed
@@ -150,7 +150,7 @@ const (
 	llgoSupportAliasAsRecv = false
 )
 
-func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named, string) {
+func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named, string) {
 	if len(params) > 0 {
 		first := params[0]
 		t := first.Type()
@@ -185,6 +185,8 @@ func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *t
 					ta = tp.Elem()
 				}
 				if tn, ok := ta.(*types.Named); ok && tn.Obj().Pkg() == pkgTypes {
+					// add type abbreviation for alias type
+					ctx.typeAbbr[tn.Obj().Name()] = t.Obj().Name()
 					return params[1:], first, tn, tn.Obj().Name()
 				}
 			}
