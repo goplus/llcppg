@@ -108,18 +108,18 @@ func (i Index) ParseTranslationUnit(options uint, filename string, args ...strin
 
 // ParseTranslationUnits parses the given source files and returns the translation units corresponding
 // to those files.
-func (i Index) ParseTranslationUnits(options uint, filenames []string, args ...string) iter.Seq[TranslationUnit] {
+func (i Index) ParseTranslationUnits(options uint, filenames []string, args ...string) iter.Seq2[string, TranslationUnit] {
 	cArgs := make([]*c.Char, len(args))
 	for i, arg := range args {
 		cArgs[i] = c.AllocaCStr(arg)
 	}
-	return func(yield func(TranslationUnit) bool) {
+	return func(yield func(string, TranslationUnit) bool) {
 		for _, filename := range filenames {
 			u := TranslationUnit{
 				TranslationUnit: i.Index.ParseTranslationUnit(
 					c.AllocaCStr(filename), unsafe.SliceData(cArgs), c.Int(len(cArgs)), nil, 0, c.Uint(options)),
 			}
-			if !yield(u) {
+			if !yield(filename, u) {
 				return
 			}
 		}

@@ -69,7 +69,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		return
 	}
 
-	log.Println("==> testSingleFile: package", myPkgName)
+	log.Println("============== testSingleFile: package", myPkgName, "==============")
 
 	lang, ok := conf.Lang()
 	if !ok {
@@ -201,5 +201,5 @@ var langExts = [...]string{
 }
 
 func TestSingleC(t *testing.T) {
-	testFromDir(t, "Documentation", "./_testc", true)
+	testFromDir(t, "", "./_testc", true)
 }

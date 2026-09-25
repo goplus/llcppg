@@ -38,18 +38,18 @@ import (
 
 const (
 	DbgFlagLoadSource = 1 << iota
-	DbgFlagLoadDeps
-	DbgFlagAll = DbgFlagLoadSource | DbgFlagLoadDeps
+	DbgFlagImport
+	DbgFlagAll = DbgFlagLoadSource | DbgFlagImport
 )
 
 var (
 	debugLoadSource bool
-	debugLoadDeps   bool
+	debugImport     bool
 )
 
 func SetDebug(flags int) {
 	debugLoadSource = (flags & DbgFlagLoadSource) != 0
-	debugLoadDeps = (flags & DbgFlagLoadDeps) != 0
+	debugImport = (flags & DbgFlagImport) != 0
 }
 
 // -----------------------------------------------------------------------------
@@ -157,9 +157,6 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 	if err != nil {
 		return
 	}
-	/* if debugLoadSource {
-		log.Println("==> topHeaders:", topHeaders)
-	} */
 
 	files := ParseSources(index, topHeaders, includeDirs, cfg.Language)
 	defer DisposeSources(files)
@@ -175,6 +172,13 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 		Language:       lang,
 		CFlags:         cfg.CFlags,
 		WrapFileHeader: cfg.WrapFileHeader,
+		Class:          cfg.Class,
+		NonClass:       cfg.NonClass,
+		FuncPrefix:     cfg.FuncPrefix,
+		EnumPrefix:     cfg.EnumPrefix,
+		TypePrefix:     cfg.TypePrefix,
+		TypeAbbr:       cfg.TypeAbbr,
+		Rename:         cfg.Rename,
 		NameLookup:     nil,
 		PubFileLookup:  mod.PubFileLookup,
 		PackageOf: func(headerFile string) (pkgPath string, ok bool) {
@@ -182,6 +186,9 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 				if strings.HasPrefix(headerFile, includeDir) {
 					return pkgPaths[i], true
 				}
+			}
+			if debugImport {
+				log.Println("==> pkgOf: not found -", headerFile)
 			}
 			return
 		},
@@ -254,8 +261,14 @@ func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang str
 	flags[n] = "-x"
 	flags[n+1] = lang
 	files := make([]cl.Source, 0, len(headerFiles))
-	for tu := range index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, flags...) {
-		files = append(files, cl.Source{TU: tu})
+	for headerFile, tu := range index.ParseTranslationUnits(clang.DetailedPreprocessingRecord, headerFiles, flags...) {
+		fname := filepath.Base(headerFile)
+		if pos := strings.LastIndex(fname, "."); pos >= 0 {
+			fname = fname[:pos] + ".go"
+		} else {
+			fname += ".go"
+		}
+		files = append(files, cl.Source{TU: tu, GoFile: fname})
 		tu.VisitDiagnostics(func(diag clang.Diagnostic) {
 			fmt.Fprintln(os.Stderr, diag.Format(options))
 		})
