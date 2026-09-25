@@ -35,8 +35,8 @@ func VirtualFileOverlayCreate(options c.Uint) VirtualFileOverlay
 // The virtual path must be canonicalized (not contain "."/"..").
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link VirtualFileOverlay.AddFileMapping C.clang_VirtualFileOverlay_addFileMapping
-func (_llcppg_param1 VirtualFileOverlay) AddFileMapping(virtualPath *c.Char, realPath *c.Char) ErrorCode {
+// llgo:link (*VirtualFileOverlayImpl).VirtualFileOverlayAddFileMapping C.clang_VirtualFileOverlay_addFileMapping
+func (_llcppg_param1 *VirtualFileOverlayImpl) VirtualFileOverlayAddFileMapping(virtualPath *c.Char, realPath *c.Char) ErrorCode {
 	return 0
 }
 
@@ -45,8 +45,8 @@ func (_llcppg_param1 VirtualFileOverlay) AddFileMapping(virtualPath *c.Char, rea
 // option can be used to override the default.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link VirtualFileOverlay.SetCaseSensitivity C.clang_VirtualFileOverlay_setCaseSensitivity
-func (_llcppg_param1 VirtualFileOverlay) SetCaseSensitivity(caseSensitive c.Int) ErrorCode {
+// llgo:link (*VirtualFileOverlayImpl).VirtualFileOverlaySetCaseSensitivity C.clang_VirtualFileOverlay_setCaseSensitivity
+func (_llcppg_param1 *VirtualFileOverlayImpl) VirtualFileOverlaySetCaseSensitivity(caseSensitive c.Int) ErrorCode {
 	return 0
 }
 
@@ -58,8 +58,8 @@ func (_llcppg_param1 VirtualFileOverlay) SetCaseSensitivity(caseSensitive c.Int)
 // \param out_buffer_size pointer to receive the buffer size.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link VirtualFileOverlay.WriteToBuffer C.clang_VirtualFileOverlay_writeToBuffer
-func (_llcppg_param1 VirtualFileOverlay) WriteToBuffer(options c.Uint, out_buffer_ptr **c.Char, out_buffer_size *c.Uint) ErrorCode {
+// llgo:link (*VirtualFileOverlayImpl).VirtualFileOverlayWriteToBuffer C.clang_VirtualFileOverlay_writeToBuffer
+func (_llcppg_param1 *VirtualFileOverlayImpl) VirtualFileOverlayWriteToBuffer(options c.Uint, out_buffer_ptr **c.Char, out_buffer_size *c.Uint) ErrorCode {
 	return 0
 }
 
@@ -73,8 +73,8 @@ func Free(buffer unsafe.Pointer)
 
 // Dispose a \c CXVirtualFileOverlay object.
 //
-// llgo:link VirtualFileOverlay.Dispose C.clang_VirtualFileOverlay_dispose
-func (_llcppg_param1 VirtualFileOverlay) Dispose() {
+// llgo:link (*VirtualFileOverlayImpl).VirtualFileOverlayDispose C.clang_VirtualFileOverlay_dispose
+func (_llcppg_param1 *VirtualFileOverlayImpl) VirtualFileOverlayDispose() {
 }
 
 // Create a \c CXModuleMapDescriptor object.
@@ -88,16 +88,16 @@ func ModuleMapDescriptorCreate(options c.Uint) ModuleMapDescriptor
 // Sets the framework module name that the module.modulemap describes.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link ModuleMapDescriptor.SetFrameworkModuleName C.clang_ModuleMapDescriptor_setFrameworkModuleName
-func (_llcppg_param1 ModuleMapDescriptor) SetFrameworkModuleName(name *c.Char) ErrorCode {
+// llgo:link (*ModuleMapDescriptorImpl).ModuleMapDescriptorSetFrameworkModuleName C.clang_ModuleMapDescriptor_setFrameworkModuleName
+func (_llcppg_param1 *ModuleMapDescriptorImpl) ModuleMapDescriptorSetFrameworkModuleName(name *c.Char) ErrorCode {
 	return 0
 }
 
 // Sets the umbrella header name that the module.modulemap describes.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link ModuleMapDescriptor.SetUmbrellaHeader C.clang_ModuleMapDescriptor_setUmbrellaHeader
-func (_llcppg_param1 ModuleMapDescriptor) SetUmbrellaHeader(name *c.Char) ErrorCode {
+// llgo:link (*ModuleMapDescriptorImpl).ModuleMapDescriptorSetUmbrellaHeader C.clang_ModuleMapDescriptor_setUmbrellaHeader
+func (_llcppg_param1 *ModuleMapDescriptorImpl) ModuleMapDescriptorSetUmbrellaHeader(name *c.Char) ErrorCode {
 	return 0
 }
 
@@ -109,13 +109,13 @@ func (_llcppg_param1 ModuleMapDescriptor) SetUmbrellaHeader(name *c.Char) ErrorC
 // \param out_buffer_size pointer to receive the buffer size.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link ModuleMapDescriptor.WriteToBuffer C.clang_ModuleMapDescriptor_writeToBuffer
-func (_llcppg_param1 ModuleMapDescriptor) WriteToBuffer(options c.Uint, out_buffer_ptr **c.Char, out_buffer_size *c.Uint) ErrorCode {
+// llgo:link (*ModuleMapDescriptorImpl).ModuleMapDescriptorWriteToBuffer C.clang_ModuleMapDescriptor_writeToBuffer
+func (_llcppg_param1 *ModuleMapDescriptorImpl) ModuleMapDescriptorWriteToBuffer(options c.Uint, out_buffer_ptr **c.Char, out_buffer_size *c.Uint) ErrorCode {
 	return 0
 }
 
 // Dispose a \c CXModuleMapDescriptor object.
 //
-// llgo:link ModuleMapDescriptor.Dispose C.clang_ModuleMapDescriptor_dispose
-func (_llcppg_param1 ModuleMapDescriptor) Dispose() {
+// llgo:link (*ModuleMapDescriptorImpl).ModuleMapDescriptorDispose C.clang_ModuleMapDescriptor_dispose
+func (_llcppg_param1 *ModuleMapDescriptorImpl) ModuleMapDescriptorDispose() {
 }

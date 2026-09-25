@@ -146,6 +146,10 @@ func existMember(typ *types.Named, name string) bool {
 	return false
 }
 
+const (
+	llgoSupportAliasAsRecv = false
+)
+
 func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named, string) {
 	if len(params) > 0 {
 		first := params[0]
@@ -163,13 +167,25 @@ func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *t
 				return params[1:], first, t, t.Obj().Name()
 			}
 		case *types.Alias:
-			if t.Obj().Pkg() == pkgTypes {
+			if t.Obj().Pkg() != pkgTypes {
+				break
+			}
+			if llgoSupportAliasAsRecv {
 				ta := types.Unalias(t)
 				if tp, ok := ta.(*types.Pointer); ok {
 					ta = tp.Elem()
 				}
 				if tn, ok := ta.(*types.Named); ok {
 					return params[1:], first, tn, t.Obj().Name()
+				}
+			} else {
+				ta := types.Unalias(t)
+				first = types.NewParam(first.Pos(), pkgTypes, first.Name(), ta)
+				if tp, ok := ta.(*types.Pointer); ok {
+					ta = tp.Elem()
+				}
+				if tn, ok := ta.(*types.Named); ok && tn.Obj().Pkg() == pkgTypes {
+					return params[1:], first, tn, tn.Obj().Name()
 				}
 			}
 		}
