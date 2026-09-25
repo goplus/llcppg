@@ -21,7 +21,6 @@ import (
 	"go/token"
 	"go/types"
 	"log"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -117,7 +116,9 @@ type pkgCtx struct {
 	macroVals map[string]any             // macroName => value
 	funcs     map[string]*funcObj        // manglingName => func object
 	types     map[string]*types.TypeName // c/c++ fullName => type name object
+	impPkgs   map[string]none            // imported package path set
 	lastSeen  map[string]none            // last seen include file set (loaded include files)
+	thisSeen  map[string]none            // include file set seen in this translation unit
 
 	compiles []compileFunc
 	pubs     []Entry
@@ -151,51 +152,6 @@ func (p *pkgCtx) nextAnonStructName() string {
 	name := anonStructPrefix + strconv.Itoa(p.anonStructSeq)
 	p.anonStructSeq++
 	return name
-}
-
-func (p *pkgCtx) forceImportUnsafe() {
-	if !p.unsafeImported {
-		p.unsafeImported = true
-		p.pkg.ForceImport("unsafe")
-	}
-}
-
-func (p *pkgCtx) importPkg(pkgPath string) {
-	pubFile, ok := p.pubLookup(pkgPath)
-	if !ok {
-		log.Panicln("[ERROR] pubFile not found for", pkgPath)
-	}
-	if debugCompileDecl {
-		log.Println("==> importPkg", pkgPath)
-	}
-	pkg := p.pkg.Import(pkgPath)
-	entries, err := loadPubFile(pubFile)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return // ignore missing pub file
-		}
-		log.Panicln("[ERROR] loadPubFile failed:", err)
-	}
-	scope := pkg.Types.Scope()
-	for e := range entries {
-		switch e.Kind {
-		case 'T': // type
-			name, isEnum := strings.CutPrefix(e.Name, "enum ")
-			if e.GoName == "" {
-				e.GoName = p.typeName(strings.ReplaceAll(name, "::", "_"), true)
-			}
-			if o := scope.Lookup(e.GoName); o != nil {
-				if t, ok := o.(*types.TypeName); ok {
-					p.types[e.Name] = t
-					if isEnum {
-						p.types[name] = t
-					}
-				}
-			}
-		default:
-			panic("todo: importPubFile " + e.Name)
-		}
-	}
 }
 
 func (p *pkgCtx) getFileBase(c clang.Cursor, file clang.File) int {
@@ -470,7 +426,7 @@ func (p *scopeCtx) reorder() {
 }
 
 // -----------------------------------------------------------------------------
-
+/*
 func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
 	old := scope.Insert(gogen.NewSubst(token.NoPos, pkg, origName, real))
 	if old != nil {
@@ -481,7 +437,7 @@ func substObj(pkg *types.Package, scope *types.Scope, origName string, real type
 		}
 	}
 }
-
+*/
 // -----------------------------------------------------------------------------
 
 func avoidKeyword(name *string) {

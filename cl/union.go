@@ -81,10 +81,7 @@ func emitUnion(ctx *pkgCtx, decl clang.Cursor, uName string) *types.Named {
 	}
 	typDecl := typDefs.NewType(uName, goNode(ctx, decl))
 	typNamed := typDecl.Type()
-
-	// Register the union type under its C spelling so members that reference it
-	// (e.g. "union U *next") and typedef aliases resolve to the same X.
-	ctx.types[clang.String(decl.Type())] = typNamed.Obj()
+	ctx.addType(tagUnion, decl, typNamed)
 
 	typ := decl.Type()
 	storage, ok := unionStorageType(typ)

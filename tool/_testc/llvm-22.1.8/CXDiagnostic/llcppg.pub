@@ -1,3 +1,5 @@
+D clang/CXSourceLocation
+D clang/CXString
 T CXDiagnostic
 T CXDiagnosticSet
 T enum CXDiagnosticSeverity

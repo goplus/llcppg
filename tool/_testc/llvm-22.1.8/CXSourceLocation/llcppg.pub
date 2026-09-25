@@ -1,3 +1,5 @@
+D clang/CXString
+D clang/CXFile
 T CXSourceLocation
 T CXSourceRange
 T CXSourceRangeList

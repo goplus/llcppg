@@ -118,7 +118,13 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 			"\n// llgo:link "+nameInPkg+" C."+manglingName))
 		cb := f.BodyStart(pkg)
 		if n := results.Len(); n > 0 {
-			cb.ZeroLit(results.At(0).Type()).Return(1)
+			retType := results.At(0).Type()
+			if recv.Type() == retType {
+				cb.Val(recv)
+			} else {
+				cb.ZeroLit(retType)
+			}
+			cb.Return(1)
 		}
 		cb.End()
 	}

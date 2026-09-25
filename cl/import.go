@@ -18,16 +18,37 @@ package cl
 
 import (
 	"fmt"
+	"go/types"
 	"iter"
+	"log"
 	"os"
-	"sort"
 	"strings"
 )
 
 // -----------------------------------------------------------------------------
 
+type entryKind = byte
+
+const (
+	entryType       entryKind = 'T' // type
+	entryFunc       entryKind = 'f' // func
+	entryVar        entryKind = 'v' // var
+	entryDependency entryKind = 'D' // dependency
+)
+
+// Entry represents a C/C++ name and its corresponding Go name.
+type Entry struct {
+	Name   string
+	GoName string    // optional
+	Tag    typeTag   // only valid for Kind == 'T'
+	Kind   entryKind // 'T' (type), 'f' (func), 'v' (var), 'D' (dependency)
+}
+
+// -----------------------------------------------------------------------------
+
 // loadPubFile loads a public file and returns an iterator that yields each public entry.
 //
+// D depPkgPath
 // T cName
 // T cName goName
 // T <tag> cName
@@ -52,11 +73,11 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 			kind := flds[0][0]
 			cName := flds[1]
 			goName := ""
-			if kind == 'T' && len(flds) > 2 {
+			tag := typeTag(0)
+			if kind == entryType && len(flds) > 2 {
 				igo := 2
-				if isTypeTag(flds[1]) {
-					cName = flds[1] + " " + flds[2]
-					igo = 3
+				if tag = getTypeTag(flds[1]); tag != 0 {
+					cName, igo = flds[2], 3
 				}
 				if igo < len(flds) {
 					goName = flds[igo]
@@ -64,7 +85,7 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 			} else if len(flds) > 3 {
 				tooFewOrManyFields(i, "many", line)
 			}
-			if !yield(Entry{Kind: kind, Name: cName, GoName: goName}) {
+			if !yield(Entry{Kind: kind, Name: cName, GoName: goName, Tag: tag}) {
 				return
 			}
 		}
@@ -72,12 +93,18 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 	return
 }
 
-func isTypeTag(tag string) bool {
+func getTypeTag(tag string) typeTag {
 	switch tag {
-	case "enum", "struct", "union", "class":
-		return true
+	case "enum":
+		return tagEnum
+	case "struct":
+		return tagStruct
+	case "class":
+		return tagClass
+	case "union":
+		return tagUnion
 	}
-	return false
+	return 0
 }
 
 func tooFewOrManyFields(i int, fewOrMany, line string) {
@@ -85,7 +112,7 @@ func tooFewOrManyFields(i int, fewOrMany, line string) {
 }
 
 // -----------------------------------------------------------------------------
-
+/*
 func savePubFile(file string, it iter.Seq[Entry], n int) (err error) {
 	if n == 0 {
 		return
@@ -106,6 +133,64 @@ func savePubFile(file string, it iter.Seq[Entry], n int) (err error) {
 	sort.Strings(ret)
 	_, err = f.WriteString(strings.Join(ret, "\n"))
 	return
+}
+*/
+// -----------------------------------------------------------------------------
+
+func (p *pkgCtx) forceImportUnsafe() {
+	if !p.unsafeImported {
+		p.unsafeImported = true
+		p.pkg.ForceImport("unsafe")
+	}
+}
+
+func (p *pkgCtx) importPkg(pkgPath string) {
+	if _, ok := p.impPkgs[pkgPath]; ok {
+		return // imported already
+	}
+	p.impPkgs[pkgPath] = none{}
+
+	pubFile, ok := p.pubLookup(pkgPath)
+	if !ok {
+		log.Panicln("[ERROR] pubFile not found for", pkgPath)
+	}
+
+	if debugCompileDecl {
+		log.Println("==> importPkg", pkgPath)
+	}
+
+	pkg := p.pkg.Import(pkgPath)
+	entries, err := loadPubFile(pubFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return // ignore missing pub file
+		}
+		log.Panicln("[ERROR] loadPubFile failed:", err)
+	}
+
+	scope := pkg.Types.Scope()
+	for e := range entries {
+		switch e.Kind {
+		case entryDependency:
+			p.importPkg(e.Name)
+
+		case entryType:
+			if e.GoName == "" {
+				e.GoName = p.typeName(strings.ReplaceAll(e.Name, "::", "_"), true)
+			}
+			if o := scope.Lookup(e.GoName); o != nil {
+				if t, ok := o.(*types.TypeName); ok {
+					p.types[e.Name] = t
+					if e.Tag != 0 {
+						p.types[tagStrvals[e.Tag]+e.Name] = t
+					}
+				}
+			}
+
+		default:
+			panic("importPkg: unsupport - " + e.Name)
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
