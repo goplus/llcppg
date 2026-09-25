@@ -181,9 +181,9 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 			}
 			if o := scope.Lookup(e.GoName); o != nil {
 				if t, ok := o.(*types.TypeName); ok {
-					p.types[e.Name] = t
+					p.types[e.Name] = typeObj{t, false}
 					if e.Tag != 0 {
-						p.types[tagStrvals[e.Tag]+e.Name] = t
+						p.types[tagStrvals[e.Tag]+e.Name] = typeObj{t, false}
 					}
 				}
 			}

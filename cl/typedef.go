@@ -65,7 +65,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		t := typDefs.AliasType(name, tunder).(*types.Alias)
 		obj = t.Obj()
 	}
-	ctx.types[cName] = obj
+	ctx.types[cName] = typeObj{obj, hasCallback}
 }
 
 func contains(v string, names []string) bool {

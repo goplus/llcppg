@@ -69,7 +69,8 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	params, variadic := newParams(ctx, pkgTypes, fn)
+	hasCallback := false
+	params, variadic := newParams(ctx, pkgTypes, fn, &hasCallback)
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType())
 
 	var recv *types.Var
@@ -77,7 +78,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	var typName string
 	var nameInPkg string
 	if cls == nil {
-		if ctx.lang == LanguageC {
+		if ctx.lang == LanguageC && !hasCallback { // TODO(xsw): support method with callback
 			// try to method for C functions
 			params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
 		}
@@ -195,11 +196,11 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 	return params, nil, nil, ""
 }
 
-func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor) (params []*types.Var, variadic bool) {
+func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor, hasCallback *bool) (params []*types.Var, variadic bool) {
 	n := fn.NumArguments()
 	for i := range n {
 		item := fn.Argument(c.Uint(i))
-		param := newParam(ctx, pkg, item, i)
+		param := newParam(ctx, pkg, item, i, hasCallback)
 		params = append(params, param)
 	}
 	variadic = fn.IsVariadic() != 0
@@ -209,13 +210,13 @@ func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor) (params []*type
 	return
 }
 
-func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int) *types.Var {
+func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int, hasCallback *bool) *types.Var {
 	declName := clang.String(decl)
 	declTyp := decl.Type()
 	if debugCompileDecl {
 		log.Println("  => param", declName, "-", clang.String(declTyp))
 	}
-	typ := toType(ctx, pkg, declTyp, flagIsParam)
+	typ := toTypeEx(ctx, pkg, declTyp, flagIsParam, hasCallback)
 	if declName != "" {
 		avoidKeyword(&declName)
 	} else {

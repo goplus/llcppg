@@ -113,8 +113,11 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 		}
 	case lc.TypeRecord, lc.TypeTypedef:
 		cName := clang.String(typ.TypeDeclaration().Type())
-		if t, ok := ctx.typeOf(cName); ok {
-			return t
+		if o, ok := ctx.types[cName]; ok {
+			if o.hasCallback {
+				*hasCallback = true
+			}
+			return o.Type()
 		}
 	case lc.TypeElaborated:
 		cName := clang.String(typ.NamedType())
