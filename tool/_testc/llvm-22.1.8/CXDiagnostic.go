@@ -1,6 +1,9 @@
 package clang
 
-import "github.com/goplus/lib/c"
+import (
+	"github.com/goplus/lib/c"
+	_ "unsafe"
+)
 
 // Describes the severity of a particular diagnostic.
 type DiagnosticSeverity c.Int
