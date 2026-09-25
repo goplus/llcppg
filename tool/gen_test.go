@@ -172,6 +172,11 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			return
 		}
 
+		if runtime.GOOS != "darwin" {
+			log.Println("==> only test on macOS") // TODO(xsw): cross-platform
+			return
+		}
+
 		stdlibDir := pkgDir + "/cstdlib"
 		pkg, lang, err := conf.NewPackage("", pkgDir, stdlibDir, idx)
 		if err != nil {
@@ -179,6 +184,9 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			return
 		}
 		pkg.ForEachFile(func(fname string, file *gogen.File) {
+			if file.Empty() {
+				return // skip empty Go files
+			}
 			exp, _ := os.ReadFile(pkgDir + "/" + fname)
 			testGenGo(t, pkg.Package, pkgDir, fname, exp)
 		})
@@ -195,7 +203,7 @@ var langExts = [...]string{
 	cl.LanguageCXX: ".cpp",
 }
 
-func _TestC(t *testing.T) {
+func TestC(t *testing.T) {
 	testFromDir(t, "", "./_testc", false)
 }
 

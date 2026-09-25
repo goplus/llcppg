@@ -70,7 +70,11 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 			case 1:
 				tooFewOrManyFields(i, "few", line)
 			}
-			kind := flds[0][0]
+			kindFld := flds[0]
+			if len(kindFld) != 1 {
+				panic(fmt.Errorf("line %d: invalid kind - %s", i+1, kindFld))
+			}
+			kind := kindFld[0]
 			cName := flds[1]
 			goName := ""
 			tag := typeTag(0)
