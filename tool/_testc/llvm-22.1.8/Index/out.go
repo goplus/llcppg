@@ -32,7 +32,7 @@ type TranslationUnit = *TranslationUnitImpl
 
 // Opaque pointer representing client data that will be passed through
 // to various callbacks and visitors.
-type ClientData uintptr
+type ClientData = unsafe.Pointer
 
 // Provides the contents of a file that has not yet been saved to disk.
 //
@@ -1964,7 +1964,7 @@ const (
 // The visitor should return one of the \c CXChildVisitResult values
 // to direct clang_visitCursorChildren().
 type CursorVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 Cursor, _llcppg_param3 ClientData) ChildVisitResult
-type CursorVisitorBlock uintptr
+type CursorVisitorBlock = unsafe.Pointer
 
 // Opaque pointer representing a policy that controls pretty printing
 // for \c clang_getCursorPrettyPrinted.
@@ -2398,7 +2398,7 @@ const (
 	Result_VisitBreak Result = 2
 )
 
-type CursorAndRangeVisitorBlock uintptr
+type CursorAndRangeVisitorBlock = unsafe.Pointer
 
 // The client's data object that is associated with a CXFile.
 type IdxClientFile uintptr

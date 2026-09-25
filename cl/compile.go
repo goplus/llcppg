@@ -138,6 +138,9 @@ type Config struct {
 	// Class specifies a list of C/C++ typedef names to be treated as classes (optional).
 	Class []string
 
+	// NonClass specifies a list of C/C++ typedef names to be treated as non-classes (optional).
+	NonClass []string
+
 	// DontKeepDoc specifies whether to keep the documentation comments in the generated
 	// Go package. If true, the documentation comments will be removed (optional).
 	DontKeepDoc bool
@@ -182,16 +185,12 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	if nameLookup == nil {
 		nameLookup = defaultNameLookup
 	}
-	classes := make(map[string]none)
-	for _, name := range conf.Class {
-		classes[name] = none{}
-	}
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(), llgo: llgo,
 		fset: pkg.Fset, c: c, lang: conf.Language, keepDoc: !conf.DontKeepDoc,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, enumPrefix: conf.EnumPrefix,
 		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
-		rename: conf.Rename, classes: classes,
+		rename: conf.Rename, classes: conf.Class, nonClasses: conf.NonClass,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
