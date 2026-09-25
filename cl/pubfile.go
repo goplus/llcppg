@@ -30,8 +30,8 @@ import (
 //
 // T cName
 // T cName goName
-// T enum cName
-// T enum cName goName
+// T <tag> cName
+// T <tag> cName goName
 func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 	b, err := os.ReadFile(pubfile)
 	if err != nil {
@@ -43,33 +43,25 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 	it = func(yield func(Entry) bool) {
 		for i, line := range lines {
 			flds := strings.Fields(line)
-			if len(flds) == 0 {
+			switch len(flds) {
+			case 0:
 				continue
+			case 1:
+				tooFewOrManyFields(i, "few", line)
 			}
 			kind := flds[0][0]
 			cName := flds[1]
 			goName := ""
-			switch len(flds) {
-			case 2: // T cName
-			case 3:
-				if kind == 'T' && flds[1] == "enum" {
-					// T enum cName
-					cName = "enum " + flds[2]
-				} else {
-					// T cName goName
-					goName = flds[2]
+			if kind == 'T' && len(flds) > 2 {
+				igo := 2
+				if isTypeTag(flds[1]) {
+					cName = flds[1] + " " + flds[2]
+					igo = 3
 				}
-			case 4:
-				if kind == 'T' && flds[1] == "enum" {
-					// T enum cName goName
-					cName = "enum " + flds[2]
-					goName = flds[3]
-				} else {
-					tooFewOrManyFields(i, "many", line)
+				if igo < len(flds) {
+					goName = flds[igo]
 				}
-			case 1:
-				tooFewOrManyFields(i, "few", line)
-			default:
+			} else if len(flds) > 3 {
 				tooFewOrManyFields(i, "many", line)
 			}
 			if !yield(Entry{Kind: kind, Name: cName, GoName: goName}) {
@@ -78,6 +70,14 @@ func loadPubFile(pubfile string) (it iter.Seq[Entry], err error) {
 		}
 	}
 	return
+}
+
+func isTypeTag(tag string) bool {
+	switch tag {
+	case "enum", "struct", "union", "class":
+		return true
+	}
+	return false
 }
 
 func tooFewOrManyFields(i int, fewOrMany, line string) {

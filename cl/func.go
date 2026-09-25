@@ -73,12 +73,13 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType())
 
 	var recv *types.Var
+	var typRecv *types.Named // if tryToMethod succeeded, this is the recv
 	var typName string
 	var nameInPkg string
 	if cls == nil {
 		if ctx.lang == LanguageC {
 			// try to method for C functions
-			params, recv, typName = tryToMethod(pkgTypes, params)
+			params, recv, typRecv, typName = tryToMethod(pkgTypes, params)
 		}
 	} else {
 		typNamed := cls.typNamed
@@ -89,6 +90,13 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	if recv == nil {
 		nameInPkg = fnName
 	} else {
+		if typRecv != nil {
+			if existMember(typRecv, fnName) {
+				newName := ctx.funcName(origName, obj.order(), "", true, true)
+				log.Printf("==> member %s.%s already exists, rename to %s\n", typName, fnName, newName)
+				fnName = newName
+			}
+		}
 		if _, ok := recv.Type().(*types.Pointer); ok {
 			nameInPkg = "(*" + typName + ")." + fnName
 		} else {
@@ -116,13 +124,29 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	}
 }
 
-func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, string) {
+func existMember(typ *types.Named, name string) bool {
+	for i := range typ.NumMethods() {
+		if typ.Method(i).Name() == name {
+			return true
+		}
+	}
+	if s, ok := typ.Underlying().(*types.Struct); ok {
+		for i := range s.NumFields() {
+			if s.Field(i).Name() == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named, string) {
 	if len(params) > 0 {
 		first := params[0]
 		t := first.Type()
 		if len(params) == 2 && params[1].Type() == t {
 			// don't convert to method if the first two params have the same type
-			return params, nil, ""
+			return params, nil, nil, ""
 		}
 		if tp, ok := t.(*types.Pointer); ok {
 			t = tp.Elem()
@@ -130,15 +154,21 @@ func tryToMethod(pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *t
 		switch t := t.(type) {
 		case *types.Named:
 			if t.Obj().Pkg() == pkgTypes {
-				return params[1:], first, t.Obj().Name()
+				return params[1:], first, t, t.Obj().Name()
 			}
 		case *types.Alias:
 			if t.Obj().Pkg() == pkgTypes {
-				return params[1:], first, t.Obj().Name()
+				ta := types.Unalias(t)
+				if tp, ok := ta.(*types.Pointer); ok {
+					ta = tp.Elem()
+				}
+				if tn, ok := ta.(*types.Named); ok {
+					return params[1:], first, tn, t.Obj().Name()
+				}
 			}
 		}
 	}
-	return params, nil, ""
+	return params, nil, nil, ""
 }
 
 func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor) (params []*types.Var, variadic bool) {

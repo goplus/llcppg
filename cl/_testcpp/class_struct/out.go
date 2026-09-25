@@ -20,8 +20,8 @@ type Bar struct {
 	_llcppg_struct_3
 }
 type _llcppg_struct_1 struct {
-	s  int16
-	us uint16
+	S  int16
+	Us uint16
 }
 type _llcppg_struct_2 struct {
 	C  c.Char

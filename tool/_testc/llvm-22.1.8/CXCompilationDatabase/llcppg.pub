@@ -1,0 +1,4 @@
+T CXCompilationDatabase
+T CXCompileCommands
+T CXCompileCommand
+T enum CXLCompilationDatabase_Error

@@ -133,6 +133,9 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		// flagIsParam before recursing since decay applies only to this level.
 		elem := toType(ctx, pkg, typ.ArrayElementType(), flagIsTypeDef)
 		return newPointer(elem)
+	case lc.TypeBlockPointer:
+		log.Println("==> toType: C blocks is unsupported, use void* as workaround")
+		return types.Typ[types.UnsafePointer]
 	default:
 		log.Println("==> toType: unknown Kind -", typ.Kind)
 	}
@@ -183,6 +186,58 @@ func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type) (results *t
 func cmpType(ta, tb lc.Type) int {
 	// TODO(xsw): c++ overload support
 	return int(ta.Kind - tb.Kind)
+}
+
+// -----------------------------------------------------------------------------
+
+// basicKind describes the kind of basic type.
+type basicKind int
+
+const (
+	cVoid basicKind = iota
+	cChar
+	cInt
+	cUint
+	cLong
+	cUlong
+	cLongLong
+	cUlongLong
+	cFloat
+	cDouble
+	cPointer
+	cBasicMax
+)
+
+var ctypBasic = [cBasicMax]string{
+	cVoid:      "Void",
+	cChar:      "Char",
+	cInt:       "Int",
+	cUint:      "Uint",
+	cLong:      "Long",
+	cUlong:     "Ulong",
+	cLongLong:  "LongLong",
+	cUlongLong: "UlongLong",
+	cFloat:     "Float",
+	cDouble:    "Double",
+	cPointer:   "Pointer",
+}
+
+// -----------------------------------------------------------------------------
+
+type typeTag = lc.CursorKind
+
+const (
+	tagStruct typeTag = lc.CursorStructDecl
+	tagUnion  typeTag = lc.CursorUnionDecl
+	tagClass  typeTag = lc.CursorClassDecl
+	tagEnum   typeTag = lc.CursorEnumDecl
+)
+
+var tagStrvals = [...]string{
+	tagStruct: "struct ",
+	tagUnion:  "union ",
+	tagClass:  "class ",
+	tagEnum:   "enum ",
 }
 
 // -----------------------------------------------------------------------------

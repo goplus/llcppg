@@ -28,20 +28,21 @@ import (
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	origName := nameWithNS(clang.String(decl), ns)
 
+	origName := nameWithNS(clang.String(decl), ns)
 	underlying := decl.TypedefDeclUnderlyingType()
 	if debugCompileDecl {
 		log.Println("typedef", origName, "-", clang.String(underlying))
 	}
 
-	name := ctx.typeName(origName, true)
 	tunder := toType(ctx, pkgTypes, underlying, flagIsTypeDef)
+	name := ctx.typeName(origName, true)
 	if tn, ok := tunder.(*types.Named); ok {
 		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == name {
 			return // already defined
 		}
 	}
+
 	var obj *types.TypeName
 	var typDefs = pkg.NewTypeDefs()
 	// Attach the doc at the TypeDefs (GenDecl) level rather than on the

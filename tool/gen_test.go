@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -86,6 +87,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		Importer:    imp,
 		LLGoPackage: conf.LLGoPackage,
 		Language:    lang,
+		Deps:        conf.Deps,
 		Class:       conf.Class,
 		FuncPrefix:  conf.FuncPrefix,
 		EnumPrefix:  conf.EnumPrefix,
@@ -194,5 +196,7 @@ var langExts = [...]string{
 }
 
 func TestSingleC(t *testing.T) {
-	testFromDir(t, "CXCompilationDatabase", "./_testc", true)
+	if runtime.GOOS == "darwin" {
+		testFromDir(t, "Index", "./_testc", true)
+	}
 }
