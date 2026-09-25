@@ -133,8 +133,7 @@ type pkgCtx struct {
 	anonUnionSeq  int
 	anonStructSeq int
 
-	unsafeImported bool
-	keepDoc        bool
+	keepDoc bool
 }
 
 const (
