@@ -23,7 +23,7 @@ import (
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		}
 	}
 	clang.VisitChildren(decl, func(item, parent clang.Cursor) clang.ChildVisitResult {
-		if item.Kind != lc.CursorEnumConstantDecl {
+		if item.Kind != lc.Cursor_EnumConstantDecl {
 			return clang.Continue
 		}
 		origName := nameWithNS(clang.String(item), ns)

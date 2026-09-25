@@ -23,7 +23,7 @@ import (
 	"strconv"
 
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -206,12 +206,12 @@ func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clan
 func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
 	var slots []vtableSlot
 	if primary, ok := primaryBase(cls); ok {
-		base := primary.Type().TypeDeclaration().Definition()
+		base := primary.Type().Declaration().Definition()
 		slots = vtableSlots(ctx, nil, base)
 	}
 	for _, m := range ownVirtualMethods(cls) {
-		public := m.CXXAccessSpecifier() == lc.CXXPublic
-		if m.Kind == lc.CursorDestructor {
+		public := m.CXXAccessSpecifier() == lc.X_CXXPublic
+		if m.Kind == lc.Cursor_Destructor {
 			// The destructor's two slots reuse the inherited destructor slots when
 			// present (a base virtual destructor always seeds a matching pair), so a
 			// derived destructor overrides rather than appends.
@@ -264,11 +264,11 @@ func ownVirtualMethods(cls clang.Cursor) []clang.Cursor {
 	var methods []clang.Cursor
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
-		case lc.CursorCXXMethod:
+		case lc.Cursor_CXXMethod:
 			if decl.CXXMethodIsVirtual() != 0 && decl.CXXMethodIsStatic() == 0 {
 				methods = append(methods, decl)
 			}
-		case lc.CursorDestructor:
+		case lc.Cursor_Destructor:
 			if decl.CXXMethodIsVirtual() != 0 {
 				methods = append(methods, decl)
 			}
@@ -301,7 +301,7 @@ func overriddenSlot(slots []vtableSlot, m clang.Cursor) int {
 			panic("overriddenSlot: vtable slot has a null decl; every slot must carry its backing virtual method cursor")
 		}
 		for _, r := range roots {
-			if s.decl.Equal(r) != 0 {
+			if lc.EqualCursors(s.decl, r) != 0 {
 				return i
 			}
 		}

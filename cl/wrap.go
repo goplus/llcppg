@@ -23,7 +23,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -82,7 +82,7 @@ func writeFuncProto(out, call *writerT, name string, fn clang.Cursor, cls *class
 	b.WriteByte('(')
 	call.WriteByte('\t')
 	retType := fn.ResultType()
-	if retType.Kind != lc.TypeVoid {
+	if retType.Kind != lc.Type_Void {
 		call.WriteString("return ")
 	}
 	// An instance method takes a "this" receiver and calls "this->method(...)".
@@ -124,7 +124,7 @@ func fullName(decl clang.Cursor) string {
 	name := clang.String(decl)
 	for {
 		parent := decl.SemanticParent()
-		if kind := parent.Kind; kind != lc.CursorNamespace && kind != lc.CursorClassDecl && kind != lc.CursorStructDecl {
+		if kind := parent.Kind; kind != lc.Cursor_Namespace && kind != lc.Cursor_ClassDecl && kind != lc.Cursor_StructDecl {
 			break
 		}
 		name = clang.String(parent) + "::" + name
@@ -135,12 +135,12 @@ func fullName(decl clang.Cursor) string {
 
 func writeParam(b *writerT, typ lc.Type, name string) {
 	tderef, lvl := deref(typ)
-	if tderef.Kind == lc.TypeFunctionProto {
+	if tderef.Kind == lc.Type_FunctionProto {
 		writeFuncParam(b, tderef, lvl, name)
 		return
 	}
 	b.WriteString(toCType(typ, flagIsParam))
-	if typ.Kind != lc.TypePointer {
+	if typ.Kind != lc.Type_Pointer {
 		b.WriteByte(' ')
 	}
 	b.WriteString(name)
@@ -159,17 +159,17 @@ func writeFuncParam(out *writerT, fn lc.Type, lvl int, name string) {
 		if i > 0 {
 			b.WriteString(", ")
 		}
-		arg := fn.ArgType(i)
+		arg := fn.Arg(i)
 		writeParam(&b, arg, "")
 	}
 	b.WriteString(")")
-	writeParam(out, fn.ResultType(), b.String())
+	writeParam(out, fn.Result(), b.String())
 }
 
 func deref(typ lc.Type) (lc.Type, int) {
 	n := 0
-	for typ.Kind == lc.TypePointer {
-		typ = typ.PointeeType()
+	for typ.Kind == lc.Type_Pointer {
+		typ = typ.Pointee()
 		n++
 	}
 	return typ, n
@@ -180,10 +180,10 @@ func deref(typ lc.Type) (lc.Type, int) {
 func toCType(typ lc.Type, flags int) string {
 	_ = flags
 	switch typ.Kind {
-	case lc.TypeRecord:
-		return clang.String(typ.TypeDeclaration().Type())
-	case lc.TypeElaborated:
-		return clang.String(typ.NamedType())
+	case lc.Type_Record:
+		return clang.String(typ.Declaration().Type())
+	case lc.Type_Elaborated:
+		return clang.String(typ.Named())
 	default:
 		return clang.String(typ)
 	}

@@ -23,7 +23,7 @@ import (
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 func Dump(node clang.Cursor, ns, dir string) {
@@ -33,15 +33,15 @@ func Dump(node clang.Cursor, ns, dir string) {
 			return clang.Continue
 		}
 		kind := cur.Kind
-		if kind == lc.CursorCXXAccessSpecifier {
+		if kind == lc.Cursor_CXXAccessSpecifier {
 			log.Println("==>", kind, "CXXAccessSpecifier", cur.CXXAccessSpecifier())
 			return clang.Continue
 		}
 		name := ns + clang.String(cur)
 		log.Println("==>", kind, clang.String(kind), name, typeOf(cur.Type()))
 		switch kind {
-		case lc.CursorFunctionDecl, lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
-		case lc.CursorClassDecl, lc.CursorNamespace:
+		case lc.Cursor_FunctionDecl, lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
+		case lc.Cursor_ClassDecl, lc.Cursor_Namespace:
 			Dump(cur, name+"::", dir)
 		}
 		return clang.Continue
@@ -50,8 +50,8 @@ func Dump(node clang.Cursor, ns, dir string) {
 
 func typeOf(t lc.Type) string {
 	switch t.Kind {
-	case lc.TypeElaborated:
-		return typeOf(t.NamedType())
+	case lc.Type_Elaborated:
+		return typeOf(t.Named())
 	default:
 		return clang.String(t)
 	}

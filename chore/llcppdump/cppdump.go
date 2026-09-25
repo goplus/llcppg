@@ -25,8 +25,6 @@ import (
 
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool"
-
-	lc "github.com/goplus/llcppg/lib/clang"
 )
 
 func main() {
@@ -48,7 +46,7 @@ func main() {
 	u := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, filename, "-x", lang)
 	defer u.Dispose()
 
-	options := lc.DefaultDiagnosticDisplayOptions()
+	options := clang.DefaultDiagnosticDisplayOptions()
 	u.VisitDiagnostics(func(diag clang.Diagnostic) {
 		fmt.Fprintln(os.Stderr, diag.Format(options))
 	})

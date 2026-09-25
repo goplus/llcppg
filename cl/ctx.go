@@ -50,8 +50,8 @@ func goNode(ctx *pkgCtx, v clang.Cursor) ast.Node {
 	var file clang.File
 	var pos, end c.Uint
 	rg := v.Extent()
-	rg.RangeStart().SpellingLocation(&file, nil, nil, &pos)
-	rg.RangeEnd().SpellingLocation(nil, nil, nil, &end)
+	rg.Start().Spelling(&file, nil, nil, &pos)
+	rg.End().Spelling(nil, nil, nil, &end)
 	base := ctx.getFileBase(v, file)
 	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
 }
@@ -59,7 +59,7 @@ func goNode(ctx *pkgCtx, v clang.Cursor) ast.Node {
 func goNodePos(ctx *pkgCtx, v clang.Cursor) token.Pos {
 	var file clang.File
 	var pos c.Uint
-	v.Extent().RangeStart().SpellingLocation(&file, nil, nil, &pos)
+	v.Extent().Start().Spelling(&file, nil, nil, &pos)
 	base := ctx.getFileBase(v, file)
 	return token.Pos(int(pos) + base)
 }

@@ -21,7 +21,7 @@ import (
 	"log"
 
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -138,18 +138,14 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *typ
 
 func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName string, decl clang.Cursor) {
 	switch decl.Kind {
-	case lc.CursorCXXMethod, lc.CursorConstructor, lc.CursorDestructor:
+	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
 		var name string
 		switch decl.Kind {
-		case lc.CursorConstructor:
+		case lc.Cursor_Constructor:
 			name = "XGo_Ctor"
-		case lc.CursorDestructor:
+		case lc.Cursor_Destructor:
 			name = "XGo_Dtor"
 		default:
-			// A static method is not a method: it has no implicit "this". Register
-			// it as a global function whose name is prefixed by the enclosing class
-			// name (the class name acts like a namespace); it is compiled with a
-			// nil class in compileClass.
 			if decl.CXXMethodIsStatic() != 0 {
 				if cls.inPublic {
 					loadGlobalFunc(ctx, &ctx.scopeCtx, decl, clsName)
@@ -165,13 +161,13 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			}
 		}
 
-	case lc.CursorFieldDecl:
+	case lc.Cursor_FieldDecl:
 		var fldType types.Type
 		var anonymous bool
 		var ft = decl.Type()
-		if ft.Kind == lc.TypeRecord {
-			if ftd := ft.TypeDeclaration(); ftd.IsAnonymous() != 0 {
-				if ftd.Kind == lc.CursorUnionDecl {
+		if ft.Kind == lc.Type_Record {
+			if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 {
+				if ftd.Kind == lc.Cursor_UnionDecl {
 					fldType = emitUnion(ctx, ftd, ctx.nextAnonUnionName())
 				} else {
 					fldType = emitClass(ctx, ftd, ctx.nextAnonStructName(), ftd.Kind)
@@ -187,7 +183,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		fld := types.NewField(goNodePos(ctx, decl), pkg, fldName, fldType, false)
 		cls.fields = append(cls.fields, fld)
 
-	case lc.CursorVarDecl:
+	case lc.Cursor_VarDecl:
 		// A static member variable is not a field: it has no per-instance
 		// storage. Load it as a package-level variable whose name is prefixed
 		// by the enclosing class name (the class name acts like a namespace),
@@ -196,10 +192,10 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			loadVar(ctx, decl, clsName)
 		}
 
-	case lc.CursorCXXAccessSpecifier:
-		cls.inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
+	case lc.Cursor_CXXAccessSpecifier:
+		cls.inPublic = decl.CXXAccessSpecifier() == lc.X_CXXPublic
 
-	case lc.CursorEnumDecl:
+	case lc.Cursor_EnumDecl:
 		// An enum nested in a class only affects naming: its constants are
 		// emitted as global consts prefixed by the enclosing class name (the
 		// class name acts like a namespace), e.g. Color_Red.
@@ -207,7 +203,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			loadEnum(ctx, decl, clsName)
 		}
 
-	case lc.CursorTypedefDecl:
+	case lc.Cursor_TypedefDecl:
 		// A typedef nested in a class acts like one nested in a namespace: it
 		// only affects naming, so it is emitted as a package-level type alias
 		// prefixed by the enclosing class name (the class name acts like a
@@ -216,7 +212,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			loadTypedef(ctx, decl, clsName)
 		}
 
-	case lc.CursorCXXBaseSpecifier:
+	case lc.Cursor_CXXBaseSpecifier:
 		// A base class is treated the same as a member variable (field) - simply
 		// an embedded one. Virtual base classes are not supported for now.
 		if decl.IsVirtualBase() != 0 {
@@ -226,7 +222,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		fld := types.NewField(goNodePos(ctx, decl), pkg, base.Name(), base.Type(), true)
 		cls.fields = append(cls.fields, fld)
 
-	case lc.CursorClassDecl, lc.CursorStructDecl:
+	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
 			hoisted := emitClass(ctx, decl, ctx.nextAnonStructName(), decl.Kind)
@@ -245,7 +241,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// class: private).
 			loadClass(ctx, decl, clsName, decl.Kind)
 		}
-	case lc.CursorUnionDecl:
+	case lc.Cursor_UnionDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
 			hoisted := emitUnion(ctx, decl, ctx.nextAnonUnionName())
@@ -280,8 +276,8 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 //     (and is laid out first so the shared vptr stays at offset 0).
 func primaryBase(cls clang.Cursor) (spec clang.Cursor, ok bool) {
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		if decl.Kind == lc.CursorCXXBaseSpecifier && decl.IsVirtualBase() == 0 {
-			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 && isPolymorphic(b) {
+		if decl.Kind == lc.Cursor_CXXBaseSpecifier && decl.IsVirtualBase() == 0 {
+			if b := decl.Type().Declaration().Definition(); b.IsNull() == 0 && isPolymorphic(b) {
 				spec, ok = decl, true
 				return clang.Break
 			}
@@ -315,13 +311,13 @@ func isPolymorphic(cls clang.Cursor) bool {
 	found := false
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
-		case lc.CursorCXXMethod, lc.CursorDestructor:
+		case lc.Cursor_CXXMethod, lc.Cursor_Destructor:
 			if decl.CXXMethodIsVirtual() != 0 {
 				found = true
 				return clang.Break
 			}
-		case lc.CursorCXXBaseSpecifier:
-			if b := decl.Type().TypeDeclaration().Definition(); b.IsNull() == 0 && isPolymorphic(b) {
+		case lc.Cursor_CXXBaseSpecifier:
+			if b := decl.Type().Declaration().Definition(); b.IsNull() == 0 && isPolymorphic(b) {
 				found = true
 				return clang.Break
 			}
@@ -336,12 +332,12 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
 	// Depending on the libclang version, a base specifier's type may be reported
 	// as an elaborated type (e.g. "struct Base") rather than the bare record;
 	// unwrap it so the record lookup below works in both cases.
-	if t.Kind == lc.TypeElaborated {
-		t = t.NamedType()
+	if t.Kind == lc.Type_Elaborated {
+		t = t.Named()
 	}
 	switch t.Kind {
-	case lc.TypeRecord:
-		cName := clang.String(t.TypeDeclaration().Type())
+	case lc.Type_Record:
+		cName := clang.String(t.Declaration().Type())
 		if t, ok := ctx.typeObj(cName); ok {
 			return t
 		}

@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/goplus/llcppg/lib/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -257,12 +257,12 @@ func scanToken(tu clang.TranslationUnit, tokens []lc.Token) (ret token.Token, li
 		tok := tokens[0]
 		kind := tok.Kind()
 		switch kind {
-		case lc.Punctuation:
-			op := tu.Token(tok)
+		case lc.Token_Punctuation:
+			op := tu.TokenSpelling(tok)
 			left = tokens[1:]
 			ret, ok = c2goOps[op]
-		case lc.Literal:
-			lit, ok = tu.Token(tok), true
+		case lc.Token_Literal:
+			lit, ok = tu.TokenSpelling(tok), true
 			switch lit[0] {
 			case '"':
 				ret = token.STRING
@@ -272,11 +272,11 @@ func scanToken(tu clang.TranslationUnit, tokens []lc.Token) (ret token.Token, li
 				ret = token.FLOAT
 			}
 			left = tokens[1:]
-		case lc.Identifier:
+		case lc.Token_Identifier:
 			ret = token.IDENT
-			lit, ok = tu.Token(tok), true
+			lit, ok = tu.TokenSpelling(tok), true
 			left = tokens[1:]
-		case lc.Comment:
+		case lc.Token_Comment:
 			tokens = tokens[1:]
 			continue
 		}

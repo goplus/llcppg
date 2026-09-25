@@ -32,8 +32,6 @@ import (
 	"github.com/goplus/llcppg/tool/listth"
 	"github.com/goplus/mod"
 	"github.com/goplus/mod/xgomod"
-
-	lc "github.com/goplus/llcppg/lib/clang"
 )
 
 const (
@@ -251,7 +249,7 @@ func (p Module) includeDirs(imp *packages.Importer, deps []string, reserved int)
 // ParseSources parses the given source files and returns the translation units corresponding
 // to those files.
 func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) []cl.Source {
-	options := lc.DefaultDiagnosticDisplayOptions()
+	options := clang.DefaultDiagnosticDisplayOptions()
 	n := len(includeDirs)
 	flags := make([]string, n+2)
 	for i, dir := range includeDirs {
