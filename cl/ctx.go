@@ -236,11 +236,11 @@ func (p *pkgCtx) macroName(name string) string {
 	return p.cstyleToGo(name, true)
 }
 
-func (p *pkgCtx) typeName(name string, removePrefix bool) string {
-	if removePrefix {
-		name = rmPrefix(name, p.typePrefix)
+func (p *pkgCtx) typeName(name string, _ bool) string {
+	if v, ok := p.rename[name]; ok {
+		return v
 	}
-	return p.cstyleToGo(name, true)
+	return p.cstyleToGo(rmPrefix(name, p.typePrefix), true)
 }
 
 func (p *pkgCtx) enumvalName(name string) string {

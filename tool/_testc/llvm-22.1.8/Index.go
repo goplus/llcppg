@@ -1888,44 +1888,44 @@ const (
 )
 
 // Represents a specific kind of binary operator which can appear at a cursor.
-type BinaryOperatorKind c.Int
+type X_BinaryOperatorKind c.Int
 
 const (
-	BO_Invalid   BinaryOperatorKind = 0
-	BO_PtrMemD   BinaryOperatorKind = 1
-	BO_PtrMemI   BinaryOperatorKind = 2
-	BO_Mul       BinaryOperatorKind = 3
-	BO_Div       BinaryOperatorKind = 4
-	BO_Rem       BinaryOperatorKind = 5
-	BO_Add       BinaryOperatorKind = 6
-	BO_Sub       BinaryOperatorKind = 7
-	BO_Shl       BinaryOperatorKind = 8
-	BO_Shr       BinaryOperatorKind = 9
-	BO_Cmp       BinaryOperatorKind = 10
-	BO_LT        BinaryOperatorKind = 11
-	BO_GT        BinaryOperatorKind = 12
-	BO_LE        BinaryOperatorKind = 13
-	BO_GE        BinaryOperatorKind = 14
-	BO_EQ        BinaryOperatorKind = 15
-	BO_NE        BinaryOperatorKind = 16
-	BO_And       BinaryOperatorKind = 17
-	BO_Xor       BinaryOperatorKind = 18
-	BO_Or        BinaryOperatorKind = 19
-	BO_LAnd      BinaryOperatorKind = 20
-	BO_LOr       BinaryOperatorKind = 21
-	BO_Assign    BinaryOperatorKind = 22
-	BO_MulAssign BinaryOperatorKind = 23
-	BO_DivAssign BinaryOperatorKind = 24
-	BO_RemAssign BinaryOperatorKind = 25
-	BO_AddAssign BinaryOperatorKind = 26
-	BO_SubAssign BinaryOperatorKind = 27
-	BO_ShlAssign BinaryOperatorKind = 28
-	BO_ShrAssign BinaryOperatorKind = 29
-	BO_AndAssign BinaryOperatorKind = 30
-	BO_XorAssign BinaryOperatorKind = 31
-	BO_OrAssign  BinaryOperatorKind = 32
-	BO_Comma     BinaryOperatorKind = 33
-	BO_LAST      BinaryOperatorKind = 33
+	BO_Invalid   X_BinaryOperatorKind = 0
+	BO_PtrMemD   X_BinaryOperatorKind = 1
+	BO_PtrMemI   X_BinaryOperatorKind = 2
+	BO_Mul       X_BinaryOperatorKind = 3
+	BO_Div       X_BinaryOperatorKind = 4
+	BO_Rem       X_BinaryOperatorKind = 5
+	BO_Add       X_BinaryOperatorKind = 6
+	BO_Sub       X_BinaryOperatorKind = 7
+	BO_Shl       X_BinaryOperatorKind = 8
+	BO_Shr       X_BinaryOperatorKind = 9
+	BO_Cmp       X_BinaryOperatorKind = 10
+	BO_LT        X_BinaryOperatorKind = 11
+	BO_GT        X_BinaryOperatorKind = 12
+	BO_LE        X_BinaryOperatorKind = 13
+	BO_GE        X_BinaryOperatorKind = 14
+	BO_EQ        X_BinaryOperatorKind = 15
+	BO_NE        X_BinaryOperatorKind = 16
+	BO_And       X_BinaryOperatorKind = 17
+	BO_Xor       X_BinaryOperatorKind = 18
+	BO_Or        X_BinaryOperatorKind = 19
+	BO_LAnd      X_BinaryOperatorKind = 20
+	BO_LOr       X_BinaryOperatorKind = 21
+	BO_Assign    X_BinaryOperatorKind = 22
+	BO_MulAssign X_BinaryOperatorKind = 23
+	BO_DivAssign X_BinaryOperatorKind = 24
+	BO_RemAssign X_BinaryOperatorKind = 25
+	BO_AddAssign X_BinaryOperatorKind = 26
+	BO_SubAssign X_BinaryOperatorKind = 27
+	BO_ShlAssign X_BinaryOperatorKind = 28
+	BO_ShrAssign X_BinaryOperatorKind = 29
+	BO_AndAssign X_BinaryOperatorKind = 30
+	BO_XorAssign X_BinaryOperatorKind = 31
+	BO_OrAssign  X_BinaryOperatorKind = 32
+	BO_Comma     X_BinaryOperatorKind = 33
+	BO_LAST      X_BinaryOperatorKind = 33
 )
 
 // Describes how the traversal of the children of a particular
@@ -2686,79 +2686,79 @@ const (
 type FieldVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 ClientData) VisitorResult
 
 // Describes the kind of binary operators.
-type CXBinaryOperatorKind c.Int
+type BinaryOperatorKind c.Int
 
 const (
 	// This value describes cursors which are not binary operators.
-	BinaryOperator_Invalid CXBinaryOperatorKind = 0
+	BinaryOperator_Invalid BinaryOperatorKind = 0
 	// C++ Pointer - to - member operator.
-	BinaryOperator_PtrMemD CXBinaryOperatorKind = 1
+	BinaryOperator_PtrMemD BinaryOperatorKind = 1
 	// C++ Pointer - to - member operator.
-	BinaryOperator_PtrMemI CXBinaryOperatorKind = 2
+	BinaryOperator_PtrMemI BinaryOperatorKind = 2
 	// Multiplication operator.
-	BinaryOperator_Mul CXBinaryOperatorKind = 3
+	BinaryOperator_Mul BinaryOperatorKind = 3
 	// Division operator.
-	BinaryOperator_Div CXBinaryOperatorKind = 4
+	BinaryOperator_Div BinaryOperatorKind = 4
 	// Remainder operator.
-	BinaryOperator_Rem CXBinaryOperatorKind = 5
+	BinaryOperator_Rem BinaryOperatorKind = 5
 	// Addition operator.
-	BinaryOperator_Add CXBinaryOperatorKind = 6
+	BinaryOperator_Add BinaryOperatorKind = 6
 	// Subtraction operator.
-	BinaryOperator_Sub CXBinaryOperatorKind = 7
+	BinaryOperator_Sub BinaryOperatorKind = 7
 	// Bitwise shift left operator.
-	BinaryOperator_Shl CXBinaryOperatorKind = 8
+	BinaryOperator_Shl BinaryOperatorKind = 8
 	// Bitwise shift right operator.
-	BinaryOperator_Shr CXBinaryOperatorKind = 9
+	BinaryOperator_Shr BinaryOperatorKind = 9
 	// C++ three-way comparison (spaceship) operator.
-	BinaryOperator_Cmp CXBinaryOperatorKind = 10
+	BinaryOperator_Cmp BinaryOperatorKind = 10
 	// Less than operator.
-	BinaryOperator_LT CXBinaryOperatorKind = 11
+	BinaryOperator_LT BinaryOperatorKind = 11
 	// Greater than operator.
-	BinaryOperator_GT CXBinaryOperatorKind = 12
+	BinaryOperator_GT BinaryOperatorKind = 12
 	// Less or equal operator.
-	BinaryOperator_LE CXBinaryOperatorKind = 13
+	BinaryOperator_LE BinaryOperatorKind = 13
 	// Greater or equal operator.
-	BinaryOperator_GE CXBinaryOperatorKind = 14
+	BinaryOperator_GE BinaryOperatorKind = 14
 	// Equal operator.
-	BinaryOperator_EQ CXBinaryOperatorKind = 15
+	BinaryOperator_EQ BinaryOperatorKind = 15
 	// Not equal operator.
-	BinaryOperator_NE CXBinaryOperatorKind = 16
+	BinaryOperator_NE BinaryOperatorKind = 16
 	// Bitwise AND operator.
-	BinaryOperator_And CXBinaryOperatorKind = 17
+	BinaryOperator_And BinaryOperatorKind = 17
 	// Bitwise XOR operator.
-	BinaryOperator_Xor CXBinaryOperatorKind = 18
+	BinaryOperator_Xor BinaryOperatorKind = 18
 	// Bitwise OR operator.
-	BinaryOperator_Or CXBinaryOperatorKind = 19
+	BinaryOperator_Or BinaryOperatorKind = 19
 	// Logical AND operator.
-	BinaryOperator_LAnd CXBinaryOperatorKind = 20
+	BinaryOperator_LAnd BinaryOperatorKind = 20
 	// Logical OR operator.
-	BinaryOperator_LOr CXBinaryOperatorKind = 21
+	BinaryOperator_LOr BinaryOperatorKind = 21
 	// Assignment operator.
-	BinaryOperator_Assign CXBinaryOperatorKind = 22
+	BinaryOperator_Assign BinaryOperatorKind = 22
 	// Multiplication assignment operator.
-	BinaryOperator_MulAssign CXBinaryOperatorKind = 23
+	BinaryOperator_MulAssign BinaryOperatorKind = 23
 	// Division assignment operator.
-	BinaryOperator_DivAssign CXBinaryOperatorKind = 24
+	BinaryOperator_DivAssign BinaryOperatorKind = 24
 	// Remainder assignment operator.
-	BinaryOperator_RemAssign CXBinaryOperatorKind = 25
+	BinaryOperator_RemAssign BinaryOperatorKind = 25
 	// Addition assignment operator.
-	BinaryOperator_AddAssign CXBinaryOperatorKind = 26
+	BinaryOperator_AddAssign BinaryOperatorKind = 26
 	// Subtraction assignment operator.
-	BinaryOperator_SubAssign CXBinaryOperatorKind = 27
+	BinaryOperator_SubAssign BinaryOperatorKind = 27
 	// Bitwise shift left assignment operator.
-	BinaryOperator_ShlAssign CXBinaryOperatorKind = 28
+	BinaryOperator_ShlAssign BinaryOperatorKind = 28
 	// Bitwise shift right assignment operator.
-	BinaryOperator_ShrAssign CXBinaryOperatorKind = 29
+	BinaryOperator_ShrAssign BinaryOperatorKind = 29
 	// Bitwise AND assignment operator.
-	BinaryOperator_AndAssign CXBinaryOperatorKind = 30
+	BinaryOperator_AndAssign BinaryOperatorKind = 30
 	// Bitwise XOR assignment operator.
-	BinaryOperator_XorAssign CXBinaryOperatorKind = 31
+	BinaryOperator_XorAssign BinaryOperatorKind = 31
 	// Bitwise OR assignment operator.
-	BinaryOperator_OrAssign CXBinaryOperatorKind = 32
+	BinaryOperator_OrAssign BinaryOperatorKind = 32
 	// Comma operator.
-	BinaryOperator_Comma CXBinaryOperatorKind = 33
+	BinaryOperator_Comma BinaryOperatorKind = 33
 	// Comma operator.
-	BinaryOperator_Last CXBinaryOperatorKind = 33
+	BinaryOperator_Last BinaryOperatorKind = 33
 )
 
 // Describes the kind of unary operators.
@@ -4609,7 +4609,7 @@ func (_llcppg_param1 Cursor) CXXAccessSpecifier() CXXAccessSpecifier {
 // @deprecated: use clang_getCursorBinaryOperatorKind instead.
 //
 // llgo:link Cursor.BinaryOpcode C.clang_Cursor_getBinaryOpcode
-func (C Cursor) BinaryOpcode() BinaryOperatorKind {
+func (C Cursor) BinaryOpcode() X_BinaryOperatorKind {
 	return 0
 }
 
@@ -4617,8 +4617,8 @@ func (C Cursor) BinaryOpcode() BinaryOperatorKind {
 //
 // @deprecated: use clang_getBinaryOperatorKindSpelling instead
 //
-// llgo:link BinaryOperatorKind.CursorGetBinaryOpcodeStr C.clang_Cursor_getBinaryOpcodeStr
-func (Op BinaryOperatorKind) CursorGetBinaryOpcodeStr() String {
+// llgo:link X_BinaryOperatorKind.CursorGetBinaryOpcodeStr C.clang_Cursor_getBinaryOpcodeStr
+func (Op X_BinaryOperatorKind) CursorGetBinaryOpcodeStr() String {
 	return String{}
 }
 
@@ -6444,8 +6444,8 @@ func (T Type) VisitCXXMethods(visitor FieldVisitor, client_data ClientData) c.Ui
 
 // Retrieve the spelling of a given CXBinaryOperatorKind.
 //
-// llgo:link CXBinaryOperatorKind.BinaryOperatorKindSpelling C.clang_getBinaryOperatorKindSpelling
-func (kind CXBinaryOperatorKind) BinaryOperatorKindSpelling() String {
+// llgo:link BinaryOperatorKind.Spelling C.clang_getBinaryOperatorKindSpelling
+func (kind BinaryOperatorKind) Spelling() String {
 	return String{}
 }
 
@@ -6454,7 +6454,7 @@ func (kind CXBinaryOperatorKind) BinaryOperatorKindSpelling() String {
 // If this cursor is not a binary operator then returns Invalid.
 //
 // llgo:link Cursor.BinaryOperatorKind C.clang_getCursorBinaryOperatorKind
-func (cursor Cursor) BinaryOperatorKind() CXBinaryOperatorKind {
+func (cursor Cursor) BinaryOperatorKind() BinaryOperatorKind {
 	return 0
 }
 
