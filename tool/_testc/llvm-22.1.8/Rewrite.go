@@ -6,8 +6,8 @@ type Rewriter uintptr
 
 // Create CXRewriter.
 //
-// llgo:link TranslationUnit.RewriterCreate C.clang_CXRewriter_create
-func (TU TranslationUnit) RewriterCreate() Rewriter {
+// llgo:link (*TranslationUnitImpl).RewriterCreate C.clang_CXRewriter_create
+func (TU *TranslationUnitImpl) RewriterCreate() Rewriter {
 	return 0
 }
 

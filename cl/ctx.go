@@ -237,6 +237,9 @@ func (p *pkgCtx) macroName(name string) string {
 }
 
 func (p *pkgCtx) typeName(name string, _ bool) string {
+	if v, ok := p.rename[name]; ok {
+		return v
+	}
 	return p.cstyleToGo(rmPrefix(name, p.typePrefix), true)
 }
 

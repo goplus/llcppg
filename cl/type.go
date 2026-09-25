@@ -57,13 +57,18 @@ func newPointer(typ types.Type) types.Type {
 }
 
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
+	var hasCallback bool
+	return toTypeEx(ctx, pkg, typ, flags, &hasCallback)
+}
+
+func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallback *bool) types.Type {
 	switch typ.Kind {
 	case lc.Type_Void:
 		return tyVoid
 	case lc.Type_Bool:
 		return types.Typ[types.Bool]
 	case lc.Type_Char_S:
-		return ctx.basicTyp(cChar) // ctx.c.Ref("Char").Type()
+		return ctx.c.Ref("Char").Type()
 	case lc.Type_SChar:
 		return types.Typ[types.Int8]
 	case lc.Type_Char_U, lc.Type_UChar:
@@ -73,31 +78,33 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	case lc.Type_UShort:
 		return types.Typ[types.Uint16]
 	case lc.Type_Int:
-		return ctx.basicTyp(cInt) // ctx.c.Ref("Int").Type()
+		return ctx.c.Ref("Int").Type()
 	case lc.Type_UInt:
-		return ctx.basicTyp(cUint) // ctx.c.Ref("Uint").Type()
+		return ctx.c.Ref("Uint").Type()
 	case lc.Type_Long:
-		return ctx.basicTyp(cLong) // ctx.c.Ref("Long").Type()
+		return ctx.c.Ref("Long").Type()
 	case lc.Type_ULong:
-		return ctx.basicTyp(cUlong) // ctx.c.Ref("Ulong").Type()
+		return ctx.c.Ref("Ulong").Type()
 	case lc.Type_LongLong:
-		return ctx.basicTyp(cLongLong) // ctx.c.Ref("LongLong").Type()
+		return ctx.c.Ref("LongLong").Type()
 	case lc.Type_ULongLong:
-		return ctx.basicTyp(cUlongLong) // ctx.c.Ref("UlongLong").Type()
+		return ctx.c.Ref("UlongLong").Type()
 	case lc.Type_Float:
-		return ctx.basicTyp(cFloat) // ctx.c.Ref("Float").Type()
+		return ctx.c.Ref("Float").Type()
 	case lc.Type_Double:
-		return ctx.basicTyp(cDouble) // ctx.c.Ref("Double").Type()
+		return ctx.c.Ref("Double").Type()
 	case lc.Type_Pointer:
 		elem := typ.Pointee()
 		if elem.Kind == lc.Type_FunctionProto {
+			*hasCallback = true
 			return toFuncType(ctx, pkg, elem)
 		}
 		// flagIsParam only governs the outermost type of a parameter, so clear
 		// it before recursing so inner arrays are not wrongly decayed.
-		pointee := toType(ctx, pkg, elem, flagIsTypeDef)
+		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, hasCallback)
 		return newPointer(pointee)
 	case lc.Type_FunctionProto:
+		*hasCallback = true
 		return toFuncType(ctx, pkg, typ)
 	case lc.Type_Enum:
 		cName := clang.String(typ)
@@ -123,7 +130,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 		// Decay applies only to the outermost array, so clear flagIsParam
 		// before recursing; otherwise a nested array like int matrix[3][4]
 		// would decay its inner [4] too, yielding **c.Int instead of *[4]c.Int.
-		elem := toType(ctx, pkg, typ.ArrayElement(), flagIsTypeDef)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, hasCallback)
 		if flags&flagIsParam != 0 {
 			return newPointer(elem)
 		}
@@ -131,7 +138,7 @@ func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type 
 	case lc.Type_IncompleteArray, lc.Type_VariableArray:
 		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
 		// flagIsParam before recursing since decay applies only to this level.
-		elem := toType(ctx, pkg, typ.ArrayElement(), flagIsTypeDef)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, hasCallback)
 		return newPointer(elem)
 	case lc.Type_BlockPointer:
 		log.Println("==> toType: C blocks is unsupported, use void* as workaround")
