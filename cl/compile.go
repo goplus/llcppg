@@ -21,6 +21,8 @@ import (
 	"go/types"
 	"log"
 	"maps"
+	"path/filepath"
+	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -88,24 +90,21 @@ type Config struct {
 	// wrapper file (optional).
 	WrapFileHeader string
 
-	// DefaultGoFile specifies default file name (optional).
-	DefaultGoFile string
-
-	// NameLookup looks up the archive path for a given mangling name. It returns the
-	// archive path and a boolean indicating whether the lookup was successful. If not
-	// specified, llcppg uses a default lookup function that returns an empty archivePath
-	// and true (it means any mangling name is considered found).
-	NameLookup func(manglingName string) (archivePath string, ok bool)
+	// PackageOf returns the package path for a given header file. If ok is false, it means
+	// we don't know the package path for the header file. If not specified, llcppg will
+	// assume all header files belong to the same package.
+	PackageOf func(headerFile string) (pkgPath string, ok bool)
 
 	// PubFileLookup looks up the public file for a given package path. A public file is
 	// a text file that contains a list of public C/C++ names and their corresponding Go
 	// names (required).
 	PubFileLookup func(pkgPath string) (pubFile string, ok bool)
 
-	// PackageOf returns the package path for a given header file. If ok is false, it means
-	// we don't know the package path for the header file. If not specified, llcppg will
-	// assume all header files belong to the same package.
-	PackageOf func(headerFile string) (pkgPath string, ok bool)
+	// NameLookup looks up the archive path for a given mangling name. It returns the
+	// archive path and a boolean indicating whether the lookup was successful. If not
+	// specified, llcppg uses a default lookup function that returns an empty archivePath
+	// and true (it means any mangling name is considered found).
+	NameLookup func(manglingName string) (archivePath string, ok bool)
 
 	// Rename specifies a mapping of C/C++ names to Go names (optional). If a name is present
 	// in the map, it will be renamed to the corresponding Go name.
@@ -133,6 +132,12 @@ type Config struct {
 	// NonClass specifies a list of C/C++ typedef names to be treated as non-classes (optional).
 	NonClass []string
 
+	// DefaultGoFile specifies default file name (optional).
+	DefaultGoFile string
+
+	// GenMultiGoFiles specifies whether to generate multiple Go files for each header file.
+	GenMultiGoFiles bool
+
 	// DontKeepDoc specifies whether to keep the documentation comments in the generated
 	// Go package. If true, the documentation comments will be removed (optional).
 	DontKeepDoc bool
@@ -141,10 +146,7 @@ type Config struct {
 // -----------------------------------------------------------------------------
 
 // Source represents a source file to be processed by llcppg.
-type Source struct {
-	TU     clang.TranslationUnit
-	GoFile string
-}
+type Source = clang.TranslationUnit
 
 // NewPackage loads a translation unit and generates a Go package with the given package
 // path, name and configuration.
@@ -191,7 +193,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
-	loadFiles(ctx, files, pkgPath)
+	loadFiles(ctx, files, pkgPath, conf.GenMultiGoFiles)
 	ctx.compile()
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
@@ -205,15 +207,14 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 
 // -----------------------------------------------------------------------------
 
-func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
+func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, genMultiGoFiles bool) {
 	pkg := ctx.pkg
 	pkgOf := ctx.pkgOf
 	scope := &ctx.scopeCtx
 	lastSeen := ctx.lastSeen
 	for _, f := range files {
-		pkg.SetCurFile(f.GoFile, true)
 		ctx.thisSeen = make(map[string]none) // reset for each file
-		clang.VisitChildren(f.TU.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		clang.VisitChildren(f.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			if pkgOf != nil {
 				at := clang.PresumedFile(decl.Location())
 				if _, ok := lastSeen[at]; ok {
@@ -221,6 +222,16 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string) {
 				}
 				if pkgPath, ok := pkgOf(at); !ok || pkgPath != myPkgPath {
 					return clang.Continue
+				}
+				if genMultiGoFiles {
+					const goFileExt = ".go"
+					fname := filepath.Base(at)
+					if pos := strings.LastIndex(fname, "."); pos >= 0 {
+						fname = fname[:pos] + goFileExt
+					} else {
+						fname += goFileExt
+					}
+					pkg.SetCurFile(fname, true)
 				}
 			}
 			loadDecl(ctx, scope, decl, "")
