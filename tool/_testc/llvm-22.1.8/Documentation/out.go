@@ -527,8 +527,8 @@ func CreateAPISet(tu Index.TranslationUnit, out_api *APISet) CXErrorCode.ErrorCo
 //
 // The provided \c CXAPISet can not be used after this function is called.
 //
-// llgo:link (*APISetImpl).DisposeAPISet C.clang_disposeAPISet
-func (api *APISetImpl) DisposeAPISet() {
+// llgo:link (*APISetImpl).Dispose C.clang_disposeAPISet
+func (api *APISetImpl) Dispose() {
 }
 
 // Generate a single symbol symbol graph for the given USR. Returns a null
