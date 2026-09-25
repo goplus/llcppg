@@ -310,7 +310,7 @@ const (
 // visitor function for each child cursor. The traversal may be recursive,
 // depending on the return value of the visitor function.
 func VisitChildren(root Cursor, fn func(cur, parent Cursor) ChildVisitResult) uint {
-	return uint(root.VisitChildren(
+	return uint(clang.VisitChildren(root,
 		func(cur, parent Cursor, param clang.ClientData) ChildVisitResult {
 			return c.GoClosure[func(cur, parent Cursor) ChildVisitResult](param)(cur, parent)
 		}, c.ClosureData(fn)))
