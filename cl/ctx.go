@@ -87,6 +87,11 @@ type compileUnit struct {
 	at *gogen.File
 }
 
+type typeObj struct {
+	*types.TypeName
+	hasCallback bool
+}
+
 type pkgCtx struct {
 	scopeCtx
 	pkg  *gogen.Package
@@ -117,12 +122,12 @@ type pkgCtx struct {
 
 	fileBases map[clang.File]int // clang.File => base
 
-	macroVals map[string]any             // macroName => value
-	funcs     map[string]*funcObj        // manglingName => func object
-	types     map[string]*types.TypeName // c/c++ fullName => type name object
-	impPkgs   map[string]none            // imported package path set
-	lastSeen  map[string]none            // last seen include file set (loaded include files)
-	thisSeen  map[string]none            // include file set seen in this translation unit
+	macroVals map[string]any      // macroName => value
+	funcs     map[string]*funcObj // manglingName => func object
+	types     map[string]typeObj  // c/c++ fullName => type name object
+	impPkgs   map[string]none     // imported package path set
+	lastSeen  map[string]none     // last seen include file set (loaded include files)
+	thisSeen  map[string]none     // include file set seen in this translation unit
 
 	compiles []compileUnit
 	pubs     []Entry
@@ -194,7 +199,7 @@ func (p *pkgCtx) basicTyp(kind basicKind) types.Type {
 
 func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named) {
 	cName := clang.String(decl.Type())
-	typObj := typNamed.Obj()
+	typObj := typeObj{typNamed.Obj(), false}
 	p.types[cName] = typObj
 
 	if debugCompileDecl {
@@ -212,7 +217,7 @@ func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named)
 
 func (p *pkgCtx) typeObj(cName string) (*types.TypeName, bool) {
 	if o, ok := p.types[cName]; ok {
-		return o, true
+		return o.TypeName, true
 	}
 	return nil, false
 }

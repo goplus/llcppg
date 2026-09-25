@@ -190,7 +190,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		rename: conf.Rename, classes: conf.Class, nonClasses: conf.NonClass,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
-		macroVals: make(map[string]any), types: make(map[string]*types.TypeName),
+		macroVals: make(map[string]any), types: make(map[string]typeObj),
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
 	loadFiles(ctx, files, pkgPath, conf.GenMultiGoFiles)
