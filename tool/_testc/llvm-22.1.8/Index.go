@@ -5985,8 +5985,8 @@ func (Results *CodeCompleteResults) Dispose() {
 // Determine the number of diagnostics produced prior to the
 // location where code completion was performed.
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetNumDiagnostics C.clang_codeCompleteGetNumDiagnostics
-func (Results *CodeCompleteResults) CodeCompleteGetNumDiagnostics() c.Uint {
+// llgo:link (*CodeCompleteResults).NumDiagnostics C.clang_codeCompleteGetNumDiagnostics
+func (Results *CodeCompleteResults) NumDiagnostics() c.Uint {
 	return 0
 }
 
@@ -5998,8 +5998,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetNumDiagnostics() c.Uint {
 // \returns the requested diagnostic. This diagnostic must be freed
 // via a call to \c clang_disposeDiagnostic().
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetDiagnostic C.clang_codeCompleteGetDiagnostic
-func (Results *CodeCompleteResults) CodeCompleteGetDiagnostic(Index c.Uint) Diagnostic {
+// llgo:link (*CodeCompleteResults).Diagnostic C.clang_codeCompleteGetDiagnostic
+func (Results *CodeCompleteResults) Diagnostic(Index c.Uint) Diagnostic {
 	return 0
 }
 
@@ -6011,8 +6011,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetDiagnostic(Index c.Uint) Diag
 // \returns the kinds of completions that are appropriate for use
 // along with the given code completion results.
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetContexts C.clang_codeCompleteGetContexts
-func (Results *CodeCompleteResults) CodeCompleteGetContexts() c.UlongLong {
+// llgo:link (*CodeCompleteResults).Contexts C.clang_codeCompleteGetContexts
+func (Results *CodeCompleteResults) Contexts() c.UlongLong {
 	return 0
 }
 
@@ -6031,8 +6031,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetContexts() c.UlongLong {
 // \returns the container kind, or CXCursor_InvalidCode if there is not a
 // container
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetContainerKind C.clang_codeCompleteGetContainerKind
-func (Results *CodeCompleteResults) CodeCompleteGetContainerKind(IsIncomplete *c.Uint) CursorKind {
+// llgo:link (*CodeCompleteResults).ContainerKind C.clang_codeCompleteGetContainerKind
+func (Results *CodeCompleteResults) ContainerKind(IsIncomplete *c.Uint) CursorKind {
 	return 0
 }
 
@@ -6044,8 +6044,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetContainerKind(IsIncomplete *c
 //
 // \returns the USR for the container
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetContainerUSR C.clang_codeCompleteGetContainerUSR
-func (Results *CodeCompleteResults) CodeCompleteGetContainerUSR() String {
+// llgo:link (*CodeCompleteResults).ContainerUSR C.clang_codeCompleteGetContainerUSR
+func (Results *CodeCompleteResults) ContainerUSR() String {
 	return String{}
 }
 
@@ -6059,8 +6059,8 @@ func (Results *CodeCompleteResults) CodeCompleteGetContainerUSR() String {
 // \returns the selector (or partial selector) that has been entered thus far
 // for an Objective-C message send.
 //
-// llgo:link (*CodeCompleteResults).CodeCompleteGetObjCSelector C.clang_codeCompleteGetObjCSelector
-func (Results *CodeCompleteResults) CodeCompleteGetObjCSelector() String {
+// llgo:link (*CodeCompleteResults).ObjCSelector C.clang_codeCompleteGetObjCSelector
+func (Results *CodeCompleteResults) ObjCSelector() String {
 	return String{}
 }
 
