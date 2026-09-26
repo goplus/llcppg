@@ -17,6 +17,7 @@
 package clang
 
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/goplus/lib/c"
@@ -94,15 +95,27 @@ const (
 
 // ParseTranslationUnit parses the given source file and returns the translation unit corresponding
 // to that file.
-func (i Index) ParseTranslationUnit(options clang.TranslationUnit_Flags, filename string, args ...string) TranslationUnit {
+func (i Index) ParseTranslationUnit(options clang.TranslationUnit_Flags, filename string, args ...string) (ret TranslationUnit, err error) {
 	cArgs := make([]*c.Char, len(args))
 	for i, arg := range args {
 		cArgs[i] = c.AllocaCStr(arg)
 	}
-	return TranslationUnit{
-		TranslationUnit: i.Index.ParseTranslationUnit(
-			c.AllocaCStr(filename), unsafe.SliceData(cArgs), c.Int(len(cArgs)), nil, 0, c.Uint(options)),
+	e := i.Index.ParseTranslationUnit2(
+		c.AllocaCStr(filename), unsafe.SliceData(cArgs), c.Int(len(cArgs)), nil, 0, c.Uint(options), &ret.TranslationUnit)
+	if e != clang.Error_Success {
+		if uint(e) >= uint(len(errMsgs)) {
+			e = clang.Error_Failure
+		}
+		err = fmt.Errorf("parse %s failed: %s", filename, errMsgs[e])
 	}
+	return
+}
+
+var errMsgs = [...]string{
+	clang.Error_Failure:          "failed",
+	clang.Error_Crashed:          "crashed",
+	clang.Error_InvalidArguments: "invalid arguments",
+	clang.Error_ASTReadError:     "AST read error",
 }
 
 // -----------------------------------------------------------------------------
