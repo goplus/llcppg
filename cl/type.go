@@ -21,6 +21,7 @@ import (
 	"go/types"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -256,6 +257,14 @@ var tagStrvals = [...]string{
 	tagUnion:  "union ",
 	tagClass:  "class ",
 	tagEnum:   "enum ",
+}
+
+// remove type tag prefix, e.g. "struct Foo" => "Foo"
+func trimTypeTag(typCName string) string {
+	if pos := strings.LastIndex(typCName, " "); pos >= 0 {
+		typCName = typCName[pos+1:]
+	}
+	return typCName
 }
 
 // -----------------------------------------------------------------------------

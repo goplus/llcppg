@@ -21,7 +21,6 @@ import (
 	"go/types"
 	"log"
 	"strconv"
-	"strings"
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
@@ -95,11 +94,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 				if recvCType.Kind == lc.Type_Pointer {
 					recvCType = recvCType.Pointee()
 				}
-				typCName = clang.String(recvCType.Unqualified())
-				if pos := strings.LastIndex(typCName, " "); pos >= 0 {
-					// remove type tag prefix, e.g. "struct Foo" => "Foo"
-					typCName = typCName[pos+1:]
-				}
+				typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
 			}
 		}
 	} else {

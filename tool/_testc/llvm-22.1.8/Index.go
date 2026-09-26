@@ -3642,8 +3642,8 @@ func (_llcppg_param1 Cursor) TranslationUnit() TranslationUnit {
 
 // Creates an empty CXCursorSet.
 //
-//go:linkname CreateCXCursorSet C.clang_createCXCursorSet
-func CreateCXCursorSet() CursorSet
+//go:linkname CreateCursorSet C.clang_createCXCursorSet
+func CreateCursorSet() CursorSet
 
 // Disposes a CXCursorSet and releases its associated memory.
 //
