@@ -2898,8 +2898,8 @@ func (index Index) Dispose() {
 //
 // \sa clang_createIndex()
 //
-// llgo:link (*IndexOptions).CreateIndexWithOptions C.clang_createIndexWithOptions
-func (options *IndexOptions) CreateIndexWithOptions() Index {
+// llgo:link (*IndexOptions).CreateIndex C.clang_createIndexWithOptions
+func (options *IndexOptions) CreateIndex() Index {
 	return 0
 }
 
