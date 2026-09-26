@@ -5977,8 +5977,8 @@ func (TU *TranslationUnitImpl) CodeCompleteAt(complete_filename *c.Char, complet
 // \param Results The set of results to sort.
 // \param NumResults The number of results in \p Results.
 //
-// llgo:link (*CompletionResult).SortCodeCompletionResults C.clang_sortCodeCompletionResults
-func (Results *CompletionResult) SortCodeCompletionResults(NumResults c.Uint) {
+// llgo:link (*CompletionResult).Sort C.clang_sortCodeCompletionResults
+func (Results *CompletionResult) Sort(NumResults c.Uint) {
 }
 
 // Free the given set of code-completion results.
