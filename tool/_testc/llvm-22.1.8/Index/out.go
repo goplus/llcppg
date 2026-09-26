@@ -5727,8 +5727,8 @@ func (completion_string CompletionString) Chunk(chunk_number c.Uint) CompletionS
 
 // Retrieve the number of chunks in the given code-completion string.
 //
-// llgo:link CompletionString.NumCompletionChunks C.clang_getNumCompletionChunks
-func (completion_string CompletionString) NumCompletionChunks() c.Uint {
+// llgo:link CompletionString.NumChunks C.clang_getNumCompletionChunks
+func (completion_string CompletionString) NumChunks() c.Uint {
 	return 0
 }
 
