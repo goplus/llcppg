@@ -141,9 +141,10 @@ type Config struct {
 	// GenMultiGoFiles specifies whether to generate multiple Go files for each header file.
 	GenMultiGoFiles bool
 
-	// UseStdRecvName specifies whether to use the standard receiver name for methods. If true,
-	// the receiver name will be "this" for C++ methods and "self" for C methods. If false,
-	// the receiver name will be the first parameter name (optional).
+	// UseStdRecvName specifies whether to use a standard receiver name (self) for C functions
+	// converted to Go methods (optional). If false, the receiver name is taken from the first
+	// parameter name. This option does not affect C++ instance methods, whose receiver is
+	// always named this.
 	UseStdRecvName bool
 
 	// DontKeepDoc specifies whether to keep the documentation comments in the generated
