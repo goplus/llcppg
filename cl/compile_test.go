@@ -18,7 +18,6 @@ package cl_test
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -59,10 +58,9 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 }
 
 func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
+	idx := clang.CreateIndex(1, 1)
+	defer idx.Dispose()
 	cltest.TestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
-		idx := clang.CreateIndex(0, 0)
-		defer idx.Dispose()
-
 		pkgDir, _ = filepath.Abs(pkgDir)
 		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
 		srcFiles := conf.Files
@@ -71,16 +69,15 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		}
 
 		files := make([]cl.Source, len(srcFiles))
-		options := clang.DefaultDiagnosticDisplayOptions()
 		for i, srcFile := range srcFiles {
 			presumedFile := filepath.Join(pkgDir, srcFile)
-			u := idx.ParseTranslationUnit(
+			u, err := idx.ParseTranslationUnit(
 				clang.DetailedPreprocessingRecord, presumedFile, "-x", cltest.LanguageOf(lang))
+			if err != nil {
+				t.Fatal("ParseTranslationUnit failed:", err)
+			}
 			defer u.Dispose()
 			files[i] = u
-			u.VisitDiagnostics(func(diag clang.Diagnostic) {
-				fmt.Fprintln(os.Stderr, diag.Format(options))
-			})
 		}
 
 		const pkgPrefix = "testcl/"
