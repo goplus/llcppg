@@ -185,12 +185,16 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	if nameLookup == nil {
 		nameLookup = defaultNameLookup
 	}
+	rename := conf.Rename
+	if rename == nil {
+		rename = make(map[string]string)
+	}
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(), llgo: llgo,
 		fset: pkg.Fset, c: c, lang: conf.Language, keepDoc: !conf.DontKeepDoc,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, enumPrefix: conf.EnumPrefix,
 		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
-		ignores: conf.Ignore, rename: conf.Rename, classes: conf.Class, nonClasses: conf.NonClass,
+		ignores: conf.Ignore, rename: rename, classes: conf.Class, nonClasses: conf.NonClass,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]typeObj),

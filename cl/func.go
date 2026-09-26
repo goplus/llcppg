@@ -24,6 +24,7 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -81,26 +82,33 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 
 	var recv *types.Var
 	var typRecv *types.Named // if tryToMethod succeeded, this is the recv
-	var typName string
+	var typName, typCName string
 	var nameInPkg string
 	if cls == nil {
 		// TODO(xsw): llgo bugfix - to support method with callback
 		if ctx.lang == LanguageC && feats&featHasCallback == 0 {
 			// try to method for C global functions
 			params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
+			if typRecv != nil {
+				recvCType := fn.Argument(0).Type()
+				if recvCType.Kind == lc.Type_Pointer {
+					recvCType = recvCType.Pointee()
+				}
+				typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
+			}
 		}
 	} else {
 		typNamed := cls.typNamed
 		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
 		typName = typNamed.Obj().Name()
 	}
-	fnName := ctx.funcName(origName, obj.order(), typName, cls == nil, true)
+	fnName := ctx.funcName(origName, obj.order(), typName, typCName, cls == nil, true)
 	if recv == nil {
 		nameInPkg = fnName
 	} else {
 		if typRecv != nil {
 			if existMember(typRecv, fnName) {
-				newName := ctx.funcName(origName, obj.order(), "", true, true)
+				newName := ctx.funcName(origName, obj.order(), "", typCName, true, true)
 				log.Printf("==> member %s.%s already exists, rename to %s\n", typName, fnName, newName)
 				fnName = newName
 			}

@@ -198,10 +198,19 @@ func (p *pkgCtx) basicTyp(kind basicKind) types.Type {
 	return typ
 }
 
+func (p *pkgCtx) aliasTypeName(cName, goName string) {
+	cName = trimTypeTag(cName)
+	if _, ok := p.rename[cName]; !ok {
+		// insert alias name if not already present
+		p.rename[cName] = goName
+	}
+}
+
 func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named) {
 	cName := clang.String(decl.Type())
 	typObj := typeObj{typNamed.Obj(), 0}
 	p.types[cName] = typObj
+	p.aliasTypeName(cName, typObj.Name())
 
 	if debugCompileDecl {
 		log.Println("==> addType", cName, typObj.Name())
@@ -253,7 +262,7 @@ func (p *pkgCtx) macroName(name string) string {
 
 func (p *pkgCtx) typeName(name string, _ bool) string {
 	if v, ok := p.rename[name]; ok {
-		return v
+		return v // special case
 	}
 	return p.cstyleToGo(rmPrefix(name, p.typePrefix), true)
 }
@@ -262,9 +271,20 @@ func (p *pkgCtx) enumvalName(name string) string {
 	return p.cstyleToGo(rmPrefix(name, p.enumPrefix), true)
 }
 
-func (p *pkgCtx) funcName(name string, order int, typName string, global, _ bool) string {
+func (p *pkgCtx) funcName(name string, order int, typName, typCName string, global, _ bool) string {
+	if v, ok := p.rename[name]; ok {
+		return v // special case
+	}
 	if global {
 		name = rmPrefix(name, p.fnPrefix)
+		if typCName != "" {
+			// remove typCName prefix & suffix
+			if before, ok := strings.CutSuffix(name, typCName); ok {
+				name = strings.TrimSuffix(before, "_")
+			} else {
+				name = strings.TrimPrefix(name, typCName+"_")
+			}
+		}
 	} else {
 		// don't remove type name suffix for a method
 		typName = ""

@@ -2920,8 +2920,8 @@ func (options *IndexOptions) CreateIndexWithOptions() Index {
 //
 // \param options A bitmask of options, a bitwise OR of CXGlobalOpt_XXX flags.
 //
-// llgo:link Index.CXIndexSetGlobalOptions C.clang_CXIndex_setGlobalOptions
-func (_llcppg_param1 Index) CXIndexSetGlobalOptions(options c.Uint) {
+// llgo:link Index.SetGlobalOptions C.clang_CXIndex_setGlobalOptions
+func (_llcppg_param1 Index) SetGlobalOptions(options c.Uint) {
 }
 
 // Gets the general options associated with a CXIndex.
@@ -2932,8 +2932,8 @@ func (_llcppg_param1 Index) CXIndexSetGlobalOptions(options c.Uint) {
 // \returns A bitmask of options, a bitwise OR of CXGlobalOpt_XXX flags that
 // are associated with the given CXIndex object.
 //
-// llgo:link Index.CXIndexGetGlobalOptions C.clang_CXIndex_getGlobalOptions
-func (_llcppg_param1 Index) CXIndexGetGlobalOptions() c.Uint {
+// llgo:link Index.GlobalOptions C.clang_CXIndex_getGlobalOptions
+func (_llcppg_param1 Index) GlobalOptions() c.Uint {
 	return 0
 }
 
@@ -2946,8 +2946,8 @@ func (_llcppg_param1 Index) CXIndexGetGlobalOptions() c.Uint {
 // files for certain libclang invocations. A null value (default) implies that
 // libclang invocations are not logged..
 //
-// llgo:link Index.CXIndexSetInvocationEmissionPathOption C.clang_CXIndex_setInvocationEmissionPathOption
-func (_llcppg_param1 Index) CXIndexSetInvocationEmissionPathOption(Path *c.Char) {
+// llgo:link Index.SetInvocationEmissionPathOption C.clang_CXIndex_setInvocationEmissionPathOption
+func (_llcppg_param1 Index) SetInvocationEmissionPathOption(Path *c.Char) {
 }
 
 // Determine whether the given header is guarded against
@@ -3341,8 +3341,8 @@ func (TU *TranslationUnitImpl) CXTUResourceUsage() TUResourceUsage {
 	return TUResourceUsage{}
 }
 
-// llgo:link TUResourceUsage.DisposeCX C.clang_disposeCXTUResourceUsage
-func (usage TUResourceUsage) DisposeCX() {
+// llgo:link TUResourceUsage.Dispose C.clang_disposeCXTUResourceUsage
+func (usage TUResourceUsage) Dispose() {
 }
 
 // Get target information for this translation unit.
@@ -3588,8 +3588,8 @@ func (cursor Cursor) PlatformAvailability(always_deprecated *c.Int, deprecated_m
 
 // Free the memory associated with a \c CXPlatformAvailability structure.
 //
-// llgo:link (*PlatformAvailability).DisposeCX C.clang_disposeCXPlatformAvailability
-func (availability *PlatformAvailability) DisposeCX() {
+// llgo:link (*PlatformAvailability).Dispose C.clang_disposeCXPlatformAvailability
+func (availability *PlatformAvailability) Dispose() {
 }
 
 // If cursor refers to a variable declaration and it has initializer returns
@@ -3642,21 +3642,21 @@ func (_llcppg_param1 Cursor) TranslationUnit() TranslationUnit {
 
 // Creates an empty CXCursorSet.
 //
-//go:linkname CreateCXCursorSet C.clang_createCXCursorSet
-func CreateCXCursorSet() CursorSet
+//go:linkname CreateCursorSet C.clang_createCXCursorSet
+func CreateCursorSet() CursorSet
 
 // Disposes a CXCursorSet and releases its associated memory.
 //
-// llgo:link (*CursorSetImpl).DisposeCX C.clang_disposeCXCursorSet
-func (cset *CursorSetImpl) DisposeCX() {
+// llgo:link (*CursorSetImpl).Dispose C.clang_disposeCXCursorSet
+func (cset *CursorSetImpl) Dispose() {
 }
 
 // Queries a CXCursorSet to see if it contains a specific CXCursor.
 //
 // \returns non-zero if the set contains the specified cursor.
 //
-// llgo:link (*CursorSetImpl).CXCursorSetContains C.clang_CXCursorSet_contains
-func (cset *CursorSetImpl) CXCursorSetContains(cursor Cursor) c.Uint {
+// llgo:link (*CursorSetImpl).Contains C.clang_CXCursorSet_contains
+func (cset *CursorSetImpl) Contains(cursor Cursor) c.Uint {
 	return 0
 }
 
@@ -3664,8 +3664,8 @@ func (cset *CursorSetImpl) CXCursorSetContains(cursor Cursor) c.Uint {
 //
 // \returns zero if the CXCursor was already in the set, and non-zero otherwise.
 //
-// llgo:link (*CursorSetImpl).CXCursorSetInsert C.clang_CXCursorSet_insert
-func (cset *CursorSetImpl) CXCursorSetInsert(cursor Cursor) c.Uint {
+// llgo:link (*CursorSetImpl).Insert C.clang_CXCursorSet_insert
+func (cset *CursorSetImpl) Insert(cursor Cursor) c.Uint {
 	return 0
 }
 
