@@ -3328,8 +3328,8 @@ func (TU *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *
 // Returns the human-readable null-terminated C string that represents
 //  the name of the memory category.  This string should never be freed.
 //
-// llgo:link TUResourceUsageKind.TUResourceUsageName C.clang_getTUResourceUsageName
-func (kind TUResourceUsageKind) TUResourceUsageName() *c.Char {
+// llgo:link TUResourceUsageKind.Name C.clang_getTUResourceUsageName
+func (kind TUResourceUsageKind) Name() *c.Char {
 	return nil
 }
 
