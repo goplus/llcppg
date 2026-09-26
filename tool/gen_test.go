@@ -53,6 +53,9 @@ func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp an
 
 func testGenGo(t *testing.T, pkg *gogen.Package, dir, fname string, exp any) {
 	var b bytes.Buffer
+	if fname != "" && tool.GeneratedHeader != "" {
+		b.WriteString(tool.GeneratedHeader)
+	}
 	err := pkg.WriteTo(&b, fname)
 	if err != nil {
 		t.Fatal("gogen.WriteTo failed:", err)
