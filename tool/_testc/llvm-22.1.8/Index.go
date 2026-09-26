@@ -6458,15 +6458,15 @@ func GetRemappings(_llcppg_param1 *c.Char) Remapping
 //go:linkname GetRemappingsFromFileList C.clang_getRemappingsFromFileList
 func GetRemappingsFromFileList(_llcppg_param1 **c.Char, _llcppg_param2 c.Uint) Remapping
 
-// llgo:link Remapping.RemapGetNumFiles C.clang_remap_getNumFiles
-func (_llcppg_param1 Remapping) RemapGetNumFiles() c.Uint {
+// llgo:link Remapping.NumFiles C.clang_remap_getNumFiles
+func (_llcppg_param1 Remapping) NumFiles() c.Uint {
 	return 0
 }
 
-// llgo:link Remapping.RemapGetFilenames C.clang_remap_getFilenames
-func (_llcppg_param1 Remapping) RemapGetFilenames(_llcppg_param2 c.Uint, _llcppg_param3 *String, _llcppg_param4 *String) {
+// llgo:link Remapping.Filenames C.clang_remap_getFilenames
+func (_llcppg_param1 Remapping) Filenames(_llcppg_param2 c.Uint, _llcppg_param3 *String, _llcppg_param4 *String) {
 }
 
-// llgo:link Remapping.RemapDispose C.clang_remap_dispose
-func (_llcppg_param1 Remapping) RemapDispose() {
+// llgo:link Remapping.Dispose C.clang_remap_dispose
+func (_llcppg_param1 Remapping) Dispose() {
 }
