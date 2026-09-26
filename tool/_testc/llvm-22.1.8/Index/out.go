@@ -6357,8 +6357,8 @@ func (loc IdxLoc) FileLocation(indexFile *IdxClientFile, file *CXFile.File, line
 
 // Retrieve the CXSourceLocation represented by the given CXIdxLoc.
 //
-// llgo:link IdxLoc.CXSourceLocation C.clang_indexLoc_getCXSourceLocation
-func (loc IdxLoc) CXSourceLocation() CXSourceLocation.SourceLocation {
+// llgo:link IdxLoc.SourceLocation C.clang_indexLoc_getCXSourceLocation
+func (loc IdxLoc) SourceLocation() CXSourceLocation.SourceLocation {
 	return CXSourceLocation.SourceLocation{}
 }
 
