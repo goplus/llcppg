@@ -277,10 +277,13 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 	}
 	if global {
 		name = rmPrefix(name, p.fnPrefix)
-		if before, ok := strings.CutSuffix(name, typCName); ok {
-			name = strings.TrimSuffix(before, "_")
-		} else {
-			name = strings.TrimPrefix(name, typCName+"_")
+		if typCName != "" {
+			// remove typCName prefix & suffix
+			if before, ok := strings.CutSuffix(name, typCName); ok {
+				name = strings.TrimSuffix(before, "_")
+			} else {
+				name = strings.TrimPrefix(name, typCName+"_")
+			}
 		}
 	} else {
 		// don't remove type name suffix for a method
