@@ -180,8 +180,7 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			return
 		}
 
-		stdlibDir := pkgDir + "/cstdlib"
-		pkg, lang, err := conf.NewPackage("", pkgDir, stdlibDir, idx)
+		pkg, lang, err := conf.NewPackage("", pkgDir, idx)
 		if err != nil {
 			t.Error("conf.NewPackage:", err)
 			return
