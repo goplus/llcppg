@@ -67,6 +67,7 @@ type Config struct {
 	TypePrefix     []string          `json:"TypePrefix"` // type prefix to remove
 	TypeAbbr       map[string]string `json:"TypeAbbr"`   // Go type name to its abbreviated name, used in function names
 	Rename         map[string]string `json:"Rename"`     // renaming of C/C++ names to Go names
+	Ignore         []string          `json:"Ignore"`     // C/C++ names to ignore
 }
 
 // LoadConf loads the llcppg configuration.
@@ -177,6 +178,7 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 		TypePrefix:      cfg.TypePrefix,
 		TypeAbbr:        cfg.TypeAbbr,
 		Rename:          cfg.Rename,
+		Ignore:          cfg.Ignore,
 		DefaultGoFile:   "llcppg.i.go",
 		GenMultiGoFiles: true,
 		NameLookup:      nil,

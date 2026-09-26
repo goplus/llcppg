@@ -56,12 +56,17 @@ func newPointer(typ types.Type) types.Type {
 	return types.NewPointer(typ)
 }
 
+const (
+	featHasCallback = 1 << iota
+	featIgnored
+)
+
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
-	var hasCallback bool
-	return toTypeEx(ctx, pkg, typ, flags, &hasCallback)
+	var feats int
+	return toTypeEx(ctx, pkg, typ, flags, &feats)
 }
 
-func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallback *bool) types.Type {
+func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *int) types.Type {
 	switch typ.Kind {
 	case lc.Type_Void:
 		return tyVoid
@@ -96,16 +101,16 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 	case lc.Type_Pointer:
 		elem := typ.Pointee()
 		if elem.Kind == lc.Type_FunctionProto {
-			*hasCallback = true
-			return toFuncType(ctx, pkg, elem)
+			*feats |= featHasCallback
+			return toFuncType(ctx, pkg, elem, feats)
 		}
 		// flagIsParam only governs the outermost type of a parameter, so clear
 		// it before recursing so inner arrays are not wrongly decayed.
-		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, hasCallback)
+		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats)
 		return newPointer(pointee)
 	case lc.Type_FunctionProto:
-		*hasCallback = true
-		return toFuncType(ctx, pkg, typ)
+		*feats |= featHasCallback
+		return toFuncType(ctx, pkg, typ, feats)
 	case lc.Type_Enum:
 		cName := clang.String(typ)
 		if t, ok := ctx.typeOf(cName); ok {
@@ -114,8 +119,11 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 	case lc.Type_Record, lc.Type_Typedef:
 		cName := clang.String(typ.Declaration().Type())
 		if o, ok := ctx.types[cName]; ok {
-			if o.hasCallback {
-				*hasCallback = true
+			if o.feats != 0 {
+				*feats |= o.feats
+				if o.feats&featIgnored != 0 {
+					return types.Typ[types.Invalid] // ignored type
+				}
 			}
 			return o.Type()
 		}
@@ -133,7 +141,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 		// Decay applies only to the outermost array, so clear flagIsParam
 		// before recursing; otherwise a nested array like int matrix[3][4]
 		// would decay its inner [4] too, yielding **c.Int instead of *[4]c.Int.
-		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, hasCallback)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats)
 		if flags&flagIsParam != 0 {
 			return newPointer(elem)
 		}
@@ -141,7 +149,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 	case lc.Type_IncompleteArray, lc.Type_VariableArray:
 		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
 		// flagIsParam before recursing since decay applies only to this level.
-		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, hasCallback)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats)
 		return newPointer(elem)
 	case lc.Type_BlockPointer:
 		log.Println("==> toType: C blocks is unsupported, use void* as workaround")
@@ -152,9 +160,9 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 	panic("todo: toType " + clang.String(typ))
 }
 
-func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type) *types.Signature {
+func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int) *types.Signature {
 	params, variadic := toFuncParams(ctx, pkg, fn)
-	results := toFuncResults(ctx, pkg, fn.Result())
+	results := toFuncResults(ctx, pkg, fn.Result(), feats)
 	return types.NewSignatureType(nil, nil, nil, params, results, variadic)
 }
 
@@ -183,9 +191,9 @@ func newVariadicParam(pkg *types.Package) *types.Var {
 	return types.NewParam(token.NoPos, pkg, "__llgo_va_list", tyValist)
 }
 
-func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type) (results *types.Tuple) {
+func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type, feats *int) (results *types.Tuple) {
 	if retType.Kind != lc.Type_Void {
-		tyRet := toType(ctx, pkg, retType, flagRetType)
+		tyRet := toTypeEx(ctx, pkg, retType, flagRetType, feats)
 		results = types.NewTuple(types.NewParam(token.NoPos, pkg, "", tyRet))
 	}
 	return

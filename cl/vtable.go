@@ -177,14 +177,14 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 // receiver turned into an explicit leading "this" parameter.
 func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clang.Cursor) types.Type {
 	this := types.NewParam(token.NoPos, pkg, "this", recvPtr)
-	hasCallback := false
-	rest, variadic := newParams(ctx, pkg, fn, &hasCallback)
+	feats := 0
+	rest, variadic := newParams(ctx, pkg, fn, &feats)
 	params := make([]*types.Var, 0, 1+len(rest))
 	params = append(params, this)
 	for _, param := range rest {
 		params = append(params, param)
 	}
-	results := toFuncResults(ctx, pkg, fn.ResultType())
+	results := toFuncResults(ctx, pkg, fn.ResultType(), &feats)
 	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
 	return sig
 }

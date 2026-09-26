@@ -89,7 +89,7 @@ type compileUnit struct {
 
 type typeObj struct {
 	*types.TypeName
-	hasCallback bool
+	feats int
 }
 
 type pkgCtx struct {
@@ -114,6 +114,7 @@ type pkgCtx struct {
 	nonClasses []string          // typedef names to be treated as non-classes
 	typeAbbr   map[string]string // Go type name => abbreviated name, used in function names
 	rename     map[string]string // C/C++ name => Go name
+	ignores    []string          // C/C++ names to be ignored
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -199,7 +200,7 @@ func (p *pkgCtx) basicTyp(kind basicKind) types.Type {
 
 func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named) {
 	cName := clang.String(decl.Type())
-	typObj := typeObj{typNamed.Obj(), false}
+	typObj := typeObj{typNamed.Obj(), 0}
 	p.types[cName] = typObj
 
 	if debugCompileDecl {
@@ -227,6 +228,15 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 		return o.Type(), true
 	}
 	return nil, false
+}
+
+func (p *pkgCtx) isIgnored(cName string) bool {
+	for _, name := range p.ignores {
+		if name == cName {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *pkgCtx) fieldName(name string, public bool) string {
