@@ -22,7 +22,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -68,11 +67,6 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir, fname string, exp any) {
 
 func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile string, conf *tool.Config) {
 	myPkgName := headerFile[len(headerDir) : len(headerFile)-2]
-	if myPkgName == "Index" && runtime.GOOS != "darwin" {
-		log.Println("==> only test Index on macOS")
-		return
-	}
-
 	log.Println("============== testSingleFile: package", myPkgName, "==============")
 
 	lang, ok := conf.Lang()
@@ -169,11 +163,6 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 					testSingleFile(t, idx, pkgDir, headerDir, headerFile, &conf)
 				})
 			}
-			return
-		}
-
-		if runtime.GOOS != "darwin" {
-			log.Println("==> only test on macOS") // TODO(xsw): cross-platform
 			return
 		}
 
