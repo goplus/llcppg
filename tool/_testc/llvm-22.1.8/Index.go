@@ -2853,7 +2853,7 @@ func CreateIndex(excludeDeclarationsFromPCH c.Int, displayDiagnostics c.Int) Ind
 // within that index have been destroyed.
 //
 // llgo:link Index.Dispose C.clang_disposeIndex
-func (index Index) Dispose() {
+func (self Index) Dispose() {
 }
 
 // Provides a shared context for creating translation units.
@@ -2899,7 +2899,7 @@ func (index Index) Dispose() {
 // \sa clang_createIndex()
 //
 // llgo:link (*IndexOptions).CreateIndex C.clang_createIndexWithOptions
-func (options *IndexOptions) CreateIndex() Index {
+func (self *IndexOptions) CreateIndex() Index {
 	return 0
 }
 
@@ -2921,7 +2921,7 @@ func (options *IndexOptions) CreateIndex() Index {
 // \param options A bitmask of options, a bitwise OR of CXGlobalOpt_XXX flags.
 //
 // llgo:link Index.SetGlobalOptions C.clang_CXIndex_setGlobalOptions
-func (_llcppg_param1 Index) SetGlobalOptions(options c.Uint) {
+func (self Index) SetGlobalOptions(options c.Uint) {
 }
 
 // Gets the general options associated with a CXIndex.
@@ -2933,7 +2933,7 @@ func (_llcppg_param1 Index) SetGlobalOptions(options c.Uint) {
 // are associated with the given CXIndex object.
 //
 // llgo:link Index.GlobalOptions C.clang_CXIndex_getGlobalOptions
-func (_llcppg_param1 Index) GlobalOptions() c.Uint {
+func (self Index) GlobalOptions() c.Uint {
 	return 0
 }
 
@@ -2947,7 +2947,7 @@ func (_llcppg_param1 Index) GlobalOptions() c.Uint {
 // libclang invocations are not logged..
 //
 // llgo:link Index.SetInvocationEmissionPathOption C.clang_CXIndex_setInvocationEmissionPathOption
-func (_llcppg_param1 Index) SetInvocationEmissionPathOption(Path *c.Char) {
+func (self Index) SetInvocationEmissionPathOption(Path *c.Char) {
 }
 
 // Determine whether the given header is guarded against
@@ -2955,7 +2955,7 @@ func (_llcppg_param1 Index) SetInvocationEmissionPathOption(Path *c.Char) {
 // \#ifndef/\#define/\#endif macro guards or with \#pragma once.
 //
 // llgo:link (*TranslationUnitImpl).IsFileMultipleIncludeGuarded C.clang_isFileMultipleIncludeGuarded
-func (tu *TranslationUnitImpl) IsFileMultipleIncludeGuarded(file File) c.Uint {
+func (self *TranslationUnitImpl) IsFileMultipleIncludeGuarded(file File) c.Uint {
 	return 0
 }
 
@@ -2969,7 +2969,7 @@ func (tu *TranslationUnitImpl) IsFileMultipleIncludeGuarded(file File) c.Uint {
 // or a NULL file handle if the file was not a part of this translation unit.
 //
 // llgo:link (*TranslationUnitImpl).File C.clang_getFile
-func (tu *TranslationUnitImpl) File(file_name *c.Char) File {
+func (self *TranslationUnitImpl) File(file_name *c.Char) File {
 	return 0
 }
 
@@ -2985,7 +2985,7 @@ func (tu *TranslationUnitImpl) File(file_name *c.Char) File {
 // \p file, or a NULL pointer when the file is not loaded.
 //
 // llgo:link (*TranslationUnitImpl).FileContents C.clang_getFileContents
-func (tu *TranslationUnitImpl) FileContents(file File, size *c.SizeT) *c.Char {
+func (self *TranslationUnitImpl) FileContents(file File, size *c.SizeT) *c.Char {
 	return nil
 }
 
@@ -2993,7 +2993,7 @@ func (tu *TranslationUnitImpl) FileContents(file File, size *c.SizeT) *c.Char {
 // in a particular translation unit.
 //
 // llgo:link (*TranslationUnitImpl).Location C.clang_getLocation
-func (tu *TranslationUnitImpl) Location(file File, line c.Uint, column c.Uint) SourceLocation {
+func (self *TranslationUnitImpl) Location(file File, line c.Uint, column c.Uint) SourceLocation {
 	return SourceLocation{}
 }
 
@@ -3001,7 +3001,7 @@ func (tu *TranslationUnitImpl) Location(file File, line c.Uint, column c.Uint) S
 // in a particular translation unit.
 //
 // llgo:link (*TranslationUnitImpl).LocationForOffset C.clang_getLocationForOffset
-func (tu *TranslationUnitImpl) LocationForOffset(file File, offset c.Uint) SourceLocation {
+func (self *TranslationUnitImpl) LocationForOffset(file File, offset c.Uint) SourceLocation {
 	return SourceLocation{}
 }
 
@@ -3011,7 +3011,7 @@ func (tu *TranslationUnitImpl) LocationForOffset(file File, offset c.Uint) Sourc
 // if/ifdef/ifndef directive whose condition does not evaluate to true.
 //
 // llgo:link (*TranslationUnitImpl).SkippedRanges C.clang_getSkippedRanges
-func (tu *TranslationUnitImpl) SkippedRanges(file File) *SourceRangeList {
+func (self *TranslationUnitImpl) SkippedRanges(file File) *SourceRangeList {
 	return nil
 }
 
@@ -3022,7 +3022,7 @@ func (tu *TranslationUnitImpl) SkippedRanges(file File) *SourceRangeList {
 // if/ifdef/ifndef directive whose condition does not evaluate to true.
 //
 // llgo:link (*TranslationUnitImpl).AllSkippedRanges C.clang_getAllSkippedRanges
-func (tu *TranslationUnitImpl) AllSkippedRanges() *SourceRangeList {
+func (self *TranslationUnitImpl) AllSkippedRanges() *SourceRangeList {
 	return nil
 }
 
@@ -3030,7 +3030,7 @@ func (tu *TranslationUnitImpl) AllSkippedRanges() *SourceRangeList {
 // translation unit.
 //
 // llgo:link (*TranslationUnitImpl).NumDiagnostics C.clang_getNumDiagnostics
-func (Unit *TranslationUnitImpl) NumDiagnostics() c.Uint {
+func (self *TranslationUnitImpl) NumDiagnostics() c.Uint {
 	return 0
 }
 
@@ -3043,7 +3043,7 @@ func (Unit *TranslationUnitImpl) NumDiagnostics() c.Uint {
 // via a call to \c clang_disposeDiagnostic().
 //
 // llgo:link (*TranslationUnitImpl).Diagnostic C.clang_getDiagnostic
-func (Unit *TranslationUnitImpl) Diagnostic(Index c.Uint) Diagnostic {
+func (self *TranslationUnitImpl) Diagnostic(Index c.Uint) Diagnostic {
 	return 0
 }
 
@@ -3053,14 +3053,14 @@ func (Unit *TranslationUnitImpl) Diagnostic(Index c.Uint) Diagnostic {
 // \param Unit the translation unit to query.
 //
 // llgo:link (*TranslationUnitImpl).DiagnosticSetFromTU C.clang_getDiagnosticSetFromTU
-func (Unit *TranslationUnitImpl) DiagnosticSetFromTU() DiagnosticSet {
+func (self *TranslationUnitImpl) DiagnosticSetFromTU() DiagnosticSet {
 	return 0
 }
 
 // Get the original translation unit source file name.
 //
 // llgo:link (*TranslationUnitImpl).Spelling C.clang_getTranslationUnitSpelling
-func (CTUnit *TranslationUnitImpl) Spelling() String {
+func (self *TranslationUnitImpl) Spelling() String {
 	return String{}
 }
 
@@ -3104,7 +3104,7 @@ func (CTUnit *TranslationUnitImpl) Spelling() String {
 // guarantee their validity until the call to this function returns.
 //
 // llgo:link Index.CreateTranslationUnitFromSourceFile C.clang_createTranslationUnitFromSourceFile
-func (CIdx Index) CreateTranslationUnitFromSourceFile(source_filename *c.Char, num_clang_command_line_args c.Int, clang_command_line_args **c.Char, num_unsaved_files c.Uint, unsaved_files *UnsavedFile) TranslationUnit {
+func (self Index) CreateTranslationUnitFromSourceFile(source_filename *c.Char, num_clang_command_line_args c.Int, clang_command_line_args **c.Char, num_unsaved_files c.Uint, unsaved_files *UnsavedFile) TranslationUnit {
 	return nil
 }
 
@@ -3114,7 +3114,7 @@ func (CIdx Index) CreateTranslationUnitFromSourceFile(source_filename *c.Char, n
 // error codes.
 //
 // llgo:link Index.CreateTranslationUnit C.clang_createTranslationUnit
-func (CIdx Index) CreateTranslationUnit(ast_filename *c.Char) TranslationUnit {
+func (self Index) CreateTranslationUnit(ast_filename *c.Char) TranslationUnit {
 	return nil
 }
 
@@ -3126,7 +3126,7 @@ func (CIdx Index) CreateTranslationUnit(ast_filename *c.Char) TranslationUnit {
 // \returns Zero on success, otherwise returns an error code.
 //
 // llgo:link Index.CreateTranslationUnit2 C.clang_createTranslationUnit2
-func (CIdx Index) CreateTranslationUnit2(ast_filename *c.Char, out_TU *TranslationUnit) ErrorCode {
+func (self Index) CreateTranslationUnit2(ast_filename *c.Char, out_TU *TranslationUnit) ErrorCode {
 	return 0
 }
 
@@ -3150,7 +3150,7 @@ func DefaultEditingTranslationUnitOptions() c.Uint
 // error codes.
 //
 // llgo:link Index.ParseTranslationUnit C.clang_parseTranslationUnit
-func (CIdx Index) ParseTranslationUnit(source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint) TranslationUnit {
+func (self Index) ParseTranslationUnit(source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint) TranslationUnit {
 	return nil
 }
 
@@ -3198,7 +3198,7 @@ func (CIdx Index) ParseTranslationUnit(source_filename *c.Char, command_line_arg
 // \returns Zero on success, otherwise returns an error code.
 //
 // llgo:link Index.ParseTranslationUnit2 C.clang_parseTranslationUnit2
-func (CIdx Index) ParseTranslationUnit2(source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint, out_TU *TranslationUnit) ErrorCode {
+func (self Index) ParseTranslationUnit2(source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint, out_TU *TranslationUnit) ErrorCode {
 	return 0
 }
 
@@ -3207,7 +3207,7 @@ func (CIdx Index) ParseTranslationUnit2(source_filename *c.Char, command_line_ar
 // library paths are relative to the binary.
 //
 // llgo:link Index.ParseTranslationUnit2FullArgv C.clang_parseTranslationUnit2FullArgv
-func (CIdx Index) ParseTranslationUnit2FullArgv(source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint, out_TU *TranslationUnit) ErrorCode {
+func (self Index) ParseTranslationUnit2FullArgv(source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint, out_TU *TranslationUnit) ErrorCode {
 	return 0
 }
 
@@ -3220,7 +3220,7 @@ func (CIdx Index) ParseTranslationUnit2FullArgv(source_filename *c.Char, command
 // the most commonly-requested data.
 //
 // llgo:link (*TranslationUnitImpl).DefaultSaveOptions C.clang_defaultSaveOptions
-func (TU *TranslationUnitImpl) DefaultSaveOptions() c.Uint {
+func (self *TranslationUnitImpl) DefaultSaveOptions() c.Uint {
 	return 0
 }
 
@@ -3247,7 +3247,7 @@ func (TU *TranslationUnitImpl) DefaultSaveOptions() c.Uint {
 // saved successfully, while a non-zero value indicates that a problem occurred.
 //
 // llgo:link (*TranslationUnitImpl).Save C.clang_saveTranslationUnit
-func (TU *TranslationUnitImpl) Save(FileName *c.Char, options c.Uint) c.Int {
+func (self *TranslationUnitImpl) Save(FileName *c.Char, options c.Uint) c.Int {
 	return 0
 }
 
@@ -3258,14 +3258,14 @@ func (TU *TranslationUnitImpl) Save(FileName *c.Char, options c.Uint) c.Int {
 // to resume it or \c clang_disposeTranslationUnit to dispose it completely.
 //
 // llgo:link (*TranslationUnitImpl).Suspend C.clang_suspendTranslationUnit
-func (_llcppg_param1 *TranslationUnitImpl) Suspend() c.Uint {
+func (self *TranslationUnitImpl) Suspend() c.Uint {
 	return 0
 }
 
 // Destroy the specified CXTranslationUnit object.
 //
 // llgo:link (*TranslationUnitImpl).Dispose C.clang_disposeTranslationUnit
-func (_llcppg_param1 *TranslationUnitImpl) Dispose() {
+func (self *TranslationUnitImpl) Dispose() {
 }
 
 // Returns the set of flags that is suitable for reparsing a translation
@@ -3278,7 +3278,7 @@ func (_llcppg_param1 *TranslationUnitImpl) Dispose() {
 // to the next.
 //
 // llgo:link (*TranslationUnitImpl).DefaultReparseOptions C.clang_defaultReparseOptions
-func (TU *TranslationUnitImpl) DefaultReparseOptions() c.Uint {
+func (self *TranslationUnitImpl) DefaultReparseOptions() c.Uint {
 	return 0
 }
 
@@ -3321,7 +3321,7 @@ func (TU *TranslationUnitImpl) DefaultReparseOptions() c.Uint {
 // routine are described by the \c CXErrorCode enum.
 //
 // llgo:link (*TranslationUnitImpl).Reparse C.clang_reparseTranslationUnit
-func (TU *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *UnsavedFile, options c.Uint) c.Int {
+func (self *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *UnsavedFile, options c.Uint) c.Int {
 	return 0
 }
 
@@ -3329,7 +3329,7 @@ func (TU *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *
 //  the name of the memory category.  This string should never be freed.
 //
 // llgo:link TUResourceUsageKind.Name C.clang_getTUResourceUsageName
-func (kind TUResourceUsageKind) Name() *c.Char {
+func (self TUResourceUsageKind) Name() *c.Char {
 	return nil
 }
 
@@ -3337,12 +3337,12 @@ func (kind TUResourceUsageKind) Name() *c.Char {
 //  should be released with clang_disposeCXTUResourceUsage().
 //
 // llgo:link (*TranslationUnitImpl).ResourceUsage C.clang_getCXTUResourceUsage
-func (TU *TranslationUnitImpl) ResourceUsage() TUResourceUsage {
+func (self *TranslationUnitImpl) ResourceUsage() TUResourceUsage {
 	return TUResourceUsage{}
 }
 
 // llgo:link TUResourceUsage.Dispose C.clang_disposeCXTUResourceUsage
-func (usage TUResourceUsage) Dispose() {
+func (self TUResourceUsage) Dispose() {
 }
 
 // Get target information for this translation unit.
@@ -3350,14 +3350,14 @@ func (usage TUResourceUsage) Dispose() {
 // The CXTargetInfo object cannot outlive the CXTranslationUnit object.
 //
 // llgo:link (*TranslationUnitImpl).TargetInfo C.clang_getTranslationUnitTargetInfo
-func (CTUnit *TranslationUnitImpl) TargetInfo() TargetInfo {
+func (self *TranslationUnitImpl) TargetInfo() TargetInfo {
 	return nil
 }
 
 // Destroy the CXTargetInfo object.
 //
 // llgo:link (*TargetInfoImpl).Dispose C.clang_TargetInfo_dispose
-func (Info *TargetInfoImpl) Dispose() {
+func (self *TargetInfoImpl) Dispose() {
 }
 
 // Get the normalized target triple as a string.
@@ -3365,7 +3365,7 @@ func (Info *TargetInfoImpl) Dispose() {
 // Returns the empty string in case of any error.
 //
 // llgo:link (*TargetInfoImpl).Triple C.clang_TargetInfo_getTriple
-func (Info *TargetInfoImpl) Triple() String {
+func (self *TargetInfoImpl) Triple() String {
 	return String{}
 }
 
@@ -3374,7 +3374,7 @@ func (Info *TargetInfoImpl) Triple() String {
 // Returns -1 in case of error.
 //
 // llgo:link (*TargetInfoImpl).PointerWidth C.clang_TargetInfo_getPointerWidth
-func (Info *TargetInfoImpl) PointerWidth() c.Int {
+func (self *TargetInfoImpl) PointerWidth() c.Int {
 	return 0
 }
 
@@ -3389,7 +3389,7 @@ func GetNullCursor() Cursor
 // various declarations within the given translation unit.
 //
 // llgo:link (*TranslationUnitImpl).Cursor C.clang_getTranslationUnitCursor
-func (_llcppg_param1 *TranslationUnitImpl) Cursor() Cursor {
+func (self *TranslationUnitImpl) Cursor() Cursor {
 	return Cursor{}
 }
 
@@ -3401,28 +3401,28 @@ func EqualCursors(_llcppg_param1 Cursor, _llcppg_param2 Cursor) c.Uint
 // Returns non-zero if \p cursor is null.
 //
 // llgo:link Cursor.IsNull C.clang_Cursor_isNull
-func (cursor Cursor) IsNull() c.Int {
+func (self Cursor) IsNull() c.Int {
 	return 0
 }
 
 // Compute a hash value for the given cursor.
 //
 // llgo:link Cursor.Hash C.clang_hashCursor
-func (_llcppg_param1 Cursor) Hash() c.Uint {
+func (self Cursor) Hash() c.Uint {
 	return 0
 }
 
 // Retrieve the kind of the given cursor.
 //
 // llgo:link Cursor.GetCursorKind C.clang_getCursorKind
-func (_llcppg_param1 Cursor) GetCursorKind() CursorKind {
+func (self Cursor) GetCursorKind() CursorKind {
 	return 0
 }
 
 // Determine whether the given cursor kind represents a declaration.
 //
 // llgo:link CursorKind.IsDeclaration C.clang_isDeclaration
-func (_llcppg_param1 CursorKind) IsDeclaration() c.Uint {
+func (self CursorKind) IsDeclaration() c.Uint {
 	return 0
 }
 
@@ -3434,7 +3434,7 @@ func (_llcppg_param1 CursorKind) IsDeclaration() c.Uint {
 // invalid, otherwise NULL.
 //
 // llgo:link Cursor.IsInvalidDeclaration C.clang_isInvalidDeclaration
-func (_llcppg_param1 Cursor) IsInvalidDeclaration() c.Uint {
+func (self Cursor) IsInvalidDeclaration() c.Uint {
 	return 0
 }
 
@@ -3446,35 +3446,35 @@ func (_llcppg_param1 Cursor) IsInvalidDeclaration() c.Uint {
 // particular cursor refers to another entity.
 //
 // llgo:link CursorKind.IsReference C.clang_isReference
-func (_llcppg_param1 CursorKind) IsReference() c.Uint {
+func (self CursorKind) IsReference() c.Uint {
 	return 0
 }
 
 // Determine whether the given cursor kind represents an expression.
 //
 // llgo:link CursorKind.IsExpression C.clang_isExpression
-func (_llcppg_param1 CursorKind) IsExpression() c.Uint {
+func (self CursorKind) IsExpression() c.Uint {
 	return 0
 }
 
 // Determine whether the given cursor kind represents a statement.
 //
 // llgo:link CursorKind.IsStatement C.clang_isStatement
-func (_llcppg_param1 CursorKind) IsStatement() c.Uint {
+func (self CursorKind) IsStatement() c.Uint {
 	return 0
 }
 
 // Determine whether the given cursor kind represents an attribute.
 //
 // llgo:link CursorKind.IsAttribute C.clang_isAttribute
-func (_llcppg_param1 CursorKind) IsAttribute() c.Uint {
+func (self CursorKind) IsAttribute() c.Uint {
 	return 0
 }
 
 // Determine whether the given cursor has any attributes.
 //
 // llgo:link Cursor.HasAttrs C.clang_Cursor_hasAttrs
-func (C Cursor) HasAttrs() c.Uint {
+func (self Cursor) HasAttrs() c.Uint {
 	return 0
 }
 
@@ -3482,7 +3482,7 @@ func (C Cursor) HasAttrs() c.Uint {
 // cursor.
 //
 // llgo:link CursorKind.IsInvalid C.clang_isInvalid
-func (_llcppg_param1 CursorKind) IsInvalid() c.Uint {
+func (self CursorKind) IsInvalid() c.Uint {
 	return 0
 }
 
@@ -3490,7 +3490,7 @@ func (_llcppg_param1 CursorKind) IsInvalid() c.Uint {
 // unit.
 //
 // llgo:link CursorKind.IsTranslationUnit C.clang_isTranslationUnit
-func (_llcppg_param1 CursorKind) IsTranslationUnit() c.Uint {
+func (self CursorKind) IsTranslationUnit() c.Uint {
 	return 0
 }
 
@@ -3499,7 +3499,7 @@ func (_llcppg_param1 CursorKind) IsTranslationUnit() c.Uint {
 // element, such as a preprocessor directive or macro instantiation.
 //
 // llgo:link CursorKind.IsPreprocessing C.clang_isPreprocessing
-func (_llcppg_param1 CursorKind) IsPreprocessing() c.Uint {
+func (self CursorKind) IsPreprocessing() c.Uint {
 	return 0
 }
 
@@ -3508,14 +3508,14 @@ func (_llcppg_param1 CursorKind) IsPreprocessing() c.Uint {
 //  unexposed piece of the AST (e.g., CXCursor_UnexposedStmt).
 //
 // llgo:link CursorKind.IsUnexposed C.clang_isUnexposed
-func (_llcppg_param1 CursorKind) IsUnexposed() c.Uint {
+func (self CursorKind) IsUnexposed() c.Uint {
 	return 0
 }
 
 // Determine the linkage of the entity referred to by a given cursor.
 //
 // llgo:link Cursor.Linkage C.clang_getCursorLinkage
-func (cursor Cursor) Linkage() LinkageKind {
+func (self Cursor) Linkage() LinkageKind {
 	return 0
 }
 
@@ -3530,7 +3530,7 @@ func (cursor Cursor) Linkage() LinkageKind {
 // \returns The visibility of the cursor.
 //
 // llgo:link Cursor.Visibility C.clang_getCursorVisibility
-func (cursor Cursor) Visibility() VisibilityKind {
+func (self Cursor) Visibility() VisibilityKind {
 	return 0
 }
 
@@ -3542,7 +3542,7 @@ func (cursor Cursor) Visibility() VisibilityKind {
 // \returns The availability of the cursor.
 //
 // llgo:link Cursor.Availability C.clang_getCursorAvailability
-func (cursor Cursor) Availability() AvailabilityKind {
+func (self Cursor) Availability() AvailabilityKind {
 	return 0
 }
 
@@ -3582,22 +3582,22 @@ func (cursor Cursor) Availability() AvailabilityKind {
 // \c min(N, availability_size) such structures.
 //
 // llgo:link Cursor.PlatformAvailability C.clang_getCursorPlatformAvailability
-func (cursor Cursor) PlatformAvailability(always_deprecated *c.Int, deprecated_message *String, always_unavailable *c.Int, unavailable_message *String, availability *PlatformAvailability, availability_size c.Int) c.Int {
+func (self Cursor) PlatformAvailability(always_deprecated *c.Int, deprecated_message *String, always_unavailable *c.Int, unavailable_message *String, availability *PlatformAvailability, availability_size c.Int) c.Int {
 	return 0
 }
 
 // Free the memory associated with a \c CXPlatformAvailability structure.
 //
 // llgo:link (*PlatformAvailability).Dispose C.clang_disposeCXPlatformAvailability
-func (availability *PlatformAvailability) Dispose() {
+func (self *PlatformAvailability) Dispose() {
 }
 
 // If cursor refers to a variable declaration and it has initializer returns
 // cursor referring to the initializer otherwise return null cursor.
 //
 // llgo:link Cursor.VarDeclInitializer C.clang_Cursor_getVarDeclInitializer
-func (cursor Cursor) VarDeclInitializer() Cursor {
-	return cursor
+func (self Cursor) VarDeclInitializer() Cursor {
+	return self
 }
 
 // If cursor refers to a variable declaration that has global storage returns 1.
@@ -3605,7 +3605,7 @@ func (cursor Cursor) VarDeclInitializer() Cursor {
 // returns 0. Otherwise returns -1.
 //
 // llgo:link Cursor.HasVarDeclGlobalStorage C.clang_Cursor_hasVarDeclGlobalStorage
-func (cursor Cursor) HasVarDeclGlobalStorage() c.Int {
+func (self Cursor) HasVarDeclGlobalStorage() c.Int {
 	return 0
 }
 
@@ -3614,14 +3614,14 @@ func (cursor Cursor) HasVarDeclGlobalStorage() c.Int {
 // external storage returns 0. Otherwise returns -1.
 //
 // llgo:link Cursor.HasVarDeclExternalStorage C.clang_Cursor_hasVarDeclExternalStorage
-func (cursor Cursor) HasVarDeclExternalStorage() c.Int {
+func (self Cursor) HasVarDeclExternalStorage() c.Int {
 	return 0
 }
 
 // Determine the "language" of the entity referred to by a given cursor.
 //
 // llgo:link Cursor.Language C.clang_getCursorLanguage
-func (cursor Cursor) Language() LanguageKind {
+func (self Cursor) Language() LanguageKind {
 	return 0
 }
 
@@ -3629,14 +3629,14 @@ func (cursor Cursor) Language() LanguageKind {
 // referred to by a cursor.
 //
 // llgo:link Cursor.TLSKind C.clang_getCursorTLSKind
-func (cursor Cursor) TLSKind() TLSKind {
+func (self Cursor) TLSKind() TLSKind {
 	return 0
 }
 
 // Returns the translation unit that a cursor originated from.
 //
 // llgo:link Cursor.TranslationUnit C.clang_Cursor_getTranslationUnit
-func (_llcppg_param1 Cursor) TranslationUnit() TranslationUnit {
+func (self Cursor) TranslationUnit() TranslationUnit {
 	return nil
 }
 
@@ -3648,7 +3648,7 @@ func CreateCursorSet() CursorSet
 // Disposes a CXCursorSet and releases its associated memory.
 //
 // llgo:link (*CursorSetImpl).Dispose C.clang_disposeCXCursorSet
-func (cset *CursorSetImpl) Dispose() {
+func (self *CursorSetImpl) Dispose() {
 }
 
 // Queries a CXCursorSet to see if it contains a specific CXCursor.
@@ -3656,7 +3656,7 @@ func (cset *CursorSetImpl) Dispose() {
 // \returns non-zero if the set contains the specified cursor.
 //
 // llgo:link (*CursorSetImpl).Contains C.clang_CXCursorSet_contains
-func (cset *CursorSetImpl) Contains(cursor Cursor) c.Uint {
+func (self *CursorSetImpl) Contains(cursor Cursor) c.Uint {
 	return 0
 }
 
@@ -3665,7 +3665,7 @@ func (cset *CursorSetImpl) Contains(cursor Cursor) c.Uint {
 // \returns zero if the CXCursor was already in the set, and non-zero otherwise.
 //
 // llgo:link (*CursorSetImpl).Insert C.clang_CXCursorSet_insert
-func (cset *CursorSetImpl) Insert(cursor Cursor) c.Uint {
+func (self *CursorSetImpl) Insert(cursor Cursor) c.Uint {
 	return 0
 }
 
@@ -3702,8 +3702,8 @@ func (cset *CursorSetImpl) Insert(cursor Cursor) c.Uint {
 // For global declarations, the semantic parent is the translation unit.
 //
 // llgo:link Cursor.SemanticParent C.clang_getCursorSemanticParent
-func (cursor Cursor) SemanticParent() Cursor {
-	return cursor
+func (self Cursor) SemanticParent() Cursor {
+	return self
 }
 
 // Determine the lexical parent of the given cursor.
@@ -3740,8 +3740,8 @@ func (cursor Cursor) SemanticParent() Cursor {
 // the translation unit.
 //
 // llgo:link Cursor.LexicalParent C.clang_getCursorLexicalParent
-func (cursor Cursor) LexicalParent() Cursor {
-	return cursor
+func (self Cursor) LexicalParent() Cursor {
+	return self
 }
 
 // Determine the set of methods that are overridden by the given
@@ -3787,21 +3787,21 @@ func (cursor Cursor) LexicalParent() Cursor {
 // array pointed to by \p overridden.
 //
 // llgo:link Cursor.OverriddenCursors C.clang_getOverriddenCursors
-func (cursor Cursor) OverriddenCursors(overridden **Cursor, num_overridden *c.Uint) {
+func (self Cursor) OverriddenCursors(overridden **Cursor, num_overridden *c.Uint) {
 }
 
 // Free the set of overridden cursors returned by \c
 // clang_getOverriddenCursors().
 //
 // llgo:link (*Cursor).DisposeOverriddenCursors C.clang_disposeOverriddenCursors
-func (overridden *Cursor) DisposeOverriddenCursors() {
+func (self *Cursor) DisposeOverriddenCursors() {
 }
 
 // Retrieve the file that is included by the given inclusion directive
 // cursor.
 //
 // llgo:link Cursor.IncludedFile C.clang_getIncludedFile
-func (cursor Cursor) IncludedFile() File {
+func (self Cursor) IncludedFile() File {
 	return 0
 }
 
@@ -3820,7 +3820,7 @@ func (cursor Cursor) IncludedFile() File {
 // a NULL cursor if no such entity can be found.
 //
 // llgo:link (*TranslationUnitImpl).GetCursor C.clang_getCursor
-func (_llcppg_param1 *TranslationUnitImpl) GetCursor(_llcppg_param2 SourceLocation) Cursor {
+func (self *TranslationUnitImpl) GetCursor(_llcppg_param2 SourceLocation) Cursor {
 	return Cursor{}
 }
 
@@ -3834,7 +3834,7 @@ func (_llcppg_param1 *TranslationUnitImpl) GetCursor(_llcppg_param2 SourceLocati
 // source code.
 //
 // llgo:link Cursor.Location C.clang_getCursorLocation
-func (_llcppg_param1 Cursor) Location() SourceLocation {
+func (self Cursor) Location() SourceLocation {
 	return SourceLocation{}
 }
 
@@ -3849,14 +3849,14 @@ func (_llcppg_param1 Cursor) Location() SourceLocation {
 // entity was actually used).
 //
 // llgo:link Cursor.Extent C.clang_getCursorExtent
-func (_llcppg_param1 Cursor) Extent() SourceRange {
+func (self Cursor) Extent() SourceRange {
 	return SourceRange{}
 }
 
 // Retrieve the type of a CXCursor (if any).
 //
 // llgo:link Cursor.Type C.clang_getCursorType
-func (C Cursor) Type() Type {
+func (self Cursor) Type() Type {
 	return Type{}
 }
 
@@ -3866,7 +3866,7 @@ func (C Cursor) Type() Type {
 // If the type is invalid, an empty string is returned.
 //
 // llgo:link Type.Spelling C.clang_getTypeSpelling
-func (CT Type) Spelling() String {
+func (self Type) Spelling() String {
 	return String{}
 }
 
@@ -3876,7 +3876,7 @@ func (CT Type) Spelling() String {
 // returned.
 //
 // llgo:link Cursor.TypedefDeclUnderlyingType C.clang_getTypedefDeclUnderlyingType
-func (C Cursor) TypedefDeclUnderlyingType() Type {
+func (self Cursor) TypedefDeclUnderlyingType() Type {
 	return Type{}
 }
 
@@ -3886,7 +3886,7 @@ func (C Cursor) TypedefDeclUnderlyingType() Type {
 // returned.
 //
 // llgo:link Cursor.EnumDeclIntegerType C.clang_getEnumDeclIntegerType
-func (C Cursor) EnumDeclIntegerType() Type {
+func (self Cursor) EnumDeclIntegerType() Type {
 	return Type{}
 }
 
@@ -3898,7 +3898,7 @@ func (C Cursor) EnumDeclIntegerType() Type {
 // the cursor must be verified before calling this function.
 //
 // llgo:link Cursor.EnumConstantDeclValue C.clang_getEnumConstantDeclValue
-func (C Cursor) EnumConstantDeclValue() c.LongLong {
+func (self Cursor) EnumConstantDeclValue() c.LongLong {
 	return 0
 }
 
@@ -3910,14 +3910,14 @@ func (C Cursor) EnumConstantDeclValue() c.LongLong {
 // the cursor must be verified before calling this function.
 //
 // llgo:link Cursor.EnumConstantDeclUnsignedValue C.clang_getEnumConstantDeclUnsignedValue
-func (C Cursor) EnumConstantDeclUnsignedValue() c.UlongLong {
+func (self Cursor) EnumConstantDeclUnsignedValue() c.UlongLong {
 	return 0
 }
 
 // Returns non-zero if the cursor specifies a Record member that is a bit-field.
 //
 // llgo:link Cursor.IsBitField C.clang_Cursor_isBitField
-func (C Cursor) IsBitField() c.Uint {
+func (self Cursor) IsBitField() c.Uint {
 	return 0
 }
 
@@ -3937,7 +3937,7 @@ func (C Cursor) IsBitField() c.Uint {
 // \endcode
 //
 // llgo:link Cursor.FieldDeclBitWidth C.clang_getFieldDeclBitWidth
-func (C Cursor) FieldDeclBitWidth() c.Int {
+func (self Cursor) FieldDeclBitWidth() c.Int {
 	return 0
 }
 
@@ -3948,7 +3948,7 @@ func (C Cursor) FieldDeclBitWidth() c.Int {
 // declarations of functions or methods. For other cursors -1 is returned.
 //
 // llgo:link Cursor.NumArguments C.clang_Cursor_getNumArguments
-func (C Cursor) NumArguments() c.Int {
+func (self Cursor) NumArguments() c.Int {
 	return 0
 }
 
@@ -3959,8 +3959,8 @@ func (C Cursor) NumArguments() c.Int {
 // invalid cursor is returned.
 //
 // llgo:link Cursor.Argument C.clang_Cursor_getArgument
-func (C Cursor) Argument(i c.Uint) Cursor {
-	return C
+func (self Cursor) Argument(i c.Uint) Cursor {
+	return self
 }
 
 // Returns the number of template args of a function, struct, or class decl
@@ -3979,7 +3979,7 @@ func (C Cursor) Argument(i c.Uint) Cursor {
 // The value 3 would be returned from this call.
 //
 // llgo:link Cursor.NumTemplateArguments C.clang_Cursor_getNumTemplateArguments
-func (C Cursor) NumTemplateArguments() c.Int {
+func (self Cursor) NumTemplateArguments() c.Int {
 	return 0
 }
 
@@ -4000,7 +4000,7 @@ func (C Cursor) NumTemplateArguments() c.Int {
 // respectively.
 //
 // llgo:link Cursor.TemplateArgumentKind C.clang_Cursor_getTemplateArgumentKind
-func (C Cursor) TemplateArgumentKind(I c.Uint) TemplateArgumentKind {
+func (self Cursor) TemplateArgumentKind(I c.Uint) TemplateArgumentKind {
 	return 0
 }
 
@@ -4022,7 +4022,7 @@ func (C Cursor) TemplateArgumentKind(I c.Uint) TemplateArgumentKind {
 // Invalid types will be returned for I == 1 or 2.
 //
 // llgo:link Cursor.TemplateArgumentType C.clang_Cursor_getTemplateArgumentType
-func (C Cursor) TemplateArgumentType(I c.Uint) Type {
+func (self Cursor) TemplateArgumentType(I c.Uint) Type {
 	return Type{}
 }
 
@@ -4044,7 +4044,7 @@ func (C Cursor) TemplateArgumentType(I c.Uint) Type {
 // For I == 0, this function's behavior is undefined.
 //
 // llgo:link Cursor.TemplateArgumentValue C.clang_Cursor_getTemplateArgumentValue
-func (C Cursor) TemplateArgumentValue(I c.Uint) c.LongLong {
+func (self Cursor) TemplateArgumentValue(I c.Uint) c.LongLong {
 	return 0
 }
 
@@ -4066,7 +4066,7 @@ func (C Cursor) TemplateArgumentValue(I c.Uint) c.LongLong {
 // For I == 0, this function's behavior is undefined.
 //
 // llgo:link Cursor.TemplateArgumentUnsignedValue C.clang_Cursor_getTemplateArgumentUnsignedValue
-func (C Cursor) TemplateArgumentUnsignedValue(I c.Uint) c.UlongLong {
+func (self Cursor) TemplateArgumentUnsignedValue(I c.Uint) c.UlongLong {
 	return 0
 }
 
@@ -4086,8 +4086,8 @@ func EqualTypes(A Type, B Type) c.Uint
 // for 'int', the canonical type for 'T' would be 'int'.
 //
 // llgo:link Type.Canonical C.clang_getCanonicalType
-func (T Type) Canonical() Type {
-	return T
+func (self Type) Canonical() Type {
+	return self
 }
 
 // Determine whether a CXType has the "const" qualifier set,
@@ -4095,7 +4095,7 @@ func (T Type) Canonical() Type {
 // different level.
 //
 // llgo:link Type.IsConstQualified C.clang_isConstQualifiedType
-func (T Type) IsConstQualified() c.Uint {
+func (self Type) IsConstQualified() c.Uint {
 	return 0
 }
 
@@ -4103,7 +4103,7 @@ func (T Type) IsConstQualified() c.Uint {
 // function like.
 //
 // llgo:link Cursor.IsMacroFunctionLike C.clang_Cursor_isMacroFunctionLike
-func (C Cursor) IsMacroFunctionLike() c.Uint {
+func (self Cursor) IsMacroFunctionLike() c.Uint {
 	return 0
 }
 
@@ -4111,7 +4111,7 @@ func (C Cursor) IsMacroFunctionLike() c.Uint {
 // builtin one.
 //
 // llgo:link Cursor.IsMacroBuiltin C.clang_Cursor_isMacroBuiltin
-func (C Cursor) IsMacroBuiltin() c.Uint {
+func (self Cursor) IsMacroBuiltin() c.Uint {
 	return 0
 }
 
@@ -4119,7 +4119,7 @@ func (C Cursor) IsMacroBuiltin() c.Uint {
 // inline declaration.
 //
 // llgo:link Cursor.IsFunctionInlined C.clang_Cursor_isFunctionInlined
-func (C Cursor) IsFunctionInlined() c.Uint {
+func (self Cursor) IsFunctionInlined() c.Uint {
 	return 0
 }
 
@@ -4128,7 +4128,7 @@ func (C Cursor) IsFunctionInlined() c.Uint {
 // a different level.
 //
 // llgo:link Type.IsVolatileQualified C.clang_isVolatileQualifiedType
-func (T Type) IsVolatileQualified() c.Uint {
+func (self Type) IsVolatileQualified() c.Uint {
 	return 0
 }
 
@@ -4137,29 +4137,29 @@ func (T Type) IsVolatileQualified() c.Uint {
 // different level.
 //
 // llgo:link Type.IsRestrictQualified C.clang_isRestrictQualifiedType
-func (T Type) IsRestrictQualified() c.Uint {
+func (self Type) IsRestrictQualified() c.Uint {
 	return 0
 }
 
 // Returns the address space of the given type.
 //
 // llgo:link Type.AddressSpace C.clang_getAddressSpace
-func (T Type) AddressSpace() c.Uint {
+func (self Type) AddressSpace() c.Uint {
 	return 0
 }
 
 // Returns the typedef name of the given type.
 //
 // llgo:link Type.TypedefName C.clang_getTypedefName
-func (CT Type) TypedefName() String {
+func (self Type) TypedefName() String {
 	return String{}
 }
 
 // For pointer types, returns the type of the pointee.
 //
 // llgo:link Type.Pointee C.clang_getPointeeType
-func (T Type) Pointee() Type {
-	return T
+func (self Type) Pointee() Type {
+	return self
 }
 
 // Retrieve the unqualified variant of the given type, removing as
@@ -4197,8 +4197,8 @@ func (T Type) Pointee() Type {
 // will return \c false for all of the above calls.
 //
 // llgo:link Type.Unqualified C.clang_getUnqualifiedType
-func (CT Type) Unqualified() Type {
-	return CT
+func (self Type) Unqualified() Type {
+	return self
 }
 
 // For reference types (e.g., "const int&"), returns the type that the
@@ -4210,35 +4210,35 @@ func (CT Type) Unqualified() Type {
 // \c CXType_RValueReference is a reference type.
 //
 // llgo:link Type.NonReference C.clang_getNonReferenceType
-func (CT Type) NonReference() Type {
-	return CT
+func (self Type) NonReference() Type {
+	return self
 }
 
 // Return the cursor for the declaration of the given type.
 //
 // llgo:link Type.Declaration C.clang_getTypeDeclaration
-func (T Type) Declaration() Cursor {
+func (self Type) Declaration() Cursor {
 	return Cursor{}
 }
 
 // Returns the Objective-C type encoding for the specified declaration.
 //
 // llgo:link Cursor.DeclObjCTypeEncoding C.clang_getDeclObjCTypeEncoding
-func (C Cursor) DeclObjCTypeEncoding() String {
+func (self Cursor) DeclObjCTypeEncoding() String {
 	return String{}
 }
 
 // Returns the Objective-C type encoding for the specified CXType.
 //
 // llgo:link Type.ObjCEncoding C.clang_Type_getObjCEncoding
-func (type_ Type) ObjCEncoding() String {
+func (self Type) ObjCEncoding() String {
 	return String{}
 }
 
 // Retrieve the spelling of a given CXTypeKind.
 //
 // llgo:link TypeKind.Spelling C.clang_getTypeKindSpelling
-func (K TypeKind) Spelling() String {
+func (self TypeKind) Spelling() String {
 	return String{}
 }
 
@@ -4247,7 +4247,7 @@ func (K TypeKind) Spelling() String {
 // If a non-function type is passed in, CXCallingConv_Invalid is returned.
 //
 // llgo:link Type.FunctionTypeCallingConv C.clang_getFunctionTypeCallingConv
-func (T Type) FunctionTypeCallingConv() CallingConv {
+func (self Type) FunctionTypeCallingConv() CallingConv {
 	return 0
 }
 
@@ -4256,8 +4256,8 @@ func (T Type) FunctionTypeCallingConv() CallingConv {
 // If a non-function type is passed in, an invalid type is returned.
 //
 // llgo:link Type.Result C.clang_getResultType
-func (T Type) Result() Type {
-	return T
+func (self Type) Result() Type {
+	return self
 }
 
 // Retrieve the exception specification type associated with a function type.
@@ -4266,7 +4266,7 @@ func (T Type) Result() Type {
 // If a non-function type is passed in, an error code of -1 is returned.
 //
 // llgo:link Type.ExceptionSpecification C.clang_getExceptionSpecificationType
-func (T Type) ExceptionSpecification() c.Int {
+func (self Type) ExceptionSpecification() c.Int {
 	return 0
 }
 
@@ -4276,7 +4276,7 @@ func (T Type) ExceptionSpecification() c.Int {
 // If a non-function type is passed in, -1 is returned.
 //
 // llgo:link Type.NumArgTypes C.clang_getNumArgTypes
-func (T Type) NumArgTypes() c.Int {
+func (self Type) NumArgTypes() c.Int {
 	return 0
 }
 
@@ -4286,8 +4286,8 @@ func (T Type) NumArgTypes() c.Int {
 // parameters, an invalid type is returned.
 //
 // llgo:link Type.Arg C.clang_getArgType
-func (T Type) Arg(i c.Uint) Type {
-	return T
+func (self Type) Arg(i c.Uint) Type {
+	return self
 }
 
 // Retrieves the base type of the ObjCObjectType.
@@ -4295,8 +4295,8 @@ func (T Type) Arg(i c.Uint) Type {
 // If the type is not an ObjC object, an invalid type is returned.
 //
 // llgo:link Type.ObjCObjectBase C.clang_Type_getObjCObjectBaseType
-func (T Type) ObjCObjectBase() Type {
-	return T
+func (self Type) ObjCObjectBase() Type {
+	return self
 }
 
 // Retrieve the number of protocol references associated with an ObjC object/id.
@@ -4304,7 +4304,7 @@ func (T Type) ObjCObjectBase() Type {
 // If the type is not an ObjC object, 0 is returned.
 //
 // llgo:link Type.NumObjCProtocolRefs C.clang_Type_getNumObjCProtocolRefs
-func (T Type) NumObjCProtocolRefs() c.Uint {
+func (self Type) NumObjCProtocolRefs() c.Uint {
 	return 0
 }
 
@@ -4314,7 +4314,7 @@ func (T Type) NumObjCProtocolRefs() c.Uint {
 // references, an invalid cursor is returned.
 //
 // llgo:link Type.ObjCProtocolDecl C.clang_Type_getObjCProtocolDecl
-func (T Type) ObjCProtocolDecl(i c.Uint) Cursor {
+func (self Type) ObjCProtocolDecl(i c.Uint) Cursor {
 	return Cursor{}
 }
 
@@ -4323,7 +4323,7 @@ func (T Type) ObjCProtocolDecl(i c.Uint) Cursor {
 // If the type is not an ObjC object, 0 is returned.
 //
 // llgo:link Type.NumObjCTypeArgs C.clang_Type_getNumObjCTypeArgs
-func (T Type) NumObjCTypeArgs() c.Uint {
+func (self Type) NumObjCTypeArgs() c.Uint {
 	return 0
 }
 
@@ -4333,14 +4333,14 @@ func (T Type) NumObjCTypeArgs() c.Uint {
 // an invalid type is returned.
 //
 // llgo:link Type.ObjCTypeArg C.clang_Type_getObjCTypeArg
-func (T Type) ObjCTypeArg(i c.Uint) Type {
-	return T
+func (self Type) ObjCTypeArg(i c.Uint) Type {
+	return self
 }
 
 // Return 1 if the CXType is a variadic function type, and 0 otherwise.
 //
 // llgo:link Type.IsFunctionTypeVariadic C.clang_isFunctionTypeVariadic
-func (T Type) IsFunctionTypeVariadic() c.Uint {
+func (self Type) IsFunctionTypeVariadic() c.Uint {
 	return 0
 }
 
@@ -4349,7 +4349,7 @@ func (T Type) IsFunctionTypeVariadic() c.Uint {
 // This only returns a valid type if the cursor refers to a function or method.
 //
 // llgo:link Cursor.ResultType C.clang_getCursorResultType
-func (C Cursor) ResultType() Type {
+func (self Cursor) ResultType() Type {
 	return Type{}
 }
 
@@ -4360,7 +4360,7 @@ func (C Cursor) ResultType() Type {
 // method.
 //
 // llgo:link Cursor.ExceptionSpecificationType C.clang_getCursorExceptionSpecificationType
-func (C Cursor) ExceptionSpecificationType() c.Int {
+func (self Cursor) ExceptionSpecificationType() c.Int {
 	return 0
 }
 
@@ -4368,7 +4368,7 @@ func (C Cursor) ExceptionSpecificationType() c.Int {
 //  otherwise.
 //
 // llgo:link Type.IsPOD C.clang_isPODType
-func (T Type) IsPOD() c.Uint {
+func (self Type) IsPOD() c.Uint {
 	return 0
 }
 
@@ -4378,8 +4378,8 @@ func (T Type) IsPOD() c.Uint {
 // an invalid type is returned.
 //
 // llgo:link Type.Element C.clang_getElementType
-func (T Type) Element() Type {
-	return T
+func (self Type) Element() Type {
+	return self
 }
 
 // Return the number of elements of an array or vector type.
@@ -4388,7 +4388,7 @@ func (T Type) Element() Type {
 // -1 is returned.
 //
 // llgo:link Type.NumElements C.clang_getNumElements
-func (T Type) NumElements() c.LongLong {
+func (self Type) NumElements() c.LongLong {
 	return 0
 }
 
@@ -4397,8 +4397,8 @@ func (T Type) NumElements() c.LongLong {
 // If a non-array type is passed in, an invalid type is returned.
 //
 // llgo:link Type.ArrayElement C.clang_getArrayElementType
-func (T Type) ArrayElement() Type {
-	return T
+func (self Type) ArrayElement() Type {
+	return self
 }
 
 // Return the array size of a constant array.
@@ -4406,7 +4406,7 @@ func (T Type) ArrayElement() Type {
 // If a non-array type is passed in, -1 is returned.
 //
 // llgo:link Type.ArraySize C.clang_getArraySize
-func (T Type) ArraySize() c.LongLong {
+func (self Type) ArraySize() c.LongLong {
 	return 0
 }
 
@@ -4415,8 +4415,8 @@ func (T Type) ArraySize() c.LongLong {
 // If a non-elaborated type is passed in, an invalid type is returned.
 //
 // llgo:link Type.Named C.clang_Type_getNamedType
-func (T Type) Named() Type {
-	return T
+func (self Type) Named() Type {
+	return self
 }
 
 // Determine if a typedef is 'transparent' tag.
@@ -4427,14 +4427,14 @@ func (T Type) Named() Type {
 // \returns non-zero if transparent and zero otherwise.
 //
 // llgo:link Type.IsTransparentTagTypedef C.clang_Type_isTransparentTagTypedef
-func (T Type) IsTransparentTagTypedef() c.Uint {
+func (self Type) IsTransparentTagTypedef() c.Uint {
 	return 0
 }
 
 // Retrieve the nullability kind of a pointer type.
 //
 // llgo:link Type.Nullability C.clang_Type_getNullability
-func (T Type) Nullability() TypeNullabilityKind {
+func (self Type) Nullability() TypeNullabilityKind {
 	return 0
 }
 
@@ -4450,7 +4450,7 @@ func (T Type) Nullability() TypeNullabilityKind {
 //   CXTypeLayoutError_NotConstantSize is returned.
 //
 // llgo:link Type.AlignOf C.clang_Type_getAlignOf
-func (T Type) AlignOf() c.LongLong {
+func (self Type) AlignOf() c.LongLong {
 	return 0
 }
 
@@ -4459,8 +4459,8 @@ func (T Type) AlignOf() c.LongLong {
 // If a non-member-pointer type is passed in, an invalid type is returned.
 //
 // llgo:link Type.Class C.clang_Type_getClassType
-func (T Type) Class() Type {
-	return T
+func (self Type) Class() Type {
+	return self
 }
 
 // Return the size of a type in bytes as per C++[expr.sizeof] standard.
@@ -4472,7 +4472,7 @@ func (T Type) Class() Type {
 //   returned.
 //
 // llgo:link Type.SizeOf C.clang_Type_getSizeOf
-func (T Type) SizeOf() c.LongLong {
+func (self Type) SizeOf() c.LongLong {
 	return 0
 }
 
@@ -4489,7 +4489,7 @@ func (T Type) SizeOf() c.LongLong {
 //   CXTypeLayoutError_InvalidFieldName is returned.
 //
 // llgo:link Type.OffsetOf C.clang_Type_getOffsetOf
-func (T Type) OffsetOf(S *c.Char) c.LongLong {
+func (self Type) OffsetOf(S *c.Char) c.LongLong {
 	return 0
 }
 
@@ -4498,8 +4498,8 @@ func (T Type) OffsetOf(S *c.Char) c.LongLong {
 // If the type is not an attributed type, an invalid type is returned.
 //
 // llgo:link Type.Modified C.clang_Type_getModifiedType
-func (T Type) Modified() Type {
-	return T
+func (self Type) Modified() Type {
+	return self
 }
 
 // Gets the type contained by this atomic type.
@@ -4507,8 +4507,8 @@ func (T Type) Modified() Type {
 // If a non-atomic type is passed in, an invalid type is returned.
 //
 // llgo:link Type.Value C.clang_Type_getValueType
-func (CT Type) Value() Type {
-	return CT
+func (self Type) Value() Type {
+	return self
 }
 
 // Return the offset of the field represented by the Cursor.
@@ -4524,7 +4524,7 @@ func (CT Type) Value() Type {
 //   CXTypeLayoutError_InvalidFieldName is returned.
 //
 // llgo:link Cursor.OffsetOfField C.clang_Cursor_getOffsetOfField
-func (C Cursor) OffsetOfField() c.LongLong {
+func (self Cursor) OffsetOfField() c.LongLong {
 	return 0
 }
 
@@ -4532,7 +4532,7 @@ func (C Cursor) OffsetOfField() c.LongLong {
 // tag or namespace
 //
 // llgo:link Cursor.IsAnonymous C.clang_Cursor_isAnonymous
-func (C Cursor) IsAnonymous() c.Uint {
+func (self Cursor) IsAnonymous() c.Uint {
 	return 0
 }
 
@@ -4540,7 +4540,7 @@ func (C Cursor) IsAnonymous() c.Uint {
 // declaration.
 //
 // llgo:link Cursor.IsAnonymousRecordDecl C.clang_Cursor_isAnonymousRecordDecl
-func (C Cursor) IsAnonymousRecordDecl() c.Uint {
+func (self Cursor) IsAnonymousRecordDecl() c.Uint {
 	return 0
 }
 
@@ -4548,7 +4548,7 @@ func (C Cursor) IsAnonymousRecordDecl() c.Uint {
 // declaration.
 //
 // llgo:link Cursor.IsInlineNamespace C.clang_Cursor_isInlineNamespace
-func (C Cursor) IsInlineNamespace() c.Uint {
+func (self Cursor) IsInlineNamespace() c.Uint {
 	return 0
 }
 
@@ -4556,7 +4556,7 @@ func (C Cursor) IsInlineNamespace() c.Uint {
 // specialization, or -1 if type \c T is not a template specialization.
 //
 // llgo:link Type.NumTemplateArguments C.clang_Type_getNumTemplateArguments
-func (T Type) NumTemplateArguments() c.Int {
+func (self Type) NumTemplateArguments() c.Int {
 	return 0
 }
 
@@ -4567,8 +4567,8 @@ func (T Type) NumTemplateArguments() c.Int {
 // template template arguments or variadic packs.
 //
 // llgo:link Type.TemplateArgumentAs C.clang_Type_getTemplateArgumentAsType
-func (T Type) TemplateArgumentAs(i c.Uint) Type {
-	return T
+func (self Type) TemplateArgumentAs(i c.Uint) Type {
+	return self
 }
 
 // Retrieve the ref-qualifier kind of a function or method.
@@ -4577,7 +4577,7 @@ func (T Type) TemplateArgumentAs(i c.Uint) Type {
 // or non-C++ declarations, CXRefQualifier_None is returned.
 //
 // llgo:link Type.CXXRefQualifier C.clang_Type_getCXXRefQualifier
-func (T Type) CXXRefQualifier() RefQualifierKind {
+func (self Type) CXXRefQualifier() RefQualifierKind {
 	return 0
 }
 
@@ -4585,7 +4585,7 @@ func (T Type) CXXRefQualifier() RefQualifierKind {
 //   CX_CXXBaseSpecifier is virtual.
 //
 // llgo:link Cursor.IsVirtualBase C.clang_isVirtualBase
-func (_llcppg_param1 Cursor) IsVirtualBase() c.Uint {
+func (self Cursor) IsVirtualBase() c.Uint {
 	return 0
 }
 
@@ -4605,7 +4605,7 @@ func GetOffsetOfBase(Parent Cursor, Base Cursor) c.LongLong
 // specifier or access specifier, the specifier itself is returned.
 //
 // llgo:link Cursor.CXXAccessSpecifier C.clang_getCXXAccessSpecifier
-func (_llcppg_param1 Cursor) CXXAccessSpecifier() CXXAccessSpecifier {
+func (self Cursor) CXXAccessSpecifier() CXXAccessSpecifier {
 	return 0
 }
 
@@ -4614,7 +4614,7 @@ func (_llcppg_param1 Cursor) CXXAccessSpecifier() CXXAccessSpecifier {
 // @deprecated: use clang_getCursorBinaryOperatorKind instead.
 //
 // llgo:link Cursor.BinaryOpcode C.clang_Cursor_getBinaryOpcode
-func (C Cursor) BinaryOpcode() X_BinaryOperatorKind {
+func (self Cursor) BinaryOpcode() X_BinaryOperatorKind {
 	return 0
 }
 
@@ -4623,7 +4623,7 @@ func (C Cursor) BinaryOpcode() X_BinaryOperatorKind {
 // @deprecated: use clang_getBinaryOperatorKindSpelling instead
 //
 // llgo:link X_BinaryOperatorKind.Spelling C.clang_Cursor_getBinaryOpcodeStr
-func (Op X_BinaryOperatorKind) Spelling() String {
+func (self X_BinaryOperatorKind) Spelling() String {
 	return String{}
 }
 
@@ -4633,7 +4633,7 @@ func (Op X_BinaryOperatorKind) Spelling() String {
 // CX_SC_Invalid is returned else the storage class.
 //
 // llgo:link Cursor.StorageClass C.clang_Cursor_getStorageClass
-func (_llcppg_param1 Cursor) StorageClass() StorageClass {
+func (self Cursor) StorageClass() StorageClass {
 	return 0
 }
 
@@ -4646,7 +4646,7 @@ func (_llcppg_param1 Cursor) StorageClass() StorageClass {
 // is not a \c CXCursor_OverloadedDeclRef cursor, returns 0.
 //
 // llgo:link Cursor.NumOverloadedDecls C.clang_getNumOverloadedDecls
-func (cursor Cursor) NumOverloadedDecls() c.Uint {
+func (self Cursor) NumOverloadedDecls() c.Uint {
 	return 0
 }
 
@@ -4664,15 +4664,15 @@ func (cursor Cursor) NumOverloadedDecls() c.Uint {
 // returns \c clang_getNullCursor();
 //
 // llgo:link Cursor.OverloadedDecl C.clang_getOverloadedDecl
-func (cursor Cursor) OverloadedDecl(index c.Uint) Cursor {
-	return cursor
+func (self Cursor) OverloadedDecl(index c.Uint) Cursor {
+	return self
 }
 
 // For cursors representing an iboutletcollection attribute,
 //  this function returns the collection element type.
 //
 // llgo:link Cursor.IBOutletCollectionType C.clang_getIBOutletCollectionType
-func (_llcppg_param1 Cursor) IBOutletCollectionType() Type {
+func (self Cursor) IBOutletCollectionType() Type {
 	return Type{}
 }
 
@@ -4709,7 +4709,7 @@ func VisitChildren(parent Cursor, visitor CursorVisitor, client_data ClientData)
 // one translation refer to an entity defined in another translation unit.
 //
 // llgo:link Cursor.USR C.clang_getCursorUSR
-func (_llcppg_param1 Cursor) USR() String {
+func (self Cursor) USR() String {
 	return String{}
 }
 
@@ -4749,7 +4749,7 @@ func ConstructUSRObjCProperty(property *c.Char, classUSR String) String
 // Retrieve a name for the entity referenced by this cursor.
 //
 // llgo:link Cursor.Spelling C.clang_getCursorSpelling
-func (_llcppg_param1 Cursor) Spelling() String {
+func (self Cursor) Spelling() String {
 	return String{}
 }
 
@@ -4764,21 +4764,21 @@ func (_llcppg_param1 Cursor) Spelling() String {
 // \param options Reserved.
 //
 // llgo:link Cursor.SpellingNameRange C.clang_Cursor_getSpellingNameRange
-func (_llcppg_param1 Cursor) SpellingNameRange(pieceIndex c.Uint, options c.Uint) SourceRange {
+func (self Cursor) SpellingNameRange(pieceIndex c.Uint, options c.Uint) SourceRange {
 	return SourceRange{}
 }
 
 // Get a property value for the given printing policy.
 //
 // llgo:link PrintingPolicy.Property C.clang_PrintingPolicy_getProperty
-func (Policy PrintingPolicy) Property(Property PrintingPolicyProperty) c.Uint {
+func (self PrintingPolicy) Property(Property PrintingPolicyProperty) c.Uint {
 	return 0
 }
 
 // Set a property value for the given printing policy.
 //
 // llgo:link PrintingPolicy.SetProperty C.clang_PrintingPolicy_setProperty
-func (Policy PrintingPolicy) SetProperty(Property PrintingPolicyProperty, Value c.Uint) {
+func (self PrintingPolicy) SetProperty(Property PrintingPolicyProperty, Value c.Uint) {
 }
 
 // Retrieve the default policy for the cursor.
@@ -4787,14 +4787,14 @@ func (Policy PrintingPolicy) SetProperty(Property PrintingPolicyProperty, Value 
 // clang_PrintingPolicy_dispose.
 //
 // llgo:link Cursor.PrintingPolicy C.clang_getCursorPrintingPolicy
-func (_llcppg_param1 Cursor) PrintingPolicy() PrintingPolicy {
+func (self Cursor) PrintingPolicy() PrintingPolicy {
 	return 0
 }
 
 // Release a printing policy.
 //
 // llgo:link PrintingPolicy.Dispose C.clang_PrintingPolicy_dispose
-func (Policy PrintingPolicy) Dispose() {
+func (self PrintingPolicy) Dispose() {
 }
 
 // Pretty print declarations.
@@ -4808,7 +4808,7 @@ func (Policy PrintingPolicy) Dispose() {
 // other cursors.
 //
 // llgo:link Cursor.PrettyPrinted C.clang_getCursorPrettyPrinted
-func (Cursor Cursor) PrettyPrinted(Policy PrintingPolicy) String {
+func (self Cursor) PrettyPrinted(Policy PrintingPolicy) String {
 	return String{}
 }
 
@@ -4817,7 +4817,7 @@ func (Cursor Cursor) PrettyPrinted(Policy PrintingPolicy) String {
 // If the type is invalid, an empty string is returned.
 //
 // llgo:link Type.PrettyPrinted C.clang_getTypePrettyPrinted
-func (CT Type) PrettyPrinted(cxPolicy PrintingPolicy) String {
+func (self Type) PrettyPrinted(cxPolicy PrintingPolicy) String {
 	return String{}
 }
 
@@ -4830,7 +4830,7 @@ func (CT Type) PrettyPrinted(cxPolicy PrintingPolicy) String {
 // names
 //
 // llgo:link Type.FullyQualifiedName C.clang_getFullyQualifiedName
-func (CT Type) FullyQualifiedName(Policy PrintingPolicy, WithGlobalNsPrefix c.Uint) String {
+func (self Type) FullyQualifiedName(Policy PrintingPolicy, WithGlobalNsPrefix c.Uint) String {
 	return String{}
 }
 
@@ -4841,7 +4841,7 @@ func (CT Type) FullyQualifiedName(Policy PrintingPolicy, WithGlobalNsPrefix c.Ui
 // class template specialization.
 //
 // llgo:link Cursor.DisplayName C.clang_getCursorDisplayName
-func (_llcppg_param1 Cursor) DisplayName() String {
+func (self Cursor) DisplayName() String {
 	return String{}
 }
 
@@ -4856,8 +4856,8 @@ func (_llcppg_param1 Cursor) DisplayName() String {
 // Otherwise, returns the NULL cursor.
 //
 // llgo:link Cursor.Referenced C.clang_getCursorReferenced
-func (_llcppg_param1 Cursor) Referenced() Cursor {
-	return _llcppg_param1
+func (self Cursor) Referenced() Cursor {
+	return self
 }
 
 //  For a cursor that is either a reference to or a declaration
@@ -4888,15 +4888,15 @@ func (_llcppg_param1 Cursor) Referenced() Cursor {
 //  translation unit, returns a NULL cursor.
 //
 // llgo:link Cursor.Definition C.clang_getCursorDefinition
-func (_llcppg_param1 Cursor) Definition() Cursor {
-	return _llcppg_param1
+func (self Cursor) Definition() Cursor {
+	return self
 }
 
 // Determine whether the declaration pointed to by this cursor
 // is also a definition of that entity.
 //
 // llgo:link Cursor.IsCursorDefinition C.clang_isCursorDefinition
-func (_llcppg_param1 Cursor) IsCursorDefinition() c.Uint {
+func (self Cursor) IsCursorDefinition() c.Uint {
 	return 0
 }
 
@@ -4924,8 +4924,8 @@ func (_llcppg_param1 Cursor) IsCursorDefinition() c.Uint {
 // \returns The canonical cursor for the entity referred to by the given cursor.
 //
 // llgo:link Cursor.Canonical C.clang_getCanonicalCursor
-func (_llcppg_param1 Cursor) Canonical() Cursor {
-	return _llcppg_param1
+func (self Cursor) Canonical() Cursor {
+	return self
 }
 
 // If the cursor points to a selector identifier in an Objective-C
@@ -4939,7 +4939,7 @@ func (_llcppg_param1 Cursor) Canonical() Cursor {
 // otherwise.
 //
 // llgo:link Cursor.ObjCSelectorIndex C.clang_Cursor_getObjCSelectorIndex
-func (_llcppg_param1 Cursor) ObjCSelectorIndex() c.Int {
+func (self Cursor) ObjCSelectorIndex() c.Int {
 	return 0
 }
 
@@ -4954,7 +4954,7 @@ func (_llcppg_param1 Cursor) ObjCSelectorIndex() c.Int {
 // method/message, it will return zero.
 //
 // llgo:link Cursor.IsDynamicCall C.clang_Cursor_isDynamicCall
-func (C Cursor) IsDynamicCall() c.Int {
+func (self Cursor) IsDynamicCall() c.Int {
 	return 0
 }
 
@@ -4962,7 +4962,7 @@ func (C Cursor) IsDynamicCall() c.Int {
 // reference, or C++ method call, returns the CXType of the receiver.
 //
 // llgo:link Cursor.ReceiverType C.clang_Cursor_getReceiverType
-func (C Cursor) ReceiverType() Type {
+func (self Cursor) ReceiverType() Type {
 	return Type{}
 }
 
@@ -4973,7 +4973,7 @@ func (C Cursor) ReceiverType() Type {
 // \param reserved Reserved for future use, pass 0.
 //
 // llgo:link Cursor.ObjCPropertyAttributes C.clang_Cursor_getObjCPropertyAttributes
-func (C Cursor) ObjCPropertyAttributes(reserved c.Uint) c.Uint {
+func (self Cursor) ObjCPropertyAttributes(reserved c.Uint) c.Uint {
 	return 0
 }
 
@@ -4981,7 +4981,7 @@ func (C Cursor) ObjCPropertyAttributes(reserved c.Uint) c.Uint {
 // name of the method that implements the getter.
 //
 // llgo:link Cursor.ObjCPropertyGetterName C.clang_Cursor_getObjCPropertyGetterName
-func (C Cursor) ObjCPropertyGetterName() String {
+func (self Cursor) ObjCPropertyGetterName() String {
 	return String{}
 }
 
@@ -4989,7 +4989,7 @@ func (C Cursor) ObjCPropertyGetterName() String {
 // name of the method that implements the setter, if any.
 //
 // llgo:link Cursor.ObjCPropertySetterName C.clang_Cursor_getObjCPropertySetterName
-func (C Cursor) ObjCPropertySetterName() String {
+func (self Cursor) ObjCPropertySetterName() String {
 	return String{}
 }
 
@@ -4999,7 +4999,7 @@ func (C Cursor) ObjCPropertySetterName() String {
 // CXObjCDeclQualifierKind.
 //
 // llgo:link Cursor.ObjCDeclQualifiers C.clang_Cursor_getObjCDeclQualifiers
-func (C Cursor) ObjCDeclQualifiers() c.Uint {
+func (self Cursor) ObjCDeclQualifiers() c.Uint {
 	return 0
 }
 
@@ -5008,14 +5008,14 @@ func (C Cursor) ObjCDeclQualifiers() c.Uint {
 // Returns zero if the cursor is not such a declaration or it is "\@required".
 //
 // llgo:link Cursor.IsObjCOptional C.clang_Cursor_isObjCOptional
-func (C Cursor) IsObjCOptional() c.Uint {
+func (self Cursor) IsObjCOptional() c.Uint {
 	return 0
 }
 
 // Returns non-zero if the given cursor is a variadic function or method.
 //
 // llgo:link Cursor.IsVariadic C.clang_Cursor_isVariadic
-func (C Cursor) IsVariadic() c.Uint {
+func (self Cursor) IsVariadic() c.Uint {
 	return 0
 }
 
@@ -5032,7 +5032,7 @@ func (C Cursor) IsVariadic() c.Uint {
 // non-zero if the 'generated_declaration' is set in the attribute.
 //
 // llgo:link Cursor.IsExternalSymbol C.clang_Cursor_isExternalSymbol
-func (C Cursor) IsExternalSymbol(language *String, definedIn *String, isGenerated *c.Uint) c.Uint {
+func (self Cursor) IsExternalSymbol(language *String, definedIn *String, isGenerated *c.Uint) c.Uint {
 	return 0
 }
 
@@ -5041,7 +5041,7 @@ func (C Cursor) IsExternalSymbol(language *String, definedIn *String, isGenerate
 // with whitespace in between.
 //
 // llgo:link Cursor.CommentRange C.clang_Cursor_getCommentRange
-func (C Cursor) CommentRange() SourceRange {
+func (self Cursor) CommentRange() SourceRange {
 	return SourceRange{}
 }
 
@@ -5049,7 +5049,7 @@ func (C Cursor) CommentRange() SourceRange {
 // comment text, including comment markers.
 //
 // llgo:link Cursor.RawCommentText C.clang_Cursor_getRawCommentText
-func (C Cursor) RawCommentText() String {
+func (self Cursor) RawCommentText() String {
 	return String{}
 }
 
@@ -5058,14 +5058,14 @@ func (C Cursor) RawCommentText() String {
 // first paragraph.
 //
 // llgo:link Cursor.BriefCommentText C.clang_Cursor_getBriefCommentText
-func (C Cursor) BriefCommentText() String {
+func (self Cursor) BriefCommentText() String {
 	return String{}
 }
 
 // Retrieve the CXString representing the mangled name of the cursor.
 //
 // llgo:link Cursor.Mangling C.clang_Cursor_getMangling
-func (_llcppg_param1 Cursor) Mangling() String {
+func (self Cursor) Mangling() String {
 	return String{}
 }
 
@@ -5073,7 +5073,7 @@ func (_llcppg_param1 Cursor) Mangling() String {
 // constructor or destructor at the cursor.
 //
 // llgo:link Cursor.CXXManglings C.clang_Cursor_getCXXManglings
-func (_llcppg_param1 Cursor) CXXManglings() *StringSet {
+func (self Cursor) CXXManglings() *StringSet {
 	return nil
 }
 
@@ -5081,7 +5081,7 @@ func (_llcppg_param1 Cursor) CXXManglings() *StringSet {
 // class interface or implementation at the cursor.
 //
 // llgo:link Cursor.ObjCManglings C.clang_Cursor_getObjCManglings
-func (_llcppg_param1 Cursor) ObjCManglings() *StringSet {
+func (self Cursor) ObjCManglings() *StringSet {
 	return nil
 }
 
@@ -5102,7 +5102,7 @@ func (_llcppg_param1 Cursor) ObjCManglings() *StringSet {
 // \c clang_disposeString.
 //
 // llgo:link Cursor.GCCAssemblyTemplate C.clang_Cursor_getGCCAssemblyTemplate
-func (_llcppg_param1 Cursor) GCCAssemblyTemplate() String {
+func (self Cursor) GCCAssemblyTemplate() String {
 	return String{}
 }
 
@@ -5112,7 +5112,7 @@ func (_llcppg_param1 Cursor) GCCAssemblyTemplate() String {
 // assembly block.
 //
 // llgo:link Cursor.IsGCCAssemblyHasGoto C.clang_Cursor_isGCCAssemblyHasGoto
-func (_llcppg_param1 Cursor) IsGCCAssemblyHasGoto() c.Uint {
+func (self Cursor) IsGCCAssemblyHasGoto() c.Uint {
 	return 0
 }
 
@@ -5121,7 +5121,7 @@ func (_llcppg_param1 Cursor) IsGCCAssemblyHasGoto() c.Uint {
 // assembly block.
 //
 // llgo:link Cursor.GCCAssemblyNumOutputs C.clang_Cursor_getGCCAssemblyNumOutputs
-func (_llcppg_param1 Cursor) GCCAssemblyNumOutputs() c.Uint {
+func (self Cursor) GCCAssemblyNumOutputs() c.Uint {
 	return 0
 }
 
@@ -5130,7 +5130,7 @@ func (_llcppg_param1 Cursor) GCCAssemblyNumOutputs() c.Uint {
 // assembly block.
 //
 // llgo:link Cursor.GCCAssemblyNumInputs C.clang_Cursor_getGCCAssemblyNumInputs
-func (_llcppg_param1 Cursor) GCCAssemblyNumInputs() c.Uint {
+func (self Cursor) GCCAssemblyNumInputs() c.Uint {
 	return 0
 }
 
@@ -5146,7 +5146,7 @@ func (_llcppg_param1 Cursor) GCCAssemblyNumInputs() c.Uint {
 // \c clang_disposeString.
 //
 // llgo:link Cursor.GCCAssemblyInput C.clang_Cursor_getGCCAssemblyInput
-func (Cursor Cursor) GCCAssemblyInput(Index c.Uint, Constraint *String, Expr *Cursor) c.Uint {
+func (self Cursor) GCCAssemblyInput(Index c.Uint, Constraint *String, Expr *Cursor) c.Uint {
 	return 0
 }
 
@@ -5162,7 +5162,7 @@ func (Cursor Cursor) GCCAssemblyInput(Index c.Uint, Constraint *String, Expr *Cu
 // \c clang_disposeString.
 //
 // llgo:link Cursor.GCCAssemblyOutput C.clang_Cursor_getGCCAssemblyOutput
-func (Cursor Cursor) GCCAssemblyOutput(Index c.Uint, Constraint *String, Expr *Cursor) c.Uint {
+func (self Cursor) GCCAssemblyOutput(Index c.Uint, Constraint *String, Expr *Cursor) c.Uint {
 	return 0
 }
 
@@ -5171,7 +5171,7 @@ func (Cursor Cursor) GCCAssemblyOutput(Index c.Uint, Constraint *String, Expr *C
 // assembly block.
 //
 // llgo:link Cursor.GCCAssemblyNumClobbers C.clang_Cursor_getGCCAssemblyNumClobbers
-func (Cursor Cursor) GCCAssemblyNumClobbers() c.Uint {
+func (self Cursor) GCCAssemblyNumClobbers() c.Uint {
 	return 0
 }
 
@@ -5183,7 +5183,7 @@ func (Cursor Cursor) GCCAssemblyNumClobbers() c.Uint {
 // \c clang_disposeString.
 //
 // llgo:link Cursor.GCCAssemblyClobber C.clang_Cursor_getGCCAssemblyClobber
-func (Cursor Cursor) GCCAssemblyClobber(Index c.Uint) String {
+func (self Cursor) GCCAssemblyClobber(Index c.Uint) String {
 	return String{}
 }
 
@@ -5193,14 +5193,14 @@ func (Cursor Cursor) GCCAssemblyClobber(Index c.Uint) String {
 // assembly block.
 //
 // llgo:link Cursor.IsGCCAssemblyVolatile C.clang_Cursor_isGCCAssemblyVolatile
-func (Cursor Cursor) IsGCCAssemblyVolatile() c.Uint {
+func (self Cursor) IsGCCAssemblyVolatile() c.Uint {
 	return 0
 }
 
 // Given a CXCursor_ModuleImportDecl cursor, return the associated module.
 //
 // llgo:link Cursor.Module C.clang_Cursor_getModule
-func (C Cursor) Module() Module {
+func (self Cursor) Module() Module {
 	return 0
 }
 
@@ -5208,7 +5208,7 @@ func (C Cursor) Module() Module {
 // exists.
 //
 // llgo:link (*TranslationUnitImpl).ModuleForFile C.clang_getModuleForFile
-func (_llcppg_param1 *TranslationUnitImpl) ModuleForFile(_llcppg_param2 File) Module {
+func (self *TranslationUnitImpl) ModuleForFile(_llcppg_param2 File) Module {
 	return 0
 }
 
@@ -5217,7 +5217,7 @@ func (_llcppg_param1 *TranslationUnitImpl) ModuleForFile(_llcppg_param2 File) Mo
 // \returns the module file where the provided module object came from.
 //
 // llgo:link Module.ASTFile C.clang_Module_getASTFile
-func (Module Module) ASTFile() File {
+func (self Module) ASTFile() File {
 	return 0
 }
 
@@ -5227,8 +5227,8 @@ func (Module Module) ASTFile() File {
 // e.g. for 'std.vector' it will return the 'std' module.
 //
 // llgo:link Module.Parent C.clang_Module_getParent
-func (Module Module) Parent() Module {
-	return Module
+func (self Module) Parent() Module {
+	return self
 }
 
 // \param Module a module object.
@@ -5237,7 +5237,7 @@ func (Module Module) Parent() Module {
 // will return "vector".
 //
 // llgo:link Module.Name C.clang_Module_getName
-func (Module Module) Name() String {
+func (self Module) Name() String {
 	return String{}
 }
 
@@ -5246,7 +5246,7 @@ func (Module Module) Name() String {
 // \returns the full name of the module, e.g. "std.vector".
 //
 // llgo:link Module.FullName C.clang_Module_getFullName
-func (Module Module) FullName() String {
+func (self Module) FullName() String {
 	return String{}
 }
 
@@ -5255,7 +5255,7 @@ func (Module Module) FullName() String {
 // \returns non-zero if the module is a system one.
 //
 // llgo:link Module.IsSystem C.clang_Module_isSystem
-func (Module Module) IsSystem() c.Int {
+func (self Module) IsSystem() c.Int {
 	return 0
 }
 
@@ -5264,7 +5264,7 @@ func (Module Module) IsSystem() c.Int {
 // \returns the number of top level headers associated with this module.
 //
 // llgo:link (*TranslationUnitImpl).ModuleGetNumTopLevelHeaders C.clang_Module_getNumTopLevelHeaders
-func (_llcppg_param1 *TranslationUnitImpl) ModuleGetNumTopLevelHeaders(Module Module) c.Uint {
+func (self *TranslationUnitImpl) ModuleGetNumTopLevelHeaders(Module Module) c.Uint {
 	return 0
 }
 
@@ -5275,56 +5275,56 @@ func (_llcppg_param1 *TranslationUnitImpl) ModuleGetNumTopLevelHeaders(Module Mo
 // \returns the specified top level header associated with the module.
 //
 // llgo:link (*TranslationUnitImpl).ModuleGetTopLevelHeader C.clang_Module_getTopLevelHeader
-func (_llcppg_param1 *TranslationUnitImpl) ModuleGetTopLevelHeader(Module Module, Index c.Uint) File {
+func (self *TranslationUnitImpl) ModuleGetTopLevelHeader(Module Module, Index c.Uint) File {
 	return 0
 }
 
 // Determine if a C++ constructor is a converting constructor.
 //
 // llgo:link Cursor.CXXConstructorIsConvertingConstructor C.clang_CXXConstructor_isConvertingConstructor
-func (C Cursor) CXXConstructorIsConvertingConstructor() c.Uint {
+func (self Cursor) CXXConstructorIsConvertingConstructor() c.Uint {
 	return 0
 }
 
 // Determine if a C++ constructor is a copy constructor.
 //
 // llgo:link Cursor.CXXConstructorIsCopyConstructor C.clang_CXXConstructor_isCopyConstructor
-func (C Cursor) CXXConstructorIsCopyConstructor() c.Uint {
+func (self Cursor) CXXConstructorIsCopyConstructor() c.Uint {
 	return 0
 }
 
 // Determine if a C++ constructor is the default constructor.
 //
 // llgo:link Cursor.CXXConstructorIsDefaultConstructor C.clang_CXXConstructor_isDefaultConstructor
-func (C Cursor) CXXConstructorIsDefaultConstructor() c.Uint {
+func (self Cursor) CXXConstructorIsDefaultConstructor() c.Uint {
 	return 0
 }
 
 // Determine if a C++ constructor is a move constructor.
 //
 // llgo:link Cursor.CXXConstructorIsMoveConstructor C.clang_CXXConstructor_isMoveConstructor
-func (C Cursor) CXXConstructorIsMoveConstructor() c.Uint {
+func (self Cursor) CXXConstructorIsMoveConstructor() c.Uint {
 	return 0
 }
 
 // Determine if a C++ field is declared 'mutable'.
 //
 // llgo:link Cursor.CXXFieldIsMutable C.clang_CXXField_isMutable
-func (C Cursor) CXXFieldIsMutable() c.Uint {
+func (self Cursor) CXXFieldIsMutable() c.Uint {
 	return 0
 }
 
 // Determine if a C++ method is declared '= default'.
 //
 // llgo:link Cursor.CXXMethodIsDefaulted C.clang_CXXMethod_isDefaulted
-func (C Cursor) CXXMethodIsDefaulted() c.Uint {
+func (self Cursor) CXXMethodIsDefaulted() c.Uint {
 	return 0
 }
 
 // Determine if a C++ method is declared '= delete'.
 //
 // llgo:link Cursor.CXXMethodIsDeleted C.clang_CXXMethod_isDeleted
-func (C Cursor) CXXMethodIsDeleted() c.Uint {
+func (self Cursor) CXXMethodIsDeleted() c.Uint {
 	return 0
 }
 
@@ -5332,7 +5332,7 @@ func (C Cursor) CXXMethodIsDeleted() c.Uint {
 // pure virtual.
 //
 // llgo:link Cursor.CXXMethodIsPureVirtual C.clang_CXXMethod_isPureVirtual
-func (C Cursor) CXXMethodIsPureVirtual() c.Uint {
+func (self Cursor) CXXMethodIsPureVirtual() c.Uint {
 	return 0
 }
 
@@ -5340,7 +5340,7 @@ func (C Cursor) CXXMethodIsPureVirtual() c.Uint {
 // declared 'static'.
 //
 // llgo:link Cursor.CXXMethodIsStatic C.clang_CXXMethod_isStatic
-func (C Cursor) CXXMethodIsStatic() c.Uint {
+func (self Cursor) CXXMethodIsStatic() c.Uint {
 	return 0
 }
 
@@ -5349,7 +5349,7 @@ func (C Cursor) CXXMethodIsStatic() c.Uint {
 // one of the base classes.
 //
 // llgo:link Cursor.CXXMethodIsVirtual C.clang_CXXMethod_isVirtual
-func (C Cursor) CXXMethodIsVirtual() c.Uint {
+func (self Cursor) CXXMethodIsVirtual() c.Uint {
 	return 0
 }
 
@@ -5376,7 +5376,7 @@ func (C Cursor) CXXMethodIsVirtual() c.Uint {
 // Is not.
 //
 // llgo:link Cursor.CXXMethodIsCopyAssignmentOperator C.clang_CXXMethod_isCopyAssignmentOperator
-func (C Cursor) CXXMethodIsCopyAssignmentOperator() c.Uint {
+func (self Cursor) CXXMethodIsCopyAssignmentOperator() c.Uint {
 	return 0
 }
 
@@ -5403,7 +5403,7 @@ func (C Cursor) CXXMethodIsCopyAssignmentOperator() c.Uint {
 // Is not.
 //
 // llgo:link Cursor.CXXMethodIsMoveAssignmentOperator C.clang_CXXMethod_isMoveAssignmentOperator
-func (C Cursor) CXXMethodIsMoveAssignmentOperator() c.Uint {
+func (self Cursor) CXXMethodIsMoveAssignmentOperator() c.Uint {
 	return 0
 }
 
@@ -5450,7 +5450,7 @@ func (C Cursor) CXXMethodIsMoveAssignmentOperator() c.Uint {
 // the conversion function.
 //
 // llgo:link Cursor.CXXMethodIsExplicit C.clang_CXXMethod_isExplicit
-func (C Cursor) CXXMethodIsExplicit() c.Uint {
+func (self Cursor) CXXMethodIsExplicit() c.Uint {
 	return 0
 }
 
@@ -5458,14 +5458,14 @@ func (C Cursor) CXXMethodIsExplicit() c.Uint {
 // has a pure virtual member function.
 //
 // llgo:link Cursor.CXXRecordIsAbstract C.clang_CXXRecord_isAbstract
-func (C Cursor) CXXRecordIsAbstract() c.Uint {
+func (self Cursor) CXXRecordIsAbstract() c.Uint {
 	return 0
 }
 
 // Determine if an enum declaration refers to a scoped enum.
 //
 // llgo:link Cursor.EnumDeclIsScoped C.clang_EnumDecl_isScoped
-func (C Cursor) EnumDeclIsScoped() c.Uint {
+func (self Cursor) EnumDeclIsScoped() c.Uint {
 	return 0
 }
 
@@ -5473,7 +5473,7 @@ func (C Cursor) EnumDeclIsScoped() c.Uint {
 // declared 'const'.
 //
 // llgo:link Cursor.CXXMethodIsConst C.clang_CXXMethod_isConst
-func (C Cursor) CXXMethodIsConst() c.Uint {
+func (self Cursor) CXXMethodIsConst() c.Uint {
 	return 0
 }
 
@@ -5494,7 +5494,7 @@ func (C Cursor) CXXMethodIsConst() c.Uint {
 // \c CXCursor_NoDeclFound.
 //
 // llgo:link Cursor.TemplateCursorKind C.clang_getTemplateCursorKind
-func (C Cursor) TemplateCursorKind() CursorKind {
+func (self Cursor) TemplateCursorKind() CursorKind {
 	return 0
 }
 
@@ -5526,8 +5526,8 @@ func (C Cursor) TemplateCursorKind() CursorKind {
 // from which it was instantiated. Otherwise, returns a NULL cursor.
 //
 // llgo:link Cursor.SpecializedCursorTemplate C.clang_getSpecializedCursorTemplate
-func (C Cursor) SpecializedCursorTemplate() Cursor {
-	return C
+func (self Cursor) SpecializedCursorTemplate() Cursor {
+	return self
 }
 
 // Given a cursor that references something else, return the source range
@@ -5548,7 +5548,7 @@ func (C Cursor) SpecializedCursorTemplate() Cursor {
 // name, or if the PieceIndex is out-of-range, a null-cursor will be returned.
 //
 // llgo:link Cursor.ReferenceNameRange C.clang_getCursorReferenceNameRange
-func (C Cursor) ReferenceNameRange(NameFlags c.Uint, PieceIndex c.Uint) SourceRange {
+func (self Cursor) ReferenceNameRange(NameFlags c.Uint, PieceIndex c.Uint) SourceRange {
 	return SourceRange{}
 }
 
@@ -5563,14 +5563,14 @@ func (C Cursor) ReferenceNameRange(NameFlags c.Uint, PieceIndex c.Uint) SourceRa
 // translation unit is destroyed.
 //
 // llgo:link (*TranslationUnitImpl).Token C.clang_getToken
-func (TU *TranslationUnitImpl) Token(Location SourceLocation) *Token {
+func (self *TranslationUnitImpl) Token(Location SourceLocation) *Token {
 	return nil
 }
 
 // Determine the kind of the given token.
 //
 // llgo:link Token.Kind C.clang_getTokenKind
-func (_llcppg_param1 Token) Kind() TokenKind {
+func (self Token) Kind() TokenKind {
 	return 0
 }
 
@@ -5580,21 +5580,21 @@ func (_llcppg_param1 Token) Kind() TokenKind {
 // the text of an identifier or keyword.
 //
 // llgo:link (*TranslationUnitImpl).TokenSpelling C.clang_getTokenSpelling
-func (_llcppg_param1 *TranslationUnitImpl) TokenSpelling(_llcppg_param2 Token) String {
+func (self *TranslationUnitImpl) TokenSpelling(_llcppg_param2 Token) String {
 	return String{}
 }
 
 // Retrieve the source location of the given token.
 //
 // llgo:link (*TranslationUnitImpl).TokenLocation C.clang_getTokenLocation
-func (_llcppg_param1 *TranslationUnitImpl) TokenLocation(_llcppg_param2 Token) SourceLocation {
+func (self *TranslationUnitImpl) TokenLocation(_llcppg_param2 Token) SourceLocation {
 	return SourceLocation{}
 }
 
 // Retrieve a source range that covers the given token.
 //
 // llgo:link (*TranslationUnitImpl).TokenExtent C.clang_getTokenExtent
-func (_llcppg_param1 *TranslationUnitImpl) TokenExtent(_llcppg_param2 Token) SourceRange {
+func (self *TranslationUnitImpl) TokenExtent(_llcppg_param2 Token) SourceRange {
 	return SourceRange{}
 }
 
@@ -5614,7 +5614,7 @@ func (_llcppg_param1 *TranslationUnitImpl) TokenExtent(_llcppg_param2 Token) Sou
 // array.
 //
 // llgo:link (*TranslationUnitImpl).Tokenize C.clang_tokenize
-func (TU *TranslationUnitImpl) Tokenize(Range SourceRange, Tokens **Token, NumTokens *c.Uint) {
+func (self *TranslationUnitImpl) Tokenize(Range SourceRange, Tokens **Token, NumTokens *c.Uint) {
 }
 
 // Annotate the given set of tokens by providing cursors for each token
@@ -5647,13 +5647,13 @@ func (TU *TranslationUnitImpl) Tokenize(Range SourceRange, Tokens **Token, NumTo
 // replaced with the cursors corresponding to each token.
 //
 // llgo:link (*TranslationUnitImpl).AnnotateTokens C.clang_annotateTokens
-func (TU *TranslationUnitImpl) AnnotateTokens(Tokens *Token, NumTokens c.Uint, Cursors *Cursor) {
+func (self *TranslationUnitImpl) AnnotateTokens(Tokens *Token, NumTokens c.Uint, Cursors *Cursor) {
 }
 
 // Free the given set of tokens.
 //
 // llgo:link (*TranslationUnitImpl).DisposeTokens C.clang_disposeTokens
-func (TU *TranslationUnitImpl) DisposeTokens(Tokens *Token, NumTokens c.Uint) {
+func (self *TranslationUnitImpl) DisposeTokens(Tokens *Token, NumTokens c.Uint) {
 }
 
 // \defgroup CINDEX_DEBUG Debugging facilities
@@ -5664,12 +5664,12 @@ func (TU *TranslationUnitImpl) DisposeTokens(Tokens *Token, NumTokens c.Uint) {
 // @{
 //
 // llgo:link CursorKind.Spelling C.clang_getCursorKindSpelling
-func (Kind CursorKind) Spelling() String {
+func (self CursorKind) Spelling() String {
 	return String{}
 }
 
 // llgo:link Cursor.DefinitionSpellingAndExtent C.clang_getDefinitionSpellingAndExtent
-func (_llcppg_param1 Cursor) DefinitionSpellingAndExtent(startBuf **c.Char, endBuf **c.Char, startLine *c.Uint, startColumn *c.Uint, endLine *c.Uint, endColumn *c.Uint) {
+func (self Cursor) DefinitionSpellingAndExtent(startBuf **c.Char, endBuf **c.Char, startLine *c.Uint, startColumn *c.Uint, endLine *c.Uint, endColumn *c.Uint) {
 }
 
 //go:linkname EnableStackTraces C.clang_enableStackTraces
@@ -5687,7 +5687,7 @@ func ExecuteOnThread(fn func(_llcppg_param1 unsafe.Pointer), user_data unsafe.Po
 // \returns the kind of the chunk at the index \c chunk_number.
 //
 // llgo:link CompletionString.ChunkKind C.clang_getCompletionChunkKind
-func (completion_string CompletionString) ChunkKind(chunk_number c.Uint) CompletionChunkKind {
+func (self CompletionString) ChunkKind(chunk_number c.Uint) CompletionChunkKind {
 	return 0
 }
 
@@ -5701,7 +5701,7 @@ func (completion_string CompletionString) ChunkKind(chunk_number c.Uint) Complet
 // \returns the text associated with the chunk at index \c chunk_number.
 //
 // llgo:link CompletionString.ChunkText C.clang_getCompletionChunkText
-func (completion_string CompletionString) ChunkText(chunk_number c.Uint) String {
+func (self CompletionString) ChunkText(chunk_number c.Uint) String {
 	return String{}
 }
 
@@ -5716,14 +5716,14 @@ func (completion_string CompletionString) ChunkText(chunk_number c.Uint) String 
 // \c chunk_number.
 //
 // llgo:link CompletionString.Chunk C.clang_getCompletionChunkCompletionString
-func (completion_string CompletionString) Chunk(chunk_number c.Uint) CompletionString {
-	return completion_string
+func (self CompletionString) Chunk(chunk_number c.Uint) CompletionString {
+	return self
 }
 
 // Retrieve the number of chunks in the given code-completion string.
 //
 // llgo:link CompletionString.NumChunks C.clang_getNumCompletionChunks
-func (completion_string CompletionString) NumChunks() c.Uint {
+func (self CompletionString) NumChunks() c.Uint {
 	return 0
 }
 
@@ -5739,7 +5739,7 @@ func (completion_string CompletionString) NumChunks() c.Uint {
 // higher-priority (more likely) completions.
 //
 // llgo:link CompletionString.Priority C.clang_getCompletionPriority
-func (completion_string CompletionString) Priority() c.Uint {
+func (self CompletionString) Priority() c.Uint {
 	return 0
 }
 
@@ -5751,7 +5751,7 @@ func (completion_string CompletionString) Priority() c.Uint {
 // \returns The availability of the completion string.
 //
 // llgo:link CompletionString.Availability C.clang_getCompletionAvailability
-func (completion_string CompletionString) Availability() AvailabilityKind {
+func (self CompletionString) Availability() AvailabilityKind {
 	return 0
 }
 
@@ -5764,7 +5764,7 @@ func (completion_string CompletionString) Availability() AvailabilityKind {
 // string.
 //
 // llgo:link CompletionString.NumAnnotations C.clang_getCompletionNumAnnotations
-func (completion_string CompletionString) NumAnnotations() c.Uint {
+func (self CompletionString) NumAnnotations() c.Uint {
 	return 0
 }
 
@@ -5779,7 +5779,7 @@ func (completion_string CompletionString) NumAnnotations() c.Uint {
 // \c annotation_number, or a NULL string if that annotation is not available.
 //
 // llgo:link CompletionString.Annotation C.clang_getCompletionAnnotation
-func (completion_string CompletionString) Annotation(annotation_number c.Uint) String {
+func (self CompletionString) Annotation(annotation_number c.Uint) String {
 	return String{}
 }
 
@@ -5799,7 +5799,7 @@ func (completion_string CompletionString) Annotation(annotation_number c.Uint) S
 // the completion string represents a method in the NSObject class.
 //
 // llgo:link CompletionString.Parent C.clang_getCompletionParent
-func (completion_string CompletionString) Parent(kind *CursorKind) String {
+func (self CompletionString) Parent(kind *CursorKind) String {
 	return String{}
 }
 
@@ -5807,7 +5807,7 @@ func (completion_string CompletionString) Parent(kind *CursorKind) String {
 // that corresponds to the given completion string.
 //
 // llgo:link CompletionString.BriefComment C.clang_getCompletionBriefComment
-func (completion_string CompletionString) BriefComment() String {
+func (self CompletionString) BriefComment() String {
 	return String{}
 }
 
@@ -5820,7 +5820,7 @@ func (completion_string CompletionString) BriefComment() String {
 // definition cursors, or NULL for other kinds of cursors.
 //
 // llgo:link Cursor.CompletionString C.clang_getCursorCompletionString
-func (cursor Cursor) CompletionString() CompletionString {
+func (self Cursor) CompletionString() CompletionString {
 	return 0
 }
 
@@ -5837,7 +5837,7 @@ func (cursor Cursor) CompletionString() CompletionString {
 // completion_index can be applied
 //
 // llgo:link (*CodeCompleteResults).NumFixIts C.clang_getCompletionNumFixIts
-func (results *CodeCompleteResults) NumFixIts(completion_index c.Uint) c.Uint {
+func (self *CodeCompleteResults) NumFixIts(completion_index c.Uint) c.Uint {
 	return 0
 }
 
@@ -5884,7 +5884,7 @@ func (results *CodeCompleteResults) NumFixIts(completion_index c.Uint) c.Uint {
 // before the completion at completion_index can be applied
 //
 // llgo:link (*CodeCompleteResults).FixIt C.clang_getCompletionFixIt
-func (results *CodeCompleteResults) FixIt(completion_index c.Uint, fixit_index c.Uint, replacement_range *SourceRange) String {
+func (self *CodeCompleteResults) FixIt(completion_index c.Uint, fixit_index c.Uint, replacement_range *SourceRange) String {
 	return String{}
 }
 
@@ -5962,7 +5962,7 @@ func DefaultCodeCompleteOptions() c.Uint
 // completion fails, returns NULL.
 //
 // llgo:link (*TranslationUnitImpl).CodeCompleteAt C.clang_codeCompleteAt
-func (TU *TranslationUnitImpl) CodeCompleteAt(complete_filename *c.Char, complete_line c.Uint, complete_column c.Uint, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint) *CodeCompleteResults {
+func (self *TranslationUnitImpl) CodeCompleteAt(complete_filename *c.Char, complete_line c.Uint, complete_column c.Uint, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint) *CodeCompleteResults {
 	return nil
 }
 
@@ -5973,20 +5973,20 @@ func (TU *TranslationUnitImpl) CodeCompleteAt(complete_filename *c.Char, complet
 // \param NumResults The number of results in \p Results.
 //
 // llgo:link (*CompletionResult).Sort C.clang_sortCodeCompletionResults
-func (Results *CompletionResult) Sort(NumResults c.Uint) {
+func (self *CompletionResult) Sort(NumResults c.Uint) {
 }
 
 // Free the given set of code-completion results.
 //
 // llgo:link (*CodeCompleteResults).Dispose C.clang_disposeCodeCompleteResults
-func (Results *CodeCompleteResults) Dispose() {
+func (self *CodeCompleteResults) Dispose() {
 }
 
 // Determine the number of diagnostics produced prior to the
 // location where code completion was performed.
 //
 // llgo:link (*CodeCompleteResults).NumDiagnostics C.clang_codeCompleteGetNumDiagnostics
-func (Results *CodeCompleteResults) NumDiagnostics() c.Uint {
+func (self *CodeCompleteResults) NumDiagnostics() c.Uint {
 	return 0
 }
 
@@ -5999,7 +5999,7 @@ func (Results *CodeCompleteResults) NumDiagnostics() c.Uint {
 // via a call to \c clang_disposeDiagnostic().
 //
 // llgo:link (*CodeCompleteResults).Diagnostic C.clang_codeCompleteGetDiagnostic
-func (Results *CodeCompleteResults) Diagnostic(Index c.Uint) Diagnostic {
+func (self *CodeCompleteResults) Diagnostic(Index c.Uint) Diagnostic {
 	return 0
 }
 
@@ -6012,7 +6012,7 @@ func (Results *CodeCompleteResults) Diagnostic(Index c.Uint) Diagnostic {
 // along with the given code completion results.
 //
 // llgo:link (*CodeCompleteResults).Contexts C.clang_codeCompleteGetContexts
-func (Results *CodeCompleteResults) Contexts() c.UlongLong {
+func (self *CodeCompleteResults) Contexts() c.UlongLong {
 	return 0
 }
 
@@ -6032,7 +6032,7 @@ func (Results *CodeCompleteResults) Contexts() c.UlongLong {
 // container
 //
 // llgo:link (*CodeCompleteResults).ContainerKind C.clang_codeCompleteGetContainerKind
-func (Results *CodeCompleteResults) ContainerKind(IsIncomplete *c.Uint) CursorKind {
+func (self *CodeCompleteResults) ContainerKind(IsIncomplete *c.Uint) CursorKind {
 	return 0
 }
 
@@ -6045,7 +6045,7 @@ func (Results *CodeCompleteResults) ContainerKind(IsIncomplete *c.Uint) CursorKi
 // \returns the USR for the container
 //
 // llgo:link (*CodeCompleteResults).ContainerUSR C.clang_codeCompleteGetContainerUSR
-func (Results *CodeCompleteResults) ContainerUSR() String {
+func (self *CodeCompleteResults) ContainerUSR() String {
 	return String{}
 }
 
@@ -6060,7 +6060,7 @@ func (Results *CodeCompleteResults) ContainerUSR() String {
 // for an Objective-C message send.
 //
 // llgo:link (*CodeCompleteResults).ObjCSelector C.clang_codeCompleteGetObjCSelector
-func (Results *CodeCompleteResults) ObjCSelector() String {
+func (self *CodeCompleteResults) ObjCSelector() String {
 	return String{}
 }
 
@@ -6092,14 +6092,14 @@ func GetInclusions(tu TranslationUnit, visitor InclusionVisitor, client_data Cli
 // If it's an expression, tries to evaluate the expression.
 //
 // llgo:link Cursor.Evaluate C.clang_Cursor_Evaluate
-func (C Cursor) Evaluate() EvalResult {
+func (self Cursor) Evaluate() EvalResult {
 	return 0
 }
 
 // Returns the kind of the evaluated result.
 //
 // llgo:link EvalResult.Kind C.clang_EvalResult_getKind
-func (E EvalResult) Kind() EvalResultKind {
+func (self EvalResult) Kind() EvalResultKind {
 	return 0
 }
 
@@ -6107,7 +6107,7 @@ func (E EvalResult) Kind() EvalResultKind {
 // kind is Int.
 //
 // llgo:link EvalResult.AsInt C.clang_EvalResult_getAsInt
-func (E EvalResult) AsInt() c.Int {
+func (self EvalResult) AsInt() c.Int {
 	return 0
 }
 
@@ -6116,7 +6116,7 @@ func (E EvalResult) AsInt() c.Int {
 // returned with clang_EvalResult_getAsInt.
 //
 // llgo:link EvalResult.AsLongLong C.clang_EvalResult_getAsLongLong
-func (E EvalResult) AsLongLong() c.LongLong {
+func (self EvalResult) AsLongLong() c.LongLong {
 	return 0
 }
 
@@ -6124,7 +6124,7 @@ func (E EvalResult) AsLongLong() c.LongLong {
 // result resulted in an unsigned integer.
 //
 // llgo:link EvalResult.IsUnsignedInt C.clang_EvalResult_isUnsignedInt
-func (E EvalResult) IsUnsignedInt() c.Uint {
+func (self EvalResult) IsUnsignedInt() c.Uint {
 	return 0
 }
 
@@ -6132,7 +6132,7 @@ func (E EvalResult) IsUnsignedInt() c.Uint {
 // the kind is Int and clang_EvalResult_isUnsignedInt is non-zero.
 //
 // llgo:link EvalResult.AsUnsigned C.clang_EvalResult_getAsUnsigned
-func (E EvalResult) AsUnsigned() c.UlongLong {
+func (self EvalResult) AsUnsigned() c.UlongLong {
 	return 0
 }
 
@@ -6140,7 +6140,7 @@ func (E EvalResult) AsUnsigned() c.UlongLong {
 // kind is double.
 //
 // llgo:link EvalResult.AsDouble C.clang_EvalResult_getAsDouble
-func (E EvalResult) AsDouble() c.Double {
+func (self EvalResult) AsDouble() c.Double {
 	return 0
 }
 
@@ -6150,14 +6150,14 @@ func (E EvalResult) AsDouble() c.Double {
 // by clang_Cursor_Evaluate.
 //
 // llgo:link EvalResult.AsStr C.clang_EvalResult_getAsStr
-func (E EvalResult) AsStr() *c.Char {
+func (self EvalResult) AsStr() *c.Char {
 	return nil
 }
 
 // Disposes the created Eval memory.
 //
 // llgo:link EvalResult.Dispose C.clang_EvalResult_dispose
-func (E EvalResult) Dispose() {
+func (self EvalResult) Dispose() {
 }
 
 // Find references of a declaration in a specific file.
@@ -6174,7 +6174,7 @@ func (E EvalResult) Dispose() {
 // \returns one of the CXResult enumerators.
 //
 // llgo:link Cursor.FindReferencesInFile C.clang_findReferencesInFile
-func (cursor Cursor) FindReferencesInFile(file File, visitor CursorAndRangeVisitor) Result {
+func (self Cursor) FindReferencesInFile(file File, visitor CursorAndRangeVisitor) Result {
 	return 0
 }
 
@@ -6190,47 +6190,47 @@ func (cursor Cursor) FindReferencesInFile(file File, visitor CursorAndRangeVisit
 // \returns one of the CXResult enumerators.
 //
 // llgo:link (*TranslationUnitImpl).FindIncludesInFile C.clang_findIncludesInFile
-func (TU *TranslationUnitImpl) FindIncludesInFile(file File, visitor CursorAndRangeVisitor) Result {
+func (self *TranslationUnitImpl) FindIncludesInFile(file File, visitor CursorAndRangeVisitor) Result {
 	return 0
 }
 
 // llgo:link IdxEntityKind.IsEntityObjCContainerKind C.clang_index_isEntityObjCContainerKind
-func (_llcppg_param1 IdxEntityKind) IsEntityObjCContainerKind() c.Int {
+func (self IdxEntityKind) IsEntityObjCContainerKind() c.Int {
 	return 0
 }
 
 // llgo:link (*IdxDeclInfo).ObjCContainerDeclInfo C.clang_index_getObjCContainerDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) ObjCContainerDeclInfo() *IdxObjCContainerDeclInfo {
+func (self *IdxDeclInfo) ObjCContainerDeclInfo() *IdxObjCContainerDeclInfo {
 	return nil
 }
 
 // llgo:link (*IdxDeclInfo).ObjCInterfaceDeclInfo C.clang_index_getObjCInterfaceDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) ObjCInterfaceDeclInfo() *IdxObjCInterfaceDeclInfo {
+func (self *IdxDeclInfo) ObjCInterfaceDeclInfo() *IdxObjCInterfaceDeclInfo {
 	return nil
 }
 
 // llgo:link (*IdxDeclInfo).ObjCCategoryDeclInfo C.clang_index_getObjCCategoryDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) ObjCCategoryDeclInfo() *IdxObjCCategoryDeclInfo {
+func (self *IdxDeclInfo) ObjCCategoryDeclInfo() *IdxObjCCategoryDeclInfo {
 	return nil
 }
 
 // llgo:link (*IdxDeclInfo).ObjCProtocolRefListInfo C.clang_index_getObjCProtocolRefListInfo
-func (_llcppg_param1 *IdxDeclInfo) ObjCProtocolRefListInfo() *IdxObjCProtocolRefListInfo {
+func (self *IdxDeclInfo) ObjCProtocolRefListInfo() *IdxObjCProtocolRefListInfo {
 	return nil
 }
 
 // llgo:link (*IdxDeclInfo).ObjCPropertyDeclInfo C.clang_index_getObjCPropertyDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) ObjCPropertyDeclInfo() *IdxObjCPropertyDeclInfo {
+func (self *IdxDeclInfo) ObjCPropertyDeclInfo() *IdxObjCPropertyDeclInfo {
 	return nil
 }
 
 // llgo:link (*IdxAttrInfo).IBOutletCollectionAttrInfo C.clang_index_getIBOutletCollectionAttrInfo
-func (_llcppg_param1 *IdxAttrInfo) IBOutletCollectionAttrInfo() *IdxIBOutletCollectionAttrInfo {
+func (self *IdxAttrInfo) IBOutletCollectionAttrInfo() *IdxIBOutletCollectionAttrInfo {
 	return nil
 }
 
 // llgo:link (*IdxDeclInfo).CXXClassDeclInfo C.clang_index_getCXXClassDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) CXXClassDeclInfo() *IdxCXXClassDeclInfo {
+func (self *IdxDeclInfo) CXXClassDeclInfo() *IdxCXXClassDeclInfo {
 	return nil
 }
 
@@ -6238,7 +6238,7 @@ func (_llcppg_param1 *IdxDeclInfo) CXXClassDeclInfo() *IdxCXXClassDeclInfo {
 // container.
 //
 // llgo:link (*IdxContainerInfo).ClientContainer C.clang_index_getClientContainer
-func (_llcppg_param1 *IdxContainerInfo) ClientContainer() IdxClientContainer {
+func (self *IdxContainerInfo) ClientContainer() IdxClientContainer {
 	return 0
 }
 
@@ -6246,20 +6246,20 @@ func (_llcppg_param1 *IdxContainerInfo) ClientContainer() IdxClientContainer {
 // container.
 //
 // llgo:link (*IdxContainerInfo).SetClientContainer C.clang_index_setClientContainer
-func (_llcppg_param1 *IdxContainerInfo) SetClientContainer(_llcppg_param2 IdxClientContainer) {
+func (self *IdxContainerInfo) SetClientContainer(_llcppg_param2 IdxClientContainer) {
 }
 
 // For retrieving a custom CXIdxClientEntity attached to an entity.
 //
 // llgo:link (*IdxEntityInfo).ClientEntity C.clang_index_getClientEntity
-func (_llcppg_param1 *IdxEntityInfo) ClientEntity() IdxClientEntity {
+func (self *IdxEntityInfo) ClientEntity() IdxClientEntity {
 	return 0
 }
 
 // For setting a custom CXIdxClientEntity attached to an entity.
 //
 // llgo:link (*IdxEntityInfo).SetClientEntity C.clang_index_setClientEntity
-func (_llcppg_param1 *IdxEntityInfo) SetClientEntity(_llcppg_param2 IdxClientEntity) {
+func (self *IdxEntityInfo) SetClientEntity(_llcppg_param2 IdxClientEntity) {
 }
 
 // An indexing action/session, to be applied to one or multiple
@@ -6268,7 +6268,7 @@ func (_llcppg_param1 *IdxEntityInfo) SetClientEntity(_llcppg_param2 IdxClientEnt
 // \param CIdx The index object with which the index action will be associated.
 //
 // llgo:link Index.ActionCreate C.clang_IndexAction_create
-func (CIdx Index) ActionCreate() IndexAction {
+func (self Index) ActionCreate() IndexAction {
 	return 0
 }
 
@@ -6278,7 +6278,7 @@ func (CIdx Index) ActionCreate() IndexAction {
 // created within that index action have been destroyed.
 //
 // llgo:link IndexAction.Dispose C.clang_IndexAction_dispose
-func (_llcppg_param1 IndexAction) Dispose() {
+func (self IndexAction) Dispose() {
 }
 
 // Index the given source file and the translation unit corresponding
@@ -6306,7 +6306,7 @@ func (_llcppg_param1 IndexAction) Dispose() {
 // The rest of the parameters are the same as #clang_parseTranslationUnit.
 //
 // llgo:link IndexAction.IndexSourceFile C.clang_indexSourceFile
-func (_llcppg_param1 IndexAction) IndexSourceFile(client_data ClientData, index_callbacks *IndexerCallbacks, index_callbacks_size c.Uint, index_options c.Uint, source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, out_TU *TranslationUnit, TU_options c.Uint) c.Int {
+func (self IndexAction) IndexSourceFile(client_data ClientData, index_callbacks *IndexerCallbacks, index_callbacks_size c.Uint, index_options c.Uint, source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, out_TU *TranslationUnit, TU_options c.Uint) c.Int {
 	return 0
 }
 
@@ -6315,7 +6315,7 @@ func (_llcppg_param1 IndexAction) IndexSourceFile(client_data ClientData, index_
 // library paths are relative to the binary.
 //
 // llgo:link IndexAction.IndexSourceFileFullArgv C.clang_indexSourceFileFullArgv
-func (_llcppg_param1 IndexAction) IndexSourceFileFullArgv(client_data ClientData, index_callbacks *IndexerCallbacks, index_callbacks_size c.Uint, index_options c.Uint, source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, out_TU *TranslationUnit, TU_options c.Uint) c.Int {
+func (self IndexAction) IndexSourceFileFullArgv(client_data ClientData, index_callbacks *IndexerCallbacks, index_callbacks_size c.Uint, index_options c.Uint, source_filename *c.Char, command_line_args **c.Char, num_command_line_args c.Int, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, out_TU *TranslationUnit, TU_options c.Uint) c.Int {
 	return 0
 }
 
@@ -6335,7 +6335,7 @@ func (_llcppg_param1 IndexAction) IndexSourceFileFullArgv(client_data ClientData
 // non-zero, otherwise returns 0.
 //
 // llgo:link IndexAction.IndexTranslationUnit C.clang_indexTranslationUnit
-func (_llcppg_param1 IndexAction) IndexTranslationUnit(client_data ClientData, index_callbacks *IndexerCallbacks, index_callbacks_size c.Uint, index_options c.Uint, _llcppg_param6 TranslationUnit) c.Int {
+func (self IndexAction) IndexTranslationUnit(client_data ClientData, index_callbacks *IndexerCallbacks, index_callbacks_size c.Uint, index_options c.Uint, _llcppg_param6 TranslationUnit) c.Int {
 	return 0
 }
 
@@ -6347,13 +6347,13 @@ func (_llcppg_param1 IndexAction) IndexTranslationUnit(client_data ClientData, i
 // retrieves the location of the argument.
 //
 // llgo:link IdxLoc.FileLocation C.clang_indexLoc_getFileLocation
-func (loc IdxLoc) FileLocation(indexFile *IdxClientFile, file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+func (self IdxLoc) FileLocation(indexFile *IdxClientFile, file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the CXSourceLocation represented by the given CXIdxLoc.
 //
 // llgo:link IdxLoc.SourceLocation C.clang_indexLoc_getCXSourceLocation
-func (loc IdxLoc) SourceLocation() SourceLocation {
+func (self IdxLoc) SourceLocation() SourceLocation {
 	return SourceLocation{}
 }
 
@@ -6423,7 +6423,7 @@ func VisitCXXMethods(T Type, visitor FieldVisitor, client_data ClientData) c.Uin
 // Retrieve the spelling of a given CXBinaryOperatorKind.
 //
 // llgo:link BinaryOperatorKind.Spelling C.clang_getBinaryOperatorKindSpelling
-func (kind BinaryOperatorKind) Spelling() String {
+func (self BinaryOperatorKind) Spelling() String {
 	return String{}
 }
 
@@ -6432,14 +6432,14 @@ func (kind BinaryOperatorKind) Spelling() String {
 // If this cursor is not a binary operator then returns Invalid.
 //
 // llgo:link Cursor.BinaryOperatorKind C.clang_getCursorBinaryOperatorKind
-func (cursor Cursor) BinaryOperatorKind() BinaryOperatorKind {
+func (self Cursor) BinaryOperatorKind() BinaryOperatorKind {
 	return 0
 }
 
 // Retrieve the spelling of a given CXUnaryOperatorKind.
 //
 // llgo:link UnaryOperatorKind.Spelling C.clang_getUnaryOperatorKindSpelling
-func (kind UnaryOperatorKind) Spelling() String {
+func (self UnaryOperatorKind) Spelling() String {
 	return String{}
 }
 
@@ -6448,7 +6448,7 @@ func (kind UnaryOperatorKind) Spelling() String {
 // If this cursor is not a unary operator then returns Invalid.
 //
 // llgo:link Cursor.UnaryOperatorKind C.clang_getCursorUnaryOperatorKind
-func (cursor Cursor) UnaryOperatorKind() UnaryOperatorKind {
+func (self Cursor) UnaryOperatorKind() UnaryOperatorKind {
 	return 0
 }
 
@@ -6459,14 +6459,14 @@ func GetRemappings(_llcppg_param1 *c.Char) Remapping
 func GetRemappingsFromFileList(_llcppg_param1 **c.Char, _llcppg_param2 c.Uint) Remapping
 
 // llgo:link Remapping.NumFiles C.clang_remap_getNumFiles
-func (_llcppg_param1 Remapping) NumFiles() c.Uint {
+func (self Remapping) NumFiles() c.Uint {
 	return 0
 }
 
 // llgo:link Remapping.Filenames C.clang_remap_getFilenames
-func (_llcppg_param1 Remapping) Filenames(_llcppg_param2 c.Uint, _llcppg_param3 *String, _llcppg_param4 *String) {
+func (self Remapping) Filenames(_llcppg_param2 c.Uint, _llcppg_param3 *String, _llcppg_param4 *String) {
 }
 
 // llgo:link Remapping.Dispose C.clang_remap_dispose
-func (_llcppg_param1 Remapping) Dispose() {
+func (self Remapping) Dispose() {
 }

@@ -141,6 +141,11 @@ type Config struct {
 	// GenMultiGoFiles specifies whether to generate multiple Go files for each header file.
 	GenMultiGoFiles bool
 
+	// UseStdRecvName specifies whether to use the standard receiver name for methods. If true,
+	// the receiver name will be "this" for C++ methods and "self" for C methods. If false,
+	// the receiver name will be the first parameter name (optional).
+	UseStdRecvName bool
+
 	// DontKeepDoc specifies whether to keep the documentation comments in the generated
 	// Go package. If true, the documentation comments will be removed (optional).
 	DontKeepDoc bool
@@ -190,8 +195,9 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		rename = make(map[string]string)
 	}
 	ctx := &pkgCtx{
-		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(), llgo: llgo,
-		fset: pkg.Fset, c: c, lang: conf.Language, keepDoc: !conf.DontKeepDoc,
+		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
+		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
+		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, enumPrefix: conf.EnumPrefix,
 		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
 		ignores: conf.Ignore, rename: rename, classes: conf.Class, nonClasses: conf.NonClass,

@@ -9,45 +9,45 @@ type Rewriter uintptr
 // Create CXRewriter.
 //
 // llgo:link (*TranslationUnitImpl).RewriterCreate C.clang_CXRewriter_create
-func (TU *TranslationUnitImpl) RewriterCreate() Rewriter {
+func (self *TranslationUnitImpl) RewriterCreate() Rewriter {
 	return 0
 }
 
 // Insert the specified string at the specified location in the original buffer.
 //
 // llgo:link Rewriter.InsertTextBefore C.clang_CXRewriter_insertTextBefore
-func (Rew Rewriter) InsertTextBefore(Loc SourceLocation, Insert *c.Char) {
+func (self Rewriter) InsertTextBefore(Loc SourceLocation, Insert *c.Char) {
 }
 
 // Replace the specified range of characters in the input with the specified
 // replacement.
 //
 // llgo:link Rewriter.ReplaceText C.clang_CXRewriter_replaceText
-func (Rew Rewriter) ReplaceText(ToBeReplaced SourceRange, Replacement *c.Char) {
+func (self Rewriter) ReplaceText(ToBeReplaced SourceRange, Replacement *c.Char) {
 }
 
 // Remove the specified range.
 //
 // llgo:link Rewriter.RemoveText C.clang_CXRewriter_removeText
-func (Rew Rewriter) RemoveText(ToBeRemoved SourceRange) {
+func (self Rewriter) RemoveText(ToBeRemoved SourceRange) {
 }
 
 // Save all changed files to disk.
 // Returns 1 if any files were not saved successfully, returns 0 otherwise.
 //
 // llgo:link Rewriter.OverwriteChangedFiles C.clang_CXRewriter_overwriteChangedFiles
-func (Rew Rewriter) OverwriteChangedFiles() c.Int {
+func (self Rewriter) OverwriteChangedFiles() c.Int {
 	return 0
 }
 
 // Write out rewritten version of the main file to stdout.
 //
 // llgo:link Rewriter.WriteMainFileToStdOut C.clang_CXRewriter_writeMainFileToStdOut
-func (Rew Rewriter) WriteMainFileToStdOut() {
+func (self Rewriter) WriteMainFileToStdOut() {
 }
 
 // Free the given CXRewriter.
 //
 // llgo:link Rewriter.Dispose C.clang_CXRewriter_dispose
-func (Rew Rewriter) Dispose() {
+func (self Rewriter) Dispose() {
 }

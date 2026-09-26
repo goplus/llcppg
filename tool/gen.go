@@ -185,6 +185,7 @@ func (cfg *Config) NewPackage(pkgPath, workDir, stdlibDir string, index clang.In
 		Ignore:          cfg.Ignore,
 		DefaultGoFile:   "llcppg.i.go",
 		GenMultiGoFiles: true,
+		UseStdRecvName:  true,
 		NameLookup:      nil,
 		PubFileLookup:   mod.PubFileLookup,
 		PackageOf: func(headerFile string) (pkgPath string, ok bool) {

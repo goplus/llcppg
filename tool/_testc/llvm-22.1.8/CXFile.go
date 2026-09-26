@@ -20,14 +20,14 @@ type FileUniqueID struct {
 // Retrieve the complete file and path name of the given file.
 //
 // llgo:link File.Name C.clang_getFileName
-func (SFile File) Name() String {
+func (self File) Name() String {
 	return String{}
 }
 
 // Retrieve the last modification time of the given file.
 //
 // llgo:link File.Time C.clang_getFileTime
-func (SFile File) Time() time.TimeT {
+func (self File) Time() time.TimeT {
 	return 0
 }
 
@@ -39,7 +39,7 @@ func (SFile File) Time() time.TimeT {
 // otherwise returns 0.
 //
 // llgo:link File.UniqueID C.clang_getFileUniqueID
-func (file File) UniqueID(outID *FileUniqueID) c.Int {
+func (self File) UniqueID(outID *FileUniqueID) c.Int {
 	return 0
 }
 
@@ -54,6 +54,6 @@ func FileIsEqual(file1 File, file2 File) c.Int
 // An empty string may be returned. Use \c clang_getFileName() in that case.
 //
 // llgo:link File.TryGetRealPathName C.clang_File_tryGetRealPathName
-func (file File) TryGetRealPathName() String {
+func (self File) TryGetRealPathName() String {
 	return String{}
 }

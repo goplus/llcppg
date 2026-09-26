@@ -164,6 +164,7 @@ func existMember(typ *types.Named, name string) bool {
 
 const (
 	llgoSupportAliasAsRecv = false
+	c2goMethodRecvName     = "self"
 )
 
 func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named, string) {
@@ -180,30 +181,37 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 		switch t := t.(type) {
 		case *types.Named:
 			if t.Obj().Pkg() == pkgTypes {
+				if ctx.stdRecvName {
+					first = types.NewParam(first.Pos(), pkgTypes, c2goMethodRecvName, first.Type())
+				}
 				return params[1:], first, t, t.Obj().Name()
 			}
 		case *types.Alias:
 			if t.Obj().Pkg() != pkgTypes {
 				break
 			}
-			if llgoSupportAliasAsRecv {
-				ta := types.Unalias(t)
-				if tp, ok := ta.(*types.Pointer); ok {
-					ta = tp.Elem()
-				}
-				if tn, ok := ta.(*types.Named); ok {
+			ta := types.Unalias(t)
+			if tp, ok := ta.(*types.Pointer); ok {
+				ta = tp.Elem()
+			}
+			if tn, ok := ta.(*types.Named); ok && tn.Obj().Pkg() == pkgTypes {
+				if llgoSupportAliasAsRecv {
+					if ctx.stdRecvName {
+						first = types.NewParam(first.Pos(), pkgTypes, c2goMethodRecvName, first.Type())
+					}
 					return params[1:], first, tn, t.Obj().Name()
-				}
-			} else {
-				ta := types.Unalias(t)
-				first = types.NewParam(first.Pos(), pkgTypes, first.Name(), ta)
-				if tp, ok := ta.(*types.Pointer); ok {
-					ta = tp.Elem()
-				}
-				if tn, ok := ta.(*types.Named); ok && tn.Obj().Pkg() == pkgTypes {
+				} else {
+					var recvName string
+					if ctx.stdRecvName {
+						recvName = c2goMethodRecvName
+					} else {
+						recvName = first.Name()
+					}
+					first = types.NewParam(first.Pos(), pkgTypes, recvName, types.Unalias(t))
 					// add type abbreviation for alias type
-					ctx.typeAbbr[tn.Obj().Name()] = t.Obj().Name()
-					return params[1:], first, tn, tn.Obj().Name()
+					var tnObjName = tn.Obj().Name()
+					ctx.typeAbbr[tnObjName] = t.Obj().Name()
+					return params[1:], first, tn, tnObjName
 				}
 			}
 		}

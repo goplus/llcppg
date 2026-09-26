@@ -60,7 +60,7 @@ func IsBeforeInTranslationUnit(loc1 SourceLocation, loc2 SourceLocation) c.Uint
 // Returns non-zero if the given source location is in a system header.
 //
 // llgo:link SourceLocation.IsInSystemHeader C.clang_Location_isInSystemHeader
-func (location SourceLocation) IsInSystemHeader() c.Int {
+func (self SourceLocation) IsInSystemHeader() c.Int {
 	return 0
 }
 
@@ -68,7 +68,7 @@ func (location SourceLocation) IsInSystemHeader() c.Int {
 // the corresponding translation unit.
 //
 // llgo:link SourceLocation.IsFromMainFile C.clang_Location_isFromMainFile
-func (location SourceLocation) IsFromMainFile() c.Int {
+func (self SourceLocation) IsFromMainFile() c.Int {
 	return 0
 }
 
@@ -93,7 +93,7 @@ func EqualRanges(range1 SourceRange, range2 SourceRange) c.Uint
 // Returns non-zero if \p range is null.
 //
 // llgo:link SourceRange.IsNull C.clang_Range_isNull
-func (range_ SourceRange) IsNull() c.Int {
+func (self SourceRange) IsNull() c.Int {
 	return 0
 }
 
@@ -119,7 +119,7 @@ func (range_ SourceRange) IsNull() c.Int {
 // buffer to which the given source location points.
 //
 // llgo:link SourceLocation.Expansion C.clang_getExpansionLocation
-func (location SourceLocation) Expansion(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+func (self SourceLocation) Expansion(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the file, line and column represented by the given source
@@ -162,7 +162,7 @@ func (location SourceLocation) Expansion(file *File, line *c.Uint, column *c.Uin
 // source location. For an invalid source location, zero is returned.
 //
 // llgo:link SourceLocation.Presumed C.clang_getPresumedLocation
-func (location SourceLocation) Presumed(filename *String, line *c.Uint, column *c.Uint) {
+func (self SourceLocation) Presumed(filename *String, line *c.Uint, column *c.Uint) {
 }
 
 // Legacy API to retrieve the file, line, column, and offset represented
@@ -173,7 +173,7 @@ func (location SourceLocation) Presumed(filename *String, line *c.Uint, column *
 // details.
 //
 // llgo:link SourceLocation.Instantiation C.clang_getInstantiationLocation
-func (location SourceLocation) Instantiation(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+func (self SourceLocation) Instantiation(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the file, line, column, and offset represented by
@@ -198,7 +198,7 @@ func (location SourceLocation) Instantiation(file *File, line *c.Uint, column *c
 // buffer to which the given source location points.
 //
 // llgo:link SourceLocation.Spelling C.clang_getSpellingLocation
-func (location SourceLocation) Spelling(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+func (self SourceLocation) Spelling(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the file, line, column, and offset represented by
@@ -224,14 +224,14 @@ func (location SourceLocation) Spelling(file *File, line *c.Uint, column *c.Uint
 // buffer to which the given source location points.
 //
 // llgo:link SourceLocation.File C.clang_getFileLocation
-func (location SourceLocation) File(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+func (self SourceLocation) File(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve a source location representing the first character within a
 // source range.
 //
 // llgo:link SourceRange.Start C.clang_getRangeStart
-func (range_ SourceRange) Start() SourceLocation {
+func (self SourceRange) Start() SourceLocation {
 	return SourceLocation{}
 }
 
@@ -239,12 +239,12 @@ func (range_ SourceRange) Start() SourceLocation {
 // source range.
 //
 // llgo:link SourceRange.End C.clang_getRangeEnd
-func (range_ SourceRange) End() SourceLocation {
+func (self SourceRange) End() SourceLocation {
 	return SourceLocation{}
 }
 
 // Destroy the given \c CXSourceRangeList.
 //
 // llgo:link (*SourceRangeList).Dispose C.clang_disposeSourceRangeList
-func (ranges *SourceRangeList) Dispose() {
+func (self *SourceRangeList) Dispose() {
 }
