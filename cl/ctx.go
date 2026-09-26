@@ -139,6 +139,8 @@ type pkgCtx struct {
 	anonUnionSeq  int
 	anonStructSeq int
 
+	stdRecvName bool
+
 	keepDoc bool
 }
 
