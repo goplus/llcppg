@@ -68,7 +68,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 	case lc.Type_Bool:
 		return types.Typ[types.Bool]
 	case lc.Type_Char_S:
-		return ctx.c.Ref("Char").Type()
+		return ctx.basicTyp(cChar)
 	case lc.Type_SChar:
 		return types.Typ[types.Int8]
 	case lc.Type_Char_U, lc.Type_UChar:
@@ -78,21 +78,21 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, hasCallba
 	case lc.Type_UShort:
 		return types.Typ[types.Uint16]
 	case lc.Type_Int:
-		return ctx.c.Ref("Int").Type()
+		return ctx.basicTyp(cInt)
 	case lc.Type_UInt:
-		return ctx.c.Ref("Uint").Type()
+		return ctx.basicTyp(cUint)
 	case lc.Type_Long:
-		return ctx.c.Ref("Long").Type()
+		return ctx.basicTyp(cLong)
 	case lc.Type_ULong:
-		return ctx.c.Ref("Ulong").Type()
+		return ctx.basicTyp(cUlong)
 	case lc.Type_LongLong:
-		return ctx.c.Ref("LongLong").Type()
+		return ctx.basicTyp(cLongLong)
 	case lc.Type_ULongLong:
-		return ctx.c.Ref("UlongLong").Type()
+		return ctx.basicTyp(cUlongLong)
 	case lc.Type_Float:
-		return ctx.c.Ref("Float").Type()
+		return ctx.basicTyp(cFloat)
 	case lc.Type_Double:
-		return ctx.c.Ref("Double").Type()
+		return ctx.basicTyp(cDouble)
 	case lc.Type_Pointer:
 		elem := typ.Pointee()
 		if elem.Kind == lc.Type_FunctionProto {
