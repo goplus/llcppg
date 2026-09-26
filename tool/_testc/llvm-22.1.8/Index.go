@@ -6194,72 +6194,72 @@ func (TU *TranslationUnitImpl) FindIncludesInFile(file File, visitor CursorAndRa
 	return 0
 }
 
-// llgo:link IdxEntityKind.IndexIsEntityObjCContainerKind C.clang_index_isEntityObjCContainerKind
-func (_llcppg_param1 IdxEntityKind) IndexIsEntityObjCContainerKind() c.Int {
+// llgo:link IdxEntityKind.IsEntityObjCContainerKind C.clang_index_isEntityObjCContainerKind
+func (_llcppg_param1 IdxEntityKind) IsEntityObjCContainerKind() c.Int {
 	return 0
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCContainerDeclInfo C.clang_index_getObjCContainerDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCContainerDeclInfo() *IdxObjCContainerDeclInfo {
+// llgo:link (*IdxDeclInfo).ObjCContainerDeclInfo C.clang_index_getObjCContainerDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCContainerDeclInfo() *IdxObjCContainerDeclInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCInterfaceDeclInfo C.clang_index_getObjCInterfaceDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCInterfaceDeclInfo() *IdxObjCInterfaceDeclInfo {
+// llgo:link (*IdxDeclInfo).ObjCInterfaceDeclInfo C.clang_index_getObjCInterfaceDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCInterfaceDeclInfo() *IdxObjCInterfaceDeclInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCCategoryDeclInfo C.clang_index_getObjCCategoryDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCCategoryDeclInfo() *IdxObjCCategoryDeclInfo {
+// llgo:link (*IdxDeclInfo).ObjCCategoryDeclInfo C.clang_index_getObjCCategoryDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCCategoryDeclInfo() *IdxObjCCategoryDeclInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCProtocolRefListInfo C.clang_index_getObjCProtocolRefListInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCProtocolRefListInfo() *IdxObjCProtocolRefListInfo {
+// llgo:link (*IdxDeclInfo).ObjCProtocolRefListInfo C.clang_index_getObjCProtocolRefListInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCProtocolRefListInfo() *IdxObjCProtocolRefListInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetObjCPropertyDeclInfo C.clang_index_getObjCPropertyDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetObjCPropertyDeclInfo() *IdxObjCPropertyDeclInfo {
+// llgo:link (*IdxDeclInfo).ObjCPropertyDeclInfo C.clang_index_getObjCPropertyDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) ObjCPropertyDeclInfo() *IdxObjCPropertyDeclInfo {
 	return nil
 }
 
-// llgo:link (*IdxAttrInfo).IndexGetIBOutletCollectionAttrInfo C.clang_index_getIBOutletCollectionAttrInfo
-func (_llcppg_param1 *IdxAttrInfo) IndexGetIBOutletCollectionAttrInfo() *IdxIBOutletCollectionAttrInfo {
+// llgo:link (*IdxAttrInfo).IBOutletCollectionAttrInfo C.clang_index_getIBOutletCollectionAttrInfo
+func (_llcppg_param1 *IdxAttrInfo) IBOutletCollectionAttrInfo() *IdxIBOutletCollectionAttrInfo {
 	return nil
 }
 
-// llgo:link (*IdxDeclInfo).IndexGetCXXClassDeclInfo C.clang_index_getCXXClassDeclInfo
-func (_llcppg_param1 *IdxDeclInfo) IndexGetCXXClassDeclInfo() *IdxCXXClassDeclInfo {
+// llgo:link (*IdxDeclInfo).CXXClassDeclInfo C.clang_index_getCXXClassDeclInfo
+func (_llcppg_param1 *IdxDeclInfo) CXXClassDeclInfo() *IdxCXXClassDeclInfo {
 	return nil
 }
 
 // For retrieving a custom CXIdxClientContainer attached to a
 // container.
 //
-// llgo:link (*IdxContainerInfo).IndexGetClientContainer C.clang_index_getClientContainer
-func (_llcppg_param1 *IdxContainerInfo) IndexGetClientContainer() IdxClientContainer {
+// llgo:link (*IdxContainerInfo).ClientContainer C.clang_index_getClientContainer
+func (_llcppg_param1 *IdxContainerInfo) ClientContainer() IdxClientContainer {
 	return 0
 }
 
 // For setting a custom CXIdxClientContainer attached to a
 // container.
 //
-// llgo:link (*IdxContainerInfo).IndexSetClientContainer C.clang_index_setClientContainer
-func (_llcppg_param1 *IdxContainerInfo) IndexSetClientContainer(_llcppg_param2 IdxClientContainer) {
+// llgo:link (*IdxContainerInfo).SetClientContainer C.clang_index_setClientContainer
+func (_llcppg_param1 *IdxContainerInfo) SetClientContainer(_llcppg_param2 IdxClientContainer) {
 }
 
 // For retrieving a custom CXIdxClientEntity attached to an entity.
 //
-// llgo:link (*IdxEntityInfo).IndexGetClientEntity C.clang_index_getClientEntity
-func (_llcppg_param1 *IdxEntityInfo) IndexGetClientEntity() IdxClientEntity {
+// llgo:link (*IdxEntityInfo).ClientEntity C.clang_index_getClientEntity
+func (_llcppg_param1 *IdxEntityInfo) ClientEntity() IdxClientEntity {
 	return 0
 }
 
 // For setting a custom CXIdxClientEntity attached to an entity.
 //
-// llgo:link (*IdxEntityInfo).IndexSetClientEntity C.clang_index_setClientEntity
-func (_llcppg_param1 *IdxEntityInfo) IndexSetClientEntity(_llcppg_param2 IdxClientEntity) {
+// llgo:link (*IdxEntityInfo).SetClientEntity C.clang_index_setClientEntity
+func (_llcppg_param1 *IdxEntityInfo) SetClientEntity(_llcppg_param2 IdxClientEntity) {
 }
 
 // An indexing action/session, to be applied to one or multiple
