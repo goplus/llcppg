@@ -6346,14 +6346,14 @@ func (_llcppg_param1 IndexAction) IndexTranslationUnit(client_data ClientData, i
 // location of the macro expansion and if it refers into a macro argument
 // retrieves the location of the argument.
 //
-// llgo:link IdxLoc.IndexLocGetFileLocation C.clang_indexLoc_getFileLocation
-func (loc IdxLoc) IndexLocGetFileLocation(indexFile *IdxClientFile, file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
+// llgo:link IdxLoc.FileLocation C.clang_indexLoc_getFileLocation
+func (loc IdxLoc) FileLocation(indexFile *IdxClientFile, file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve the CXSourceLocation represented by the given CXIdxLoc.
 //
-// llgo:link IdxLoc.IndexLocGetCXSourceLocation C.clang_indexLoc_getCXSourceLocation
-func (loc IdxLoc) IndexLocGetCXSourceLocation() SourceLocation {
+// llgo:link IdxLoc.CXSourceLocation C.clang_indexLoc_getCXSourceLocation
+func (loc IdxLoc) CXSourceLocation() SourceLocation {
 	return SourceLocation{}
 }
 
