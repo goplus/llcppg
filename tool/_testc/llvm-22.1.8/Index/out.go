@@ -6096,8 +6096,8 @@ func GetInclusions(tu TranslationUnit, visitor InclusionVisitor, client_data Cli
 // into its corresponding type.
 // If it's an expression, tries to evaluate the expression.
 //
-// llgo:link Cursor.Cursor_Evaluate C.clang_Cursor_Evaluate
-func (C Cursor) Cursor_Evaluate() EvalResult {
+// llgo:link Cursor.Evaluate C.clang_Cursor_Evaluate
+func (C Cursor) Evaluate() EvalResult {
 	return 0
 }
 
