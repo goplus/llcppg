@@ -5686,8 +5686,8 @@ func ExecuteOnThread(fn func(_llcppg_param1 unsafe.Pointer), user_data unsafe.Po
 //
 // \returns the kind of the chunk at the index \c chunk_number.
 //
-// llgo:link CompletionString.CompletionChunkKind C.clang_getCompletionChunkKind
-func (completion_string CompletionString) CompletionChunkKind(chunk_number c.Uint) CompletionChunkKind {
+// llgo:link CompletionString.ChunkKind C.clang_getCompletionChunkKind
+func (completion_string CompletionString) ChunkKind(chunk_number c.Uint) CompletionChunkKind {
 	return 0
 }
 
@@ -5700,8 +5700,8 @@ func (completion_string CompletionString) CompletionChunkKind(chunk_number c.Uin
 //
 // \returns the text associated with the chunk at index \c chunk_number.
 //
-// llgo:link CompletionString.CompletionChunkText C.clang_getCompletionChunkText
-func (completion_string CompletionString) CompletionChunkText(chunk_number c.Uint) String {
+// llgo:link CompletionString.ChunkText C.clang_getCompletionChunkText
+func (completion_string CompletionString) ChunkText(chunk_number c.Uint) String {
 	return String{}
 }
 
@@ -5715,8 +5715,8 @@ func (completion_string CompletionString) CompletionChunkText(chunk_number c.Uin
 // \returns the completion string associated with the chunk at index
 // \c chunk_number.
 //
-// llgo:link CompletionString.CompletionChunk C.clang_getCompletionChunkCompletionString
-func (completion_string CompletionString) CompletionChunk(chunk_number c.Uint) CompletionString {
+// llgo:link CompletionString.Chunk C.clang_getCompletionChunkCompletionString
+func (completion_string CompletionString) Chunk(chunk_number c.Uint) CompletionString {
 	return completion_string
 }
 
@@ -5738,8 +5738,8 @@ func (completion_string CompletionString) NumCompletionChunks() c.Uint {
 // \returns The priority of this completion string. Smaller values indicate
 // higher-priority (more likely) completions.
 //
-// llgo:link CompletionString.CompletionPriority C.clang_getCompletionPriority
-func (completion_string CompletionString) CompletionPriority() c.Uint {
+// llgo:link CompletionString.Priority C.clang_getCompletionPriority
+func (completion_string CompletionString) Priority() c.Uint {
 	return 0
 }
 
@@ -5750,8 +5750,8 @@ func (completion_string CompletionString) CompletionPriority() c.Uint {
 //
 // \returns The availability of the completion string.
 //
-// llgo:link CompletionString.CompletionAvailability C.clang_getCompletionAvailability
-func (completion_string CompletionString) CompletionAvailability() AvailabilityKind {
+// llgo:link CompletionString.Availability C.clang_getCompletionAvailability
+func (completion_string CompletionString) Availability() AvailabilityKind {
 	return 0
 }
 
@@ -5763,8 +5763,8 @@ func (completion_string CompletionString) CompletionAvailability() AvailabilityK
 // \returns the number of annotations associated with the given completion
 // string.
 //
-// llgo:link CompletionString.CompletionNumAnnotations C.clang_getCompletionNumAnnotations
-func (completion_string CompletionString) CompletionNumAnnotations() c.Uint {
+// llgo:link CompletionString.NumAnnotations C.clang_getCompletionNumAnnotations
+func (completion_string CompletionString) NumAnnotations() c.Uint {
 	return 0
 }
 
@@ -5778,8 +5778,8 @@ func (completion_string CompletionString) CompletionNumAnnotations() c.Uint {
 // \returns annotation string associated with the completion at index
 // \c annotation_number, or a NULL string if that annotation is not available.
 //
-// llgo:link CompletionString.CompletionAnnotation C.clang_getCompletionAnnotation
-func (completion_string CompletionString) CompletionAnnotation(annotation_number c.Uint) String {
+// llgo:link CompletionString.Annotation C.clang_getCompletionAnnotation
+func (completion_string CompletionString) Annotation(annotation_number c.Uint) String {
 	return String{}
 }
 
@@ -5798,16 +5798,16 @@ func (completion_string CompletionString) CompletionAnnotation(annotation_number
 // \returns The name of the completion parent, e.g., "NSObject" if
 // the completion string represents a method in the NSObject class.
 //
-// llgo:link CompletionString.CompletionParent C.clang_getCompletionParent
-func (completion_string CompletionString) CompletionParent(kind *CursorKind) String {
+// llgo:link CompletionString.Parent C.clang_getCompletionParent
+func (completion_string CompletionString) Parent(kind *CursorKind) String {
 	return String{}
 }
 
 // Retrieve the brief documentation comment attached to the declaration
 // that corresponds to the given completion string.
 //
-// llgo:link CompletionString.CompletionBriefComment C.clang_getCompletionBriefComment
-func (completion_string CompletionString) CompletionBriefComment() String {
+// llgo:link CompletionString.BriefComment C.clang_getCompletionBriefComment
+func (completion_string CompletionString) BriefComment() String {
 	return String{}
 }
 
@@ -5836,8 +5836,8 @@ func (cursor Cursor) CompletionString() CompletionString {
 // \return The number of fix-its which must be applied before the completion at
 // completion_index can be applied
 //
-// llgo:link (*CodeCompleteResults).CompletionNumFixIts C.clang_getCompletionNumFixIts
-func (results *CodeCompleteResults) CompletionNumFixIts(completion_index c.Uint) c.Uint {
+// llgo:link (*CodeCompleteResults).NumFixIts C.clang_getCompletionNumFixIts
+func (results *CodeCompleteResults) NumFixIts(completion_index c.Uint) c.Uint {
 	return 0
 }
 
@@ -5883,8 +5883,8 @@ func (results *CodeCompleteResults) CompletionNumFixIts(completion_index c.Uint)
 // \returns The fix-it string that must replace the code at replacement_range
 // before the completion at completion_index can be applied
 //
-// llgo:link (*CodeCompleteResults).CompletionFixIt C.clang_getCompletionFixIt
-func (results *CodeCompleteResults) CompletionFixIt(completion_index c.Uint, fixit_index c.Uint, replacement_range *SourceRange) String {
+// llgo:link (*CodeCompleteResults).FixIt C.clang_getCompletionFixIt
+func (results *CodeCompleteResults) FixIt(completion_index c.Uint, fixit_index c.Uint, replacement_range *SourceRange) String {
 	return String{}
 }
 
