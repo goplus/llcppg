@@ -262,9 +262,14 @@ func (p *pkgCtx) enumvalName(name string) string {
 	return p.cstyleToGo(rmPrefix(name, p.enumPrefix), true)
 }
 
-func (p *pkgCtx) funcName(name string, order int, typName string, global, _ bool) string {
+func (p *pkgCtx) funcName(name string, order int, typName, typCName string, global, _ bool) string {
 	if global {
 		name = rmPrefix(name, p.fnPrefix)
+		if before, ok := strings.CutSuffix(name, typCName); ok {
+			name = strings.TrimSuffix(before, "_")
+		} else {
+			name = strings.TrimPrefix(name, typCName+"_")
+		}
 	} else {
 		// don't remove type name suffix for a method
 		typName = ""
