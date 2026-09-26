@@ -3341,8 +3341,8 @@ func (kind TUResourceUsageKind) Name() *c.Char {
 // Return the memory usage of a translation unit.  This object
 //  should be released with clang_disposeCXTUResourceUsage().
 //
-// llgo:link (*TranslationUnitImpl).CXTUResourceUsage C.clang_getCXTUResourceUsage
-func (TU *TranslationUnitImpl) CXTUResourceUsage() TUResourceUsage {
+// llgo:link (*TranslationUnitImpl).ResourceUsage C.clang_getCXTUResourceUsage
+func (TU *TranslationUnitImpl) ResourceUsage() TUResourceUsage {
 	return TUResourceUsage{}
 }
 
@@ -4627,8 +4627,8 @@ func (C Cursor) BinaryOpcode() X_BinaryOperatorKind {
 //
 // @deprecated: use clang_getBinaryOperatorKindSpelling instead
 //
-// llgo:link X_BinaryOperatorKind.CursorGetBinaryOpcodeStr C.clang_Cursor_getBinaryOpcodeStr
-func (Op X_BinaryOperatorKind) CursorGetBinaryOpcodeStr() CXString.String {
+// llgo:link X_BinaryOperatorKind.Spelling C.clang_Cursor_getBinaryOpcodeStr
+func (Op X_BinaryOperatorKind) Spelling() CXString.String {
 	return CXString.String{}
 }
 
