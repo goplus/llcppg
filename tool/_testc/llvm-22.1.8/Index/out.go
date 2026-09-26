@@ -3333,16 +3333,16 @@ func (TU *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *
 // Returns the human-readable null-terminated C string that represents
 //  the name of the memory category.  This string should never be freed.
 //
-// llgo:link TUResourceUsageKind.TUResourceUsageName C.clang_getTUResourceUsageName
-func (kind TUResourceUsageKind) TUResourceUsageName() *c.Char {
+// llgo:link TUResourceUsageKind.Name C.clang_getTUResourceUsageName
+func (kind TUResourceUsageKind) Name() *c.Char {
 	return nil
 }
 
 // Return the memory usage of a translation unit.  This object
 //  should be released with clang_disposeCXTUResourceUsage().
 //
-// llgo:link (*TranslationUnitImpl).CXTUResourceUsage C.clang_getCXTUResourceUsage
-func (TU *TranslationUnitImpl) CXTUResourceUsage() TUResourceUsage {
+// llgo:link (*TranslationUnitImpl).ResourceUsage C.clang_getCXTUResourceUsage
+func (TU *TranslationUnitImpl) ResourceUsage() TUResourceUsage {
 	return TUResourceUsage{}
 }
 
@@ -4627,8 +4627,8 @@ func (C Cursor) BinaryOpcode() X_BinaryOperatorKind {
 //
 // @deprecated: use clang_getBinaryOperatorKindSpelling instead
 //
-// llgo:link X_BinaryOperatorKind.CursorGetBinaryOpcodeStr C.clang_Cursor_getBinaryOpcodeStr
-func (Op X_BinaryOperatorKind) CursorGetBinaryOpcodeStr() CXString.String {
+// llgo:link X_BinaryOperatorKind.Spelling C.clang_Cursor_getBinaryOpcodeStr
+func (Op X_BinaryOperatorKind) Spelling() CXString.String {
 	return CXString.String{}
 }
 
@@ -6463,15 +6463,15 @@ func GetRemappings(_llcppg_param1 *c.Char) Remapping
 //go:linkname GetRemappingsFromFileList C.clang_getRemappingsFromFileList
 func GetRemappingsFromFileList(_llcppg_param1 **c.Char, _llcppg_param2 c.Uint) Remapping
 
-// llgo:link Remapping.RemapGetNumFiles C.clang_remap_getNumFiles
-func (_llcppg_param1 Remapping) RemapGetNumFiles() c.Uint {
+// llgo:link Remapping.NumFiles C.clang_remap_getNumFiles
+func (_llcppg_param1 Remapping) NumFiles() c.Uint {
 	return 0
 }
 
-// llgo:link Remapping.RemapGetFilenames C.clang_remap_getFilenames
-func (_llcppg_param1 Remapping) RemapGetFilenames(_llcppg_param2 c.Uint, _llcppg_param3 *CXString.String, _llcppg_param4 *CXString.String) {
+// llgo:link Remapping.Filenames C.clang_remap_getFilenames
+func (_llcppg_param1 Remapping) Filenames(_llcppg_param2 c.Uint, _llcppg_param3 *CXString.String, _llcppg_param4 *CXString.String) {
 }
 
-// llgo:link Remapping.RemapDispose C.clang_remap_dispose
-func (_llcppg_param1 Remapping) RemapDispose() {
+// llgo:link Remapping.Dispose C.clang_remap_dispose
+func (_llcppg_param1 Remapping) Dispose() {
 }
