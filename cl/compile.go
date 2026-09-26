@@ -106,6 +106,9 @@ type Config struct {
 	// and true (it means any mangling name is considered found).
 	NameLookup func(manglingName string) (archivePath string, ok bool)
 
+	// Ignore specifies a list of C/C++ names to be ignored (optional).
+	Ignore []string
+
 	// Rename specifies a mapping of C/C++ names to Go names (optional). If a name is present
 	// in the map, it will be renamed to the corresponding Go name.
 	Rename map[string]string
@@ -187,7 +190,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		fset: pkg.Fset, c: c, lang: conf.Language, keepDoc: !conf.DontKeepDoc,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, enumPrefix: conf.EnumPrefix,
 		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
-		rename: conf.Rename, classes: conf.Class, nonClasses: conf.NonClass,
+		ignores: conf.Ignore, rename: conf.Rename, classes: conf.Class, nonClasses: conf.NonClass,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]typeObj),

@@ -46,8 +46,20 @@ func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) 
 // is non-nil, it is an instance method compiled with a "this" receiver.
 func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	fn := obj.decl
-	manglingName := clang.Mangling(fn)
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
 	origName := obj.name
+	feats := 0
+	params, variadic := newParams(ctx, pkgTypes, fn, &feats)
+	results := toFuncResults(ctx, pkgTypes, fn.ResultType(), &feats)
+	if feats&featIgnored != 0 {
+		if debugCompileDecl {
+			log.Println("func", origName, "- ignored")
+		}
+		return
+	}
+
+	manglingName := clang.Mangling(fn)
 	if fn.IsFunctionInlined() != 0 {
 		if ctx.cflags == "" {
 			if debugCompileDecl {
@@ -67,19 +79,14 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 		log.Println("func", origName, "-", clang.String(fn.Type()))
 	}
 
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
-	hasCallback := false
-	params, variadic := newParams(ctx, pkgTypes, fn, &hasCallback)
-	results := toFuncResults(ctx, pkgTypes, fn.ResultType())
-
 	var recv *types.Var
 	var typRecv *types.Named // if tryToMethod succeeded, this is the recv
 	var typName string
 	var nameInPkg string
 	if cls == nil {
-		if ctx.lang == LanguageC && !hasCallback { // TODO(xsw): support method with callback
-			// try to method for C functions
+		// TODO(xsw): llgo bugfix - to support method with callback
+		if ctx.lang == LanguageC && feats&featHasCallback == 0 {
+			// try to method for C global functions
 			params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
 		}
 	} else {
@@ -196,11 +203,11 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 	return params, nil, nil, ""
 }
 
-func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor, hasCallback *bool) (params []*types.Var, variadic bool) {
+func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor, feats *int) (params []*types.Var, variadic bool) {
 	n := fn.NumArguments()
 	for i := range n {
 		item := fn.Argument(c.Uint(i))
-		param := newParam(ctx, pkg, item, i, hasCallback)
+		param := newParam(ctx, pkg, item, i, feats)
 		params = append(params, param)
 	}
 	variadic = fn.IsVariadic() != 0
@@ -210,13 +217,13 @@ func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor, hasCallback *bo
 	return
 }
 
-func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int, hasCallback *bool) *types.Var {
+func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int, feats *int) *types.Var {
 	declName := clang.String(decl)
 	declTyp := decl.Type()
 	if debugCompileDecl {
 		log.Println("  => param", declName, "-", clang.String(declTyp))
 	}
-	typ := toTypeEx(ctx, pkg, declTyp, flagIsParam, hasCallback)
+	typ := toTypeEx(ctx, pkg, declTyp, flagIsParam, feats)
 	if declName != "" {
 		avoidKeyword(&declName)
 	} else {

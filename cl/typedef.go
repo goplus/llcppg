@@ -26,6 +26,15 @@ import (
 // -----------------------------------------------------------------------------
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
+	cName := clang.String(decl.Type())
+	if ctx.isIgnored(cName) {
+		if debugCompileDecl {
+			log.Println("typedef", cName, "- ignored")
+		}
+		ctx.types[cName] = typeObj{nil, featIgnored}
+		return
+	}
+
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 
@@ -35,8 +44,8 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		log.Println("typedef", origName, "-", clang.String(underlying))
 	}
 
-	hasCallback := false
-	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &hasCallback)
+	feats := 0
+	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats)
 	name := ctx.typeName(origName, true)
 	if tn, ok := tunder.(*types.Named); ok {
 		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == name {
@@ -46,10 +55,9 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 
 	var obj *types.TypeName
 	var typDefs = pkg.NewTypeDefs()
-	if doc := ctx.directiveTypeC(decl, hasCallback); doc != nil {
+	if doc := ctx.directiveTypeC(decl, feats&featHasCallback != 0); doc != nil {
 		typDefs.SetComments(doc)
 	}
-	var cName = clang.String(decl.Type())
 	var isClass bool
 	if tunder == types.Typ[types.UnsafePointer] {
 		if !contains(cName, ctx.nonClasses) {
@@ -65,7 +73,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		t := typDefs.AliasType(name, tunder).(*types.Alias)
 		obj = t.Obj()
 	}
-	ctx.types[cName] = typeObj{obj, hasCallback}
+	ctx.types[cName] = typeObj{obj, feats}
 }
 
 func contains(v string, names []string) bool {

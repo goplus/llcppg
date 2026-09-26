@@ -1959,7 +1959,6 @@ const (
 //
 // llgo:type C
 type CursorVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 Cursor, _llcppg_param3 ClientData) ChildVisitResult
-type CursorVisitorBlock = unsafe.Pointer
 
 // Opaque pointer representing a policy that controls pretty printing
 // for \c clang_getCursorPrettyPrinted.
@@ -2394,8 +2393,6 @@ const (
 	// CXVisit_Break)
 	Result_VisitBreak Result = 2
 )
-
-type CursorAndRangeVisitorBlock = unsafe.Pointer
 
 // The client's data object that is associated with a CXFile.
 type IdxClientFile uintptr
@@ -4701,14 +4698,6 @@ func (_llcppg_param1 Cursor) IBOutletCollectionType() Type {
 //go:linkname VisitChildren C.clang_visitChildren
 func VisitChildren(parent Cursor, visitor CursorVisitor, client_data ClientData) c.Uint
 
-// Visits the children of a cursor using the specified block.  Behaves
-// identically to clang_visitChildren() in all other respects.
-//
-// llgo:link Cursor.VisitChildrenWithBlock C.clang_visitChildrenWithBlock
-func (parent Cursor) VisitChildrenWithBlock(block CursorVisitorBlock) c.Uint {
-	return 0
-}
-
 // Retrieve a Unified Symbol Resolution (USR) for the entity referenced
 // by the given cursor.
 //
@@ -6200,16 +6189,6 @@ func (cursor Cursor) FindReferencesInFile(file File, visitor CursorAndRangeVisit
 //
 // llgo:link (*TranslationUnitImpl).FindIncludesInFile C.clang_findIncludesInFile
 func (TU *TranslationUnitImpl) FindIncludesInFile(file File, visitor CursorAndRangeVisitor) Result {
-	return 0
-}
-
-// llgo:link Cursor.FindReferencesInFileWithBlock C.clang_findReferencesInFileWithBlock
-func (_llcppg_param1 Cursor) FindReferencesInFileWithBlock(_llcppg_param2 File, _llcppg_param3 CursorAndRangeVisitorBlock) Result {
-	return 0
-}
-
-// llgo:link (*TranslationUnitImpl).FindIncludesInFileWithBlock C.clang_findIncludesInFileWithBlock
-func (_llcppg_param1 *TranslationUnitImpl) FindIncludesInFileWithBlock(_llcppg_param2 File, _llcppg_param3 CursorAndRangeVisitorBlock) Result {
 	return 0
 }
 
