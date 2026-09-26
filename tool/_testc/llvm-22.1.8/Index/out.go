@@ -2401,8 +2401,6 @@ const (
 	Result_VisitBreak Result = 2
 )
 
-type CursorAndRangeVisitorBlock = unsafe.Pointer
-
 // The client's data object that is associated with a CXFile.
 type IdxClientFile uintptr
 
@@ -6198,16 +6196,6 @@ func (cursor Cursor) FindReferencesInFile(file CXFile.File, visitor CursorAndRan
 //
 // llgo:link (*TranslationUnitImpl).FindIncludesInFile C.clang_findIncludesInFile
 func (TU *TranslationUnitImpl) FindIncludesInFile(file CXFile.File, visitor CursorAndRangeVisitor) Result {
-	return 0
-}
-
-// llgo:link Cursor.FindReferencesInFileWithBlock C.clang_findReferencesInFileWithBlock
-func (_llcppg_param1 Cursor) FindReferencesInFileWithBlock(_llcppg_param2 CXFile.File, _llcppg_param3 CursorAndRangeVisitorBlock) Result {
-	return 0
-}
-
-// llgo:link (*TranslationUnitImpl).FindIncludesInFileWithBlock C.clang_findIncludesInFileWithBlock
-func (_llcppg_param1 *TranslationUnitImpl) FindIncludesInFileWithBlock(_llcppg_param2 CXFile.File, _llcppg_param3 CursorAndRangeVisitorBlock) Result {
 	return 0
 }
 

@@ -152,7 +152,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats)
 		return newPointer(elem)
 	case lc.Type_BlockPointer:
-		log.Println("==> toType: C blocks is unsupported, use void* as workaround")
+		log.Println("==> toType: C blocks is unsupported, use void* as work around")
 		return types.Typ[types.UnsafePointer]
 	default:
 		log.Println("==> toType: unknown Kind -", typ.Kind)
