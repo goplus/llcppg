@@ -21,7 +21,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool"
@@ -33,24 +32,22 @@ func main() {
 		return
 	}
 
-	idx := clang.CreateIndex(0, 0)
+	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
 
 	filename := os.Args[1]
 	lang := "c++"
 	if len(os.Args) > 2 {
-		lang = strings.ToLower(os.Args[2])
+		lang = os.Args[2]
 	}
 	filename, _ = filepath.Abs(filename)
 	log.Println("==> dump", filename, "as", lang)
-	u := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, filename, "-x", lang)
+	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, filename, "-x", lang)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "ParseTranslationUnit:", err)
+		os.Exit(1)
+	}
 	defer u.Dispose()
 
-	options := clang.DefaultDiagnosticDisplayOptions()
-	u.VisitDiagnostics(func(diag clang.Diagnostic) {
-		fmt.Fprintln(os.Stderr, diag.Format(options))
-	})
-
-	root := u.Cursor()
-	tool.Dump(root, "", filepath.Dir(filename))
+	tool.Dump(u.Cursor(), "", filepath.Dir(filename))
 }

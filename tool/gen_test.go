@@ -18,7 +18,6 @@ package tool_test
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -84,13 +83,13 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		return
 	}
 
-	options := clang.DefaultDiagnosticDisplayOptions()
-	u := idx.ParseTranslationUnit(
-		clang.DetailedPreprocessingRecord, headerFile, "-I"+pkgDir+"/include", "-I"+pkgDir+"/cstdlib", "-x", conf.Language)
+	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord,
+		headerFile, "-I"+pkgDir+"/include", "-I"+pkgDir+"/cstdlib", "-x", conf.Language)
+	if err != nil {
+		t.Error("ParseTranslationUnit failed:", err)
+		return
+	}
 	defer u.Dispose()
-	u.VisitDiagnostics(func(diag clang.Diagnostic) {
-		fmt.Fprintln(os.Stderr, diag.Format(options))
-	})
 
 	const pkgPrefix = "clang/"
 	files := []cl.Source{u}
@@ -140,7 +139,7 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 		dirSel = ""
 	}
 	cltest.TestFromDir(t, dirSel, relDir, func(t *testing.T, pkgDir string) {
-		idx := clang.CreateIndex(0, 0)
+		idx := clang.CreateIndex(1, 1)
 		defer idx.Dispose()
 
 		pkgDir, _ = filepath.Abs(pkgDir)

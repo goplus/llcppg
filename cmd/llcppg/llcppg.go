@@ -16,5 +16,30 @@
 
 package main
 
+import (
+	"fmt"
+	"os"
+
+	"github.com/goplus/llcppg/clang"
+	"github.com/goplus/llcppg/tool"
+)
+
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("usage: llcppg <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
+		return
+	}
+	destDir := os.Args[1]
+	srcDir := "."
+	if len(os.Args) >= 3 {
+		srcDir = os.Args[2]
+	}
+
+	idx := clang.CreateIndex(0, 0)
+	defer idx.Dispose()
+	err := tool.Gen(destDir, srcDir, idx)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
