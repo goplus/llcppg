@@ -1,0 +1,2 @@
+# Include every package in the LLGo report, including tool/ and its dependencies.
+ignore: []

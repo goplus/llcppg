@@ -20,25 +20,39 @@ concurrency:
 
 jobs:
   test:
+    permissions:
+      contents: read
     strategy:
       matrix:
         os:
           - macos-latest
           - ubuntu-latest
         llvm: [22]
-        llgo: [v1.0.4]
+        llgo: [main]
         go: [1.27]
       fail-fast: false
     runs-on: ${{matrix.os}}
     steps:
     - uses: actions/checkout@v7
     - name: Setup llgo
-      uses: ./.github/actions/setup-llgo
+      uses: xgo-dev/setup-llgo@v0.2.0
       with:
-        go: ${{ matrix.go }}
-        llvm: ${{ matrix.llvm }}
-        llgo: ${{ matrix.llgo }}
+        go-version: ${{ matrix.go }}
+        llvm-version: ${{ matrix.llvm }}
+        llgo-version: ${{ matrix.llgo }}
 
-    - name: Test
+    - name: Test with coverage
+      shell: bash
       run: |
-        llgo test -v ./...
+        llgo test -v -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./...
+        go tool cover -func=coverage.txt | tail -1
+
+    - name: Upload coverage to Codecov
+      if: ${{ github.repository == 'goplus/llcppg' && !cancelled() && hashFiles('coverage.txt') != '' }}
+      uses: codecov/codecov-action@v7
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: coverage.txt
+        flags: llgo-tests
+        disable_search: true
+        fail_ci_if_error: true
