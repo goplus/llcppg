@@ -20,13 +20,16 @@ concurrency:
 
 jobs:
   test:
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       matrix:
         os:
           - macos-latest
           - ubuntu-latest
         llvm: [22]
-        llgo: [v1.0.4]
+        llgo: [main]
         go: [1.27]
       fail-fast: false
     runs-on: ${{matrix.os}}
@@ -39,6 +42,18 @@ jobs:
         llvm: ${{ matrix.llvm }}
         llgo: ${{ matrix.llgo }}
 
-    - name: Test
+    - name: Test with coverage
       run: |
-        llgo test -v ./...
+        llgo test -v -covermode=atomic -coverprofile=coverage.txt ./...
+        go tool cover -func=coverage.txt | tail -1
+
+    - name: Upload coverage to Codecov
+      if: ${{ github.repository == 'goplus/llcppg' && !cancelled() && hashFiles('coverage.txt') != '' }}
+      uses: codecov/codecov-action@v7
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        use_oidc: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        files: coverage.txt
+        flags: llgo-tests
+        disable_search: true
+        fail_ci_if_error: true

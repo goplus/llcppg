@@ -8,8 +8,8 @@ inputs:
     description: "LLVM version to install (e.g. 18)"
     default: "22"
   llgo:
-    description: "LLGo version to install (e.g. v1.0.1)"
-    default: "v1.0.4"
+    description: "LLGo release version or main branch"
+    default: "main"
 runs:
   using: "composite"
   steps:
@@ -35,10 +35,22 @@ runs:
       sudo apt-get update
       sudo apt-get install -y clang-${{inputs.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
       echo "/usr/lib/llvm-${{inputs.llvm}}/bin" >> $GITHUB_PATH
+  - name: Build LLGo from main
+    if: inputs.llgo == 'main'
+    shell: bash
+    run: |
+      git clone --depth 1 --branch main https://github.com/xgo-dev/llgo.git .llgo
+      git -C .llgo rev-parse HEAD
+      mkdir -p .llgo/bin
+      go -C .llgo build -p=2 -o bin/llgo ./cmd/llgo
   - name: Download LLGo release
+    if: inputs.llgo != 'main'
     shell: bash
     run: |
       bash .github/actions/setup-llgo/download-llgo.sh ${{inputs.llgo}} .llgo
+  - name: Add LLGo to PATH
+    shell: bash
+    run: |
       echo "$GITHUB_WORKSPACE/.llgo/bin" >> $GITHUB_PATH
       export LLGO_ROOT=$GITHUB_WORKSPACE/.llgo
       echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
