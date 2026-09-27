@@ -8,16 +8,26 @@ inputs:
     description: "LLVM version to install (e.g. 18)"
     default: "22"
   llgo:
-    description: "LLGo release version or main branch"
+    description: "The literal 'main' builds the latest main branch from source; any other value is downloaded as a release tag (e.g. v1.0.4)"
     default: "main"
 runs:
   using: "composite"
   steps:
   - uses: actions/checkout@v7
+  - name: Checkout LLGo main
+    if: inputs.llgo == 'main'
+    shell: bash
+    run: |
+      # Track main for coverage support and log the exact revision used by this run.
+      git clone --depth 1 --branch main https://github.com/xgo-dev/llgo.git .llgo
+      git -C .llgo rev-parse HEAD
   - name: Set up Go
     uses: actions/setup-go@v7
     with:
       go-version: ${{inputs.go}}
+      cache-dependency-path: |
+        go.sum
+        .llgo/go.sum
   - name: Install dependencies (macOS)
     if: runner.os == 'macOS'
     shell: bash
@@ -38,11 +48,7 @@ runs:
   - name: Build LLGo from main
     if: inputs.llgo == 'main'
     shell: bash
-    run: |
-      git clone --depth 1 --branch main https://github.com/xgo-dev/llgo.git .llgo
-      git -C .llgo rev-parse HEAD
-      mkdir -p .llgo/bin
-      go -C .llgo build -p=2 -o bin/llgo ./cmd/llgo
+    run: go -C .llgo build -o bin/llgo ./cmd/llgo
   - name: Download LLGo release
     if: inputs.llgo != 'main'
     shell: bash
@@ -52,8 +58,7 @@ runs:
     shell: bash
     run: |
       echo "$GITHUB_WORKSPACE/.llgo/bin" >> $GITHUB_PATH
-      export LLGO_ROOT=$GITHUB_WORKSPACE/.llgo
-      echo "LLGO_ROOT=$LLGO_ROOT" >> $GITHUB_ENV
+      echo "LLGO_ROOT=$GITHUB_WORKSPACE/.llgo" >> $GITHUB_ENV
   - name: Verify LLGo installation
     shell: bash
     run: |
