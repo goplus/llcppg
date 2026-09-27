@@ -43,8 +43,9 @@ jobs:
         llgo: ${{ matrix.llgo }}
 
     - name: Test with coverage
+      shell: bash
       run: |
-        llgo test -v -covermode=atomic -coverprofile=coverage.txt ./...
+        llgo test -v -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./...
         go tool cover -func=coverage.txt | tail -1
 
     - name: Upload coverage to Codecov
