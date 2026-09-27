@@ -125,9 +125,17 @@ type Config struct {
 	// Go const names (optional).
 	EnumPrefix []string
 
+	// MacroPrefix specifies the prefix to remove from C/C++ macro names when generating
+	// Go const names (optional).
+	MacroPrefix []string
+
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
 	// generating Go function names (optional).
 	FuncPrefix []string
+
+	// VarPrefix specifies the prefix to remove from C/C++ global variable names when
+	// generating Go variable names (optional).
+	VarPrefix []string
 
 	// Class specifies a list of C/C++ typedef names to be treated as classes (optional).
 	Class []string
@@ -199,8 +207,9 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, enumPrefix: conf.EnumPrefix,
+		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
+		enumPrefix: conf.EnumPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
 		ignores: conf.Ignore, rename: rename, classes: conf.Class, nonClasses: conf.NonClass,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
