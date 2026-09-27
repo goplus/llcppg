@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package listth
+package pputil // preprocessor utility
 
 import (
 	"bytes"
@@ -28,25 +28,60 @@ import (
 
 // -----------------------------------------------------------------------------
 
+// FileEntry represents a file entry in a directory.
+type FileEntry struct {
+	Path string
+	os.DirEntry
+}
+
+// ListFiles returns a sequence of files in the specified directory. If recursive is
+// true, it includes files in subdirectories as well.
+func ListFiles(dir string, recursive bool) iter.Seq2[FileEntry, error] {
+	return func(yield func(FileEntry, error) bool) {
+		e := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				if !recursive && path != dir {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if !yield(FileEntry{Path: path, DirEntry: d}, nil) {
+				return filepath.SkipAll
+			}
+			return nil
+		})
+		if e != nil {
+			yield(FileEntry{}, e)
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+
 // Include represents a C/C++ include directive.
 type Include struct {
 	Filename string
 	Quote    bool
 }
 
-// Search searches for the include file in the specified directories.
+// Search searches for the include file in the specified directories. Note: `found` is
+// the resolved path only when ok is true, and the raw include name otherwise.
 func (p *Include) Search(workDir string, searchDirs []string) (found string, ok bool) {
+	filename := p.Filename
 	if p.Quote {
-		if found, ok = fileFound(p.Filename, workDir); ok {
+		if found, ok = fileFound(filename, workDir); ok {
 			return
 		}
 	}
 	for _, dir := range searchDirs {
-		if found, ok = fileFound(p.Filename, dir); ok {
+		if found, ok = fileFound(filename, dir); ok {
 			return
 		}
 	}
-	return
+	return filename, false
 }
 
 func fileFound(file, dir string) (string, bool) {
@@ -59,7 +94,8 @@ func fileFound(file, dir string) (string, bool) {
 
 var include = []byte("#include")
 
-// LoadIncludes loads the include directives from the specified header file.
+// LoadIncludes loads the include directives from the specified header file. It
+// returns a sequence of Include objects.
 func LoadIncludes(headerFile string) (includes iter.Seq[Include], err error) {
 	b, err := os.ReadFile(headerFile)
 	if err != nil {
@@ -100,20 +136,20 @@ func LoadIncludes(headerFile string) (includes iter.Seq[Include], err error) {
 
 // -----------------------------------------------------------------------------
 
-func listIncludeFiles(headerFile string, includeDirs []string) (includeFiles iter.Seq[string], err error) {
+// ListIncludes lists the include files for the specified header file. It returns a
+// sequence of include file paths and a boolean indicating whether the file was found.
+// The include file path is the resolved path when ok is true, and the raw include
+// filename otherwise.
+func ListIncludes(headerFile string, includeDirs []string) (includeFiles iter.Seq2[string, bool], err error) {
 	includes, err := LoadIncludes(headerFile)
 	if err != nil {
 		return
 	}
-	includeFiles = func(yield func(string) bool) {
+	includeFiles = func(yield func(string, bool) bool) {
 		headerDir := filepath.Dir(headerFile)
 		for inc := range includes {
 			includeFile, ok := inc.Search(headerDir, includeDirs)
-			if !ok {
-				log.Printf("[WARN] include file not found: %s", inc.Filename)
-				continue
-			}
-			if !yield(includeFile) {
+			if !yield(includeFile, ok) {
 				return
 			}
 		}
@@ -121,13 +157,18 @@ func listIncludeFiles(headerFile string, includeDirs []string) (includeFiles ite
 	return
 }
 
+// -----------------------------------------------------------------------------
+
 func calcHeaderDeps(headerFiles map[string]bool, headerDir string, includeDirs []string) {
 	for headerFile := range headerFiles {
-		includeFiles, err := listIncludeFiles(headerFile, includeDirs)
+		includeFiles, err := ListIncludes(headerFile, includeDirs)
 		if err != nil {
-			log.Panicln("[FATAL] searchIncludeFiles failed:", err)
+			log.Panicln("[FATAL] ListIncludes failed:", err)
 		}
-		for includeFile := range includeFiles {
+		for includeFile, ok := range includeFiles {
+			if !ok {
+				log.Println("[WARN] include file not found:", includeFile)
+			}
 			if strings.HasPrefix(includeFile, headerDir) {
 				headerFiles[includeFile] = true
 			}
@@ -136,29 +177,21 @@ func calcHeaderDeps(headerFiles map[string]bool, headerDir string, includeDirs [
 }
 
 func collectHeaders(headerDir string, recursive bool) (headerFiles map[string]bool, err error) {
-	if recursive {
-		panic("recursive not implemented")
-	}
-	fis, err := os.ReadDir(headerDir)
-	if err != nil {
-		return
-	}
-	headerFiles = make(map[string]bool, len(fis))
-	headerDir += string(os.PathSeparator)
-	for _, fi := range fis {
-		if fi.IsDir() {
-			continue
+	headerFiles = make(map[string]bool)
+	for file, e := range ListFiles(headerDir, recursive) {
+		if e != nil {
+			return nil, e
 		}
-		name := fi.Name()
-		if name[0] != '_' && isHeaderFile(name) {
-			headerFile := headerDir + name
-			headerFiles[headerFile] = false
+		name := file.Name()
+		if name[0] != '_' && IsHeaderFile(name) {
+			headerFiles[file.Path] = false
 		}
 	}
 	return
 }
 
-func isHeaderFile(name string) bool {
+// IsHeaderFile checks if the given file name has a header file extension.
+func IsHeaderFile(name string) bool {
 	ext := filepath.Ext(name)
 	switch ext {
 	case ".h", ".hpp", ".hh", ".hxx":

@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/goplus/llcppg/tool/listth"
+	"github.com/goplus/llcppg/tool/pputil"
 )
 
 func check(err error) {
@@ -64,7 +64,7 @@ func main() {
 		return
 	}
 
-	files, err := listth.TopHeaders(headerDir, false, true, includeDirs)
+	files, err := pputil.TopHeaders(headerDir, false, true, includeDirs)
 	check(err)
 
 	for _, file := range files {

@@ -30,7 +30,7 @@ import (
 	"github.com/goplus/gogen/packages/cache"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
-	"github.com/goplus/llcppg/tool/listth"
+	"github.com/goplus/llcppg/tool/pputil"
 	"github.com/goplus/mod"
 	"github.com/goplus/mod/xgomod"
 	"github.com/qiniu/x/errors"
@@ -130,7 +130,7 @@ func topHeaders(dir, workDir string, includeDirs []string) (headerFiles []string
 	if debugLoadSource {
 		log.Println("==> includeDirs:", includeDirs)
 	}
-	return listth.TopHeaders(dir, recursive, false, includeDirs)
+	return pputil.TopHeaders(dir, recursive, false, includeDirs)
 }
 
 // NewPackage loads the source files and converts them into a Go package according to the
