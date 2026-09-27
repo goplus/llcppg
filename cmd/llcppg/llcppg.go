@@ -35,7 +35,7 @@ func main() {
 		srcDir = os.Args[2]
 	}
 
-	idx := clang.CreateIndex(0, 0)
+	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
 	err := tool.Gen(destDir, srcDir, idx)
 	if err != nil {
