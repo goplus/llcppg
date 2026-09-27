@@ -1,6 +1,6 @@
 module github.com/goplus/llcppg
 
-go 1.27.0
+go 1.27.0 // llgo 1.0
 
 require (
 	github.com/goplus/gogen v1.24.7

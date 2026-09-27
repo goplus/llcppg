@@ -4,4 +4,4 @@ ignore:
   - "clang"
   - "cmd/llcppg"
   - "tool/dump.go"
-  - "xtool/clang/preprocessor"
+  - "xtool/*/*"

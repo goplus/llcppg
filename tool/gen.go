@@ -31,6 +31,7 @@ import (
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool/pputil"
+	"github.com/goplus/llcppg/xtool/env/cstdlib"
 	"github.com/goplus/mod"
 	"github.com/goplus/mod/xgomod"
 	"github.com/qiniu/x/errors"
@@ -38,18 +39,18 @@ import (
 
 const (
 	DbgFlagLoadSource = 1 << iota
-	DbgFlagImport
-	DbgFlagAll = DbgFlagLoadSource | DbgFlagImport
+	DbgFlagSettings
+	DbgFlagAll = DbgFlagLoadSource | DbgFlagSettings
 )
 
 var (
 	debugLoadSource bool
-	debugImport     bool
+	debugSettings   bool
 )
 
 func SetDebug(flags int) {
 	debugLoadSource = (flags & DbgFlagLoadSource) != 0
-	debugImport = (flags & DbgFlagImport) != 0
+	debugSettings = (flags & DbgFlagSettings) != 0
 }
 
 // -----------------------------------------------------------------------------
@@ -60,9 +61,9 @@ var (
 )
 
 var (
-	// ErrStdlibRequired is returned when the stdlib field is not specified in the
-	// configuration.
-	ErrStdlibRequired = errors.New("stdlib is required")
+	// ErrDirRequired is returned when the Dir field in the configuration is empty.
+	// It indicates that the directory containing the header files is required.
+	ErrDirRequired = errors.New("Dir (contains the header files) is required")
 )
 
 // -----------------------------------------------------------------------------
@@ -71,14 +72,16 @@ type Config struct {
 	Name        string            `json:"Name"`        // required
 	Language    string            `json:"Language"`    // c, c++, etc. required
 	Dir         string            `json:"Dir"`         // dir or dir/... (recursive), required
-	Stdlib      string            `json:"Stdlib"`      // C stdlib include dir, required
+	Stdlib      string            `json:"Stdlib"`      // C stdlib include dir, optional
 	LLGoPackage string            `json:"LLGoPackage"` // optional
 	CFlags      string            `json:"CFlags"`      // optional
 	Deps        []string          `json:"Deps"`        // dependencies (package paths), optional
 	Class       []string          `json:"Class"`       // typedef names to be treated as classes
 	NonClass    []string          `json:"NonClass"`    // typedef names to be treated as non-classes
 	FuncPrefix  []string          `json:"FuncPrefix"`  // global function prefix to remove
+	VarPrefix   []string          `json:"VarPrefix"`   // global variable prefix to remove
 	EnumPrefix  []string          `json:"EnumPrefix"`  // enum value prefix to remove
+	MacroPrefix []string          `json:"MacroPrefix"` // macro prefix to remove
 	TypePrefix  []string          `json:"TypePrefix"`  // type prefix to remove
 	TypeAbbr    map[string]string `json:"TypeAbbr"`    // Go type name to its abbr, used in function names
 	Rename      map[string]string `json:"Rename"`      // renaming of C/C++ names to Go names
@@ -127,7 +130,7 @@ func topHeaders(dir, workDir string, includeDirs []string) (headerFiles []string
 		incDir = incDir[:pos+len(includeSuffix)]
 	}
 	includeDirs[0] = incDir
-	if debugLoadSource {
+	if debugSettings {
 		log.Println("==> includeDirs:", includeDirs)
 	}
 	return pputil.TopHeaders(dir, recursive, false, includeDirs)
@@ -142,21 +145,16 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		return
 	}
 
+	if cfg.Dir == "" {
+		err = ErrDirRequired
+		return
+	}
+
 	workDir, err = filepath.Abs(workDir)
 	if err != nil {
 		return
 	}
-
-	stdlibDir := cfg.Stdlib
-	if stdlibDir == "" {
-		err = ErrStdlibRequired
-		return
-	}
-	if !filepath.IsAbs(stdlibDir) {
-		stdlibDir = filepath.Join(workDir, stdlibDir)
-	}
-
-	if debugLoadSource {
+	if debugSettings {
 		log.Println("==> workDir:", workDir)
 	}
 
@@ -175,18 +173,31 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		imp.SetCache(c)
 	}
 
-	includeDirs, pkgPaths := mod.includeDirs(imp, deps, 2)
-	includeDirs[1] = stdlibDir
-	pkgPaths[0] = pkgPath
-	pkgPaths[1] = "github.com/goplus/lib/c"
+	var stdlibDirs []string
+	if stdlibDir := cfg.Stdlib; stdlibDir != "" {
+		if !filepath.IsAbs(stdlibDir) {
+			stdlibDir = filepath.Join(workDir, stdlibDir)
+		}
+		stdlibDirs = []string{stdlibDir}
+	} else {
+		stdlibDirs = cstdlib.Dirs()
+	}
+	if debugSettings {
+		log.Println("==> stdlibDirs:", stdlibDirs)
+	}
 
-	// includeDirs[0] is set by topHeaders
-	topHeaders, err := topHeaders(cfg.Dir, workDir, includeDirs)
+	incDirs, pkgPaths := mod.includeDirs(imp, deps, 1, 1+len(stdlibDirs))
+	for _, stdlibDir := range stdlibDirs {
+		incDirs = append(incDirs, stdlibDir)
+		pkgPaths = append(pkgPaths, "github.com/goplus/lib/c")
+	}
+	pkgPaths[0] = pkgPath // incDirs[0] is set by topHeaders
+	topHeaders, err := topHeaders(cfg.Dir, workDir, incDirs)
 	if err != nil {
 		return
 	}
 
-	files, err := ParseSources(index, topHeaders, includeDirs, cfg.Language)
+	files, err := ParseSources(index, topHeaders, incDirs, cfg.Language)
 	if err != nil {
 		return
 	}
@@ -205,7 +216,9 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		Class:           cfg.Class,
 		NonClass:        cfg.NonClass,
 		FuncPrefix:      cfg.FuncPrefix,
+		VarPrefix:       cfg.VarPrefix,
 		EnumPrefix:      cfg.EnumPrefix,
+		MacroPrefix:     cfg.MacroPrefix,
 		TypePrefix:      cfg.TypePrefix,
 		TypeAbbr:        cfg.TypeAbbr,
 		Rename:          cfg.Rename,
@@ -216,7 +229,7 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		NameLookup:      nil,
 		PubFileLookup:   mod.PubFileLookup,
 		PackageOf: func(headerFile string) (pkgPath string, ok bool) {
-			for i, includeDir := range includeDirs {
+			for i, includeDir := range incDirs {
 				if strings.HasPrefix(headerFile, includeDir) {
 					return pkgPaths[i], true
 				}
@@ -260,9 +273,9 @@ func (p Module) PubFileLookup(pkgPath string) (pubFile string, ok bool) {
 
 // includeDirs returns the include directories and package paths for the given dependencies.
 // The reserved parameter specifies the number of reserved slots in the returned slices.
-func (p Module) includeDirs(imp *packages.Importer, deps []string, reserved int) (incDirs, pkgPaths []string) {
-	incDirs = make([]string, reserved, len(deps)+reserved)
-	pkgPaths = make([]string, reserved, len(deps)+reserved)
+func (p Module) includeDirs(imp *packages.Importer, deps []string, n, reserved int) (incDirs, pkgPaths []string) {
+	incDirs = make([]string, n, len(deps)+reserved)
+	pkgPaths = make([]string, n, len(deps)+reserved)
 	for _, dep := range deps {
 		pkgTypes, err := imp.Import(dep)
 		if err == nil {

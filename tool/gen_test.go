@@ -102,6 +102,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		NonClass:    conf.NonClass,
 		FuncPrefix:  conf.FuncPrefix,
 		EnumPrefix:  conf.EnumPrefix,
+		MacroPrefix: conf.MacroPrefix,
 		TypePrefix:  conf.TypePrefix,
 		TypeAbbr:    conf.TypeAbbr,
 		Rename:      conf.Rename,

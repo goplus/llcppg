@@ -107,14 +107,16 @@ type pkgCtx struct {
 
 	wrapFileHeader string
 
-	fnPrefix   []string
-	enumPrefix []string
-	typePrefix []string
-	classes    []string          // typedef names to be treated as classes
-	nonClasses []string          // typedef names to be treated as non-classes
-	typeAbbr   map[string]string // Go type name => abbreviated name, used in function names
-	rename     map[string]string // C/C++ name => Go name
-	ignores    []string          // C/C++ names to be ignored
+	fnPrefix    []string
+	varPrefix   []string
+	enumPrefix  []string
+	macroPrefix []string
+	typePrefix  []string
+	classes     []string          // typedef names to be treated as classes
+	nonClasses  []string          // typedef names to be treated as non-classes
+	typeAbbr    map[string]string // Go type name => abbreviated name, used in function names
+	rename      map[string]string // C/C++ name => Go name
+	ignores     []string          // C/C++ names to be ignored
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -250,27 +252,31 @@ func (p *pkgCtx) isIgnored(cName string) bool {
 	return false
 }
 
+func (p *pkgCtx) globalName(name string, trimPrefixs []string) string {
+	if v, ok := p.rename[name]; ok {
+		return v // special case
+	}
+	return p.cstyleToGo(rmPrefix(name, trimPrefixs), true)
+}
+
 func (p *pkgCtx) fieldName(name string, public bool) string {
 	return p.cstyleToGo(name, public)
 }
 
 func (p *pkgCtx) varName(name string) string {
-	return p.cstyleToGo(name, true)
+	return p.globalName(name, p.varPrefix)
 }
 
 func (p *pkgCtx) macroName(name string) string {
-	return p.cstyleToGo(name, true)
-}
-
-func (p *pkgCtx) typeName(name string, _ bool) string {
-	if v, ok := p.rename[name]; ok {
-		return v // special case
-	}
-	return p.cstyleToGo(rmPrefix(name, p.typePrefix), true)
+	return p.globalName(name, p.macroPrefix)
 }
 
 func (p *pkgCtx) enumvalName(name string) string {
-	return p.cstyleToGo(rmPrefix(name, p.enumPrefix), true)
+	return p.globalName(name, p.enumPrefix)
+}
+
+func (p *pkgCtx) typeName(name string, _ bool) string {
+	return p.globalName(name, p.typePrefix)
 }
 
 func (p *pkgCtx) funcName(name string, order int, typName, typCName string, global, _ bool) string {

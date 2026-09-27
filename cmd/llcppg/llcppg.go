@@ -17,22 +17,38 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
+	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool"
 )
 
+var (
+	verbose = flag.Bool("v", false, "enable verbose output")
+	debug   = flag.Bool("debug", false, "enable debug output")
+)
+
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("usage: llcppg <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
+	flag.Parse()
+	args := flag.Args()
+	if len(args) < 1 {
+		fmt.Println("usage: llcppg [-v -debug] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
 		return
 	}
-	destDir := os.Args[1]
+	destDir := args[0]
 	srcDir := "."
-	if len(os.Args) >= 3 {
-		srcDir = os.Args[2]
+	if len(args) >= 2 {
+		srcDir = args[1]
+	}
+
+	if *debug {
+		cl.SetDebug(cl.DbgFlagAll)
+		tool.SetDebug(tool.DbgFlagAll)
+	} else if *verbose {
+		tool.SetDebug(tool.DbgFlagSettings)
 	}
 
 	idx := clang.CreateIndex(1, 1)
