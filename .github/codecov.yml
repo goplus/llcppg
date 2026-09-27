@@ -1,6 +1,7 @@
 # Include every package in the LLGo report, including tool/ and its dependencies.
 ignore:
-  - "chore/*"
-  - “clang"
+  - "chore/*/*"
+  - "clang"
   - "cmd/llcppg"
+  - "tool/dump.go"
   - "xtool/clang/preprocessor"
