@@ -33,7 +33,7 @@ runs:
       echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{inputs.llvm}} main" | sudo tee /etc/apt/sources.list.d/llvm.list
       wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       sudo apt-get update
-      sudo apt-get install -y clang-${{inputs.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
+      sudo apt-get install -y clang-${{inputs.llvm}} lld-${{inputs.llvm}} pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
       echo "/usr/lib/llvm-${{inputs.llvm}}/bin" >> $GITHUB_PATH
   - name: Build LLGo from main
     if: inputs.llgo == 'main'
