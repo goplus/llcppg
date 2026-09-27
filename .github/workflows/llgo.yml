@@ -35,8 +35,7 @@ jobs:
     steps:
     - uses: actions/checkout@v7
     - name: Setup llgo
-      # Ref installation and current toolchains: xgo-dev/setup-llgo#50.
-      uses: xgo-dev/setup-llgo@16e54713e4480f5c315c1b1b395ce6c10ba91ecf
+      uses: xgo-dev/setup-llgo@v0.2.0
       with:
         go-version: ${{ matrix.go }}
         llvm-version: ${{ matrix.llvm }}
