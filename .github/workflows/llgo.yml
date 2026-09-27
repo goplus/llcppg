@@ -35,11 +35,12 @@ jobs:
     steps:
     - uses: actions/checkout@v7
     - name: Setup llgo
-      uses: ./.github/actions/setup-llgo
+      # Ref installation and current toolchains: xgo-dev/setup-llgo#50.
+      uses: xgo-dev/setup-llgo@553930cf11e9a2eb44a708c6d4ed4d0c1f910722
       with:
-        go: ${{ matrix.go }}
-        llvm: ${{ matrix.llvm }}
-        llgo: ${{ matrix.llgo }}
+        go-version: ${{ matrix.go }}
+        llvm-version: ${{ matrix.llvm }}
+        llgo-version: ${{ matrix.llgo }}
 
     - name: Test with coverage
       shell: bash
