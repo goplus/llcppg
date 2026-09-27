@@ -53,7 +53,7 @@ const (
 	endMarker   = "\nEnd of search list."
 )
 
-func parseStdlibDirs(output string) []string {
+func parseStdlibDirs(output string) (ret []string) {
 	start := strings.Index(output, startMarker)
 	if start < 0 {
 		panic("failed to find start marker in clang output")
@@ -63,11 +63,15 @@ func parseStdlibDirs(output string) []string {
 	if end < 0 {
 		panic("failed to find end marker in clang output")
 	}
-	dirs := strings.SplitN(output[:end], "\n ", 3)
-	if len(dirs) > 2 {
-		dirs = dirs[:2] // only keep the first two directories
+	dirs := strings.Split(output[:end], "\n ")
+	ret = make([]string, 0, len(dirs))
+	for _, dir := range dirs {
+		dir = strings.TrimSpace(dir)
+		if dir != "" && !strings.Contains(dir, " ") {
+			ret = append(ret, dir)
+		}
 	}
-	return dirs
+	return
 }
 
 // -----------------------------------------------------------------------------
