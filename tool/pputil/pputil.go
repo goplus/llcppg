@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package listth
+package pputil // preprocessor utility
 
 import (
 	"bytes"
