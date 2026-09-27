@@ -67,7 +67,8 @@ type Include struct {
 	Quote    bool
 }
 
-// Search searches for the include file in the specified directories.
+// Search searches for the include file in the specified directories. Note: `found` is
+// the resolved path only when ok is true, and the raw include name otherwise.
 func (p *Include) Search(workDir string, searchDirs []string) (found string, ok bool) {
 	filename := p.Filename
 	if p.Quote {
@@ -137,6 +138,8 @@ func LoadIncludes(headerFile string) (includes iter.Seq[Include], err error) {
 
 // ListIncludes lists the include files for the specified header file. It returns a
 // sequence of include file paths and a boolean indicating whether the file was found.
+// The include file path is the resolved path when ok is true, and the raw include
+// filename otherwise.
 func ListIncludes(headerFile string, includeDirs []string) (includeFiles iter.Seq2[string, bool], err error) {
 	includes, err := LoadIncludes(headerFile)
 	if err != nil {
