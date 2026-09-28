@@ -1,0 +1,8 @@
+package Compiler
+
+const LLGoPackage = "link: -L$(llvm-config --libdir) -lLLVM; -lLLVM"
+const LLVM_MEMORY_SANITIZER_BUILD = 0
+const LLVM_ADDRESS_SANITIZER_BUILD = 0
+const LLVM_HWADDRESS_SANITIZER_BUILD = 0
+const LLVM_THREAD_SANITIZER_BUILD = 0
+const LLVM_ENABLE_EXCEPTIONS = 1

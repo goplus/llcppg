@@ -255,6 +255,18 @@ func TestSingleC(t *testing.T) {
 	testFromDir(t, "", "./_testc", true)
 }
 
-func TestSingleCpp(t *testing.T) {
+func TestLLVM_AMDGPUAddrSpace(t *testing.T) {
+	testFromDir(t, "AMDGPUAddrSpace", "./_testcpp", true)
+}
+
+func TestLLVM_AMDHSAKernelDescriptor(t *testing.T) {
 	testFromDir(t, "AMDHSAKernelDescriptor", "./_testcpp", true)
+}
+
+func TestLLVM_AtomicOrdering(t *testing.T) {
+	testFromDir(t, "AtomicOrdering", "./_testcpp", true)
+}
+
+func TestLLVM_Compiler(t *testing.T) {
+	testFromDir(t, "Compiler", "./_testcpp", true)
 }
