@@ -15,8 +15,8 @@ const (
 	AtomicOrderingCABI_Consume AtomicOrderingCABI = 1
 	AtomicOrderingCABI_Acquire AtomicOrderingCABI = 2
 	AtomicOrderingCABI_Release AtomicOrderingCABI = 3
-	AtomicOrderingCABIAcqRel   AtomicOrderingCABI = 4
-	AtomicOrderingCABISeqCst   AtomicOrderingCABI = 5
+	AtomicOrderingCABI_AcqRel  AtomicOrderingCABI = 4
+	AtomicOrderingCABI_SeqCst  AtomicOrderingCABI = 5
 )
 
 // Atomic ordering for LLVM's memory model.

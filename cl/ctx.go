@@ -267,7 +267,10 @@ func (p *pkgCtx) macroName(name string) string {
 	return p.globalName(name, p.macroPrefix)
 }
 
-func (p *pkgCtx) enumvalName(name string) string {
+func (p *pkgCtx) enumvalName(name, ns string) string {
+	if strings.HasSuffix(ns, "_") {
+		return p.globalName(ns, p.enumPrefix) + p.cstyleToGo(name, true)
+	}
 	return p.globalName(name, p.enumPrefix)
 }
 
