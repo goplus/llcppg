@@ -241,21 +241,11 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 }
 
 func (p *pkgCtx) isTypeIgnored(cName string) bool {
-	for _, name := range p.typeIgnores {
-		if name == cName {
-			return true
-		}
-	}
-	return false
+	return contains(cName, p.typeIgnores)
 }
 
 func (p *pkgCtx) isNSIgnored(ns string) bool {
-	for _, name := range p.nsIgnores {
-		if name == ns {
-			return true
-		}
-	}
-	return false
+	return contains(ns, p.nsIgnores)
 }
 
 func (p *pkgCtx) globalName(name string, trimPrefixs []string) string {
