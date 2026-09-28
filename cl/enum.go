@@ -51,8 +51,6 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 
-	// Preserve the enum type name for a named enum. An anonymous enum has no
-	// name, so its constants stay untyped.
 	var enumType types.Type
 	if !anonymous {
 		typDefs := pkg.NewTypeDefs()
@@ -61,7 +59,8 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		}
 		typeName := ctx.typeName(origName, true)
 		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
-		typNamed := typDecl.InitType(pkg, toType(ctx, pkgTypes, typ, flagIsTypeDef))
+		underType := toType(ctx, pkgTypes, typ, flagIsTypeDef)
+		typNamed := typDecl.InitType(pkg, underType)
 		ctx.addType(tagEnum, decl, typNamed)
 		enumType = typNamed
 	}

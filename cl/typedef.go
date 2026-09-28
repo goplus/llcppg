@@ -27,7 +27,7 @@ import (
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	cName := clang.String(decl.Type())
-	if ctx.isIgnored(cName) {
+	if ctx.isTypeIgnored(cName) {
 		if debugCompileDecl {
 			log.Println("typedef", cName, "- ignored")
 		}

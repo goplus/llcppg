@@ -44,7 +44,8 @@ type Config struct {
 	TypePrefix  []string          `json:"TypePrefix"`  // type prefix to remove
 	TypeAbbr    map[string]string `json:"TypeAbbr"`    // Go type name to its abbr, used in function names
 	Rename      map[string]string `json:"Rename"`      // renaming of C/C++ names to Go names
-	Ignore      []string          `json:"Ignore"`      // C/C++ names to ignore, optional
+	TypeIgnore  []string          `json:"TypeIgnore"`  // C/C++ type names to ignore
+	NSIgnore    []string          `json:"NSIgnore"`    // namespaces (Go style names) to ignore
 	Pkgs        []string          `json:"Pkgs"`        // sub-packages to generate, optional
 }
 
