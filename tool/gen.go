@@ -234,9 +234,8 @@ func (p Module) includeDirs(imp *packages.Importer, deps []string, n, reserved i
 
 // -----------------------------------------------------------------------------
 
-// ParseSources parses the given source files and returns the translation units corresponding
-// to those files.
-func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) ([]cl.Source, error) {
+// ParseFlags constructs the command-line flags for parsing C/C++ source files with clang.
+func ParseFlags(includeDirs []string, lang string) []string {
 	n := len(includeDirs)
 	flags := make([]string, n+2)
 	for i, dir := range includeDirs {
@@ -244,6 +243,13 @@ func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang str
 	}
 	flags[n] = "-x"
 	flags[n+1] = lang
+	return flags
+}
+
+// ParseSources parses the given source files and returns the translation units corresponding
+// to those files.
+func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) ([]cl.Source, error) {
+	flags := ParseFlags(includeDirs, lang)
 	files := make([]cl.Source, len(headerFiles))
 	for i, headerFile := range headerFiles {
 		tu, e := index.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)

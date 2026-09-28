@@ -83,8 +83,10 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		return
 	}
 
-	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord,
-		headerFile, "-I"+pkgDir+"/include", "-I"+pkgDir+"/cstdlib", "-x", conf.Language)
+	incDirs := conf.StdlibDirs(pkgDir)
+	incDirs = append([]string{pkgDir + "/include"}, incDirs...)
+	flags := tool.ParseFlags(incDirs, conf.Language)
+	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)
 	if err != nil {
 		t.Error("ParseTranslationUnit failed:", err)
 		return

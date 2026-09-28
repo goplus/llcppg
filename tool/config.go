@@ -97,6 +97,8 @@ func (cfg *Config) Lang() (lang cl.Language, ok bool) {
 	}
 }
 
+// -----------------------------------------------------------------------------
+
 // StdlibDirs returns the standard library include directories.
 func (cfg *Config) StdlibDirs(workDir string) []string {
 	var stdlibDirs []string
