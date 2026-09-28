@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/token"
 	"go/types"
 	"log"
 
@@ -86,10 +85,11 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		if doc := ctx.docCommentGroup(item); doc != nil {
 			at.Doc = doc
 		}
+		pos := goNodePos(ctx, item)
 		defs.NewAt(at, func(cb *gogen.CodeBuilder) int {
 			cb.Val(val)
 			return 1
-		}, 0, token.NoPos, enumType, name)
+		}, 0, pos, enumType, name)
 		return clang.Continue
 	})
 }

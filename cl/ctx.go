@@ -70,10 +70,6 @@ type nodeInterp struct {
 	fset *token.FileSet
 }
 
-func (p *nodeInterp) Position(start token.Pos) token.Position {
-	return p.fset.Position(start)
-}
-
 func (p *nodeInterp) LoadExpr(v ast.Node) string {
 	panic("todo: nodeInterp.LoadExpr")
 }
@@ -488,7 +484,7 @@ func (p *scopeCtx) reorder() {
 // -----------------------------------------------------------------------------
 /*
 func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
-	old := scope.Insert(gogen.NewSubst(token.NoPos, pkg, origName, real))
+	old := scope.Insert(gogen.NewSubst(0, pkg, origName, real))
 	if old != nil {
 		if t, ok := old.Type().(*gogen.TySubst); ok {
 			t.Real = real

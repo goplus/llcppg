@@ -195,7 +195,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		llgo.New(func(cb *gogen.CodeBuilder) int {
 			cb.Val(llgoPkg)
 			return 1
-		}, 0, token.NoPos, nil, "LLGoPackage")
+		}, 0, 0, nil, "LLGoPackage")
 	}
 
 	c := pkg.Import("github.com/goplus/lib/c")
@@ -298,6 +298,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadUnion(ctx, decl, ns)
 	case lc.Cursor_MacroExpansion:
 		// noop
+	case lc.Cursor_FunctionTemplate:
+		// TODO(xsw): ignore for now
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}

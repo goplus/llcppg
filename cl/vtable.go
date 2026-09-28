@@ -18,7 +18,6 @@ package cl
 
 import (
 	"go/ast"
-	"go/token"
 	"go/types"
 	"strconv"
 
@@ -149,11 +148,11 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 	pkgTypes := pkg.Types
 	tyUP := types.Typ[types.UnsafePointer]
 
-	recv := types.NewParam(token.NoPos, pkgTypes, "p", recvPtr)
-	results := types.NewTuple(types.NewParam(token.NoPos, pkgTypes, "", vtPtr))
+	recv := types.NewParam(0, pkgTypes, "p", recvPtr)
+	results := types.NewTuple(types.NewParam(0, pkgTypes, "", vtPtr))
 	sig := types.NewSignatureType(recv, nil, nil, nil, results, false)
 
-	f, err := pkg.NewFuncWith(token.NoPos, vptrAccessorName, sig, nil)
+	f, err := pkg.NewFuncWith(0, vptrAccessorName, sig, nil)
 	if err != nil {
 		panic("genVptrAccessor: " + err.Error())
 	}
@@ -176,7 +175,7 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 // func(this *X, <params>) <result>, mirroring the method signature but with the
 // receiver turned into an explicit leading "this" parameter.
 func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clang.Cursor) types.Type {
-	this := types.NewParam(token.NoPos, pkg, "this", recvPtr)
+	this := types.NewParam(0, pkg, "this", recvPtr)
 	feats := 0
 	rest, variadic := newParams(ctx, pkg, fn, &feats)
 	params := make([]*types.Var, 0, 1+len(rest))

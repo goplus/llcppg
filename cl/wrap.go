@@ -18,7 +18,6 @@ package cl
 
 import (
 	"bytes"
-	"go/token"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -45,7 +44,7 @@ func newWrapFile(ctx *pkgCtx) *WrapFile {
 	ctx.llgo.New(func(cb *gogen.CodeBuilder) int {
 		cb.Val(llgoFiles)
 		return 1
-	}, 0, token.NoPos, nil, "LLGoFiles")
+	}, 0, 0, nil, "LLGoFiles")
 	return &WrapFile{Filename: filename}
 }
 
