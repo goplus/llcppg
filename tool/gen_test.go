@@ -36,7 +36,7 @@ import (
 
 func init() {
 	cl.SetDebug(cl.DbgFlagAll)
-	// tool.SetDebug(tool.DbgFlagAll)
+	tool.SetDebug(tool.DbgFlagAll)
 }
 
 func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp any) {
@@ -211,4 +211,8 @@ func TestC(t *testing.T) {
 
 func TestSingleC(t *testing.T) {
 	testFromDir(t, "", "./_testc", true)
+}
+
+func _TestSingleCpp(t *testing.T) {
+	testFromDir(t, "AtomicOrdering", "./_testcpp", true)
 }

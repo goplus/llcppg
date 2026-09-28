@@ -17,7 +17,6 @@
 package tool
 
 import (
-	"encoding/json"
 	"fmt"
 	"go/token"
 	"log"
@@ -31,25 +30,21 @@ import (
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool/pputil"
-	"github.com/goplus/llcppg/xtool/env/cstdlib"
 	"github.com/goplus/mod"
 	"github.com/goplus/mod/xgomod"
 	"github.com/qiniu/x/errors"
 )
 
 const (
-	DbgFlagLoadSource = 1 << iota
-	DbgFlagSettings
-	DbgFlagAll = DbgFlagLoadSource | DbgFlagSettings
+	DbgFlagSettings = 1 << iota
+	DbgFlagAll      = DbgFlagSettings
 )
 
 var (
-	debugLoadSource bool
-	debugSettings   bool
+	debugSettings bool
 )
 
 func SetDebug(flags int) {
-	debugLoadSource = (flags & DbgFlagLoadSource) != 0
 	debugSettings = (flags & DbgFlagSettings) != 0
 }
 
@@ -67,49 +62,6 @@ var (
 )
 
 // -----------------------------------------------------------------------------
-
-type Config struct {
-	Name        string            `json:"Name"`        // required
-	Language    string            `json:"Language"`    // c, c++, etc. required
-	Dir         string            `json:"Dir"`         // dir or dir/... (recursive), required
-	Stdlib      string            `json:"Stdlib"`      // C stdlib include dir, optional
-	LLGoPackage string            `json:"LLGoPackage"` // optional
-	CFlags      string            `json:"CFlags"`      // optional
-	Deps        []string          `json:"Deps"`        // dependencies (package paths), optional
-	Class       []string          `json:"Class"`       // typedef names to be treated as classes
-	NonClass    []string          `json:"NonClass"`    // typedef names to be treated as non-classes
-	FuncPrefix  []string          `json:"FuncPrefix"`  // global function prefix to remove
-	VarPrefix   []string          `json:"VarPrefix"`   // global variable prefix to remove
-	EnumPrefix  []string          `json:"EnumPrefix"`  // enum value prefix to remove
-	MacroPrefix []string          `json:"MacroPrefix"` // macro prefix to remove
-	TypePrefix  []string          `json:"TypePrefix"`  // type prefix to remove
-	TypeAbbr    map[string]string `json:"TypeAbbr"`    // Go type name to its abbr, used in function names
-	Rename      map[string]string `json:"Rename"`      // renaming of C/C++ names to Go names
-	Ignore      []string          `json:"Ignore"`      // C/C++ names to ignore
-}
-
-// LoadConf loads the llcppg configuration.
-func LoadConf(filename string) (cfg Config, err error) {
-	b, err := os.ReadFile(filename)
-	if err != nil {
-		return
-	}
-
-	err = json.Unmarshal(b, &cfg)
-	return
-}
-
-// Lang returns the language of the configuration.
-func (cfg *Config) Lang() (lang cl.Language, ok bool) {
-	switch cfg.Language {
-	case "c":
-		return cl.LanguageC, true
-	case "c++":
-		return cl.LanguageCXX, true
-	default:
-		return 0, false
-	}
-}
 
 const includeSuffix = string(os.PathSeparator) + "include"
 
@@ -150,15 +102,7 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		imp.SetCache(c)
 	}
 
-	var stdlibDirs []string
-	if stdlibDir := cfg.Stdlib; stdlibDir != "" {
-		if !filepath.IsAbs(stdlibDir) {
-			stdlibDir = filepath.Join(workDir, stdlibDir)
-		}
-		stdlibDirs = []string{stdlibDir}
-	} else {
-		stdlibDirs = cstdlib.Dirs()
-	}
+	stdlibDirs := cfg.StdlibDirs(workDir)
 	if debugSettings {
 		log.Println("==> stdlibDirs:", stdlibDirs)
 	}
@@ -202,10 +146,6 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		return
 	}
 	defer DisposeSources(files)
-
-	if debugLoadSource {
-		dumpSources(topHeaders, files)
-	}
 
 	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
 		Fset:                   fset,
