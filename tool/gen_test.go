@@ -256,5 +256,5 @@ func TestSingleC(t *testing.T) {
 }
 
 func TestSingleCpp(t *testing.T) {
-	testFromDir(t, "AMDGPUAddrSpace", "./_testcpp", true)
+	testFromDir(t, "AMDHSAKernelDescriptor", "./_testcpp", true)
 }

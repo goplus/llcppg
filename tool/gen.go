@@ -228,6 +228,9 @@ func (p Module) IncludeDir(modPath string) (includeDir string, err error) {
 	if err != nil {
 		return
 	}
+	if debugSettings {
+		log.Println("==> modfetch.Get:", mod.Path, mod.Version)
+	}
 	rootDir, err := modcache.Path(mod)
 	if err != nil {
 		return

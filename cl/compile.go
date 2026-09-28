@@ -301,7 +301,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadVar(ctx, decl, ns)
 	case lc.Cursor_UnionDecl:
 		loadUnion(ctx, decl, ns)
-	case lc.Cursor_MacroExpansion:
+	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert:
 		// noop
 	case lc.Cursor_FunctionTemplate:
 		// TODO(xsw): ignore for now
@@ -311,7 +311,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 }
 
 func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns string) {
-	ns = nsName(ns, clang.String(namespace))
+	ns = ctx.nsName(ns, clang.String(namespace))
 	if ctx.isNSIgnored(ns) {
 		if debugCompileDecl {
 			log.Println("namespace", ns, "- ignored")
