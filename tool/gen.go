@@ -31,6 +31,8 @@ import (
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool/pputil"
 	"github.com/goplus/mod"
+	"github.com/goplus/mod/modcache"
+	"github.com/goplus/mod/modfetch"
 	"github.com/goplus/mod/xgomod"
 	"github.com/qiniu/x/errors"
 )
@@ -107,7 +109,7 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		log.Println("==> stdlibDirs:", stdlibDirs)
 	}
 
-	incDirs, pkgPaths := mod.includeDirs(imp, deps, 1, 1+len(stdlibDirs))
+	incDirs, pkgPaths := mod.includeDirs(deps, 1, 1+len(stdlibDirs))
 	for _, stdlibDir := range stdlibDirs {
 		incDirs = append(incDirs, stdlibDir)
 		pkgPaths = append(pkgPaths, "github.com/goplus/lib/c")
@@ -212,31 +214,47 @@ func (p Module) PubFileLookup(pkgPath string) (pubFile string, ok bool) {
 	return
 }
 
+// IncludeDir returns the include directory for the specified module path.
+// It looks up the module version in the go.mod file and retrieves the include
+// directory from the module cache.
+func (p Module) IncludeDir(modPath string) (includeDir string, err error) {
+	modVer, ok := p.mod.LookupDepMod(modPath)
+	if !ok {
+		err = fmt.Errorf("module %q not in go.mod", modPath)
+		return
+	}
+	mod, err := modfetch.Get(modVer.Path + "/c@" + modVer.Version)
+	if err != nil {
+		return
+	}
+	rootDir, err := modcache.Path(mod)
+	if err != nil {
+		return
+	}
+	return rootDir + includeSuffix, nil
+}
+
 // includeDirs returns the include directories and package paths for the given dependencies.
 // The reserved parameter specifies the number of reserved slots in the returned slices.
-func (p Module) includeDirs(imp *packages.Importer, deps []string, n, reserved int) (incDirs, pkgPaths []string) {
+func (p Module) includeDirs(deps []string, n, reserved int) (incDirs, pkgPaths []string) {
 	incDirs = make([]string, n, len(deps)+reserved)
 	pkgPaths = make([]string, n, len(deps)+reserved)
 	for _, dep := range deps {
-		pkgTypes, err := imp.Import(dep)
-		if err == nil {
-			if o := pkgTypes.Scope().Lookup("LLGoFiles"); o != nil {
-				pkg, err := p.mod.Lookup(dep)
-				if err == nil {
-					incDirs = append(incDirs, filepath.Join(pkg.Dir, "_wrap/include"))
-					pkgPaths = append(pkgPaths, dep)
-				}
-			}
+		incDir, err := p.IncludeDir(dep)
+		if err != nil {
+			log.Println("[WARN]", err)
+			continue
 		}
+		incDirs = append(incDirs, incDir)
+		pkgPaths = append(pkgPaths, dep)
 	}
 	return
 }
 
 // -----------------------------------------------------------------------------
 
-// ParseSources parses the given source files and returns the translation units corresponding
-// to those files.
-func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) ([]cl.Source, error) {
+// ParseFlags constructs the command-line flags for parsing C/C++ source files with clang.
+func ParseFlags(includeDirs []string, lang string) []string {
 	n := len(includeDirs)
 	flags := make([]string, n+2)
 	for i, dir := range includeDirs {
@@ -244,6 +262,13 @@ func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang str
 	}
 	flags[n] = "-x"
 	flags[n+1] = lang
+	return flags
+}
+
+// ParseSources parses the given source files and returns the translation units corresponding
+// to those files.
+func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) ([]cl.Source, error) {
+	flags := ParseFlags(includeDirs, lang)
 	files := make([]cl.Source, len(headerFiles))
 	for i, headerFile := range headerFiles {
 		tu, e := index.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)

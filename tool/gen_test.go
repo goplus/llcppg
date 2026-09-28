@@ -83,17 +83,41 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		return
 	}
 
-	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord,
-		headerFile, "-I"+pkgDir+"/include", "-I"+pkgDir+"/cstdlib", "-x", conf.Language)
+	mod, err := tool.LoadModuleFrom(pkgDir)
+	if err != nil {
+		t.Errorf("failed to load module: %v", err)
+		return
+	}
+
+	incDirs := make([]string, 1, 6)
+	incDirs[0] = pkgDir + "/include"
+	for _, dep := range conf.Deps {
+		incDir, err := mod.IncludeDir(dep)
+		if err != nil {
+			t.Errorf("failed to get include dir for dependency %q: %v", dep, err)
+			return
+		}
+		incDirs = append(incDirs, incDir)
+	}
+	incDirs = append(incDirs, conf.StdlibDirs(pkgDir)...)
+	log.Println("==> includeDirs:", incDirs)
+
+	flags := tool.ParseFlags(incDirs, conf.Language)
+	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)
 	if err != nil {
 		t.Error("ParseTranslationUnit failed:", err)
 		return
 	}
 	defer u.Dispose()
 
-	const pkgPrefix = "clang/"
 	files := []cl.Source{u}
 	imp := packages.NewImporter(nil, headerDir)
+	pkgPrefix := conf.Name
+	if pos := strings.Index(pkgPrefix, "/"); pos > 0 {
+		pkgPrefix = pkgPrefix[:pos+1]
+	} else {
+		pkgPrefix += "/"
+	}
 	pkg, err := cl.NewPackage(pkgPrefix+myPkgName, myPkgName, files, &cl.Config{
 		Importer:    imp,
 		LLGoPackage: conf.LLGoPackage,
@@ -148,6 +172,21 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 		if err != nil {
 			log.Fatal("LoadConf failed:", err)
 		}
+
+		switch len(conf.Pkgs) {
+		case 0:
+		case 1:
+			cfgFile := pkgDir + "/llcppg-" + conf.Pkgs[0] + ".cfg"
+			subConf, err := tool.LoadConf(cfgFile)
+			if err != nil {
+				t.Fatal("LoadConf failed:", err)
+			}
+			subConf.Apply(&conf)
+			conf = subConf
+		default:
+			t.Fatal("conf.Pkgs can't be multi-packages for testing")
+		}
+
 		if single {
 			headerDir := filepath.Join(pkgDir, conf.Dir)
 			fis, err := os.ReadDir(headerDir)

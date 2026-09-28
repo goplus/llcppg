@@ -43,7 +43,8 @@ func loadInclude(ctx *pkgCtx, decl clang.Cursor) {
 
 	pkgPath, ok := ctx.pkgOf(includeFile)
 	if !ok {
-		log.Panicln("loadInclude: package not found for", includeFile)
+		log.Println("[WARN] loadInclude: package not found for", includeFile)
+		return
 	}
 	if ctx.pkg.Types.Path() != pkgPath {
 		ctx.importPkg(pkgPath)
