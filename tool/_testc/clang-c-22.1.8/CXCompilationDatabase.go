@@ -27,7 +27,7 @@ type CompileCommands uintptr
 type CompileCommand uintptr
 
 // Error codes for Compilation Database
-type CompilationDatabase_Error c.Int
+type CompilationDatabase_Error c.Uint
 
 const (
 	CompilationDatabase_NoError            CompilationDatabase_Error = 0

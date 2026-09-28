@@ -5,7 +5,7 @@ import (
 	_ "unsafe"
 )
 
-type Color c.Int
+type Color c.Uint
 
 const (
 	Red   Color = 0
@@ -13,7 +13,7 @@ const (
 	Blue  Color = 2
 )
 
-type State c.Int
+type State c.Uint
 
 const (
 	StateStopped State = 0
@@ -26,7 +26,7 @@ const (
 	FlagC = 4
 )
 
-type CXCompilationDatabase_Error c.Int
+type CXCompilationDatabase_Error c.Uint
 
 const (
 	CXCompilationDatabase_NoError            CXCompilationDatabase_Error = 0

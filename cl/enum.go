@@ -43,8 +43,9 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	origName := nameWithNS(name, ns)
 	anonymous := decl.IsAnonymous() != 0
 	scoped := decl.EnumDeclIsScoped() != 0
+	typ := decl.EnumDeclIntegerType()
 	if debugCompileDecl {
-		log.Println("enum", origName, "anonymous:", anonymous, "scoped:", scoped)
+		log.Println("enum", origName, clang.String(typ), "anonymous:", anonymous, "scoped:", scoped)
 	}
 
 	pkg := ctx.pkg
@@ -60,9 +61,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		}
 		typeName := ctx.typeName(origName, true)
 		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
-		// C enums decay to int; use the same C int type the rest of the
-		// generator uses so enum-typed values interoperate with C APIs.
-		typNamed := typDecl.InitType(pkg, ctx.basicTyp(cInt))
+		typNamed := typDecl.InitType(pkg, toType(ctx, pkgTypes, typ, flagIsTypeDef))
 		ctx.addType(tagEnum, decl, typNamed)
 		enumType = typNamed
 	}

@@ -8,7 +8,7 @@ import "github.com/goplus/lib/c"
 //
 // Zero (\c CXError_Success) is the only error code indicating success.  Other
 // error codes, including not yet assigned non-zero values, indicate errors.
-type ErrorCode c.Int
+type ErrorCode c.Uint
 
 const (
 	// No error.
