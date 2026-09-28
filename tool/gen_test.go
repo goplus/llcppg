@@ -75,6 +75,21 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		return
 	}
 
+	pkgPrefix := conf.Name + "/"
+	switch len(conf.Pkgs) {
+	case 0:
+	case 1:
+		cfgFile := pkgDir + "/llcppg-" + conf.Pkgs[0] + ".cfg"
+		subConf, err := tool.LoadConf(cfgFile)
+		if err != nil {
+			t.Fatal("LoadConf failed:", err)
+		}
+		subConf.Apply(conf)
+		conf = &subConf
+	default:
+		t.Fatal("conf.Pkgs can't be multi-packages for single file test")
+	}
+
 	log.Println("============== testSingleFile: package", myPkgName, "==============")
 
 	lang, ok := conf.Lang()
@@ -93,7 +108,6 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	}
 	defer u.Dispose()
 
-	const pkgPrefix = "clang/"
 	files := []cl.Source{u}
 	imp := packages.NewImporter(nil, headerDir)
 	pkg, err := cl.NewPackage(pkgPrefix+myPkgName, myPkgName, files, &cl.Config{
