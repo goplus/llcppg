@@ -208,9 +208,11 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 						recvName = first.Name()
 					}
 					first = types.NewParam(first.Pos(), pkgTypes, recvName, types.Unalias(t))
-					// add type abbreviation for alias type
-					var tnObjName = tn.Obj().Name()
-					ctx.typeAbbr[tnObjName] = t.Obj().Name()
+					tnObjName := tn.Obj().Name()
+					// add type abbreviation for alias type if not exists
+					if _, ok := ctx.typeAbbr[tnObjName]; !ok {
+						ctx.typeAbbr[tnObjName] = t.Obj().Name()
+					}
 					return params[1:], first, tn, tnObjName
 				}
 			}
