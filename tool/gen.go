@@ -113,29 +113,6 @@ func (cfg *Config) Lang() (lang cl.Language, ok bool) {
 
 const includeSuffix = string(os.PathSeparator) + "include"
 
-// topHeaders lists the top-level header files according to the configuration. If the
-// Dir field ends with "/...", it will recursively list all header files in the directory
-// and its subdirectories. includeDirs[0] will be set to the include directory for the
-// package.
-func topHeaders(dir, workDir string, includeDirs []string) (headerFiles []string, err error) {
-	recursive := strings.HasSuffix(dir, "/...")
-	if recursive {
-		dir = dir[:len(dir)-4]
-	}
-	if !filepath.IsAbs(dir) {
-		dir = filepath.Join(workDir, dir)
-	}
-	incDir := dir
-	if pos := strings.LastIndex(incDir, includeSuffix); pos >= 0 {
-		incDir = incDir[:pos+len(includeSuffix)]
-	}
-	includeDirs[0] = incDir
-	if debugSettings {
-		log.Println("==> includeDirs:", includeDirs)
-	}
-	return pputil.TopHeaders(dir, recursive, false, includeDirs)
-}
-
 // NewPackage loads the source files and converts them into a Go package according to the
 // configuration.
 func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret cl.Package, lang cl.Language, err error) {
@@ -191,8 +168,31 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		incDirs = append(incDirs, stdlibDir)
 		pkgPaths = append(pkgPaths, "github.com/goplus/lib/c")
 	}
-	pkgPaths[0] = pkgPath // incDirs[0] is set by topHeaders
-	topHeaders, err := topHeaders(cfg.Dir, workDir, incDirs)
+
+	dir := cfg.Dir
+	recursive := strings.HasSuffix(dir, "/...")
+	if recursive {
+		dir = dir[:len(dir)-4]
+	}
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(workDir, dir)
+	}
+	if debugSettings {
+		log.Println("==> srcDir:", dir)
+	}
+
+	incDir := dir
+	if pos := strings.LastIndex(incDir, includeSuffix); pos >= 0 {
+		incDir = incDir[:pos+len(includeSuffix)]
+	}
+	incDirs[0] = incDir
+	pkgPaths[0] = pkgPath
+
+	if debugSettings {
+		log.Println("==> includeDirs:", incDirs)
+	}
+
+	topHeaders, err := pputil.TopHeaders(dir, recursive, false, incDirs)
 	if err != nil {
 		return
 	}
@@ -208,26 +208,27 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 	}
 
 	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
-		Fset:            fset,
-		Importer:        imp,
-		LLGoPackage:     cfg.LLGoPackage,
-		Language:        lang,
-		CFlags:          cfg.CFlags,
-		Class:           cfg.Class,
-		NonClass:        cfg.NonClass,
-		FuncPrefix:      cfg.FuncPrefix,
-		VarPrefix:       cfg.VarPrefix,
-		EnumPrefix:      cfg.EnumPrefix,
-		MacroPrefix:     cfg.MacroPrefix,
-		TypePrefix:      cfg.TypePrefix,
-		TypeAbbr:        cfg.TypeAbbr,
-		Rename:          cfg.Rename,
-		Ignore:          cfg.Ignore,
-		DefaultGoFile:   "llcppg.i.go",
-		GenMultiGoFiles: true,
-		UseStdRecvName:  true,
-		NameLookup:      nil,
-		PubFileLookup:   mod.PubFileLookup,
+		Fset:                   fset,
+		Importer:               imp,
+		LLGoPackage:            cfg.LLGoPackage,
+		Language:               lang,
+		CFlags:                 cfg.CFlags,
+		Class:                  cfg.Class,
+		NonClass:               cfg.NonClass,
+		FuncPrefix:             cfg.FuncPrefix,
+		VarPrefix:              cfg.VarPrefix,
+		EnumPrefix:             cfg.EnumPrefix,
+		MacroPrefix:            cfg.MacroPrefix,
+		TypePrefix:             cfg.TypePrefix,
+		TypeAbbr:               cfg.TypeAbbr,
+		Rename:                 cfg.Rename,
+		Ignore:                 cfg.Ignore,
+		DefaultGoFile:          "llcppg.i.go",
+		SourceHeaderFilePrefix: dir + string(os.PathSeparator),
+		GenMultiGoFiles:        true,
+		UseStdRecvName:         true,
+		NameLookup:             nil,
+		PubFileLookup:          mod.PubFileLookup,
 		PackageOf: func(headerFile string) (pkgPath string, ok bool) {
 			for i, includeDir := range incDirs {
 				if strings.HasPrefix(headerFile, includeDir) {
