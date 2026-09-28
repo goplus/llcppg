@@ -271,7 +271,7 @@ func (p *pkgCtx) enumvalName(name, ns string) string {
 	if strings.HasSuffix(ns, "_") {
 		return p.globalName(ns, p.enumPrefix) + p.cstyleToGo(name, true)
 	}
-	return p.globalName(name, p.enumPrefix)
+	return p.globalName(nameWithNS(name, ns), p.enumPrefix)
 }
 
 func (p *pkgCtx) typeName(name string, _ bool) string {
