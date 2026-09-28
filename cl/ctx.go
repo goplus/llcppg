@@ -112,7 +112,8 @@ type pkgCtx struct {
 	nonClasses  []string          // typedef names to be treated as non-classes
 	typeAbbr    map[string]string // Go type name => abbreviated name, used in function names
 	rename      map[string]string // C/C++ name => Go name
-	ignores     []string          // C/C++ names to be ignored
+	typeIgnores []string          // C/C++ type names to be ignored
+	nsIgnores   []string          // Go style namespace names to be ignored
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -239,9 +240,18 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 	return nil, false
 }
 
-func (p *pkgCtx) isIgnored(cName string) bool {
-	for _, name := range p.ignores {
+func (p *pkgCtx) isTypeIgnored(cName string) bool {
+	for _, name := range p.typeIgnores {
 		if name == cName {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *pkgCtx) isNSIgnored(ns string) bool {
+	for _, name := range p.nsIgnores {
+		if name == ns {
 			return true
 		}
 	}
@@ -341,6 +351,12 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 }
 
 func nsName(ns, inner string) string {
+	if ns != "" {
+		c := ns[len(ns)-1]
+		if 'A' <= c && c <= 'Z' {
+			ns += "_"
+		}
+	}
 	if c := inner[0]; 'a' <= c && c <= 'z' {
 		return ns + string(c-'a'+'A') + inner[1:]
 	}

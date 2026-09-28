@@ -105,12 +105,16 @@ type Config struct {
 	// and true (it means any mangling name is considered found).
 	NameLookup func(manglingName string) (archivePath string, ok bool)
 
-	// Ignore specifies a list of C/C++ names to be ignored (optional).
-	Ignore []string
-
 	// Rename specifies a mapping of C/C++ names to Go names (optional). If a name is present
 	// in the map, it will be renamed to the corresponding Go name.
 	Rename map[string]string
+
+	// NSIgnore specifies a list of namespaces (their names have been converted to Go style)
+	// to be ignored (optional).
+	NSIgnore []string
+
+	// TypeIgnore specifies a list of C/C++ type names to be ignored (optional).
+	TypeIgnore []string
 
 	// TypeAbbr specifies a mapping of Go type name to its abbreviated name. The abbreviated
 	// name will be used in function names (optional).
@@ -214,7 +218,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
 		enumPrefix: conf.EnumPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
-		ignores: conf.Ignore, rename: rename, classes: conf.Class, nonClasses: conf.NonClass,
+		nsIgnores: conf.NSIgnore, typeIgnores: conf.TypeIgnore, rename: rename,
+		classes: conf.Class, nonClasses: conf.NonClass,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]typeObj),
@@ -307,6 +312,12 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 
 func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns string) {
 	ns = nsName(ns, clang.String(namespace))
+	if ctx.isNSIgnored(ns) {
+		if debugCompileDecl {
+			log.Println("namespace", ns, "- ignored")
+		}
+		return
+	}
 	clang.VisitChildren(namespace, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadDecl(ctx, scope, decl, ns)
 		return clang.Continue

@@ -130,13 +130,14 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		TypePrefix:  conf.TypePrefix,
 		TypeAbbr:    conf.TypeAbbr,
 		Rename:      conf.Rename,
-		Ignore:      conf.Ignore,
+		TypeIgnore:  conf.TypeIgnore,
+		NSIgnore:    conf.NSIgnore,
 		NameLookup:  nil,
 		PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
 			if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {
 				return filepath.Join(pkgDir, name, "llcppg.pub"), true
 			}
-			return
+			return mod.PubFileLookup(pkgPath)
 		},
 		PackageOf: func(headerFile string) (pkgPath string, ok bool) {
 			tRootDir, tPkgName := filepath.Split(headerFile)
@@ -144,6 +145,8 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 				pkgPath = pkgPrefix + tPkgName[:len(tPkgName)-2]
 			} else if ok = tRootDir == pkgDir+"/cstdlib/"; ok {
 				pkgPath = pkgPrefix + "cstdlib"
+			} else if strings.Contains(headerFile, "github.com/llarhub/libcxx/c") {
+				pkgPath, ok = "github.com/llarhub/libcxx", true
 			}
 			return
 		},
@@ -253,5 +256,5 @@ func TestSingleC(t *testing.T) {
 }
 
 func TestSingleCpp(t *testing.T) {
-	testFromDir(t, "AtomicOrdering", "./_testcpp", true)
+	testFromDir(t, "AMDGPUAddrSpace", "./_testcpp", true)
 }
