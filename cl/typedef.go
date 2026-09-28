@@ -77,13 +77,4 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	ctx.aliasTypeName(cName, name)
 }
 
-func contains(v string, names []string) bool {
-	for _, name := range names {
-		if name == v {
-			return true
-		}
-	}
-	return false
-}
-
 // -----------------------------------------------------------------------------

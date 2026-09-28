@@ -92,6 +92,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	incDirs := make([]string, 1, 6)
 	incDirs[0] = pkgDir + "/include"
 	for _, dep := range conf.Deps {
+		dep = "github.com/llarhub/" + dep
 		incDir, err := mod.IncludeDir(dep)
 		if err != nil {
 			t.Errorf("failed to get include dir for dependency %q: %v", dep, err)
@@ -265,6 +266,10 @@ func TestLLVM_AMDHSAKernelDescriptor(t *testing.T) {
 
 func TestLLVM_AtomicOrdering(t *testing.T) {
 	testFromDir(t, "AtomicOrdering", "./_testcpp", true)
+}
+
+func TestLLVM_Atomic(t *testing.T) {
+	testFromDir(t, "Atomic", "./_testcpp", true)
 }
 
 func TestLLVM_Compiler(t *testing.T) {

@@ -20,7 +20,6 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 
 	lc "github.com/llarhub/clang-c"
@@ -57,6 +56,7 @@ func typeOf(t lc.Type) string {
 	}
 }
 
+/*
 func dumpSources(filenames []string, files []cl.Source) {
 	log.Println("==> dumpSources:", len(filenames))
 	for i, f := range files {
@@ -65,3 +65,4 @@ func dumpSources(filenames []string, files []cl.Source) {
 		Dump(f.Cursor(), "", filepath.Dir(filename))
 	}
 }
+*/

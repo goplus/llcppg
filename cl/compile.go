@@ -287,7 +287,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadClass(ctx, decl, ns, decl.Kind)
 	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
 		loadOutsideMethod(ctx, decl)
-	case lc.Cursor_TypedefDecl:
+	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl:
 		loadTypedef(ctx, decl, ns)
 	case lc.Cursor_EnumDecl:
 		loadEnum(ctx, decl, ns)
