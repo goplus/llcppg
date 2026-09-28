@@ -42,8 +42,9 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	name := clang.String(decl)
 	origName := nameWithNS(name, ns)
 	anonymous := decl.IsAnonymous() != 0
+	scoped := decl.EnumDeclIsScoped() != 0
 	if debugCompileDecl {
-		log.Println("enum", origName, "anonymous:", anonymous)
+		log.Println("enum", origName, "anonymous:", anonymous, "scoped:", scoped)
 	}
 
 	pkg := ctx.pkg
@@ -74,12 +75,14 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 			defs.SetComments(doc)
 		}
 	}
+	if scoped {
+		ns = origName + "_"
+	}
 	clang.VisitChildren(decl, func(item, parent clang.Cursor) clang.ChildVisitResult {
 		if item.Kind != lc.Cursor_EnumConstantDecl {
 			return clang.Continue
 		}
-		origName := nameWithNS(clang.String(item), ns)
-		name := ctx.enumvalName(origName)
+		name := ctx.enumvalName(clang.String(item), ns)
 		val := int(item.EnumConstantDeclValue()) // TODO(xsw): use int64 for 64-bit enums?
 		at := defs.NewPos()
 		if doc := ctx.docCommentGroup(item); doc != nil {

@@ -252,6 +252,6 @@ func TestSingleC(t *testing.T) {
 	testFromDir(t, "", "./_testc", true)
 }
 
-func _TestSingleCpp(t *testing.T) {
+func TestSingleCpp(t *testing.T) {
 	testFromDir(t, "AtomicOrdering", "./_testcpp", true)
 }
