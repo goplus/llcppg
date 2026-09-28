@@ -38,18 +38,15 @@ import (
 )
 
 const (
-	DbgFlagLoadSource = 1 << iota
-	DbgFlagSettings
-	DbgFlagAll = DbgFlagLoadSource | DbgFlagSettings
+	DbgFlagSettings = 1 << iota
+	DbgFlagAll      = DbgFlagSettings
 )
 
 var (
-	debugLoadSource bool
-	debugSettings   bool
+	debugSettings bool
 )
 
 func SetDebug(flags int) {
-	debugLoadSource = (flags & DbgFlagLoadSource) != 0
 	debugSettings = (flags & DbgFlagSettings) != 0
 }
 
@@ -111,6 +108,20 @@ func (cfg *Config) Lang() (lang cl.Language, ok bool) {
 	}
 }
 
+// StdlibDirs returns the standard library include directories.
+func (cfg *Config) StdlibDirs(workDir string) []string {
+	var stdlibDirs []string
+	if stdlibDir := cfg.Stdlib; stdlibDir != "" {
+		if !filepath.IsAbs(stdlibDir) {
+			stdlibDir = filepath.Join(workDir, stdlibDir)
+		}
+		stdlibDirs = []string{stdlibDir}
+	} else {
+		stdlibDirs = cstdlib.Dirs()
+	}
+	return stdlibDirs
+}
+
 const includeSuffix = string(os.PathSeparator) + "include"
 
 // NewPackage loads the source files and converts them into a Go package according to the
@@ -150,15 +161,7 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		imp.SetCache(c)
 	}
 
-	var stdlibDirs []string
-	if stdlibDir := cfg.Stdlib; stdlibDir != "" {
-		if !filepath.IsAbs(stdlibDir) {
-			stdlibDir = filepath.Join(workDir, stdlibDir)
-		}
-		stdlibDirs = []string{stdlibDir}
-	} else {
-		stdlibDirs = cstdlib.Dirs()
-	}
+	stdlibDirs := cfg.StdlibDirs(workDir)
 	if debugSettings {
 		log.Println("==> stdlibDirs:", stdlibDirs)
 	}
@@ -202,10 +205,6 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		return
 	}
 	defer DisposeSources(files)
-
-	if debugLoadSource {
-		dumpSources(topHeaders, files)
-	}
 
 	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
 		Fset:                   fset,
