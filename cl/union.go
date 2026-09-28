@@ -18,7 +18,6 @@ package cl
 
 import (
 	"fmt"
-	"go/token"
 	"go/types"
 	"log"
 
@@ -229,8 +228,8 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 
 	name := unionRefPrefix + member
 	retType := types.NewPointer(fldType)
-	recv := types.NewParam(token.NoPos, pkgTypes, "p", recvPtr)
-	results := types.NewTuple(types.NewParam(token.NoPos, pkgTypes, "", retType))
+	recv := types.NewParam(0, pkgTypes, "p", recvPtr)
+	results := types.NewTuple(types.NewParam(0, pkgTypes, "", retType))
 	sig := types.NewSignatureType(recv, nil, nil, nil, results, false)
 
 	f, err := pkg.NewFuncWith(goNodePos(ctx, m), name, sig, nil)

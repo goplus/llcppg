@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/token"
 	"log"
 
 	"github.com/goplus/gogen"
@@ -77,7 +76,7 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 			defs.New(func(cb *gogen.CodeBuilder) int {
 				cb.Val(v)
 				return 1
-			}, 0, token.NoPos, nil, name)
+			}, 0, goNodePos(ctx, decl), nil, name)
 		}
 	}
 }
