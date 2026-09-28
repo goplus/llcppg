@@ -51,6 +51,9 @@ func goNode(ctx *pkgCtx, v clang.Cursor) ast.Node {
 	var pos, end c.Uint
 	rg := v.Extent()
 	rg.Start().Spelling(&file, nil, nil, &pos)
+	if file == clang.InvalidFile {
+		return nil
+	}
 	rg.End().Spelling(nil, nil, nil, &end)
 	base := ctx.getFileBase(v, file)
 	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
@@ -60,6 +63,9 @@ func goNodePos(ctx *pkgCtx, v clang.Cursor) token.Pos {
 	var file clang.File
 	var pos c.Uint
 	v.Extent().Start().Spelling(&file, nil, nil, &pos)
+	if file == clang.InvalidFile {
+		return token.NoPos
+	}
 	base := ctx.getFileBase(v, file)
 	return token.Pos(int(pos) + base)
 }
@@ -338,6 +344,13 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 		}
 	}
 	return strings.Join(parts, "")
+}
+
+func (p *pkgCtx) nsName(ns, inner string) string {
+	if v, ok := p.rename[inner]; ok {
+		inner = v // special case
+	}
+	return nsName(ns, inner)
 }
 
 func nsName(ns, inner string) string {
