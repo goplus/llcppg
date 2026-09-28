@@ -91,8 +91,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 
 	incDirs := make([]string, 1, 6)
 	incDirs[0] = pkgDir + "/include"
-	if len(conf.Deps) == 1 {
-		dep := conf.Deps[0]
+	for _, dep := range conf.Deps {
 		incDir, err := mod.IncludeDir(dep)
 		if err != nil {
 			t.Errorf("failed to get include dir for dependency %q: %v", dep, err)
