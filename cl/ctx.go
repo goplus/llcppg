@@ -419,6 +419,15 @@ func rmPrefix(name string, prefix []string) string {
 	return name
 }
 
+func contains(v string, names []string) bool {
+	for _, name := range names {
+		if name == v {
+			return true
+		}
+	}
+	return false
+}
+
 // -----------------------------------------------------------------------------
 
 type overloads struct {
