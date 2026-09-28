@@ -113,7 +113,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	files := []cl.Source{u}
 	imp := packages.NewImporter(nil, headerDir)
 	pkgPrefix := conf.Name
-	if pos := strings.LastIndex(pkgPrefix, "/"); pos > 0 {
+	if pos := strings.Index(pkgPrefix, "/"); pos > 0 {
 		pkgPrefix = pkgPrefix[:pos+1]
 	} else {
 		pkgPrefix += "/"
