@@ -113,7 +113,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		*feats |= featHasCallback
 		return toFuncType(ctx, pkg, typ, feats)
 	case lc.Type_Enum:
-		cName := clang.String(typ)
+		cName := clang.String(typ.Declaration().Type())
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
