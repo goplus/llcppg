@@ -21,17 +21,36 @@ import (
 	"go/types"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
+	"github.com/qiniu/x/ctype"
 )
 
 // -----------------------------------------------------------------------------
 
+const operatorPrefix = "operator"
+
+func isOperator(baseName string) bool {
+	if len(baseName) > len(operatorPrefix) && strings.HasPrefix(baseName, operatorPrefix) {
+		c := baseName[len(operatorPrefix)]
+		return !ctype.Is(ctype.CSYMBOL_FIRST_CHAR, rune(c))
+	}
+	return false
+}
+
 func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
-	name := nameWithNS(clang.String(decl), ns)
-	if obj, ok := scope.addFunc(ctx, name, decl); ok {
+	var baseName = clang.String(decl)
+	var name string
+	var isOp = isOperator(baseName)
+	if isOp {
+		name = baseName[len(operatorPrefix):]
+	} else {
+		name = nameWithNS(baseName, ns)
+	}
+	if obj, ok := scope.addFunc(ctx, name, decl, isOp); ok {
 		ctx.addCompileUnit(func(ctx *pkgCtx) {
 			compileFuncOrMethod(ctx, obj, nil)
 		})
@@ -47,9 +66,20 @@ func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) 
 // is non-nil, it is an instance method compiled with a "this" receiver.
 func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	fn := obj.decl
+	origName := obj.name
+	isOp := obj.isOperator
+	deleted := fn.CXXMethodIsDeleted()
+	if debugCompileDecl {
+		fnType := clang.String(fn.Type())
+		log.Println("func", origName, "-", fnType, "- isOp:", isOp, "deleted:", deleted)
+	}
+	if isOp {
+		return // TODO(xsw): support operator
+	}
+
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	origName := obj.name
+
 	feats := 0
 	params, variadic := newParams(ctx, pkgTypes, fn, &feats)
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType(), &feats)
@@ -74,10 +104,6 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 			log.Println("func", origName, "- skipped")
 		}
 		return
-	}
-
-	if debugCompileDecl {
-		log.Println("func", origName, "-", clang.String(fn.Type()))
 	}
 
 	var recv *types.Var

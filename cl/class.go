@@ -156,7 +156,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		}
 		isPublic := cls.inPublic
 		if isPublic {
-			if fn, ok := cls.addFunc(ctx, name, decl); ok {
+			if fn, ok := cls.addFunc(ctx, name, decl, isOperator(name)); ok {
 				cls.publicMethods = append(cls.publicMethods, fn)
 			}
 		}

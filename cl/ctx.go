@@ -429,6 +429,7 @@ type funcObj struct {
 	overloads *overloads
 
 	manglingName string
+	isOperator   bool
 }
 
 // order returns the order of the object in the overloads list.
@@ -449,7 +450,7 @@ type scopeCtx struct {
 	overloads map[string]*overloads // name => overload items
 }
 
-func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor) (*funcObj, bool) {
+func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
 	manglingName := clang.Mangling(decl)
 	if fn, ok := ctx.funcs[manglingName]; ok { // re-declared
 		if decl.IsFunctionInlined() != 0 {
@@ -462,6 +463,7 @@ func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor) (*funcOb
 		name:         name,
 		decl:         decl,
 		manglingName: manglingName,
+		isOperator:   isOp,
 	}
 	ovs, ok := p.overloads[name]
 	if ok {
