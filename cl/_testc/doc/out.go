@@ -10,7 +10,7 @@ const MAX_SIZE = 100
 const TIMEOUT = 30
 
 // A documented enum type.
-type Color c.Int
+type Color c.Uint
 
 const (
 	// The red primary color.

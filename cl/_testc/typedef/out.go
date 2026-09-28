@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-type CXTUResourceUsageKind c.Int
+type CXTUResourceUsageKind c.Uint
 
 const (
 	CXTUResourceUsage_AST         CXTUResourceUsageKind = 1

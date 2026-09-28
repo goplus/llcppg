@@ -19,7 +19,7 @@ type Comment struct {
 // Describes the type of the comment AST node (\c CXComment).  A comment
 // node can be considered block content (e. g., paragraph), inline content
 // (plain text) or neither (the root AST node).
-type CommentKind c.Int
+type CommentKind c.Uint
 
 const (
 	// Null comment.  No AST node is constructed at the requested location
@@ -92,7 +92,7 @@ const (
 
 // The most appropriate rendering mode for an inline command, chosen on
 // command semantics in Doxygen.
-type CommentInlineCommandRenderKind c.Int
+type CommentInlineCommandRenderKind c.Uint
 
 const (
 	// Command argument should be rendered in a normal font.
@@ -109,7 +109,7 @@ const (
 )
 
 // Describes parameter passing direction for \\param or \\arg command.
-type CommentParamPassDirection c.Int
+type CommentParamPassDirection c.Uint
 
 const (
 	// The parameter is an input parameter.

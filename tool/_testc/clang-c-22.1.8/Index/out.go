@@ -48,7 +48,7 @@ type UnsavedFile struct {
 // Describes the availability of a particular entity, which indicates
 // whether the use of this entity will result in a warning or error due to
 // it being deprecated or unavailable.
-type AvailabilityKind c.Int
+type AvailabilityKind c.Uint
 
 const (
 	// The entity is available.
@@ -73,7 +73,7 @@ type Version struct {
 // Describes the exception specification of a cursor.
 //
 // A negative value indicates that the cursor is not a function declaration.
-type Cursor_ExceptionSpecificationKind c.Int
+type Cursor_ExceptionSpecificationKind c.Uint
 
 const (
 	// The cursor has no exception specification.
@@ -98,7 +98,7 @@ const (
 	Cursor_ExceptionSpecificationKind_NoThrow Cursor_ExceptionSpecificationKind = 9
 )
 
-type Choice c.Int
+type Choice c.Uint
 
 const (
 	// Use the default value of an option that may depend on the process
@@ -110,7 +110,7 @@ const (
 	Choice_Disabled Choice = 2
 )
 
-type GlobalOptFlags c.Int
+type GlobalOptFlags c.Uint
 
 const (
 	// Used to indicate that no special CXIndex options are needed.
@@ -168,7 +168,7 @@ type IndexOptions struct {
 // The enumerators in this enumeration type are meant to be bitwise
 // ORed together to specify which options should be used when
 // constructing the translation unit.
-type TranslationUnit_Flags c.Int
+type TranslationUnit_Flags c.Uint
 
 const (
 	// Used to indicate that no special translation-unit options are
@@ -274,7 +274,7 @@ const (
 // The enumerators in this enumeration type are meant to be bitwise
 // ORed together to specify which options should be used when
 // saving the translation unit.
-type SaveTranslationUnit_Flags c.Int
+type SaveTranslationUnit_Flags c.Uint
 
 const
 // Used to indicate that no special saving options are needed.
@@ -282,7 +282,7 @@ SaveTranslationUnit_None SaveTranslationUnit_Flags = 0
 
 // Describes the kind of error that occurred (if any) in a call to
 // \c clang_saveTranslationUnit().
-type SaveError c.Int
+type SaveError c.Uint
 
 const (
 	// Indicates that no error occurred while saving a translation unit.
@@ -309,14 +309,14 @@ const (
 // The enumerators in this enumeration type are meant to be bitwise
 // ORed together to specify which options should be used when
 // reparsing the translation unit.
-type Reparse_Flags c.Int
+type Reparse_Flags c.Uint
 
 const
 // Used to indicate that no special reparsing options are needed.
 Reparse_None Reparse_Flags = 0
 
 // Categorizes how memory is being used by a translation unit.
-type TUResourceUsageKind c.Int
+type TUResourceUsageKind c.Uint
 
 const (
 	TUResourceUsage_AST                                TUResourceUsageKind = 1
@@ -352,7 +352,7 @@ type TUResourceUsage struct {
 }
 
 // Describes the kind of entity that a cursor refers to.
-type CursorKind c.Int
+type CursorKind c.Uint
 
 const (
 	// A declaration whose specific kind is not exposed via this
@@ -1217,7 +1217,7 @@ type Cursor struct {
 }
 
 // Describe the linkage of the entity referred to by a cursor.
-type LinkageKind c.Int
+type LinkageKind c.Uint
 
 const (
 	// This value indicates that no linkage information is available
@@ -1235,7 +1235,7 @@ const (
 	Linkage_External LinkageKind = 4
 )
 
-type VisibilityKind c.Int
+type VisibilityKind c.Uint
 
 const (
 	// This value indicates that no visibility information is available
@@ -1261,7 +1261,7 @@ type PlatformAvailability struct {
 }
 
 // Describe the "language" of the entity referred to by a cursor.
-type LanguageKind c.Int
+type LanguageKind c.Uint
 
 const (
 	Language_Invalid   LanguageKind = 0
@@ -1272,7 +1272,7 @@ const (
 
 // Describe the "thread-local storage (TLS) kind" of the declaration
 // referred to by a cursor.
-type TLSKind c.Int
+type TLSKind c.Uint
 
 const (
 	TLS_None    TLSKind = 0
@@ -1287,7 +1287,7 @@ type CursorSetImpl struct {
 type CursorSet = *CursorSetImpl
 
 // Describes the kind of type
-type TypeKind c.Int
+type TypeKind c.Uint
 
 const (
 	// Represents an invalid type (e.g., where no type is available).
@@ -1746,7 +1746,7 @@ const (
 )
 
 // Describes the calling convention of a function type
-type CallingConv c.Int
+type CallingConv c.Uint
 
 const (
 	CallingConv_Default            CallingConv = 0
@@ -1798,7 +1798,7 @@ type Type struct {
 //
 // See the definition of llvm::clang::TemplateArgument::ArgKind for full
 // element descriptions.
-type TemplateArgumentKind c.Int
+type TemplateArgumentKind c.Uint
 
 const (
 	TemplateArgumentKind_Null              TemplateArgumentKind = 0
@@ -1813,7 +1813,7 @@ const (
 	TemplateArgumentKind_Invalid           TemplateArgumentKind = 9
 )
 
-type TypeNullabilityKind c.Int
+type TypeNullabilityKind c.Uint
 
 const (
 	// Values of this type can never be null.
@@ -1857,7 +1857,7 @@ const (
 	TypeLayoutError_Undeduced TypeLayoutError = -6
 )
 
-type RefQualifierKind c.Int
+type RefQualifierKind c.Uint
 
 const (
 	// No ref-qualifier was provided.
@@ -1870,7 +1870,7 @@ const (
 
 // Represents the C++ access control level to a base class for a
 // cursor with kind CX_CXXBaseSpecifier.
-type CXXAccessSpecifier c.Int
+type CXXAccessSpecifier c.Uint
 
 const (
 	CXXInvalidAccessSpecifier CXXAccessSpecifier = 0
@@ -1881,7 +1881,7 @@ const (
 
 // Represents the storage classes as declared in the source. CX_SC_Invalid
 // was added for the case that the passed cursor in not a declaration.
-type StorageClass c.Int
+type StorageClass c.Uint
 
 const (
 	SC_Invalid              StorageClass = 0
@@ -1895,7 +1895,7 @@ const (
 )
 
 // Represents a specific kind of binary operator which can appear at a cursor.
-type X_BinaryOperatorKind c.Int
+type X_BinaryOperatorKind c.Uint
 
 const (
 	BO_Invalid   X_BinaryOperatorKind = 0
@@ -1940,7 +1940,7 @@ const (
 //
 // A value of this enumeration type should be returned by each
 // \c CXCursorVisitor to indicate how clang_visitChildren() proceed.
-type ChildVisitResult c.Int
+type ChildVisitResult c.Uint
 
 const (
 	// Terminates the cursor traversal.
@@ -1974,7 +1974,7 @@ type PrintingPolicy uintptr
 // Properties for the printing policy.
 //
 // See \c clang::PrintingPolicy for more information.
-type PrintingPolicyProperty c.Int
+type PrintingPolicyProperty c.Uint
 
 const (
 	PrintingPolicy_Indentation                           PrintingPolicyProperty = 0
@@ -2007,7 +2007,7 @@ const (
 )
 
 // Property attributes for a \c CXCursor_ObjCPropertyDecl.
-type ObjCPropertyAttrKind c.Int
+type ObjCPropertyAttrKind c.Uint
 
 const (
 	ObjCPropertyAttrNoattr           ObjCPropertyAttrKind = 0
@@ -2028,7 +2028,7 @@ const (
 
 // 'Qualifiers' written next to the return and parameter types in
 // Objective-C method declarations.
-type ObjCDeclQualifierKind c.Int
+type ObjCDeclQualifierKind c.Uint
 
 const (
 	ObjCDeclQualifier_None   ObjCDeclQualifierKind = 0
@@ -2046,7 +2046,7 @@ const (
 //
 // @{
 type Module uintptr
-type NameRefFlags c.Int
+type NameRefFlags c.Uint
 
 const (
 	// Include the nested-name-specifier, e.g. Foo:: in x.Foo::y, in the
@@ -2067,7 +2067,7 @@ const (
 )
 
 // Describes a kind of token.
-type TokenKind c.Int
+type TokenKind c.Uint
 
 const (
 	// A token that contains some kind of punctuation.
@@ -2112,7 +2112,7 @@ type CompletionResult struct {
 // Each "chunk" within a code-completion string (\c CXCompletionString) is
 // either a piece of text with a specific "kind" that describes how that text
 // should be interpreted by the client or is another completion string.
-type CompletionChunkKind c.Int
+type CompletionChunkKind c.Uint
 
 const (
 	// A code-completion string that describes "optional" text that
@@ -2251,7 +2251,7 @@ type CodeCompleteResults struct {
 //
 // The enumerators in this enumeration can be bitwise-OR'd together to
 // provide multiple options to \c clang_codeCompleteAt().
-type CodeComplete_Flags c.Int
+type CodeComplete_Flags c.Uint
 
 const (
 	// Whether to include macros within the set of code
@@ -2276,7 +2276,7 @@ const (
 //
 // The enumerators in this enumeration may be bitwise-OR'd together if multiple
 // contexts are occurring simultaneously.
-type CompletionContext c.Int
+type CompletionContext c.Uint
 
 const (
 	// The context for completions is unexposed, as only Clang results
@@ -2360,7 +2360,7 @@ const (
 //
 // llgo:type C
 type InclusionVisitor = func(_llcppg_param1 CXFile.File, _llcppg_param2 *CXSourceLocation.SourceLocation, _llcppg_param3 c.Uint, _llcppg_param4 ClientData)
-type EvalResultKind c.Int
+type EvalResultKind c.Uint
 
 const (
 	Eval_Int            EvalResultKind = 1
@@ -2378,7 +2378,7 @@ type EvalResult uintptr
 // \defgroup CINDEX_HIGH Higher level API functions
 //
 // @{
-type VisitorResult c.Int
+type VisitorResult c.Uint
 
 const (
 	Visit_Break    VisitorResult = 0
@@ -2389,7 +2389,7 @@ type CursorAndRangeVisitor struct {
 	Context unsafe.Pointer
 	Visit   func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 Cursor, _llcppg_param3 CXSourceLocation.SourceRange) VisitorResult
 }
-type Result c.Int
+type Result c.Uint
 
 const (
 	// Function returned successfully.
@@ -2438,7 +2438,7 @@ type IdxImportedASTFileInfo struct {
 	Loc        IdxLoc
 	IsImplicit c.Int
 }
-type IdxEntityKind c.Int
+type IdxEntityKind c.Uint
 
 const (
 	IdxEntity_Unexposed             IdxEntityKind = 0
@@ -2471,7 +2471,7 @@ const (
 	IdxEntity_CXXConcept            IdxEntityKind = 27
 )
 
-type IdxEntityLanguage c.Int
+type IdxEntityLanguage c.Uint
 
 const (
 	IdxEntityLang_None  IdxEntityLanguage = 0
@@ -2489,7 +2489,7 @@ const (
 // CXIdxEntity_CXXConstructor
 // CXIdxEntity_CXXConversionFunction
 // CXIdxEntity_CXXTypeAlias
-type IdxEntityCXXTemplateKind c.Int
+type IdxEntityCXXTemplateKind c.Uint
 
 const (
 	IdxEntity_NonTemplate                   IdxEntityCXXTemplateKind = 0
@@ -2498,7 +2498,7 @@ const (
 	IdxEntity_TemplateSpecialization        IdxEntityCXXTemplateKind = 3
 )
 
-type IdxAttrKind c.Int
+type IdxAttrKind c.Uint
 
 const (
 	IdxAttr_Unexposed          IdxAttrKind = 0
@@ -2531,7 +2531,7 @@ type IdxIBOutletCollectionAttrInfo struct {
 	ClassCursor Cursor
 	ClassLoc    IdxLoc
 }
-type IdxDeclInfoFlags c.Int
+type IdxDeclInfoFlags c.Uint
 
 const IdxDeclFlag_Skipped IdxDeclInfoFlags = 1
 
@@ -2550,7 +2550,7 @@ type IdxDeclInfo struct {
 	NumAttributes     c.Uint
 	Flags             c.Uint
 }
-type IdxObjCContainerKind c.Int
+type IdxObjCContainerKind c.Uint
 
 const (
 	IdxObjCContainer_ForwardRef     IdxObjCContainerKind = 0
@@ -2603,7 +2603,7 @@ type IdxCXXClassDeclInfo struct {
 //
 // This may be deprecated in a future version as this duplicates
 // the \c CXSymbolRole_Implicit bit in \c CXSymbolRole.
-type IdxEntityRefKind c.Int
+type IdxEntityRefKind c.Uint
 
 const (
 	// The entity is referenced directly in user's code.
@@ -2617,7 +2617,7 @@ const (
 //
 // Internal: this currently mirrors low 9 bits of clang::index::SymbolRole with
 // higher bits zeroed. These high bits may be exposed in the future.
-type SymbolRole c.Int
+type SymbolRole c.Uint
 
 const (
 	SymbolRole_None        SymbolRole = 0
@@ -2659,7 +2659,7 @@ type IndexerCallbacks struct {
 // An indexing action/session, to be applied to one or multiple
 // translation units.
 type IndexAction uintptr
-type IndexOptFlags c.Int
+type IndexOptFlags c.Uint
 
 const (
 	// Used to indicate that no special indexing options are needed.
@@ -2696,7 +2696,7 @@ const (
 type FieldVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 ClientData) VisitorResult
 
 // Describes the kind of binary operators.
-type BinaryOperatorKind c.Int
+type BinaryOperatorKind c.Uint
 
 const (
 	// This value describes cursors which are not binary operators.
@@ -2772,7 +2772,7 @@ const (
 )
 
 // Describes the kind of unary operators.
-type UnaryOperatorKind c.Int
+type UnaryOperatorKind c.Uint
 
 const (
 	// This value describes cursors which are not unary operators.

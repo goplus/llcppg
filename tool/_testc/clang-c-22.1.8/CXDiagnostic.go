@@ -8,7 +8,7 @@ import (
 )
 
 // Describes the severity of a particular diagnostic.
-type DiagnosticSeverity c.Int
+type DiagnosticSeverity c.Uint
 
 const (
 	// A diagnostic that has been suppressed, e.g., by a command-line
@@ -37,7 +37,7 @@ type DiagnosticSet uintptr
 
 // Describes the kind of error that occurred (if any) in a call to
 // \c clang_loadDiagnostics.
-type LoadDiag_Error c.Int
+type LoadDiag_Error c.Uint
 
 const (
 	// Indicates that no error occurred.
@@ -57,7 +57,7 @@ const (
 //
 // The values in this enum are meant to be combined to customize the
 // behavior of \c clang_formatDiagnostic().
-type DiagnosticDisplayOptions c.Int
+type DiagnosticDisplayOptions c.Uint
 
 const (
 	// Display the source-location information where the

@@ -26,7 +26,7 @@ const (
 //
 // not_atomic-->unordered-->relaxed-->release--------------->acq_rel-->seq_cst
 //                                   \-->consume-->acquire--/
-type AtomicOrdering c.Int
+type AtomicOrdering c.Uint
 
 const (
 	AtomicOrdering_NotAtomic              AtomicOrdering = 0

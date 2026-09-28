@@ -7,7 +7,7 @@ import (
 
 const LLGoPackage = "link: -L/path/foo -lfoo"
 
-type Color c.Int
+type Color c.Uint
 
 const (
 	Red   Color = 0
