@@ -34,7 +34,7 @@ type Config struct {
 	Stdlib      string            `json:"Stdlib"`      // C stdlib include dir, optional
 	LLGoPackage string            `json:"LLGoPackage"` // optional
 	CFlags      string            `json:"CFlags"`      // optional
-	Deps        []string          `json:"Deps"`        // dependencies (package paths), optional
+	Deps        []string          `json:"Deps"`        // dependencies (module paths), optional
 	Class       []string          `json:"Class"`       // typedef names to be treated as classes
 	NonClass    []string          `json:"NonClass"`    // typedef names to be treated as non-classes
 	FuncPrefix  []string          `json:"FuncPrefix"`  // global function prefix to remove
