@@ -10,7 +10,4 @@ require (
 	github.com/qiniu/x v1.18.3
 )
 
-require (
-	github.com/llarhub/libcxx/c v0.1.0 // indirect
-	golang.org/x/mod v0.40.0 // indirect
-)
+require golang.org/x/mod v0.40.0 // indirect
