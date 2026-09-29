@@ -83,6 +83,7 @@ func (p *nodeInterp) LoadExpr(v ast.Node) string {
 // -----------------------------------------------------------------------------
 
 type none struct{}
+
 type compileFunc = func(ctx *pkgCtx)
 type compileUnit struct {
 	fn compileFunc
@@ -420,12 +421,35 @@ func contains(v string, names []string) bool {
 
 // -----------------------------------------------------------------------------
 
+type funcObj struct {
+	name      string
+	decl      clang.Cursor
+	overloads *overloads
+
+	manglingName string
+	isOperator   bool
+}
+
+// order returns the order of the object in the overloads list.
+// -1 means no order (only one overload, or not found).
+func (p *funcObj) order() int {
+	items := p.overloads.fns
+	if len(items) > 1 {
+		for i, obj := range items {
+			if obj == p {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
 type overloads struct {
-	items []*funcObj
+	fns []*funcObj
 }
 
 func (p *overloads) reorder() {
-	items := p.items
+	items := p.fns
 	if len(items) > 1 {
 		sort.SliceStable(items, func(i, j int) bool {
 			a, b := items[i].decl, items[j].decl
@@ -442,29 +466,6 @@ func (p *overloads) reorder() {
 			return false
 		})
 	}
-}
-
-type funcObj struct {
-	name      string
-	decl      clang.Cursor
-	overloads *overloads
-
-	manglingName string
-	isOperator   bool
-}
-
-// order returns the order of the object in the overloads list.
-// -1 means no order (only one overload, or not found).
-func (p *funcObj) order() int {
-	items := p.overloads.items
-	if len(items) > 1 {
-		for i, obj := range items {
-			if obj == p {
-				return i
-			}
-		}
-	}
-	return -1
 }
 
 type scopeCtx struct {
@@ -488,9 +489,9 @@ func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp boo
 	}
 	ovs, ok := p.overloads[name]
 	if ok {
-		ovs.items = append(ovs.items, obj)
+		ovs.fns = append(ovs.fns, obj)
 	} else {
-		ovs = &overloads{items: []*funcObj{obj}}
+		ovs = &overloads{fns: []*funcObj{obj}}
 		p.overloads[name] = ovs
 	}
 	obj.overloads = ovs
@@ -504,7 +505,6 @@ func (p *scopeCtx) reorder() {
 	}
 }
 
-// -----------------------------------------------------------------------------
 /*
 func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
 	old := scope.Insert(gogen.NewSubst(0, pkg, origName, real))
@@ -517,14 +517,4 @@ func substObj(pkg *types.Package, scope *types.Scope, origName string, real type
 	}
 }
 */
-// -----------------------------------------------------------------------------
-
-func avoidKeyword(name *string) {
-	switch *name {
-	case "map", "type", "range", "chan", "var", "func", "go", "select",
-		"defer", "package", "import", "interface", "fallthrough":
-		*name += "_"
-	}
-}
-
 // -----------------------------------------------------------------------------

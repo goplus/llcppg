@@ -276,4 +276,12 @@ func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int, feats
 	return types.NewParam(goNodePos(ctx, decl), pkg, declName, typ)
 }
 
+func avoidKeyword(name *string) {
+	switch *name {
+	case "map", "type", "range", "chan", "var", "func", "go", "select",
+		"defer", "package", "import", "interface", "fallthrough":
+		*name += "_"
+	}
+}
+
 // -----------------------------------------------------------------------------
