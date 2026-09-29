@@ -70,7 +70,8 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir, fname string, exp any) {
 
 func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile string, conf *tool.Config) {
 	myPkgName := headerFile[len(headerDir) : len(headerFile)-2]
-	if myPkgName == "Index" || myPkgName == "DenseMapInfo" && runtime.GOOS != "darwin" {
+	if (myPkgName == "Index" || myPkgName == "DenseMapInfo" || myPkgName == "StringRef") &&
+		runtime.GOOS != "darwin" {
 		log.Println("==> only test Index on macOS")
 		return
 	}
@@ -288,6 +289,6 @@ func TestLLVM_DenseMapInfo(t *testing.T) {
 	testFromDir(t, "DenseMapInfo", "./_testcpp", true, "adt")
 }
 
-func _TestLLVM_String(t *testing.T) {
+func TestLLVM_String(t *testing.T) {
 	testFromDir(t, "StringRef", "./_testcpp", true, "adt")
 }

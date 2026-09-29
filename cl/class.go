@@ -102,14 +102,14 @@ func newTemplateParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor, feats 
 
 func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, ns string, parent *scopeCtx) {
 	origName := nameWithNS(clang.String(cls), ns)
-	if obj, ok := ctx.addTemplate(ctx, origName, cls, true); ok {
+	if obj, ok := ctx.addTemplateClass(ctx, origName, cls); ok {
 		ctx.addCompileUnit(func(ctx *pkgCtx) {
 			compileTemplateClass(ctx, obj, parent)
 		})
 	}
 }
 
-func compileTemplateClass(ctx *pkgCtx, obj *templateObj, parent *scopeCtx) {
+func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 	origName := obj.name
 	cls := obj.decl
 	if debugCompileDecl {
@@ -128,6 +128,9 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateObj, parent *scopeCtx) {
 	var clsName string
 	var typDecl, ok = ctx.typdecls[origName]
 	if !ok {
+		if cls.IsCursorDefinition() == 0 || cls.NumTemplateArguments() > 0 {
+			return
+		}
 		clsName = ctx.typeName(origName, true)
 		typDecl = newType(ctx, cls, clsName, tagClass)
 		ctx.typdecls[origName] = typDecl
@@ -233,7 +236,8 @@ func isPublic(decl clang.Cursor) bool {
 
 func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName string, decl clang.Cursor) {
 	switch decl.Kind {
-	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
+	case lc.Cursor_CXXMethod, lc.Cursor_FunctionTemplate,
+		lc.Cursor_Constructor, lc.Cursor_Destructor, lc.Cursor_ConversionFunction:
 		var name string
 		switch decl.Kind {
 		case lc.Cursor_Constructor:
@@ -351,7 +355,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 		}
 
 	case lc.Cursor_TemplateTypeParameter, lc.Cursor_NonTypeTemplateParameter,
-		lc.Cursor_TemplateTemplateParameter:
+		lc.Cursor_TemplateTemplateParameter, lc.Cursor_TypeRef:
 		// noop
 
 	case lc.Cursor_UnexposedAttr:

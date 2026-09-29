@@ -19,6 +19,6 @@ public:
 	Bar(T1 val1, T2 val2, int val3) : v1(val1), v2(val2), v3(val3) {}
 	virtual ~Bar() {}
 	virtual T2 g(T1 val1, T2 val2, int val3) {
-		return val2
+		return val2;
 	}
 };

@@ -164,6 +164,10 @@ func (p *pkgCtx) panicf(decl clang.Cursor, format string, args ...any) {
 	log.Panicf("%s: %s", pos, fmt.Sprintf(format, args...))
 }
 
+func (p *pkgCtx) logtf(typ lc.Type, format string, args ...any) {
+	p.logf(typ.Declaration(), format, args...)
+}
+
 const (
 	anonPrefix = "_llcppg_anon_"
 )
@@ -453,18 +457,16 @@ func contains(v string, names []string) bool {
 
 // -----------------------------------------------------------------------------
 
-type templateObj struct {
+type templateClass struct {
 	name      string       // go name
 	decl      clang.Cursor // AST object
 	overloads *overloads
-
-	isClass bool
 }
 
-// order returns the order of the template object in the overloads list.
+// order returns the order of the template class in the overloads list.
 // -1 means no order (only one overload, or not found).
-func (p *templateObj) order() int {
-	items := p.overloads.tos
+func (p *templateClass) order() int {
+	items := p.overloads.classes
 	if len(items) > 1 {
 		for i, obj := range items {
 			if obj == p {
@@ -498,8 +500,8 @@ func (p *funcObj) order() int {
 }
 
 type overloads struct {
-	fns []*funcObj
-	tos []*templateObj
+	fns     []*funcObj
+	classes []*templateClass
 }
 
 func (p *overloads) reorder() {
@@ -540,21 +542,20 @@ func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
 	return nil, false
 }
 
-func (p *scopeCtx) addTemplate(_ *pkgCtx, name string, decl clang.Cursor, isClass bool) (*templateObj, bool) {
+func (p *scopeCtx) addTemplateClass(_ *pkgCtx, name string, decl clang.Cursor) (*templateClass, bool) {
 	if debugCompileDecl {
-		log.Println("==> addTemplate", name, "-", clang.DisplayName(decl))
+		log.Println("==> addTemplateClass", name, "-", clang.DisplayName(decl))
 	}
 	// TODO(xsw): check if the class is already added
-	obj := &templateObj{
-		name:    name,
-		decl:    decl,
-		isClass: isClass,
+	obj := &templateClass{
+		name: name,
+		decl: decl,
 	}
 	ovs, ok := p.overloads[name]
 	if ok {
-		ovs.tos = append(ovs.tos, obj)
+		ovs.classes = append(ovs.classes, obj)
 	} else {
-		ovs = &overloads{tos: []*templateObj{obj}}
+		ovs = &overloads{classes: []*templateClass{obj}}
 		p.overloads[name] = ovs
 	}
 	obj.overloads = ovs
