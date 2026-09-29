@@ -78,6 +78,10 @@ func compileClass(ctx *pkgCtx, scope *classCtx) {
 }
 
 func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag) {
+	if cls.NumTemplateArguments() > 0 {
+		// TODO(xsw): ignore for now
+		return
+	}
 	origName := nameWithNS(clang.String(cls), ns)
 	if debugCompileDecl {
 		log.Println(tagStrvals[kind] + origName)
@@ -101,6 +105,11 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *typ
 	typDecl := typDefs.NewType(clsName, goNode(ctx, cls))
 	typNamed := typDecl.Type()
 	ctx.addType(kind, cls, typNamed)
+
+	if cls.IsCursorDefinition() == 0 {
+		ctx.uninited[clsName] = typDecl // declaration only, no definition
+		return typNamed
+	}
 
 	scope := &classCtx{
 		decl:      cls,
@@ -130,6 +139,7 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *typ
 	}
 	typStruc := types.NewStruct(scope.fields, nil)
 	typDecl.InitType(pkg, typStruc)
+	delete(ctx.uninited, clsName)
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		compileClass(ctx, scope)
 	})
@@ -203,7 +213,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			loadEnum(ctx, decl, clsName)
 		}
 
-	case lc.Cursor_TypedefDecl:
+	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl:
 		// A typedef nested in a class acts like one nested in a namespace: it
 		// only affects naming, so it is emitted as a package-level type alias
 		// prefixed by the enclosing class name (the class name acts like a
@@ -255,6 +265,9 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// as its type even when declared in a private section.
 			loadUnion(ctx, decl, clsName)
 		}
+
+	case lc.Cursor_UnexposedAttr:
+		// noop
 
 	default:
 		log.Panicln("loadClassMember: unknown kind =", decl.Kind)

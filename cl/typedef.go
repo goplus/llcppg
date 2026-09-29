@@ -31,7 +31,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		if debugCompileDecl {
 			log.Println("typedef", cName, "- ignored")
 		}
-		ctx.types[cName] = typeObj{nil, featIgnored}
+		ctx.types[cName] = typeObj{nil, featIgnored} // ignored
 		return
 	}
 
@@ -46,6 +46,14 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 
 	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats)
+	if feats&featIgnored != 0 {
+		if debugCompileDecl {
+			log.Println("typedef", cName, "- ignored")
+		}
+		ctx.types[cName] = typeObj{nil, featIgnored} // ignored
+		return
+	}
+
 	name := ctx.typeName(origName, true)
 	if tn, ok := tunder.(*types.Named); ok {
 		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == name {
