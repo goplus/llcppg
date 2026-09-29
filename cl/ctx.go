@@ -135,11 +135,11 @@ type pkgCtx struct {
 
 	macroVals map[string]any      // macroName => value
 	funcs     map[string]*funcObj // manglingName => func object
-	types     map[string]typeObj  // c/c++ fullName => type name object
+	types     map[string]typeObj  // c/c++ fullName => type name object (include external types)
+	typdecls  map[string]typDecl  // c/c++ fullName => type declaration object (only local types)
 	impPkgs   map[string]none     // imported package path set
 	lastSeen  map[string]none     // last seen include file set (loaded include files)
 	thisSeen  map[string]none     // include file set seen in this translation unit
-	typdecls  map[string]typDecl
 
 	compiles []compileUnit
 	pubs     []Entry
