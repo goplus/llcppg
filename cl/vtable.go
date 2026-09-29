@@ -111,7 +111,7 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 		var fldName string
 		if slot.named {
 			fldName = slot.name
-			fldType = vtableSlotFunc(ctx, pkgTypes, recvPtr, slot.decl, this)
+			fldType = vtableSlotFunc(ctx, pkgTypes, recvPtr, slot.decl, this.scope())
 		} else {
 			fldName = placeholderSlotName(i)
 			fldType = types.Typ[types.UnsafePointer]
@@ -207,16 +207,16 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 // vtableSlotFunc builds the function-pointer type of a named vtable slot:
 // func(this *X, <params>) <result>, mirroring the method signature but with the
 // receiver turned into an explicit leading "this" parameter.
-func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clang.Cursor, cls *classCtx) types.Type {
+func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clang.Cursor, scope *scopeCtx) types.Type {
 	this := types.NewParam(0, pkg, "this", recvPtr)
 	feats := 0
-	rest, variadic := newParams(ctx, pkg, fn, &feats, cls.scope())
+	rest, variadic := newParams(ctx, pkg, fn, &feats, scope)
 	params := make([]*types.Var, 0, 1+len(rest))
 	params = append(params, this)
 	for _, param := range rest {
 		params = append(params, param)
 	}
-	results := toFuncResults(ctx, pkg, fn.ResultType(), &feats, nil)
+	results := toFuncResults(ctx, pkg, fn.ResultType(), &feats, scope)
 	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
 	return sig
 }
