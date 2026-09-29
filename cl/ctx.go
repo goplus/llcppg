@@ -463,10 +463,10 @@ type templateClass struct {
 	overloads *overloads
 }
 
-// order returns the order of the template object in the overloads list.
+// order returns the order of the template class in the overloads list.
 // -1 means no order (only one overload, or not found).
 func (p *templateClass) order() int {
-	items := p.overloads.tos
+	items := p.overloads.classes
 	if len(items) > 1 {
 		for i, obj := range items {
 			if obj == p {
@@ -500,8 +500,8 @@ func (p *funcObj) order() int {
 }
 
 type overloads struct {
-	fns []*funcObj
-	tos []*templateClass
+	fns     []*funcObj
+	classes []*templateClass
 }
 
 func (p *overloads) reorder() {
@@ -544,7 +544,7 @@ func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
 
 func (p *scopeCtx) addTemplateClass(_ *pkgCtx, name string, decl clang.Cursor) (*templateClass, bool) {
 	if debugCompileDecl {
-		log.Println("==> addTemplate", name, "-", clang.DisplayName(decl))
+		log.Println("==> addTemplateClass", name, "-", clang.DisplayName(decl))
 	}
 	// TODO(xsw): check if the class is already added
 	obj := &templateClass{
@@ -553,9 +553,9 @@ func (p *scopeCtx) addTemplateClass(_ *pkgCtx, name string, decl clang.Cursor) (
 	}
 	ovs, ok := p.overloads[name]
 	if ok {
-		ovs.tos = append(ovs.tos, obj)
+		ovs.classes = append(ovs.classes, obj)
 	} else {
-		ovs = &overloads{tos: []*templateClass{obj}}
+		ovs = &overloads{classes: []*templateClass{obj}}
 		p.overloads[name] = ovs
 	}
 	obj.overloads = ovs

@@ -63,7 +63,11 @@ const (
 
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, scope *scopeCtx) types.Type {
 	var feats int
-	return toTypeEx(ctx, pkg, typ, flags, &feats, scope)
+	ret := toTypeEx(ctx, pkg, typ, flags, &feats, scope)
+	if feats&featIgnored != 0 {
+		panic("unsupported type - " + clang.String(typ))
+	}
+	return ret
 }
 
 func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *int, scope *scopeCtx) types.Type {
@@ -161,7 +165,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 			return t
 		}
 	case lc.Type_BlockPointer:
-		ctx.logtf(typ, "C blocks (closure) is unsupported, ignored")
+		ctx.logtf(typ, "C blocks (closures) are unsupported, ignored")
 		*feats |= featIgnored
 		return types.Typ[types.UnsafePointer]
 	default:

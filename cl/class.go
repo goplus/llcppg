@@ -128,7 +128,7 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 	var clsName string
 	var typDecl, ok = ctx.typdecls[origName]
 	if !ok {
-		if cls.IsCursorDefinition() == 0 || cls.NumTemplateArguments() != 0 {
+		if cls.IsCursorDefinition() == 0 || cls.NumTemplateArguments() > 0 {
 			return
 		}
 		clsName = ctx.typeName(origName, true)
