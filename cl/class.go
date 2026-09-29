@@ -87,16 +87,21 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag) {
 		log.Println(tagStrvals[kind] + origName)
 	}
 
-	/* // declaration only, no definition
-	if cls.IsCursorDefinition() == 0 {
-		ctx.uninited[origName] = typDecl
-		delete(ctx.uninited, origName)
-		return
+	var clsName string
+	var typDecl, ok = ctx.typdecls[origName]
+	if !ok {
+		clsName = ctx.typeName(origName, true)
+		typDecl = newType(ctx, cls, clsName, kind)
+		ctx.typdecls[origName] = typDecl
 	}
-	*/
+	if cls.IsCursorDefinition() == 0 {
+		return // declaration only, no definition
+	}
 
-	clsName := ctx.typeName(origName, true)
-	emitClass(ctx, cls, clsName, kind)
+	if clsName == "" {
+		clsName = ctx.typeName(origName, true)
+	}
+	initClassType(ctx, &typDecl, cls, clsName, kind)
 }
 
 func newType(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) (ret typDecl) {
@@ -106,11 +111,7 @@ func newType(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) (ret t
 	return
 }
 
-func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *types.Named {
-	pkg := ctx.pkg
-	typDecl := newType(ctx, cls, clsName, kind)
-	typNamed := typDecl.Type()
-
+func initClassType(ctx *pkgCtx, typDecl *typDecl, cls clang.Cursor, clsName string, kind typeTag) {
 	// Attach the doc at the TypeDefs (GenDecl) level rather than on the
 	// TypeSpec; see the note in loadTypedef for why a spec-level doc renders as
 	// "type// doc" here.
@@ -120,10 +121,11 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *typ
 
 	scope := &classCtx{
 		decl:      cls,
-		typNamed:  typNamed,
+		typNamed:  typDecl.Type(),
 		overloads: make(map[string]*overloads),
 		inPublic:  kind == tagStruct,
 	}
+	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadClassMember(ctx, pkgTypes, scope, clsName, decl)
@@ -150,7 +152,12 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *typ
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		compileClass(ctx, scope)
 	})
-	return typNamed
+}
+
+func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *types.Named {
+	typDecl := newType(ctx, cls, clsName, kind)
+	initClassType(ctx, &typDecl, cls, clsName, kind)
+	return typDecl.Type()
 }
 
 func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName string, decl clang.Cursor) {
