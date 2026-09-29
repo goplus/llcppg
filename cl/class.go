@@ -113,15 +113,15 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateObj, parent *scopeCtx) {
 	origName := obj.name
 	cls := obj.decl
 	if debugCompileDecl {
-		log.Println("template class", origName)
+		log.Println("template class", origName, "order:", obj.order())
 	}
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	feats := 0
 	tparams := newTemplateParams(ctx, pkgTypes, cls, &feats)
-	if feats&featIgnored != 0 {
-		log.Println("template class: unsupported template params, skipped -", origName)
+	if feats&featIgnored != 0 || obj.order() >= 0 {
+		ctx.logf(cls, "class %s: unsupported template params, skipped", clang.String(cls))
 		return
 	}
 
@@ -149,10 +149,8 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag, parent *s
 	}
 
 	if cls.NumTemplateArguments() > 0 {
-		if debugCompileDecl {
-			log.Println("class", origName, "- with template arguments, skipped")
-		}
-		return // temporarily skip class with template arguments, e.g. Foo<int>
+		loadTemplateClass(ctx, cls, ns, parent)
+		return
 	}
 
 	var clsName string
@@ -360,7 +358,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 		// noop
 
 	default:
-		log.Panicln("loadClassMember: unknown kind =", decl.Kind)
+		ctx.panicf(decl, "loadClassMember: unknown kind = %v", decl.Kind)
 	}
 }
 

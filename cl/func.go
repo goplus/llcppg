@@ -79,7 +79,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 
 	manglingName := clang.Mangling(fn)
 	if manglingName == "" {
-		log.Println("func skipped: no mangling name for", origName)
+		ctx.logf(fn, "func %s: no mangled symbol, skipped", clang.String(fn))
 		return
 	}
 
@@ -91,24 +91,18 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 	params, variadic := newParams(ctx, pkgTypes, fn, &feats, scope)
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType(), &feats, scope)
 	if feats&featIgnored != 0 {
-		if debugCompileDecl {
-			log.Println("func", origName, "- ignored")
-		}
+		ctx.logf(fn, "func %s: function with unsupported features, skipped", clang.String(fn))
 		return
 	}
 
 	if fn.IsFunctionInlined() != 0 {
 		if ctx.cflags == "" {
-			if debugCompileDecl {
-				log.Println("inline func", origName, "- skipped")
-			}
+			ctx.logf(fn, "func %s: inline function but no CFlags in config, skipped", clang.String(fn))
 			return
 		}
 		manglingName = wrapInlineFunc(ctx, manglingName, fn, this)
 	} else if _, ok := ctx.nameLookup(manglingName); !ok {
-		if debugCompileDecl {
-			log.Println("func", origName, "- skipped")
-		}
+		ctx.logf(fn, "func %s: symbol not found in lib files, skipped", clang.String(fn))
 		return
 	}
 

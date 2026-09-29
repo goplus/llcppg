@@ -54,9 +54,7 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	origName := nameWithNS(clang.String(decl), ns)
 	manglingName := clang.Mangling(decl)
 	if _, ok := ctx.nameLookup(manglingName); !ok {
-		if debugCompileDecl {
-			log.Println("var", origName, "- skipped")
-		}
+		ctx.logf(decl, "var %s: symbol not found in lib files, skipped", clang.String(decl))
 		return
 	}
 

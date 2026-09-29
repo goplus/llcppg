@@ -43,53 +43,45 @@ func String[T stringer](v T) string {
 
 // -----------------------------------------------------------------------------
 
-/**
- * An "index" that consists of a set of translation units that would
- * typically be linked together into an executable or library.
- */
+// An "index" that consists of a set of translation units that would
+// typically be linked together into an executable or library.
 type Index struct {
 	clang.Index
 }
 
-/**
- * Provides a shared context for creating translation units.
- *
- * It provides two options:
- *
- * - excludeDeclarationsFromPCH: When non-zero, allows enumeration of "local"
- * declarations (when loading any new translation units). A "local" declaration
- * is one that belongs in the translation unit itself and not in a precompiled
- * header that was used by the translation unit. If zero, all declarations
- * will be enumerated.
- *
- * This process of creating the 'pch', loading it separately, and using it (via
- * -include-pch) allows 'excludeDeclsFromPCH' to remove redundant callbacks
- * (which gives the indexer the same performance benefit as the compiler).
- */
+// Provides a shared context for creating translation units.
+//
+// It provides two options:
+//
+// - excludeDeclarationsFromPCH: When non-zero, allows enumeration of "local"
+// declarations (when loading any new translation units). A "local" declaration
+// is one that belongs in the translation unit itself and not in a precompiled
+// header that was used by the translation unit. If zero, all declarations
+// will be enumerated.
+//
+// This process of creating the 'pch', loading it separately, and using it (via
+// -include-pch) allows 'excludeDeclsFromPCH' to remove redundant callbacks
+// (which gives the indexer the same performance benefit as the compiler).
 func CreateIndex(excludeDeclarationsFromPCH, displayDiagnostics int) Index {
 	return Index{
 		Index: clang.CreateIndex(c.Int(excludeDeclarationsFromPCH), c.Int(displayDiagnostics)),
 	}
 }
 
-/**
- * Flags that control the creation of translation units.
- *
- * The enumerators in this enumeration type are meant to be bitwise
- * ORed together to specify which options should be used when
- * constructing the translation unit.
- */
+// Flags that control the creation of translation units.
+//
+// The enumerators in this enumeration type are meant to be bitwise
+// ORed together to specify which options should be used when
+// constructing the translation unit.
 const (
-	/**
-	 * Used to indicate that the parser should construct a "detailed"
-	 * preprocessing record, including all macro definitions and instantiations.
-	 *
-	 * Constructing a detailed preprocessing record requires more memory
-	 * and time to parse, since the information contained in the record
-	 * is usually not retained. However, it can be useful for
-	 * applications that require more detailed information about the
-	 * behavior of the preprocessor.
-	 */
+	// Used to indicate that the parser should construct a "detailed"
+	// preprocessing record, including all macro definitions and instantiations.
+	//
+	// Constructing a detailed preprocessing record requires more memory
+	// and time to parse, since the information contained in the record
+	// is usually not retained. However, it can be useful for
+	// applications that require more detailed information about the
+	// behavior of the preprocessor.
 	DetailedPreprocessingRecord = clang.TranslationUnit_DetailedPreprocessingRecord
 )
 
@@ -120,9 +112,7 @@ var errMsgs = [...]string{
 
 // -----------------------------------------------------------------------------
 
-/**
- * A particular source file that is part of a translation unit.
- */
+// A particular source file that is part of a translation unit.
 type File = clang.File
 
 const (
@@ -130,9 +120,7 @@ const (
 	InvalidFile = File(0)
 )
 
-/**
- * Retrieve the name of a particular source file.
- */
+// Retrieve the complete file and path name of the given file.
 func FileName(f clang.File) string {
 	return GoStringAndDispose(f.Name())
 }
@@ -144,23 +132,17 @@ type Diagnostic struct {
 	clang.Diagnostic
 }
 
-/**
- * Returns a string that describes the diagnostic.
- */
+// Retrieve the text of the given diagnostic.
 func (e Diagnostic) String() string {
 	return GoStringAndDispose(e.Diagnostic.Spelling())
 }
 
-/**
- * Returns the category text for the given diagnostic.
- */
+// Retrieve the diagnostic category text for a given diagnostic.
 func (e Diagnostic) CategoryText() string {
 	return GoStringAndDispose(e.Diagnostic.CategoryText())
 }
 
-/**
- * Format the given diagnostic according to the specified display options.
- */
+// Format the given diagnostic in a manner that is suitable for display.
 func (e Diagnostic) Format(options clang.DiagnosticDisplayOptions) string {
 	return GoStringAndDispose(e.Diagnostic.Format(c.Uint(options)))
 }
@@ -170,9 +152,7 @@ func DefaultDiagnosticDisplayOptions() clang.DiagnosticDisplayOptions
 
 // -----------------------------------------------------------------------------
 
-/**
- * A single translation unit, which resides in an index.
- */
+// A single translation unit, which resides in an index.
 type TranslationUnit struct {
 	clang.TranslationUnit
 }
@@ -203,19 +183,15 @@ func (u TranslationUnit) Tokenize(extent clang.SourceRange) (ret []clang.Token, 
 	return
 }
 
-/**
- * Determine the spelling of the given token.
- *
- * The spelling of a token is the textual representation of that token, e.g.,
- * the text of an identifier or keyword.
- */
+// Determine the spelling of the given token.
+//
+// The spelling of a token is the textual representation of that token, e.g.,
+// the text of an identifier or keyword.
 func (u TranslationUnit) TokenSpelling(tok clang.Token) string {
 	return GoStringAndDispose(u.TranslationUnit.TokenSpelling(tok))
 }
 
-/**
- * Retrieve the diagnostic associated with the given index in the translation unit.
- */
+// Retrieve a diagnostic associated with the given translation unit.
 func (u TranslationUnit) Diagnostic(index c.Uint) (ret Diagnostic) {
 	return Diagnostic{u.TranslationUnit.Diagnostic(index)}
 }
@@ -233,33 +209,29 @@ func (u TranslationUnit) VisitDiagnostics(fn func(diag Diagnostic)) {
 
 // -----------------------------------------------------------------------------
 
-/**
- * A cursor representing some element in the abstract syntax tree for
- * a translation unit.
- *
- * The cursor abstraction unifies the different kinds of entities in a
- * program--declaration, statements, expressions, references to declarations,
- * etc.--under a single "cursor" abstraction with a common set of operations.
- * Common operation for a cursor include: getting the physical location in
- * a source file where the cursor points, getting the name associated with a
- * cursor, and retrieving cursors for any child nodes of a particular cursor.
- *
- * Cursors can be produced in two specific ways.
- * clang_getTranslationUnitCursor() produces a cursor for a translation unit,
- * from which one can use clang_visitChildren() to explore the rest of the
- * translation unit. clang_getCursor() maps from a physical source location
- * to the entity that resides at that location, allowing one to map from the
- * source code into the AST.
- */
+// A cursor representing some element in the abstract syntax tree for
+// a translation unit.
+//
+// The cursor abstraction unifies the different kinds of entities in a
+// program--declaration, statements, expressions, references to declarations,
+// etc.--under a single "cursor" abstraction with a common set of operations.
+// Common operation for a cursor include: getting the physical location in
+// a source file where the cursor points, getting the name associated with a
+// cursor, and retrieving cursors for any child nodes of a particular cursor.
+//
+// Cursors can be produced in two specific ways.
+// clang_getTranslationUnitCursor() produces a cursor for a translation unit,
+// from which one can use clang_visitChildren() to explore the rest of the
+// translation unit. clang_getCursor() maps from a physical source location
+// to the entity that resides at that location, allowing one to map from the
+// source code into the AST.
 type Cursor = clang.Cursor
 
-/**
- * Identifies a specific source location within a translation
- * unit.
- *
- * Use clang_getExpansionLocation() or clang_getSpellingLocation()
- * to map a source location to a particular file, line, and column.
- */
+// Identifies a specific source location within a translation
+// unit.
+//
+// Use clang_getExpansionLocation() or clang_getSpellingLocation()
+// to map a source location to a particular file, line, and column.
 type SourceLocation = clang.SourceLocation
 
 // PresumedFile returns the presumed file name for the given source location.
@@ -269,13 +241,22 @@ func PresumedFile(loc SourceLocation) string {
 	return GoStringAndDispose(filename)
 }
 
-/**
- * Retrieve the display name for the entity referenced by this cursor.
- *
- * The display name contains extra information that helps identify the cursor,
- * such as the parameters of a function or template or the arguments of a
- * class template specialization.
- */
+// Retrieve a Unified Symbol Resolution (USR) for the entity referenced
+// by the given cursor.
+//
+// A Unified Symbol Resolution (USR) is a string that identifies a particular
+// entity (function, class, variable, etc.) within a program. USRs can be
+// compared across translation units to determine, e.g., when references in
+// one translation refer to an entity defined in another translation unit.
+func USR(decl clang.Cursor) string {
+	return GoStringAndDispose(decl.USR())
+}
+
+// Retrieve the display name for the entity referenced by this cursor.
+//
+// The display name contains extra information that helps identify the cursor,
+// such as the parameters of a function or template or the arguments of a
+// class template specialization.
 func DisplayName(entity clang.Cursor) string {
 	return GoStringAndDispose(entity.DisplayName())
 }
@@ -287,35 +268,28 @@ func RawComment(entity clang.Cursor) string {
 	return GoStringAndDispose(entity.RawCommentText())
 }
 
-/**
- * Retrieve the translation unit that a cursor originated from.
- */
+// Returns the translation unit that a cursor originated from.
 func TU(c Cursor) (ret TranslationUnit) {
 	return TranslationUnit{TranslationUnit: c.TranslationUnit()}
 }
 
-/**
- * Describes how the traversal of the children of a particular
- * cursor should proceed after visiting a particular child cursor.
- */
+// Describes how the traversal of the children of a particular
+// cursor should proceed after visiting a particular child cursor.
+//
+// A value of this enumeration type should be returned by each
+// \c CXCursorVisitor to indicate how clang_visitChildren() proceed.
 type ChildVisitResult = clang.ChildVisitResult
 
 const (
-	/**
-	 * Terminates the cursor traversal.
-	 */
+	// Terminates the cursor traversal.
 	Break ChildVisitResult = clang.ChildVisit_Break
 
-	/**
-	 * Continues the cursor traversal with the next sibling of
-	 * the cursor just visited, without visiting its children.
-	 */
+	// Continues the cursor traversal with the next sibling of
+	// the cursor just visited, without visiting its children.
 	Continue ChildVisitResult = clang.ChildVisit_Continue
 
-	/**
-	 * Recursively traverse the children of this cursor, using
-	 * the same visitor and client data.
-	 */
+	// Recursively traverse the children of this cursor, using
+	// the same visitor and client data.
 	Recurse ChildVisitResult = clang.ChildVisit_Recurse
 )
 

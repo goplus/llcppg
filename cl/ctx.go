@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -151,6 +152,16 @@ type pkgCtx struct {
 
 	stdRecvName bool
 	keepDoc     bool
+}
+
+func (p *pkgCtx) logf(decl clang.Cursor, format string, args ...any) {
+	pos := p.fset.Position(goNodePos(p, decl))
+	log.Printf("%s: %s", pos, fmt.Sprintf(format, args...))
+}
+
+func (p *pkgCtx) panicf(decl clang.Cursor, format string, args ...any) {
+	pos := p.fset.Position(goNodePos(p, decl))
+	log.Panicf("%s: %s", pos, fmt.Sprintf(format, args...))
 }
 
 const (
@@ -530,6 +541,9 @@ func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
 }
 
 func (p *scopeCtx) addTemplate(_ *pkgCtx, name string, decl clang.Cursor, isClass bool) (*templateObj, bool) {
+	if debugCompileDecl {
+		log.Println("==> addTemplate", name, "-", clang.DisplayName(decl))
+	}
 	// TODO(xsw): check if the class is already added
 	obj := &templateObj{
 		name:    name,
@@ -585,23 +599,11 @@ func (p *scopeCtx) reorder() {
 }
 
 func funcUSR(decl clang.Cursor) string {
-	return clang.GoStringAndDispose(decl.USR())
+	return clang.USR(decl)
 }
 
 func funcDisplayName(decl clang.Cursor) string {
 	return clang.DisplayName(decl)
 }
 
-/*
-func substObj(pkg *types.Package, scope *types.Scope, origName string, real types.Object) {
-	old := scope.Insert(gogen.NewSubst(0, pkg, origName, real))
-	if old != nil {
-		if t, ok := old.Type().(*gogen.TySubst); ok {
-			t.Real = real
-		} else {
-			log.Panicln(origName, "redefined")
-		}
-	}
-}
-*/
 // -----------------------------------------------------------------------------
