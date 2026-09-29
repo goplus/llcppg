@@ -19,7 +19,6 @@ package cl
 import (
 	"go/token"
 	"go/types"
-	"log"
 	"strconv"
 	"strings"
 
@@ -162,13 +161,15 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 			return t
 		}
 	case lc.Type_BlockPointer:
-		log.Println("==> toType: C blocks is unsupported, use void* as work around")
+		ctx.logtf(typ, "C blocks (closure) is unsupported, ignored")
 		*feats |= featIgnored
 		return types.Typ[types.UnsafePointer]
 	default:
-		log.Println("==> toType: unknown Kind -", typ.Kind)
+		ctx.logtf(typ, "toType: unknown kind - %v", typ.Kind)
 	}
-	panic("todo: toType " + clang.String(typ))
+	ctx.logtf(typ, "unsupported type - %s", clang.String(typ))
+	*feats |= featIgnored
+	return types.Typ[types.Invalid]
 }
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int) *types.Signature {

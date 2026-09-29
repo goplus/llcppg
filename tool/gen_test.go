@@ -288,6 +288,6 @@ func TestLLVM_DenseMapInfo(t *testing.T) {
 	testFromDir(t, "DenseMapInfo", "./_testcpp", true, "adt")
 }
 
-func _TestLLVM_String(t *testing.T) {
+func TestLLVM_String(t *testing.T) {
 	testFromDir(t, "StringRef", "./_testcpp", true, "adt")
 }
