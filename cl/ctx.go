@@ -94,6 +94,11 @@ type typeObj struct {
 	feats int
 }
 
+type typDecl struct {
+	*gogen.TypeDecl
+	defs *gogen.TypeDefs
+}
+
 type pkgCtx struct {
 	scopeCtx
 	pkg  *gogen.Package
@@ -134,40 +139,24 @@ type pkgCtx struct {
 	impPkgs   map[string]none     // imported package path set
 	lastSeen  map[string]none     // last seen include file set (loaded include files)
 	thisSeen  map[string]none     // include file set seen in this translation unit
-	uninited  map[string]*gogen.TypeDecl
+	typdecls  map[string]typDecl
 
 	compiles []compileUnit
 	pubs     []Entry
 
-	// anonUnionSeq is the per-package counter that names tagless inline unions
-	// hoisted to a Go type "_llcppg_union_<n>", starting at 0 in source order.
-	// See issue goplus/llcppg#775 (the union proposal's D-series).
-	anonUnionSeq  int
-	anonStructSeq int
+	anonSeq int
 
 	stdRecvName bool
-
-	keepDoc bool
+	keepDoc     bool
 }
 
 const (
-	anonUnionPrefix  = "_llcppg_union_"
-	anonStructPrefix = "_llcppg_struct_"
+	anonPrefix = "_llcppg_anon_"
 )
 
-// nextAnonUnionName returns the next hoisted-union type name
-// "_llcppg_union_<n>", incrementing the per-package counter. A tagless inline
-// union (with or without a field name) is hoisted to such a type; a tagged or
-// named union consumes no number. See issue goplus/llcppg#775.
-func (p *pkgCtx) nextAnonUnionName() string {
-	name := anonUnionPrefix + strconv.Itoa(p.anonUnionSeq)
-	p.anonUnionSeq++
-	return name
-}
-
-func (p *pkgCtx) nextAnonStructName() string {
-	name := anonStructPrefix + strconv.Itoa(p.anonStructSeq)
-	p.anonStructSeq++
+func (p *pkgCtx) nextAnonName() string {
+	name := anonPrefix + strconv.Itoa(p.anonSeq)
+	p.anonSeq++
 	return name
 }
 
