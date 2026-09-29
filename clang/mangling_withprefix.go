@@ -31,6 +31,9 @@ func Mangling(fn Cursor) string {
 	m := fn.Mangling()
 	manglingName := c.GoString(m.CStr())
 	m.Dispose()
+	if manglingName == "" {
+		return ""
+	}
 	return manglingName[1:]
 }
 

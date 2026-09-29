@@ -330,11 +330,11 @@ func overriddenRoots(m clang.Cursor) []clang.Cursor {
 }
 
 func vtableMethodName(ctx *pkgCtx, m clang.Cursor) string {
-	manglingName := clang.Mangling(m)
-	if fn, ok := ctx.funcs[manglingName]; ok {
+	fnUSR := funcUSR(m)
+	if fn, ok := ctx.fns[fnUSR]; ok {
 		return ctx.funcName(fn.name, fn.order(), "", "", false, true)
 	}
-	panic("vtableMethodName: method not found - " + manglingName)
+	panic("vtableMethodName: method not found - " + funcDisplayName(m))
 }
 
 // placeholderSlotName returns the field name of an anonymous (reserved) slot at

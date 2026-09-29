@@ -68,13 +68,19 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 	fn := obj.decl
 	origName := obj.name
 	isOp := obj.isOperator
-	deleted := fn.CXXMethodIsDeleted()
 	if debugCompileDecl {
 		fnType := clang.String(fn.Type())
-		log.Println("func", origName, "-", fnType, "- isOp:", isOp, "deleted:", deleted)
+		log.Println("func", origName, "-", fnType, "- isOp:", isOp)
 	}
+
 	if isOp {
 		return // TODO(xsw): support operator
+	}
+
+	manglingName := clang.Mangling(fn)
+	if manglingName == "" {
+		log.Println("func skipped: no mangling name for", origName)
+		return
 	}
 
 	pkg := ctx.pkg
@@ -91,7 +97,6 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 		return
 	}
 
-	manglingName := clang.Mangling(fn)
 	if fn.IsFunctionInlined() != 0 {
 		if ctx.cflags == "" {
 			if debugCompileDecl {
@@ -270,19 +275,20 @@ func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int, feats
 	}
 	typ := toTypeEx(ctx, pkg, declTyp, flagIsParam, feats, scope)
 	if declName != "" {
-		avoidKeyword(&declName)
+		declName = avoidKeyword(declName)
 	} else {
 		declName = "_llcppg_param" + strconv.Itoa(int(i)+1)
 	}
 	return types.NewParam(goNodePos(ctx, decl), pkg, declName, typ)
 }
 
-func avoidKeyword(name *string) {
-	switch *name {
+func avoidKeyword(name string) string {
+	switch name {
 	case "map", "type", "range", "chan", "var", "func", "go", "select",
 		"defer", "package", "import", "interface", "fallthrough":
-		*name += "_"
+		return name + "_"
 	}
+	return name
 }
 
 // -----------------------------------------------------------------------------

@@ -449,11 +449,11 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor) *types.TypeName {
 }
 
 func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
-	manglingName := clang.Mangling(outsideDecl)
-	if m, ok := ctx.funcs[manglingName]; ok {
+	fnUSR := funcUSR(outsideDecl)
+	if m, ok := ctx.fns[fnUSR]; ok {
 		m.decl = outsideDecl
 	} else {
-		log.Panicln("method undeclared -", clang.DisplayName(outsideDecl))
+		log.Panicln("method undeclared -", funcDisplayName(outsideDecl))
 	}
 }
 

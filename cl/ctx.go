@@ -137,7 +137,7 @@ type pkgCtx struct {
 	fileBases map[clang.File]int // clang.File => base
 
 	macroVals map[string]any      // macroName => value
-	funcs     map[string]*funcObj // manglingName => func object
+	fns       map[string]*funcObj // fnUSR => func object
 	types     map[string]typeObj  // c/c++ fullName => type name object (include external types)
 	typdecls  map[string]typDecl  // c/c++ fullName => type declaration object (only local types)
 	impPkgs   map[string]none     // imported package path set
@@ -469,8 +469,7 @@ type funcObj struct {
 	decl      clang.Cursor // AST object
 	overloads *overloads
 
-	manglingName string // c/c++ mangling name
-	isOperator   bool
+	isOperator bool
 }
 
 // order returns the order of the object in the overloads list.
@@ -549,12 +548,12 @@ func (p *scopeCtx) addTemplate(_ *pkgCtx, name string, decl clang.Cursor, isClas
 }
 
 func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
+	fnUSR := funcUSR(decl)
 	if debugCompileDecl {
-		log.Println("==> addFunc", name, clang.String(decl.Type()))
+		log.Println("==> addFunc", funcDisplayName(decl), "- USR:", fnUSR)
 	}
 
-	manglingName := clang.Mangling(decl)
-	if fn, ok := ctx.funcs[manglingName]; ok { // re-declared
+	if fn, ok := ctx.fns[fnUSR]; ok { // re-declared
 		if decl.IsFunctionInlined() != 0 {
 			fn.decl = decl // use the latest inline decl
 		}
@@ -562,10 +561,9 @@ func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp boo
 	}
 
 	obj := &funcObj{
-		name:         name,
-		decl:         decl,
-		manglingName: manglingName,
-		isOperator:   isOp,
+		name:       name,
+		decl:       decl,
+		isOperator: isOp,
 	}
 	ovs, ok := p.overloads[name]
 	if ok {
@@ -575,7 +573,7 @@ func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp boo
 		p.overloads[name] = ovs
 	}
 	obj.overloads = ovs
-	ctx.funcs[manglingName] = obj
+	ctx.fns[fnUSR] = obj
 
 	return obj, true
 }
@@ -584,6 +582,14 @@ func (p *scopeCtx) reorder() {
 	for _, o := range p.overloads {
 		o.reorder()
 	}
+}
+
+func funcUSR(decl clang.Cursor) string {
+	return clang.GoStringAndDispose(decl.USR())
+}
+
+func funcDisplayName(decl clang.Cursor) string {
+	return clang.DisplayName(decl)
 }
 
 /*
