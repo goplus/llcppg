@@ -211,6 +211,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	if rename == nil {
 		rename = make(map[string]string)
 	}
+	typdecls := make(map[string]typDecl)
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
@@ -219,7 +220,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
 		enumPrefix: conf.EnumPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
 		nsIgnores: conf.NSIgnore, typeIgnores: conf.TypeIgnore, rename: rename,
-		classes: conf.Class, nonClasses: conf.NonClass,
+		classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), funcs: make(map[string]*funcObj),
 		macroVals: make(map[string]any), types: make(map[string]typeObj),
@@ -227,6 +228,11 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	}
 	loadFiles(ctx, files, pkgPath, conf.SourceHeaderFilePrefix, conf.GenMultiGoFiles)
 	ctx.compile()
+	for _, typDecl := range typdecls {
+		if !typDecl.Inited() {
+			typDecl.InitType(pkg, types.NewStruct(nil, nil))
+		}
+	}
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
 	ret.Public = ctx.pubs
@@ -304,6 +310,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert:
 		// noop
 	case lc.Cursor_FunctionTemplate:
+		// TODO(xsw): ignore for now
+	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
 		// TODO(xsw): ignore for now
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)

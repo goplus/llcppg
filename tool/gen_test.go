@@ -162,7 +162,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	testGenGo(t, pkg.Package, pkgDir, "", exp)
 }
 
-func testFromDir(t *testing.T, sel, relDir string, single bool) {
+func testFromDir(t *testing.T, sel, relDir string, single bool, subPkg ...string) {
 	dirSel := sel
 	if single {
 		dirSel = ""
@@ -177,18 +177,26 @@ func testFromDir(t *testing.T, sel, relDir string, single bool) {
 			log.Fatal("LoadConf failed:", err)
 		}
 
-		switch len(conf.Pkgs) {
-		case 0:
-		case 1:
-			cfgFile := pkgDir + "/llcppg-" + conf.Pkgs[0] + ".cfg"
+		var pkgSel string
+		if len(subPkg) > 0 {
+			pkgSel = subPkg[0]
+		} else {
+			switch len(conf.Pkgs) {
+			case 0:
+			case 1:
+				pkgSel = conf.Pkgs[0]
+			default:
+				t.Fatal("conf.Pkgs can't be multi-packages for testing")
+			}
+		}
+		if pkgSel != "" {
+			cfgFile := pkgDir + "/llcppg-" + pkgSel + ".cfg"
 			subConf, err := tool.LoadConf(cfgFile)
 			if err != nil {
 				t.Fatal("LoadConf failed:", err)
 			}
 			subConf.Apply(&conf)
 			conf = subConf
-		default:
-			t.Fatal("conf.Pkgs can't be multi-packages for testing")
 		}
 
 		if single {
@@ -257,21 +265,29 @@ func TestSingleC(t *testing.T) {
 }
 
 func TestLLVM_AMDGPUAddrSpace(t *testing.T) {
-	testFromDir(t, "AMDGPUAddrSpace", "./_testcpp", true)
+	testFromDir(t, "AMDGPUAddrSpace", "./_testcpp", true, "system")
 }
 
 func TestLLVM_AMDHSAKernelDescriptor(t *testing.T) {
-	testFromDir(t, "AMDHSAKernelDescriptor", "./_testcpp", true)
+	testFromDir(t, "AMDHSAKernelDescriptor", "./_testcpp", true, "system")
 }
 
 func TestLLVM_AtomicOrdering(t *testing.T) {
-	testFromDir(t, "AtomicOrdering", "./_testcpp", true)
+	testFromDir(t, "AtomicOrdering", "./_testcpp", true, "system")
 }
 
 func TestLLVM_Atomic(t *testing.T) {
-	testFromDir(t, "Atomic", "./_testcpp", true)
+	testFromDir(t, "Atomic", "./_testcpp", true, "system")
 }
 
 func TestLLVM_Compiler(t *testing.T) {
-	testFromDir(t, "Compiler", "./_testcpp", true)
+	testFromDir(t, "Compiler", "./_testcpp", true, "system")
+}
+
+func TestLLVM_DenseMapInfo(t *testing.T) {
+	testFromDir(t, "DenseMapInfo", "./_testcpp", true, "adt")
+}
+
+func _TestLLVM_String(t *testing.T) {
+	testFromDir(t, "StringRef", "./_testcpp", true, "adt")
 }
