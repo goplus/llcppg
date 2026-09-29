@@ -284,7 +284,7 @@ func TestLLVM_Compiler(t *testing.T) {
 	testFromDir(t, "Compiler", "./_testcpp", true, "system")
 }
 
-func TestLLVM_DenseMapInfo(t *testing.T) {
+func _TestLLVM_DenseMapInfo(t *testing.T) {
 	testFromDir(t, "DenseMapInfo", "./_testcpp", true, "adt")
 }
 

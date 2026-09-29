@@ -64,7 +64,7 @@ func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) 
 // has no implicit "this", so it is loaded as a global function (its Go name is
 // prefixed by the enclosing class name, which acts like a namespace). When cls
 // is non-nil, it is an instance method compiled with a "this" receiver.
-func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
+func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 	fn := obj.decl
 	origName := obj.name
 	isOp := obj.isOperator
@@ -81,8 +81,9 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	pkgTypes := pkg.Types
 
 	feats := 0
-	params, variadic := newParams(ctx, pkgTypes, fn, &feats)
-	results := toFuncResults(ctx, pkgTypes, fn.ResultType(), &feats)
+	scope := this.scope()
+	params, variadic := newParams(ctx, pkgTypes, fn, &feats, scope)
+	results := toFuncResults(ctx, pkgTypes, fn.ResultType(), &feats, scope)
 	if feats&featIgnored != 0 {
 		if debugCompileDecl {
 			log.Println("func", origName, "- ignored")
@@ -98,7 +99,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 			}
 			return
 		}
-		manglingName = wrapInlineFunc(ctx, manglingName, fn, cls)
+		manglingName = wrapInlineFunc(ctx, manglingName, fn, this)
 	} else if _, ok := ctx.nameLookup(manglingName); !ok {
 		if debugCompileDecl {
 			log.Println("func", origName, "- skipped")
@@ -110,7 +111,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 	var typRecv *types.Named // if tryToMethod succeeded, this is the recv
 	var typName, typCName string
 	var nameInPkg string
-	if cls == nil {
+	if this == nil {
 		// TODO(xsw): llgo bugfix - to support method with callback
 		if ctx.lang == LanguageC && feats&featHasCallback == 0 {
 			// try to method for C global functions
@@ -124,11 +125,11 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, cls *classCtx) {
 			}
 		}
 	} else {
-		typNamed := cls.typNamed
+		typNamed := this.typNamed
 		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
 		typName = typNamed.Obj().Name()
 	}
-	fnName := ctx.funcName(origName, obj.order(), typName, typCName, cls == nil, true)
+	fnName := ctx.funcName(origName, obj.order(), typName, typCName, this == nil, true)
 	if recv == nil {
 		nameInPkg = fnName
 	} else {
@@ -247,11 +248,11 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 	return params, nil, nil, ""
 }
 
-func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor, feats *int) (params []*types.Var, variadic bool) {
+func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor, feats *int, scope *scopeCtx) (params []*types.Var, variadic bool) {
 	n := fn.NumArguments()
 	for i := range n {
 		item := fn.Argument(c.Uint(i))
-		param := newParam(ctx, pkg, item, i, feats)
+		param := newParam(ctx, pkg, item, i, feats, scope)
 		params = append(params, param)
 	}
 	variadic = fn.IsVariadic() != 0
@@ -261,13 +262,13 @@ func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor, feats *int) (pa
 	return
 }
 
-func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int, feats *int) *types.Var {
+func newParam(ctx *pkgCtx, pkg *types.Package, decl clang.Cursor, i c.Int, feats *int, scope *scopeCtx) *types.Var {
 	declName := clang.String(decl)
 	declTyp := decl.Type()
 	if debugCompileDecl {
 		log.Println("  => param", declName, "-", clang.String(declTyp))
 	}
-	typ := toTypeEx(ctx, pkg, declTyp, flagIsParam, feats)
+	typ := toTypeEx(ctx, pkg, declTyp, flagIsParam, feats, scope)
 	if declName != "" {
 		avoidKeyword(&declName)
 	} else {

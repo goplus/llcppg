@@ -40,7 +40,7 @@ func Dump(node clang.Cursor, ns, dir string) {
 		log.Println("==>", kind, clang.String(kind), name, typeOf(cur.Type()))
 		switch kind {
 		case lc.Cursor_FunctionDecl, lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
-		case lc.Cursor_ClassDecl, lc.Cursor_Namespace:
+		case lc.Cursor_ClassDecl, lc.Cursor_Namespace, lc.Cursor_ClassTemplate:
 			Dump(cur, name+"::", dir)
 		}
 		return clang.Continue

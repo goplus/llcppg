@@ -28,6 +28,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -109,6 +110,7 @@ type pkgCtx struct {
 	fset *token.FileSet
 	c    gogen.PkgRef
 	ctyp [cBasicMax]types.Type
+	tany types.Type
 
 	cflags string
 	lang   Language
@@ -182,10 +184,24 @@ func (p *pkgCtx) addCompileUnit(f compileFunc) {
 
 func (p *pkgCtx) compile() {
 	pkg := p.pkg
-	for _, c := range p.compiles {
-		pkg.RestoreCurFile(c.at)
-		c.fn(p)
+	for {
+		compiles := p.compiles
+		if len(compiles) == 0 {
+			break
+		}
+		p.compiles = nil
+		for _, c := range compiles {
+			pkg.RestoreCurFile(c.at)
+			c.fn(p)
+		}
 	}
+}
+
+func (p *pkgCtx) any() types.Type {
+	if p.tany == nil {
+		p.tany = types.Universe.Lookup("any").Type()
+	}
+	return p.tany
 }
 
 func (p *pkgCtx) basicTyp(kind basicKind) types.Type {
@@ -205,7 +221,12 @@ func (p *pkgCtx) aliasTypeName(cName, goName string) {
 }
 
 func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named) {
-	cName := clang.String(decl.Type())
+	var cName string
+	if decl.Kind == lc.Cursor_ClassTemplate { // TODO(xsw): check if this is correct
+		cName = clang.String(decl)
+	} else {
+		cName = clang.String(decl.Type())
+	}
 	typObj := typeObj{typNamed.Obj(), 0}
 	p.types[cName] = typObj
 	p.aliasTypeName(cName, typObj.Name())
@@ -421,12 +442,34 @@ func contains(v string, names []string) bool {
 
 // -----------------------------------------------------------------------------
 
-type funcObj struct {
-	name      string
-	decl      clang.Cursor
+type templateObj struct {
+	name      string       // go name
+	decl      clang.Cursor // AST object
 	overloads *overloads
 
-	manglingName string
+	isClass bool
+}
+
+// order returns the order of the template object in the overloads list.
+// -1 means no order (only one overload, or not found).
+func (p *templateObj) order() int {
+	items := p.overloads.tos
+	if len(items) > 1 {
+		for i, obj := range items {
+			if obj == p {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+type funcObj struct {
+	name      string       // go name
+	decl      clang.Cursor // AST object
+	overloads *overloads
+
+	manglingName string // c/c++ mangling name
 	isOperator   bool
 }
 
@@ -446,6 +489,7 @@ func (p *funcObj) order() int {
 
 type overloads struct {
 	fns []*funcObj
+	tos []*templateObj
 }
 
 func (p *overloads) reorder() {
@@ -470,9 +514,45 @@ func (p *overloads) reorder() {
 
 type scopeCtx struct {
 	overloads map[string]*overloads // name => overload items
+	tparams   []*types.TypeParam    // type parameters, only for class/struct scope
+	parent    *scopeCtx
+}
+
+func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
+	for p != nil {
+		for _, t := range p.tparams {
+			if t.Obj().Name() == name {
+				return t, true
+			}
+		}
+		p = p.parent
+	}
+	return nil, false
+}
+
+func (p *scopeCtx) addTemplate(_ *pkgCtx, name string, decl clang.Cursor, isClass bool) (*templateObj, bool) {
+	// TODO(xsw): check if the class is already added
+	obj := &templateObj{
+		name:    name,
+		decl:    decl,
+		isClass: isClass,
+	}
+	ovs, ok := p.overloads[name]
+	if ok {
+		ovs.tos = append(ovs.tos, obj)
+	} else {
+		ovs = &overloads{tos: []*templateObj{obj}}
+		p.overloads[name] = ovs
+	}
+	obj.overloads = ovs
+	return obj, true
 }
 
 func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
+	if debugCompileDecl {
+		log.Println("==> addFunc", name, clang.String(decl.Type()))
+	}
+
 	manglingName := clang.Mangling(decl)
 	if fn, ok := ctx.funcs[manglingName]; ok { // re-declared
 		if decl.IsFunctionInlined() != 0 {
@@ -496,6 +576,7 @@ func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp boo
 	}
 	obj.overloads = ovs
 	ctx.funcs[manglingName] = obj
+
 	return obj, true
 }
 

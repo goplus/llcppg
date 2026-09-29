@@ -62,12 +62,12 @@ const (
 	featIgnored
 )
 
-func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int) types.Type {
+func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, scope *scopeCtx) types.Type {
 	var feats int
-	return toTypeEx(ctx, pkg, typ, flags, &feats)
+	return toTypeEx(ctx, pkg, typ, flags, &feats, scope)
 }
 
-func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *int) types.Type {
+func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *int, scope *scopeCtx) types.Type {
 	switch typ.Kind {
 	case lc.Type_Void:
 		return tyVoid
@@ -107,11 +107,11 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		}
 		// flagIsParam only governs the outermost type of a parameter, so clear
 		// it before recursing so inner arrays are not wrongly decayed.
-		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats)
+		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
 		return newPointer(pointee)
 	case lc.Type_LValueReference:
 		elem := typ.NonReference()
-		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats)
+		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
 		return newPointer(pointee)
 	case lc.Type_FunctionProto:
 		*feats |= featHasCallback
@@ -137,6 +137,11 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
+	case lc.Type_IncompleteArray, lc.Type_VariableArray:
+		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
+		// flagIsParam before recursing since decay applies only to this level.
+		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats, scope)
+		return newPointer(elem)
 	case lc.Type_ConstantArray:
 		// A fixed-size C array T[N] is a true array only when it has real
 		// storage, e.g. as a struct field. As a function parameter it is a
@@ -146,18 +151,19 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		// Decay applies only to the outermost array, so clear flagIsParam
 		// before recursing; otherwise a nested array like int matrix[3][4]
 		// would decay its inner [4] too, yielding **c.Int instead of *[4]c.Int.
-		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats)
+		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats, scope)
 		if flags&flagIsParam != 0 {
 			return newPointer(elem)
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
-	case lc.Type_IncompleteArray, lc.Type_VariableArray:
-		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
-		// flagIsParam before recursing since decay applies only to this level.
-		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats)
-		return newPointer(elem)
+	case lc.Type_Unexposed:
+		name := clang.String(typ)
+		if t, ok := scope.lookupType(name); ok {
+			return t
+		}
 	case lc.Type_BlockPointer:
 		log.Println("==> toType: C blocks is unsupported, use void* as work around")
+		*feats |= featIgnored
 		return types.Typ[types.UnsafePointer]
 	default:
 		log.Println("==> toType: unknown Kind -", typ.Kind)
@@ -166,17 +172,17 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 }
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int) *types.Signature {
-	params, variadic := toFuncParams(ctx, pkg, fn)
-	results := toFuncResults(ctx, pkg, fn.Result(), feats)
+	params, variadic := toFuncParams(ctx, pkg, fn, feats, nil)
+	results := toFuncResults(ctx, pkg, fn.Result(), feats, nil)
 	return types.NewSignatureType(nil, nil, nil, params, results, variadic)
 }
 
-func toFuncParams(ctx *pkgCtx, pkg *types.Package, fn lc.Type) (ret *types.Tuple, variadic bool) {
+func toFuncParams(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int, scope *scopeCtx) (ret *types.Tuple, variadic bool) {
 	n := fn.NumArgTypes()
 	var params []*types.Var
 	for i := range n {
 		item := fn.Arg(c.Uint(i))
-		tyParam := toType(ctx, pkg, item, flagIsParam)
+		tyParam := toTypeEx(ctx, pkg, item, flagIsParam, feats, scope)
 		nameParam := "_llcppg_param" + strconv.Itoa(int(i)+1)
 		params = append(params, types.NewParam(token.NoPos, pkg, nameParam, tyParam))
 	}
@@ -196,9 +202,9 @@ func newVariadicParam(pkg *types.Package) *types.Var {
 	return types.NewParam(token.NoPos, pkg, "__llgo_va_list", tyValist)
 }
 
-func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type, feats *int) (results *types.Tuple) {
+func toFuncResults(ctx *pkgCtx, pkg *types.Package, retType lc.Type, feats *int, scope *scopeCtx) (results *types.Tuple) {
 	if retType.Kind != lc.Type_Void {
-		tyRet := toTypeEx(ctx, pkg, retType, flagRetType, feats)
+		tyRet := toTypeEx(ctx, pkg, retType, flagRetType, feats, scope)
 		results = types.NewTuple(types.NewParam(token.NoPos, pkg, "", tyRet))
 	}
 	return

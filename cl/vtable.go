@@ -177,13 +177,13 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clang.Cursor) types.Type {
 	this := types.NewParam(0, pkg, "this", recvPtr)
 	feats := 0
-	rest, variadic := newParams(ctx, pkg, fn, &feats)
+	rest, variadic := newParams(ctx, pkg, fn, &feats, nil)
 	params := make([]*types.Var, 0, 1+len(rest))
 	params = append(params, this)
 	for _, param := range rest {
 		params = append(params, param)
 	}
-	results := toFuncResults(ctx, pkg, fn.ResultType(), &feats)
+	results := toFuncResults(ctx, pkg, fn.ResultType(), &feats, nil)
 	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
 	return sig
 }
