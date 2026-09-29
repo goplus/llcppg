@@ -113,7 +113,7 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateObj, parent *scopeCtx) {
 	origName := obj.name
 	cls := obj.decl
 	if debugCompileDecl {
-		log.Println("template class", origName)
+		log.Println("template class", origName, "order:", obj.order())
 	}
 
 	pkg := ctx.pkg
