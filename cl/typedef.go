@@ -45,7 +45,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	}
 
 	feats := 0
-	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats)
+	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, nil)
 	if feats&featIgnored != 0 {
 		if debugCompileDecl {
 			log.Println("typedef", cName, "- ignored")

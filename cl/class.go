@@ -19,6 +19,7 @@ package cl
 import (
 	"go/types"
 	"log"
+	"unsafe"
 
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
@@ -59,32 +60,99 @@ type classCtx struct {
 	typNamed      *types.Named
 	fields        []*types.Var
 	publicMethods []*funcObj
-	inPublic      bool
 	polymorphic   bool // declares or inherits virtual methods
 	ownsVptr      bool // owns the vptr field (polymorphic with no primary base)
 }
 
-func compileClass(ctx *pkgCtx, scope *classCtx) {
-	scope.reorder()
-	if scope.polymorphic {
+func (p *classCtx) scope() *scopeCtx {
+	return (*scopeCtx)(unsafe.Pointer(p))
+}
+
+func compileClass(ctx *pkgCtx, this *classCtx) {
+	this.reorder()
+	if this.polymorphic {
 		// Emit the typed vtable and the XGo_vptr() accessor once method
 		// overload ordering is finalized (reorder above), so vtable field
 		// names match the generated method names.
-		genVtable(ctx, scope, scope.ownsVptr)
+		genVtable(ctx, this, this.ownsVptr)
 	}
-	for _, method := range scope.publicMethods {
-		compileFuncOrMethod(ctx, method, scope)
+	for _, method := range this.publicMethods {
+		compileFuncOrMethod(ctx, method, this)
 	}
 }
 
-func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag) {
-	if cls.NumTemplateArguments() > 0 {
-		// TODO(xsw): ignore for now
+func newTemplateParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor, feats *int) []*types.TypeParam {
+	ret := make([]*types.TypeParam, 0, 2)
+	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		switch decl.Kind {
+		case lc.Cursor_TemplateTypeParameter:
+			name := clang.String(decl)
+			objName := types.NewTypeName(0, pkg, name, nil)
+			ret = append(ret, types.NewTypeParam(objName, ctx.any()))
+		case lc.Cursor_NonTypeTemplateParameter, lc.Cursor_TemplateTemplateParameter:
+			*feats |= featIgnored
+			log.Println("unsupported template parameter:", clang.String(decl))
+		default:
+			return clang.Break
+		}
+		return clang.Continue
+	})
+	return ret
+}
+
+func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, ns string, parent *scopeCtx) {
+	origName := nameWithNS(clang.String(cls), ns)
+	if obj, ok := ctx.addTemplate(ctx, origName, cls, true); ok {
+		ctx.addCompileUnit(func(ctx *pkgCtx) {
+			compileTemplateClass(ctx, obj, parent)
+		})
+	}
+}
+
+func compileTemplateClass(ctx *pkgCtx, obj *templateObj, parent *scopeCtx) {
+	origName := obj.name
+	cls := obj.decl
+	if debugCompileDecl {
+		log.Println("template class", origName)
+	}
+
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	feats := 0
+	tparams := newTemplateParams(ctx, pkgTypes, cls, &feats)
+	if feats&featIgnored != 0 {
+		log.Println("template class: unsupported template params, skipped -", origName)
 		return
 	}
+
+	var clsName string
+	var typDecl, ok = ctx.typdecls[origName]
+	if !ok {
+		clsName = ctx.typeName(origName, true)
+		typDecl = newType(ctx, cls, clsName, tagClass)
+		ctx.typdecls[origName] = typDecl
+	}
+	if cls.IsCursorDefinition() == 0 {
+		return // declaration only, no definition
+	}
+
+	if clsName == "" {
+		clsName = ctx.typeName(origName, true)
+	}
+	initClassType(ctx, &typDecl, cls, clsName, tparams, parent)
+}
+
+func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag, parent *scopeCtx) {
 	origName := nameWithNS(clang.String(cls), ns)
 	if debugCompileDecl {
 		log.Println(tagStrvals[kind] + origName)
+	}
+
+	if cls.NumTemplateArguments() > 0 {
+		if debugCompileDecl {
+			log.Println("class", origName, "- with template arguments, skipped")
+		}
+		return // temporarily skip class with template arguments, e.g. Foo<int>
 	}
 
 	var clsName string
@@ -101,7 +169,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag) {
 	if clsName == "" {
 		clsName = ctx.typeName(origName, true)
 	}
-	initClassType(ctx, &typDecl, cls, clsName, kind)
+	initClassType(ctx, &typDecl, cls, clsName, nil, parent)
 }
 
 func newType(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) (ret typDecl) {
@@ -111,7 +179,7 @@ func newType(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) (ret t
 	return
 }
 
-func initClassType(ctx *pkgCtx, typDecl *typDecl, cls clang.Cursor, clsName string, kind typeTag) {
+func initClassType(ctx *pkgCtx, typDecl *typDecl, cls clang.Cursor, clsName string, tparams []*types.TypeParam, parent *scopeCtx) {
 	// Attach the doc at the TypeDefs (GenDecl) level rather than on the
 	// TypeSpec; see the note in loadTypedef for why a spec-level doc renders as
 	// "type// doc" here.
@@ -119,16 +187,17 @@ func initClassType(ctx *pkgCtx, typDecl *typDecl, cls clang.Cursor, clsName stri
 		typDecl.defs.SetComments(doc)
 	}
 
-	scope := &classCtx{
+	this := &classCtx{
 		decl:      cls,
 		typNamed:  typDecl.Type(),
 		overloads: make(map[string]*overloads),
-		inPublic:  kind == tagStruct,
+		tparams:   tparams,
+		parent:    parent,
 	}
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadClassMember(ctx, pkgTypes, scope, clsName, decl)
+		loadClassMember(ctx, pkgTypes, this, clsName, decl)
 		return clang.Continue
 	})
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
@@ -138,29 +207,33 @@ func initClassType(ctx *pkgCtx, typDecl *typDecl, cls clang.Cursor, clsName stri
 	// polymorphic but has no such base to reuse, it introduces its own implicit
 	// vptr at the start of the layout instead.
 	if primary, ok := primaryBase(cls); ok {
-		hoistPrimaryBase(ctx, scope, primary)
-		scope.polymorphic = true
+		hoistPrimaryBase(ctx, this, primary)
+		this.polymorphic = true
 	} else if isPolymorphic(cls) {
 		ctx.forceImportUnsafe()
 		vptr := types.NewField(goNodePos(ctx, cls), pkgTypes, vptrName, types.Typ[types.UnsafePointer], false)
-		scope.fields = append([]*types.Var{vptr}, scope.fields...)
-		scope.polymorphic = true
-		scope.ownsVptr = true
+		this.fields = append([]*types.Var{vptr}, this.fields...)
+		this.polymorphic = true
+		this.ownsVptr = true
 	}
-	typStruc := types.NewStruct(scope.fields, nil)
-	typDecl.InitType(pkg, typStruc)
+	typStruc := types.NewStruct(this.fields, nil)
+	typDecl.InitType(pkg, typStruc, tparams...)
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
-		compileClass(ctx, scope)
+		compileClass(ctx, this)
 	})
 }
 
-func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) *types.Named {
+func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag, parent *scopeCtx) *types.Named {
 	typDecl := newType(ctx, cls, clsName, kind)
-	initClassType(ctx, &typDecl, cls, clsName, kind)
+	initClassType(ctx, &typDecl, cls, clsName, nil, parent)
 	return typDecl.Type()
 }
 
-func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName string, decl clang.Cursor) {
+func isPublic(decl clang.Cursor) bool {
+	return decl.CXXAccessSpecifier() == lc.CXXPublic
+}
+
+func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName string, decl clang.Cursor) {
 	switch decl.Kind {
 	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
 		var name string
@@ -171,17 +244,16 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			name = "XGo_Dtor"
 		default:
 			if decl.CXXMethodIsStatic() != 0 {
-				if cls.inPublic {
+				if isPublic(decl) {
 					loadGlobalFunc(ctx, &ctx.scopeCtx, decl, clsName)
 				}
 				return
 			}
 			name = clang.String(decl)
 		}
-		isPublic := cls.inPublic
-		if isPublic {
-			if fn, ok := cls.addFunc(ctx, name, decl, isOperator(name)); ok {
-				cls.publicMethods = append(cls.publicMethods, fn)
+		if isPublic(decl) {
+			if fn, ok := this.addFunc(ctx, name, decl, isOperator(name)); ok {
+				this.publicMethods = append(this.publicMethods, fn)
 			}
 		}
 
@@ -194,36 +266,36 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 				if ftd.Kind == lc.Cursor_UnionDecl {
 					fldType = emitUnion(ctx, ftd, ctx.nextAnonName())
 				} else {
-					fldType = emitClass(ctx, ftd, ctx.nextAnonName(), ftd.Kind)
+					fldType = emitClass(ctx, ftd, ctx.nextAnonName(), ftd.Kind, this.scope())
 				}
 				anonymous = true
 			}
 		}
 		if !anonymous {
-			fldType = toType(ctx, pkg, ft, flagIsVarDef)
+			fldType = toType(ctx, pkg, ft, flagIsVarDef, this.scope())
 		}
 		origName := clang.String(decl)
-		fldName := ctx.fieldName(origName, cls.inPublic)
+		fldName := ctx.fieldName(origName, isPublic(decl))
 		fld := types.NewField(goNodePos(ctx, decl), pkg, fldName, fldType, false)
-		cls.fields = append(cls.fields, fld)
+		this.fields = append(this.fields, fld)
 
 	case lc.Cursor_VarDecl:
 		// A static member variable is not a field: it has no per-instance
 		// storage. Load it as a package-level variable whose name is prefixed
 		// by the enclosing class name (the class name acts like a namespace),
 		// mirroring how a static method is handled above.
-		if cls.inPublic {
+		if isPublic(decl) {
 			loadVar(ctx, decl, clsName)
 		}
 
 	case lc.Cursor_CXXAccessSpecifier:
-		cls.inPublic = decl.CXXAccessSpecifier() == lc.CXXPublic
+		// noop
 
 	case lc.Cursor_EnumDecl:
 		// An enum nested in a class only affects naming: its constants are
 		// emitted as global consts prefixed by the enclosing class name (the
 		// class name acts like a namespace), e.g. Color_Red.
-		if cls.inPublic {
+		if isPublic(decl) {
 			loadEnum(ctx, decl, clsName)
 		}
 
@@ -232,7 +304,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		// only affects naming, so it is emitted as a package-level type alias
 		// prefixed by the enclosing class name (the class name acts like a
 		// namespace), e.g. Bar_iterator.
-		if cls.inPublic {
+		if isPublic(decl) {
 			loadTypedef(ctx, decl, clsName)
 		}
 
@@ -244,14 +316,14 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 		}
 		base := baseClass(ctx, decl)
 		fld := types.NewField(goNodePos(ctx, decl), pkg, base.Name(), base.Type(), true)
-		cls.fields = append(cls.fields, fld)
+		this.fields = append(this.fields, fld)
 
 	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
-			hoisted := emitClass(ctx, decl, ctx.nextAnonName(), decl.Kind)
+			hoisted := emitClass(ctx, decl, ctx.nextAnonName(), decl.Kind, this.scope())
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
-			cls.fields = append(cls.fields, fld)
+			this.fields = append(this.fields, fld)
 		case decl.IsAnonymous() != 0:
 			// noop
 		default:
@@ -263,14 +335,14 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// field's type must resolve to a generated Go type. Its own members'
 			// default visibility still follows C++ rules (struct: public,
 			// class: private).
-			loadClass(ctx, decl, clsName, decl.Kind)
+			loadClass(ctx, decl, clsName, decl.Kind, this.scope())
 		}
 	case lc.Cursor_UnionDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
 			hoisted := emitUnion(ctx, decl, ctx.nextAnonName())
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
-			cls.fields = append(cls.fields, fld)
+			this.fields = append(this.fields, fld)
 		case decl.IsAnonymous() != 0:
 			// noop
 		default:
@@ -279,6 +351,10 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, cls *classCtx, clsName str
 			// as its type even when declared in a private section.
 			loadUnion(ctx, decl, clsName)
 		}
+
+	case lc.Cursor_TemplateTypeParameter, lc.Cursor_NonTypeTemplateParameter,
+		lc.Cursor_TemplateTemplateParameter:
+		// noop
 
 	case lc.Cursor_UnexposedAttr:
 		// noop

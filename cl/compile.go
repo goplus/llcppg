@@ -290,7 +290,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.Cursor_FunctionDecl:
 		loadGlobalFunc(ctx, scope, decl, ns)
 	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
-		loadClass(ctx, decl, ns, decl.Kind)
+		loadClass(ctx, decl, ns, decl.Kind, nil)
 	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl:
@@ -312,7 +312,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.Cursor_FunctionTemplate:
 		// TODO(xsw): ignore for now
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
-		// TODO(xsw): ignore for now
+		loadTemplateClass(ctx, decl, ns, nil)
 	default:
 		log.Panicln("compileDecl: unknown kind =", decl.Kind)
 	}

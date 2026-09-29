@@ -59,7 +59,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		}
 		typeName := ctx.typeName(origName, true)
 		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
-		underType := toType(ctx, pkgTypes, typ, flagIsTypeDef)
+		underType := toType(ctx, pkgTypes, typ, flagIsTypeDef, nil)
 		typNamed := typDecl.InitType(pkg, underType)
 		ctx.addType(tagEnum, decl, typNamed)
 		enumType = typNamed

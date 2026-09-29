@@ -224,7 +224,7 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 	pkgTypes := pkg.Types
 	member := clang.String(m)
 
-	fldType := toType(ctx, pkgTypes, m.Type(), flagIsVarDef)
+	fldType := toType(ctx, pkgTypes, m.Type(), flagIsVarDef, nil)
 
 	name := unionRefPrefix + member
 	retType := types.NewPointer(fldType)
