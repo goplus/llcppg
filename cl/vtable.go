@@ -89,14 +89,14 @@ func vtableSlotOf(ctx *pkgCtx, m clang.Cursor, named bool) vtableSlot {
 // polymorphic class. ownsVptr reports whether the class declares its own vptr
 // field (no primary base); when false the class shares its primary base's vptr,
 // which sits at offset 0.
-func genVtable(ctx *pkgCtx, scope *classCtx, ownsVptr bool) {
-	slots := vtableSlots(ctx, scope, scope.decl)
+func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
+	slots := vtableSlots(ctx, this, this.decl)
 	if len(slots) == 0 {
 		return
 	}
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	clsNamed := scope.typNamed
+	clsNamed := this.typNamed
 	clsName := clsNamed.Obj().Name()
 	recvPtr := types.NewPointer(clsNamed)
 
@@ -111,12 +111,12 @@ func genVtable(ctx *pkgCtx, scope *classCtx, ownsVptr bool) {
 		var fldName string
 		if slot.named {
 			fldName = slot.name
-			fldType = vtableSlotFunc(ctx, pkgTypes, recvPtr, slot.decl)
+			fldType = vtableSlotFunc(ctx, pkgTypes, recvPtr, slot.decl, this.scope())
 		} else {
 			fldName = placeholderSlotName(i)
 			fldType = types.Typ[types.UnsafePointer]
 		}
-		fields = append(fields, types.NewField(goNodePos(ctx, scope.decl), pkgTypes, fldName, fldType, false))
+		fields = append(fields, types.NewField(goNodePos(ctx, this.decl), pkgTypes, fldName, fldType, false))
 	}
 	vtStruct := types.NewStruct(fields, nil)
 
@@ -126,11 +126,44 @@ func genVtable(ctx *pkgCtx, scope *classCtx, ownsVptr bool) {
 	// method blocks.
 	vtDecl := pkg.NewTypeDefs().SetComments(&ast.CommentGroup{
 		List: []*ast.Comment{{Text: "\n// llgo:type C"}},
-	}).NewType(vtableName(clsName), goNode(ctx, scope.decl))
-	vtNamed := vtDecl.InitType(pkg, vtStruct)
-	vtPtr := types.NewPointer(vtNamed)
+	}).NewType(vtableName(clsName), goNode(ctx, this.decl))
 
+	var targs = this.tparams
+	var tparams []*types.TypeParam
+	var vtRecv types.Type
+	var hasTarg = len(targs) > 0
+	if hasTarg {
+		tparams = cloneTypeParams(targs)
+	}
+	vtNamed := vtDecl.InitType(pkg, vtStruct, tparams...)
+	if hasTarg {
+		vtRecv, _ = types.Instantiate(nil, vtNamed, cloneTypes(targs), false)
+	} else {
+		vtRecv = vtNamed
+	}
+	vtPtr := types.NewPointer(vtRecv)
 	genVptrAccessor(ctx, recvPtr, vtPtr, ownsVptr)
+}
+
+func cloneTypes(tparams []*types.TypeParam) []types.Type {
+	ret := make([]types.Type, len(tparams))
+	for i, tp := range tparams {
+		ret[i] = tp
+	}
+	return ret
+}
+
+func cloneTypeParams(tparams []*types.TypeParam) []*types.TypeParam {
+	ret := make([]*types.TypeParam, len(tparams))
+	for i, tp := range tparams {
+		obj := cloneTypeName(tp.Obj())
+		ret[i] = types.NewTypeParam(obj, tp.Constraint())
+	}
+	return ret
+}
+
+func cloneTypeName(obj *types.TypeName) *types.TypeName {
+	return types.NewTypeName(obj.Pos(), obj.Pkg(), obj.Name(), obj.Type())
 }
 
 // genVptrAccessor emits "func (p *X) XGo_vptr() *_xgo_vtable_X".
@@ -174,16 +207,16 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 // vtableSlotFunc builds the function-pointer type of a named vtable slot:
 // func(this *X, <params>) <result>, mirroring the method signature but with the
 // receiver turned into an explicit leading "this" parameter.
-func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clang.Cursor) types.Type {
+func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clang.Cursor, scope *scopeCtx) types.Type {
 	this := types.NewParam(0, pkg, "this", recvPtr)
 	feats := 0
-	rest, variadic := newParams(ctx, pkg, fn, &feats, nil)
+	rest, variadic := newParams(ctx, pkg, fn, &feats, scope)
 	params := make([]*types.Var, 0, 1+len(rest))
 	params = append(params, this)
 	for _, param := range rest {
 		params = append(params, param)
 	}
-	results := toFuncResults(ctx, pkg, fn.ResultType(), &feats, nil)
+	results := toFuncResults(ctx, pkg, fn.ResultType(), &feats, scope)
 	sig := types.NewSignatureType(nil, nil, nil, types.NewTuple(params...), results, variadic)
 	return sig
 }
