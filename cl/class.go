@@ -149,7 +149,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag, parent *s
 	}
 
 	if cls.NumTemplateArguments() > 0 {
-		ctx.logf(cls, "class %s: with template arguments, skipped", clang.String(cls))
+		loadTemplateClass(ctx, cls, ns, parent)
 		return
 	}
 

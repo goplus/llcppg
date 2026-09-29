@@ -79,7 +79,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 
 	manglingName := clang.Mangling(fn)
 	if manglingName == "" {
-		ctx.logf(fn, "func %s: with template arguments, skipped", clang.String(fn))
+		ctx.logf(fn, "func %s: no mangled symbol, skipped", clang.String(fn))
 		return
 	}
 

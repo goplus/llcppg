@@ -160,13 +160,8 @@ func (p *pkgCtx) logf(decl clang.Cursor, format string, args ...any) {
 }
 
 func (p *pkgCtx) panicf(decl clang.Cursor, format string, args ...any) {
-	node := goNode(p, decl)
-	panic(&gogen.CodeError{
-		Pos:  node.Pos(),
-		End:  node.End(),
-		Msg:  fmt.Sprintf(format, args...),
-		Fset: p.fset,
-	})
+	pos := p.fset.Position(goNodePos(p, decl))
+	log.Panicf("%s: %s", pos, fmt.Sprintf(format, args...))
 }
 
 const (
@@ -546,6 +541,9 @@ func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
 }
 
 func (p *scopeCtx) addTemplate(_ *pkgCtx, name string, decl clang.Cursor, isClass bool) (*templateObj, bool) {
+	if debugCompileDecl {
+		log.Println("==> addTemplate", name, "-", clang.DisplayName(decl))
+	}
 	// TODO(xsw): check if the class is already added
 	obj := &templateObj{
 		name:    name,
