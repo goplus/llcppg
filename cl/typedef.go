@@ -51,7 +51,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 
 	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
-	if feats&featIgnored != 0 {
+	if feats&featIgnored != 0 || isTypedefUnsupported(tunder) {
 		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", origName)
 		ctx.types[cName] = typeObj{nil, featIgnored} // ignored
 		return
@@ -93,6 +93,14 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 
 	ctx.types[cName] = typeObj{obj, feats}
 	ctx.aliasTypeName(cName, name)
+}
+
+func isTypedefUnsupported(tunder types.Type) bool {
+	switch tunder.(type) {
+	case *types.TypeParam:
+		return true
+	}
+	return false
 }
 
 // -----------------------------------------------------------------------------
