@@ -29,18 +29,18 @@ import (
 
 const (
 	DbgFlagCompileDecl = 1 << iota
-	DbgFlagImport
-	DbgFlagAll = DbgFlagCompileDecl | DbgFlagImport
+	DbgFlagMajorProc
+	DbgFlagAll = DbgFlagCompileDecl | DbgFlagMajorProc
 )
 
 var (
 	debugCompileDecl bool
-	debugImport      bool
+	debugMajorProc   bool
 )
 
 func SetDebug(flags int) {
 	debugCompileDecl = (flags & DbgFlagCompileDecl) != 0
-	debugImport = (flags & DbgFlagImport) != 0
+	debugMajorProc = (flags & DbgFlagMajorProc) != 0
 }
 
 // -----------------------------------------------------------------------------
@@ -224,12 +224,16 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
-	ctx.compile()
+	// NOTE(xsw): should complete unitialized typDecls before compiling
+	if debugMajorProc {
+		log.Println("==> complete unitialized type declarations")
+	}
 	for _, typDecl := range typdecls {
 		if !typDecl.Inited() {
 			typDecl.InitType(pkg, types.NewStruct(nil, nil))
 		}
 	}
+	ctx.compile()
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
 	ret.Public = ctx.pubs

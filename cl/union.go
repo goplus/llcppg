@@ -234,7 +234,7 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 
 	f, err := pkg.NewFuncWith(goNodePos(ctx, m), name, sig, nil)
 	if err != nil {
-		log.Panicln("genUnionAccessor:", member, err)
+		ctx.panicf(m, "union field %s: genUnionAccessor failed - %v", member, err)
 	}
 	cb := f.BodyStart(pkg)
 	// return (*T)(unsafe.Pointer(p))
