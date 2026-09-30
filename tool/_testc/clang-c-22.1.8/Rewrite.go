@@ -8,8 +8,8 @@ type Rewriter uintptr
 
 // Create CXRewriter.
 //
-// llgo:link (*TranslationUnitImpl).RewriterCreate C.clang_CXRewriter_create
-func (self *TranslationUnitImpl) RewriterCreate() Rewriter {
+// llgo:link TranslationUnit.RewriterCreate C.clang_CXRewriter_create
+func (self TranslationUnit) RewriterCreate() Rewriter {
 	return 0
 }
 

@@ -189,7 +189,7 @@ func existMember(typ *types.Named, name string) bool {
 }
 
 const (
-	llgoSupportAliasAsRecv = false
+	llgoSupportAliasAsRecv = true
 	c2goMethodRecvName     = "self"
 )
 
