@@ -85,6 +85,21 @@ func TestScanIncludes(t *testing.T) {
 			},
 		},
 		{
+			name: "same-line block comment before include",
+			src:  "/* c */ #include <x.h>\n/* lead */#include \"y.h\"\n",
+			want: []Include{
+				{Filename: "x.h", Quote: false},
+				{Filename: "y.h", Quote: true},
+			},
+		},
+		{
+			name: "code before same-line block comment then include is ignored",
+			src:  "int x; /* c */ #include <skip.h>\n#include \"keep.h\"\n",
+			want: []Include{
+				{Filename: "keep.h", Quote: true},
+			},
+		},
+		{
 			name: "ignore string literal",
 			src:  "const char *s = \"#include <fake.h>\";\n#include \"real.h\"\n",
 			want: []Include{

@@ -115,9 +115,11 @@ var includeKw = []byte("include")
 // line comments, block comments, and string/character literals so that
 // `#include` tokens appearing inside them are not mistaken for directives.
 //
-// A directive is recognized only when `#` is the first non-blank character on a
-// line (as required by the C/C++ preprocessor), optionally followed by spaces or
-// tabs, then `include`, then the header name in `"..."` or `<...>`.
+// A directive is recognized only when `#` is the first non-blank, non-comment
+// token on a line, optionally followed by spaces or tabs, then `include`, then
+// the header name in `"..."` or `<...>`. Comments are treated as whitespace, so
+// a same-line block comment before the directive (e.g. `/* c */ #include <x.h>`)
+// does not suppress it.
 func scanIncludes(b []byte, yield func(Include) bool) {
 	atLineStart := true // no non-blank character seen yet on the current line
 	for i := 0; i < len(b); {
@@ -135,13 +137,13 @@ func scanIncludes(b []byte, yield func(Include) bool) {
 				i++
 			}
 		case c == '/' && i+1 < len(b) && b[i+1] == '*':
-			// block comment: skip to closing */
+			// block comment: skip to closing */. Comments count as
+			// whitespace, so atLineStart is left unchanged.
 			i += 2
 			for i < len(b) && !(b[i] == '*' && i+1 < len(b) && b[i+1] == '/') {
 				i++
 			}
 			i += 2
-			atLineStart = false
 		case c == '"' || c == '\'':
 			i = skipLiteral(b, i, c)
 			atLineStart = false
@@ -202,21 +204,21 @@ func parseInclude(b []byte, i int) (next int, inc Include, ok bool) {
 		return
 	}
 	open := b[j]
-	var close byte
+	var closer byte
 	switch open {
 	case '"':
-		close = '"'
+		closer = '"'
 	case '<':
-		close = '>'
+		closer = '>'
 	default:
 		return
 	}
 	j++
 	end := j
-	for end < len(b) && b[end] != close && b[end] != '\n' {
+	for end < len(b) && b[end] != closer && b[end] != '\n' {
 		end++
 	}
-	if end >= len(b) || b[end] != close {
+	if end >= len(b) || b[end] != closer {
 		return
 	}
 	return end + 1, Include{Filename: string(b[j:end]), Quote: open == '"'}, true
