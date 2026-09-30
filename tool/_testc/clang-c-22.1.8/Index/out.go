@@ -4702,8 +4702,10 @@ func (_llcppg_param1 Cursor) IBOutletCollectionType() Type {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXChildVisit_Break.
 //
-//go:linkname VisitChildren C.clang_visitChildren
-func VisitChildren(parent Cursor, visitor CursorVisitor, client_data ClientData) c.Uint
+// llgo:link Cursor.VisitChildren C.clang_visitChildren
+func (parent Cursor) VisitChildren(visitor CursorVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Retrieve a Unified Symbol Resolution (USR) for the entity referenced
 // by the given cursor.
@@ -6088,8 +6090,9 @@ func ToggleCrashRecovery(isEnabled c.Uint)
 //   file.  This does not include headers included by the PCH file (unless one
 //   is inspecting the inclusions in the PCH file itself).
 //
-//go:linkname GetInclusions C.clang_getInclusions
-func GetInclusions(tu TranslationUnit, visitor InclusionVisitor, client_data ClientData)
+// llgo:link TranslationUnit.Inclusions C.clang_getInclusions
+func (tu TranslationUnit) Inclusions(visitor InclusionVisitor, client_data ClientData) {
+}
 
 // If cursor is a statement declaration tries to evaluate the
 // statement and if its variable, tries to evaluate its initializer,
@@ -6380,8 +6383,10 @@ func (loc IdxLoc) SourceLocation() CXSourceLocation.SourceLocation {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname TypeVisitFields C.clang_Type_visitFields
-func TypeVisitFields(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitFields C.clang_Type_visitFields
+func (T Type) VisitFields(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Visit the base classes of a type.
 //
@@ -6401,8 +6406,10 @@ func TypeVisitFields(T Type, visitor FieldVisitor, client_data ClientData) c.Uin
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname VisitCXXBaseClasses C.clang_visitCXXBaseClasses
-func VisitCXXBaseClasses(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitCXXBaseClasses C.clang_visitCXXBaseClasses
+func (T Type) VisitCXXBaseClasses(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Visit the class methods of a type.
 //
@@ -6422,8 +6429,10 @@ func VisitCXXBaseClasses(T Type, visitor FieldVisitor, client_data ClientData) c
 // \returns A non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname VisitCXXMethods C.clang_visitCXXMethods
-func VisitCXXMethods(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitCXXMethods C.clang_visitCXXMethods
+func (T Type) VisitCXXMethods(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Retrieve the spelling of a given CXBinaryOperatorKind.
 //

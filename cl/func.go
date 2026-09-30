@@ -111,8 +111,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 	var typName, typCName string
 	var nameInPkg string
 	if this == nil {
-		// TODO(xsw): llgo bugfix - to support method with callback
-		if ctx.lang == LanguageC && feats&featHasCallback == 0 {
+		if ctx.lang == LanguageC {
 			// try to method for C global functions
 			params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
 			if typRecv != nil {
