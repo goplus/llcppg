@@ -519,8 +519,8 @@ func (self Comment) FullCommentGetAsXML() String {
 //
 // \returns Error code indicating success or failure of the APISet creation.
 //
-// llgo:link (*TranslationUnitImpl).CreateAPISet C.clang_createAPISet
-func (self *TranslationUnitImpl) CreateAPISet(out_api *APISet) ErrorCode {
+// llgo:link TranslationUnit.CreateAPISet C.clang_createAPISet
+func (self TranslationUnit) CreateAPISet(out_api *APISet) ErrorCode {
 	return 0
 }
 
@@ -528,8 +528,8 @@ func (self *TranslationUnitImpl) CreateAPISet(out_api *APISet) ErrorCode {
 //
 // The provided \c CXAPISet can not be used after this function is called.
 //
-// llgo:link (*APISetImpl).Dispose C.clang_disposeAPISet
-func (self *APISetImpl) Dispose() {
+// llgo:link APISet.Dispose C.clang_disposeAPISet
+func (self APISet) Dispose() {
 }
 
 // Generate a single symbol symbol graph for the given USR. Returns a null

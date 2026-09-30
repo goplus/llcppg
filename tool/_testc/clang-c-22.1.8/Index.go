@@ -2954,8 +2954,8 @@ func (self Index) SetInvocationEmissionPathOption(Path *c.Char) {
 // multiple inclusions, either with the conventional
 // \#ifndef/\#define/\#endif macro guards or with \#pragma once.
 //
-// llgo:link (*TranslationUnitImpl).IsFileMultipleIncludeGuarded C.clang_isFileMultipleIncludeGuarded
-func (self *TranslationUnitImpl) IsFileMultipleIncludeGuarded(file File) c.Uint {
+// llgo:link TranslationUnit.IsFileMultipleIncludeGuarded C.clang_isFileMultipleIncludeGuarded
+func (self TranslationUnit) IsFileMultipleIncludeGuarded(file File) c.Uint {
 	return 0
 }
 
@@ -2968,8 +2968,8 @@ func (self *TranslationUnitImpl) IsFileMultipleIncludeGuarded(file File) c.Uint 
 // \returns the file handle for the named file in the translation unit \p tu,
 // or a NULL file handle if the file was not a part of this translation unit.
 //
-// llgo:link (*TranslationUnitImpl).File C.clang_getFile
-func (self *TranslationUnitImpl) File(file_name *c.Char) File {
+// llgo:link TranslationUnit.File C.clang_getFile
+func (self TranslationUnit) File(file_name *c.Char) File {
 	return 0
 }
 
@@ -2984,24 +2984,24 @@ func (self *TranslationUnitImpl) File(file_name *c.Char) File {
 // \returns a pointer to the buffer in memory that holds the contents of
 // \p file, or a NULL pointer when the file is not loaded.
 //
-// llgo:link (*TranslationUnitImpl).FileContents C.clang_getFileContents
-func (self *TranslationUnitImpl) FileContents(file File, size *c.SizeT) *c.Char {
+// llgo:link TranslationUnit.FileContents C.clang_getFileContents
+func (self TranslationUnit) FileContents(file File, size *c.SizeT) *c.Char {
 	return nil
 }
 
 // Retrieves the source location associated with a given file/line/column
 // in a particular translation unit.
 //
-// llgo:link (*TranslationUnitImpl).Location C.clang_getLocation
-func (self *TranslationUnitImpl) Location(file File, line c.Uint, column c.Uint) SourceLocation {
+// llgo:link TranslationUnit.Location C.clang_getLocation
+func (self TranslationUnit) Location(file File, line c.Uint, column c.Uint) SourceLocation {
 	return SourceLocation{}
 }
 
 // Retrieves the source location associated with a given character offset
 // in a particular translation unit.
 //
-// llgo:link (*TranslationUnitImpl).LocationForOffset C.clang_getLocationForOffset
-func (self *TranslationUnitImpl) LocationForOffset(file File, offset c.Uint) SourceLocation {
+// llgo:link TranslationUnit.LocationForOffset C.clang_getLocationForOffset
+func (self TranslationUnit) LocationForOffset(file File, offset c.Uint) SourceLocation {
 	return SourceLocation{}
 }
 
@@ -3010,8 +3010,8 @@ func (self *TranslationUnitImpl) LocationForOffset(file File, offset c.Uint) Sou
 // The preprocessor will skip lines when they are surrounded by an
 // if/ifdef/ifndef directive whose condition does not evaluate to true.
 //
-// llgo:link (*TranslationUnitImpl).SkippedRanges C.clang_getSkippedRanges
-func (self *TranslationUnitImpl) SkippedRanges(file File) *SourceRangeList {
+// llgo:link TranslationUnit.SkippedRanges C.clang_getSkippedRanges
+func (self TranslationUnit) SkippedRanges(file File) *SourceRangeList {
 	return nil
 }
 
@@ -3021,16 +3021,16 @@ func (self *TranslationUnitImpl) SkippedRanges(file File) *SourceRangeList {
 // The preprocessor will skip lines when they are surrounded by an
 // if/ifdef/ifndef directive whose condition does not evaluate to true.
 //
-// llgo:link (*TranslationUnitImpl).AllSkippedRanges C.clang_getAllSkippedRanges
-func (self *TranslationUnitImpl) AllSkippedRanges() *SourceRangeList {
+// llgo:link TranslationUnit.AllSkippedRanges C.clang_getAllSkippedRanges
+func (self TranslationUnit) AllSkippedRanges() *SourceRangeList {
 	return nil
 }
 
 // Determine the number of diagnostics produced for the given
 // translation unit.
 //
-// llgo:link (*TranslationUnitImpl).NumDiagnostics C.clang_getNumDiagnostics
-func (self *TranslationUnitImpl) NumDiagnostics() c.Uint {
+// llgo:link TranslationUnit.NumDiagnostics C.clang_getNumDiagnostics
+func (self TranslationUnit) NumDiagnostics() c.Uint {
 	return 0
 }
 
@@ -3042,8 +3042,8 @@ func (self *TranslationUnitImpl) NumDiagnostics() c.Uint {
 // \returns the requested diagnostic. This diagnostic must be freed
 // via a call to \c clang_disposeDiagnostic().
 //
-// llgo:link (*TranslationUnitImpl).Diagnostic C.clang_getDiagnostic
-func (self *TranslationUnitImpl) Diagnostic(Index c.Uint) Diagnostic {
+// llgo:link TranslationUnit.Diagnostic C.clang_getDiagnostic
+func (self TranslationUnit) Diagnostic(Index c.Uint) Diagnostic {
 	return 0
 }
 
@@ -3052,15 +3052,15 @@ func (self *TranslationUnitImpl) Diagnostic(Index c.Uint) Diagnostic {
 //
 // \param Unit the translation unit to query.
 //
-// llgo:link (*TranslationUnitImpl).DiagnosticSetFromTU C.clang_getDiagnosticSetFromTU
-func (self *TranslationUnitImpl) DiagnosticSetFromTU() DiagnosticSet {
+// llgo:link TranslationUnit.DiagnosticSetFromTU C.clang_getDiagnosticSetFromTU
+func (self TranslationUnit) DiagnosticSetFromTU() DiagnosticSet {
 	return 0
 }
 
 // Get the original translation unit source file name.
 //
-// llgo:link (*TranslationUnitImpl).Spelling C.clang_getTranslationUnitSpelling
-func (self *TranslationUnitImpl) Spelling() String {
+// llgo:link TranslationUnit.Spelling C.clang_getTranslationUnitSpelling
+func (self TranslationUnit) Spelling() String {
 	return String{}
 }
 
@@ -3219,8 +3219,8 @@ func (self Index) ParseTranslationUnit2FullArgv(source_filename *c.Char, command
 // set contains an unspecified set of options that save translation units with
 // the most commonly-requested data.
 //
-// llgo:link (*TranslationUnitImpl).DefaultSaveOptions C.clang_defaultSaveOptions
-func (self *TranslationUnitImpl) DefaultSaveOptions() c.Uint {
+// llgo:link TranslationUnit.DefaultSaveOptions C.clang_defaultSaveOptions
+func (self TranslationUnit) DefaultSaveOptions() c.Uint {
 	return 0
 }
 
@@ -3246,8 +3246,8 @@ func (self *TranslationUnitImpl) DefaultSaveOptions() c.Uint {
 // enumeration. Zero (CXSaveError_None) indicates that the translation unit was
 // saved successfully, while a non-zero value indicates that a problem occurred.
 //
-// llgo:link (*TranslationUnitImpl).Save C.clang_saveTranslationUnit
-func (self *TranslationUnitImpl) Save(FileName *c.Char, options c.Uint) c.Int {
+// llgo:link TranslationUnit.Save C.clang_saveTranslationUnit
+func (self TranslationUnit) Save(FileName *c.Char, options c.Uint) c.Int {
 	return 0
 }
 
@@ -3257,15 +3257,15 @@ func (self *TranslationUnitImpl) Save(FileName *c.Char, options c.Uint) c.Int {
 // side does not support any other calls than \c clang_reparseTranslationUnit
 // to resume it or \c clang_disposeTranslationUnit to dispose it completely.
 //
-// llgo:link (*TranslationUnitImpl).Suspend C.clang_suspendTranslationUnit
-func (self *TranslationUnitImpl) Suspend() c.Uint {
+// llgo:link TranslationUnit.Suspend C.clang_suspendTranslationUnit
+func (self TranslationUnit) Suspend() c.Uint {
 	return 0
 }
 
 // Destroy the specified CXTranslationUnit object.
 //
-// llgo:link (*TranslationUnitImpl).Dispose C.clang_disposeTranslationUnit
-func (self *TranslationUnitImpl) Dispose() {
+// llgo:link TranslationUnit.Dispose C.clang_disposeTranslationUnit
+func (self TranslationUnit) Dispose() {
 }
 
 // Returns the set of flags that is suitable for reparsing a translation
@@ -3277,8 +3277,8 @@ func (self *TranslationUnitImpl) Dispose() {
 // of reparsing. The set of optimizations enabled may change from one version
 // to the next.
 //
-// llgo:link (*TranslationUnitImpl).DefaultReparseOptions C.clang_defaultReparseOptions
-func (self *TranslationUnitImpl) DefaultReparseOptions() c.Uint {
+// llgo:link TranslationUnit.DefaultReparseOptions C.clang_defaultReparseOptions
+func (self TranslationUnit) DefaultReparseOptions() c.Uint {
 	return 0
 }
 
@@ -3320,8 +3320,8 @@ func (self *TranslationUnitImpl) DefaultReparseOptions() c.Uint {
 // \c clang_disposeTranslationUnit(TU).  The error codes returned by this
 // routine are described by the \c CXErrorCode enum.
 //
-// llgo:link (*TranslationUnitImpl).Reparse C.clang_reparseTranslationUnit
-func (self *TranslationUnitImpl) Reparse(num_unsaved_files c.Uint, unsaved_files *UnsavedFile, options c.Uint) c.Int {
+// llgo:link TranslationUnit.Reparse C.clang_reparseTranslationUnit
+func (self TranslationUnit) Reparse(num_unsaved_files c.Uint, unsaved_files *UnsavedFile, options c.Uint) c.Int {
 	return 0
 }
 
@@ -3336,8 +3336,8 @@ func (self TUResourceUsageKind) Name() *c.Char {
 // Return the memory usage of a translation unit.  This object
 //  should be released with clang_disposeCXTUResourceUsage().
 //
-// llgo:link (*TranslationUnitImpl).ResourceUsage C.clang_getCXTUResourceUsage
-func (self *TranslationUnitImpl) ResourceUsage() TUResourceUsage {
+// llgo:link TranslationUnit.ResourceUsage C.clang_getCXTUResourceUsage
+func (self TranslationUnit) ResourceUsage() TUResourceUsage {
 	return TUResourceUsage{}
 }
 
@@ -3349,23 +3349,23 @@ func (self TUResourceUsage) Dispose() {
 //
 // The CXTargetInfo object cannot outlive the CXTranslationUnit object.
 //
-// llgo:link (*TranslationUnitImpl).TargetInfo C.clang_getTranslationUnitTargetInfo
-func (self *TranslationUnitImpl) TargetInfo() TargetInfo {
+// llgo:link TranslationUnit.TargetInfo C.clang_getTranslationUnitTargetInfo
+func (self TranslationUnit) TargetInfo() TargetInfo {
 	return nil
 }
 
 // Destroy the CXTargetInfo object.
 //
-// llgo:link (*TargetInfoImpl).Dispose C.clang_TargetInfo_dispose
-func (self *TargetInfoImpl) Dispose() {
+// llgo:link TargetInfo.Dispose C.clang_TargetInfo_dispose
+func (self TargetInfo) Dispose() {
 }
 
 // Get the normalized target triple as a string.
 //
 // Returns the empty string in case of any error.
 //
-// llgo:link (*TargetInfoImpl).Triple C.clang_TargetInfo_getTriple
-func (self *TargetInfoImpl) Triple() String {
+// llgo:link TargetInfo.Triple C.clang_TargetInfo_getTriple
+func (self TargetInfo) Triple() String {
 	return String{}
 }
 
@@ -3373,8 +3373,8 @@ func (self *TargetInfoImpl) Triple() String {
 //
 // Returns -1 in case of error.
 //
-// llgo:link (*TargetInfoImpl).PointerWidth C.clang_TargetInfo_getPointerWidth
-func (self *TargetInfoImpl) PointerWidth() c.Int {
+// llgo:link TargetInfo.PointerWidth C.clang_TargetInfo_getPointerWidth
+func (self TargetInfo) PointerWidth() c.Int {
 	return 0
 }
 
@@ -3388,8 +3388,8 @@ func GetNullCursor() Cursor
 // The translation unit cursor can be used to start traversing the
 // various declarations within the given translation unit.
 //
-// llgo:link (*TranslationUnitImpl).Cursor C.clang_getTranslationUnitCursor
-func (self *TranslationUnitImpl) Cursor() Cursor {
+// llgo:link TranslationUnit.Cursor C.clang_getTranslationUnitCursor
+func (self TranslationUnit) Cursor() Cursor {
 	return Cursor{}
 }
 
@@ -3647,16 +3647,16 @@ func CreateCursorSet() CursorSet
 
 // Disposes a CXCursorSet and releases its associated memory.
 //
-// llgo:link (*CursorSetImpl).Dispose C.clang_disposeCXCursorSet
-func (self *CursorSetImpl) Dispose() {
+// llgo:link CursorSet.Dispose C.clang_disposeCXCursorSet
+func (self CursorSet) Dispose() {
 }
 
 // Queries a CXCursorSet to see if it contains a specific CXCursor.
 //
 // \returns non-zero if the set contains the specified cursor.
 //
-// llgo:link (*CursorSetImpl).Contains C.clang_CXCursorSet_contains
-func (self *CursorSetImpl) Contains(cursor Cursor) c.Uint {
+// llgo:link CursorSet.Contains C.clang_CXCursorSet_contains
+func (self CursorSet) Contains(cursor Cursor) c.Uint {
 	return 0
 }
 
@@ -3664,8 +3664,8 @@ func (self *CursorSetImpl) Contains(cursor Cursor) c.Uint {
 //
 // \returns zero if the CXCursor was already in the set, and non-zero otherwise.
 //
-// llgo:link (*CursorSetImpl).Insert C.clang_CXCursorSet_insert
-func (self *CursorSetImpl) Insert(cursor Cursor) c.Uint {
+// llgo:link CursorSet.Insert C.clang_CXCursorSet_insert
+func (self CursorSet) Insert(cursor Cursor) c.Uint {
 	return 0
 }
 
@@ -3819,8 +3819,8 @@ func (self Cursor) IncludedFile() File {
 // \returns a cursor representing the entity at the given source location, or
 // a NULL cursor if no such entity can be found.
 //
-// llgo:link (*TranslationUnitImpl).GetCursor C.clang_getCursor
-func (self *TranslationUnitImpl) GetCursor(_llcppg_param2 SourceLocation) Cursor {
+// llgo:link TranslationUnit.GetCursor C.clang_getCursor
+func (self TranslationUnit) GetCursor(_llcppg_param2 SourceLocation) Cursor {
 	return Cursor{}
 }
 
@@ -4697,8 +4697,10 @@ func (self Cursor) IBOutletCollectionType() Type {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXChildVisit_Break.
 //
-//go:linkname VisitChildren C.clang_visitChildren
-func VisitChildren(parent Cursor, visitor CursorVisitor, client_data ClientData) c.Uint
+// llgo:link Cursor.VisitChildren C.clang_visitChildren
+func (self Cursor) VisitChildren(visitor CursorVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Retrieve a Unified Symbol Resolution (USR) for the entity referenced
 // by the given cursor.
@@ -5207,8 +5209,8 @@ func (self Cursor) Module() Module {
 // Given a CXFile header file, return the module that contains it, if one
 // exists.
 //
-// llgo:link (*TranslationUnitImpl).ModuleForFile C.clang_getModuleForFile
-func (self *TranslationUnitImpl) ModuleForFile(_llcppg_param2 File) Module {
+// llgo:link TranslationUnit.ModuleForFile C.clang_getModuleForFile
+func (self TranslationUnit) ModuleForFile(_llcppg_param2 File) Module {
 	return 0
 }
 
@@ -5263,8 +5265,8 @@ func (self Module) IsSystem() c.Int {
 //
 // \returns the number of top level headers associated with this module.
 //
-// llgo:link (*TranslationUnitImpl).ModuleGetNumTopLevelHeaders C.clang_Module_getNumTopLevelHeaders
-func (self *TranslationUnitImpl) ModuleGetNumTopLevelHeaders(Module Module) c.Uint {
+// llgo:link TranslationUnit.ModuleGetNumTopLevelHeaders C.clang_Module_getNumTopLevelHeaders
+func (self TranslationUnit) ModuleGetNumTopLevelHeaders(Module Module) c.Uint {
 	return 0
 }
 
@@ -5274,8 +5276,8 @@ func (self *TranslationUnitImpl) ModuleGetNumTopLevelHeaders(Module Module) c.Ui
 //
 // \returns the specified top level header associated with the module.
 //
-// llgo:link (*TranslationUnitImpl).ModuleGetTopLevelHeader C.clang_Module_getTopLevelHeader
-func (self *TranslationUnitImpl) ModuleGetTopLevelHeader(Module Module, Index c.Uint) File {
+// llgo:link TranslationUnit.ModuleGetTopLevelHeader C.clang_Module_getTopLevelHeader
+func (self TranslationUnit) ModuleGetTopLevelHeader(Module Module, Index c.Uint) File {
 	return 0
 }
 
@@ -5562,8 +5564,8 @@ func (self Cursor) ReferenceNameRange(NameFlags c.Uint, PieceIndex c.Uint) Sourc
 // exist. The returned pointer must be freed with clang_disposeTokens before the
 // translation unit is destroyed.
 //
-// llgo:link (*TranslationUnitImpl).Token C.clang_getToken
-func (self *TranslationUnitImpl) Token(Location SourceLocation) *Token {
+// llgo:link TranslationUnit.Token C.clang_getToken
+func (self TranslationUnit) Token(Location SourceLocation) *Token {
 	return nil
 }
 
@@ -5579,22 +5581,22 @@ func (self Token) Kind() TokenKind {
 // The spelling of a token is the textual representation of that token, e.g.,
 // the text of an identifier or keyword.
 //
-// llgo:link (*TranslationUnitImpl).TokenSpelling C.clang_getTokenSpelling
-func (self *TranslationUnitImpl) TokenSpelling(_llcppg_param2 Token) String {
+// llgo:link TranslationUnit.TokenSpelling C.clang_getTokenSpelling
+func (self TranslationUnit) TokenSpelling(_llcppg_param2 Token) String {
 	return String{}
 }
 
 // Retrieve the source location of the given token.
 //
-// llgo:link (*TranslationUnitImpl).TokenLocation C.clang_getTokenLocation
-func (self *TranslationUnitImpl) TokenLocation(_llcppg_param2 Token) SourceLocation {
+// llgo:link TranslationUnit.TokenLocation C.clang_getTokenLocation
+func (self TranslationUnit) TokenLocation(_llcppg_param2 Token) SourceLocation {
 	return SourceLocation{}
 }
 
 // Retrieve a source range that covers the given token.
 //
-// llgo:link (*TranslationUnitImpl).TokenExtent C.clang_getTokenExtent
-func (self *TranslationUnitImpl) TokenExtent(_llcppg_param2 Token) SourceRange {
+// llgo:link TranslationUnit.TokenExtent C.clang_getTokenExtent
+func (self TranslationUnit) TokenExtent(_llcppg_param2 Token) SourceRange {
 	return SourceRange{}
 }
 
@@ -5613,8 +5615,8 @@ func (self *TranslationUnitImpl) TokenExtent(_llcppg_param2 Token) SourceRange {
 // \param NumTokens will be set to the number of tokens in the \c *Tokens
 // array.
 //
-// llgo:link (*TranslationUnitImpl).Tokenize C.clang_tokenize
-func (self *TranslationUnitImpl) Tokenize(Range SourceRange, Tokens **Token, NumTokens *c.Uint) {
+// llgo:link TranslationUnit.Tokenize C.clang_tokenize
+func (self TranslationUnit) Tokenize(Range SourceRange, Tokens **Token, NumTokens *c.Uint) {
 }
 
 // Annotate the given set of tokens by providing cursors for each token
@@ -5646,14 +5648,14 @@ func (self *TranslationUnitImpl) Tokenize(Range SourceRange, Tokens **Token, Num
 // \param Cursors an array of \p NumTokens cursors, whose contents will be
 // replaced with the cursors corresponding to each token.
 //
-// llgo:link (*TranslationUnitImpl).AnnotateTokens C.clang_annotateTokens
-func (self *TranslationUnitImpl) AnnotateTokens(Tokens *Token, NumTokens c.Uint, Cursors *Cursor) {
+// llgo:link TranslationUnit.AnnotateTokens C.clang_annotateTokens
+func (self TranslationUnit) AnnotateTokens(Tokens *Token, NumTokens c.Uint, Cursors *Cursor) {
 }
 
 // Free the given set of tokens.
 //
-// llgo:link (*TranslationUnitImpl).DisposeTokens C.clang_disposeTokens
-func (self *TranslationUnitImpl) DisposeTokens(Tokens *Token, NumTokens c.Uint) {
+// llgo:link TranslationUnit.DisposeTokens C.clang_disposeTokens
+func (self TranslationUnit) DisposeTokens(Tokens *Token, NumTokens c.Uint) {
 }
 
 // \defgroup CINDEX_DEBUG Debugging facilities
@@ -5961,8 +5963,8 @@ func DefaultCodeCompleteOptions() c.Uint
 // freed with \c clang_disposeCodeCompleteResults(). If code
 // completion fails, returns NULL.
 //
-// llgo:link (*TranslationUnitImpl).CodeCompleteAt C.clang_codeCompleteAt
-func (self *TranslationUnitImpl) CodeCompleteAt(complete_filename *c.Char, complete_line c.Uint, complete_column c.Uint, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint) *CodeCompleteResults {
+// llgo:link TranslationUnit.CodeCompleteAt C.clang_codeCompleteAt
+func (self TranslationUnit) CodeCompleteAt(complete_filename *c.Char, complete_line c.Uint, complete_column c.Uint, unsaved_files *UnsavedFile, num_unsaved_files c.Uint, options c.Uint) *CodeCompleteResults {
 	return nil
 }
 
@@ -6083,8 +6085,9 @@ func ToggleCrashRecovery(isEnabled c.Uint)
 //   file.  This does not include headers included by the PCH file (unless one
 //   is inspecting the inclusions in the PCH file itself).
 //
-//go:linkname GetInclusions C.clang_getInclusions
-func GetInclusions(tu TranslationUnit, visitor InclusionVisitor, client_data ClientData)
+// llgo:link TranslationUnit.Inclusions C.clang_getInclusions
+func (self TranslationUnit) Inclusions(visitor InclusionVisitor, client_data ClientData) {
+}
 
 // If cursor is a statement declaration tries to evaluate the
 // statement and if its variable, tries to evaluate its initializer,
@@ -6189,8 +6192,8 @@ func (self Cursor) FindReferencesInFile(file File, visitor CursorAndRangeVisitor
 //
 // \returns one of the CXResult enumerators.
 //
-// llgo:link (*TranslationUnitImpl).FindIncludesInFile C.clang_findIncludesInFile
-func (self *TranslationUnitImpl) FindIncludesInFile(file File, visitor CursorAndRangeVisitor) Result {
+// llgo:link TranslationUnit.FindIncludesInFile C.clang_findIncludesInFile
+func (self TranslationUnit) FindIncludesInFile(file File, visitor CursorAndRangeVisitor) Result {
 	return 0
 }
 
@@ -6375,8 +6378,10 @@ func (self IdxLoc) SourceLocation() SourceLocation {
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname TypeVisitFields C.clang_Type_visitFields
-func TypeVisitFields(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitFields C.clang_Type_visitFields
+func (self Type) VisitFields(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Visit the base classes of a type.
 //
@@ -6396,8 +6401,10 @@ func TypeVisitFields(T Type, visitor FieldVisitor, client_data ClientData) c.Uin
 // \returns a non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname VisitCXXBaseClasses C.clang_visitCXXBaseClasses
-func VisitCXXBaseClasses(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitCXXBaseClasses C.clang_visitCXXBaseClasses
+func (self Type) VisitCXXBaseClasses(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Visit the class methods of a type.
 //
@@ -6417,8 +6424,10 @@ func VisitCXXBaseClasses(T Type, visitor FieldVisitor, client_data ClientData) c
 // \returns A non-zero value if the traversal was terminated
 // prematurely by the visitor returning \c CXFieldVisit_Break.
 //
-//go:linkname VisitCXXMethods C.clang_visitCXXMethods
-func VisitCXXMethods(T Type, visitor FieldVisitor, client_data ClientData) c.Uint
+// llgo:link Type.VisitCXXMethods C.clang_visitCXXMethods
+func (self Type) VisitCXXMethods(visitor FieldVisitor, client_data ClientData) c.Uint {
+	return 0
+}
 
 // Retrieve the spelling of a given CXBinaryOperatorKind.
 //
