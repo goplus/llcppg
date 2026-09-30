@@ -313,6 +313,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		// TODO(xsw): ignore for now
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
 		loadTemplateClass(ctx, decl, ns, nil)
+	case lc.Cursor_UnexposedDecl:
+		// noop
 	default:
 		ctx.panicf(decl, "loadDecl: unknown kind - %v", decl.Kind)
 	}

@@ -153,19 +153,6 @@ func cloneTypes(tparams []*types.TypeParam) []types.Type {
 	return ret
 }
 
-func cloneTypeParams(tparams []*types.TypeParam) []*types.TypeParam {
-	ret := make([]*types.TypeParam, len(tparams))
-	for i, tp := range tparams {
-		obj := cloneTypeName(tp.Obj())
-		ret[i] = types.NewTypeParam(obj, tp.Constraint())
-	}
-	return ret
-}
-
-func cloneTypeName(obj *types.TypeName) *types.TypeName {
-	return types.NewTypeName(obj.Pos(), obj.Pkg(), obj.Name(), obj.Type())
-}
-
 // genVptrAccessor emits "func (p *X) XGo_vptr() *_xgo_vtable_X".
 //
 // When the class owns its vptr the body is:

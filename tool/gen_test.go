@@ -129,6 +129,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		FuncPrefix:  conf.FuncPrefix,
 		EnumPrefix:  conf.EnumPrefix,
 		MacroPrefix: conf.MacroPrefix,
+		VarPrefix:   conf.VarPrefix,
 		TypePrefix:  conf.TypePrefix,
 		TypeAbbr:    conf.TypeAbbr,
 		Rename:      conf.Rename,
@@ -299,4 +300,8 @@ func TestLLVM_ADL(t *testing.T) {
 
 func TestLLVM_iterator_range(t *testing.T) {
 	testFromDir(t, "iterator_range", "./_testcpp", true, "adt")
+}
+
+func TestLLVM_STLForwardCompat(t *testing.T) {
+	testFromDir(t, "STLForwardCompat", "./_testcpp", true, "adt")
 }
