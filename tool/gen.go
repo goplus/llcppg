@@ -26,7 +26,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goplus/gogen"
 	"github.com/goplus/gogen/packages"
 	"github.com/goplus/gogen/packages/cache"
 	"github.com/goplus/llcppg/cl"
@@ -327,46 +326,6 @@ func DisposeSources(sources []cl.Source) {
 	for _, f := range sources {
 		f.Dispose()
 	}
-}
-
-// -----------------------------------------------------------------------------
-
-// Gen generates Go files from the C/C++ header files and llcppg.cfg in the specified
-// source directory and writes them to the destination directory. It uses the provided
-// clang index for parsing.
-func Gen(destDir, srcDir string, index clang.Index) (err error) {
-	cfg, err := LoadConf(filepath.Join(srcDir, "llcppg.cfg"))
-	if err != nil {
-		return
-	}
-
-	err = os.MkdirAll(destDir, 0755)
-	if err != nil {
-		return
-	}
-
-	pkg, _, err := cfg.NewPackage("", "", srcDir, index)
-	if err != nil {
-		return
-	}
-
-	var errs errors.List
-	var old = gogen.GeneratedHeader
-	defer func() {
-		gogen.GeneratedHeader = old
-	}()
-	gogen.GeneratedHeader = GeneratedHeader
-	pkg.ForEachFile(func(fname string, file *gogen.File) {
-		if file.Empty() {
-			return // skip empty Go files
-		}
-		goFile := filepath.Join(destDir, fname)
-		e := pkg.WriteFile(goFile, fname)
-		if e != nil {
-			errs.Add(e)
-		}
-	})
-	return errs.ToError()
 }
 
 // -----------------------------------------------------------------------------

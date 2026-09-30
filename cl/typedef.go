@@ -28,7 +28,8 @@ import (
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	cName := clang.String(decl.Type())
-	if ctx.isTypeIgnored(cName) {
+	localName := clang.String(decl) // TODO(xsw): use full name with namespace
+	if ctx.isTypeIgnored(localName) {
 		if debugCompileDecl {
 			log.Println("typedef", cName, "- ignored")
 		}
@@ -36,7 +37,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 		return
 	}
 
-	origName := nameWithNS(clang.String(decl), ns)
+	origName := nameWithNS(localName, ns)
 	if decl.Kind == lc.Cursor_TypeAliasTemplateDecl {
 		ctx.logf(decl, "typedef %s: template type alias, skipped", origName)
 		return

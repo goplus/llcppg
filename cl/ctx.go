@@ -274,7 +274,7 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 }
 
 func (p *pkgCtx) isTypeIgnored(cName string) bool {
-	return contains(cName, p.typeIgnores)
+	return contains(trimTypeTag(cName), p.typeIgnores)
 }
 
 func (p *pkgCtx) isNSIgnored(ns string) bool {

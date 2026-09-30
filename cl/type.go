@@ -165,7 +165,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 			return t
 		}
 	case lc.Type_BlockPointer:
-		ctx.logtf(typ, "C blocks (closures) are unsupported, ignored")
+		ctx.logtf(typ, "type %s: C blocks (closures) are unsupported, ignored", clang.String(typ))
 		*feats |= featIgnored
 		return types.Typ[types.UnsafePointer]
 	default:
