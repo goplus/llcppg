@@ -119,6 +119,10 @@ type Config struct {
 	// name will be used in function names (optional).
 	TypeAbbr map[string]string
 
+	// TypeAbbrSuffix specifies the suffix to remove from Go type name when generating function
+	// names. It is only valid for types that are not present in TypeAbbr (optional).
+	TypeAbbrSuffix []string
+
 	// TypePrefix/TypeSuffix specifies the prefix/suffix to remove from C/C++ type names
 	// when generating Go type names (optional).
 	TypePrefix, TypeSuffix []string
@@ -213,7 +217,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, typeAbbr: conf.TypeAbbr,
+		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
+		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
 		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix, fnPrefix: conf.FuncPrefix,
 		enumPrefix: conf.EnumPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
 		nsIgnores: conf.NSIgnore, typeIgnores: conf.TypeIgnore, rename: rename,
