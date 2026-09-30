@@ -119,7 +119,7 @@ type Config struct {
 	TypeIgnore []string
 
 	// TypeAbbr specifies a mapping of Go type name to its abbreviated name(s). The abbreviated
-	// name(s) can be a `string` or `[]string`. They will be used in function names (optional).
+	// name(s) can be a name or name list. They will be used in function names (optional).
 	TypeAbbr map[string]any
 
 	// TypeAbbrSuffix specifies the suffix to remove from Go type name when generating function

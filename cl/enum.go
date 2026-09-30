@@ -54,15 +54,19 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 
+	var ok bool
+	var typDecl typDecl
 	var enumType types.Type
-	var typDecl, ok = ctx.typdecls[origName]
-	if !ok {
-		clsName := ctx.typeName(origName, true)
-		typDecl = newType(ctx, decl, clsName, tagEnum)
-		ctx.typdecls[origName] = typDecl
+	if !anonymous {
+		typDecl, ok = ctx.typdecls[origName]
+		if !ok {
+			clsName := ctx.typeName(origName, true)
+			typDecl = newType(ctx, decl, clsName, tagEnum)
+			ctx.typdecls[origName] = typDecl
 
-		underType := toType(ctx, pkgTypes, typ, flagIsTypeDef, nil)
-		typDecl.InitType(pkg, underType)
+			underType := toType(ctx, pkgTypes, typ, flagIsTypeDef, nil)
+			typDecl.InitType(pkg, underType)
+		}
 	}
 	if !definition {
 		return // declaration only, no definition

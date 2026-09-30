@@ -7,8 +7,10 @@ import (
 	_ "unsafe"
 )
 
+type SysCasFlag = c.Uint32T
+
 //go:linkname SysMemoryFence C._ZN4llvm3sys11MemoryFenceEv
 func SysMemoryFence()
 
-//go:linkname SysCompareAndSwap C._ZN4llvm3sys14CompareAndSwapEPViii
-func SysCompareAndSwap(ptr *c.Int, new_value c.Int, old_value c.Int) c.Int
+//go:linkname SysCompareAndSwap C._ZN4llvm3sys14CompareAndSwapEPVjjj
+func SysCompareAndSwap(ptr *SysCasFlag, new_value SysCasFlag, old_value SysCasFlag) SysCasFlag
