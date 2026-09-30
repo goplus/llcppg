@@ -296,3 +296,7 @@ func TestLLVM_String(t *testing.T) {
 func TestLLVM_ADL(t *testing.T) {
 	testFromDir(t, "ADL", "./_testcpp", true, "adt")
 }
+
+func TestLLVM_iterator_range(t *testing.T) {
+	testFromDir(t, "iterator_range", "./_testcpp", true, "adt")
+}

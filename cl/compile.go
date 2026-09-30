@@ -314,7 +314,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
 		loadTemplateClass(ctx, decl, ns, nil)
 	default:
-		ctx.panicf(decl, "compileDecl: unknown kind - %v", decl.Kind)
+		ctx.panicf(decl, "loadDecl: unknown kind - %v", decl.Kind)
 	}
 }
 
