@@ -148,6 +148,10 @@ type Config struct {
 	// DefaultGoFile specifies default file name (optional).
 	DefaultGoFile string
 
+	// GoFileOf returns the Go file name for a given header file (optional). If ok is false,
+	// it means we don't know the Go file name for the header file and this header file will
+	// be skipped. If not specified, llcppg will use the default Go file name (DefaultGoFile)
+	// for all header files.
 	GoFileOf func(headerFile string) (string, bool)
 
 	// UseStdRecvName specifies whether to use a standard receiver name (self) for C functions
