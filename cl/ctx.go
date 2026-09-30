@@ -263,6 +263,16 @@ func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named)
 	}
 }
 
+func (p *pkgCtx) ignoreType(cName string) {
+	if _, ok := p.types[cName]; !ok {
+		p.types[cName] = typeObj{nil, featIgnored}
+	}
+}
+
+func (p *pkgCtx) isTypeIgnored(cName string) bool {
+	return contains(trimTypeTag(cName), p.typeIgnores)
+}
+
 func (p *pkgCtx) typeObj(cName string) (*types.TypeName, bool) {
 	if o, ok := p.types[cName]; ok {
 		return o.TypeName, true
@@ -275,10 +285,6 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 		return o.Type(), true
 	}
 	return nil, false
-}
-
-func (p *pkgCtx) isTypeIgnored(cName string) bool {
-	return contains(trimTypeTag(cName), p.typeIgnores)
 }
 
 func (p *pkgCtx) isMacroIgnored(name string) bool {
