@@ -224,9 +224,9 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
-	// NOTE(xsw): should complete unitialized typDecls before compiling
+	// NOTE(xsw): should complete uninitialized typDecls before compiling
 	if debugMajorProc {
-		log.Println("==> complete unitialized type declarations")
+		log.Println("==> complete uninitialized type declarations")
 	}
 	for _, typDecl := range typdecls {
 		if !typDecl.Inited() {
