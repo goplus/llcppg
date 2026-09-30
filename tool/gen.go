@@ -175,6 +175,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		TypePrefix:     cfg.TypePrefix,
 		TypeSuffix:     cfg.TypeSuffix,
 		TypeAbbr:       cfg.TypeAbbr,
+		TypeAbbrSuffix: cfg.TypeAbbrSuffix,
 		Rename:         cfg.Rename,
 		TypeIgnore:     cfg.TypeIgnore,
 		NSIgnore:       cfg.NSIgnore,

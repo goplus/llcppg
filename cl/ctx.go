@@ -118,6 +118,8 @@ type pkgCtx struct {
 
 	wrapFileHeader string
 
+	typeAbbrSuffix []string
+
 	fnPrefix    []string
 	varPrefix   []string
 	enumPrefix  []string
@@ -342,6 +344,8 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 		if typName != "" {
 			if v, ok := p.typeAbbr[typName]; ok { // Go type name => abbreviated name
 				typName = v
+			} else {
+				typName = rmSuffix(typName, p.typeAbbrSuffix)
 			}
 			name = cutMethodPrefix(strings.TrimSuffix(name, typName), typName)
 		}

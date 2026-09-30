@@ -28,27 +28,28 @@ import (
 // -----------------------------------------------------------------------------
 
 type Config struct {
-	Name        string            `json:"Name"`        // required, sub package name should start with '/'
-	Language    string            `json:"Language"`    // c, c++, etc. required
-	Dir         string            `json:"Dir"`         // dir or dir/... (recursive), required
-	Files       []string          `json:"Files"`       // selected header files relative to Dir; overrides auto-discovery, optional.
-	Stdlib      string            `json:"Stdlib"`      // C stdlib include dir, optional
-	LLGoPackage string            `json:"LLGoPackage"` // optional
-	CFlags      string            `json:"CFlags"`      // optional
-	Deps        []string          `json:"Deps"`        // dependencies (module paths), optional
-	Class       []string          `json:"Class"`       // typedef names to be treated as classes
-	NonClass    []string          `json:"NonClass"`    // typedef names to be treated as non-classes
-	FuncPrefix  []string          `json:"FuncPrefix"`  // global function prefix to remove
-	VarPrefix   []string          `json:"VarPrefix"`   // global variable prefix to remove
-	EnumPrefix  []string          `json:"EnumPrefix"`  // enum value prefix to remove
-	MacroPrefix []string          `json:"MacroPrefix"` // macro prefix to remove
-	TypePrefix  []string          `json:"TypePrefix"`  // type prefix to remove
-	TypeSuffix  []string          `json:"TypeSuffix"`  // type suffix to remove
-	TypeAbbr    map[string]string `json:"TypeAbbr"`    // Go type name to its abbr, used in function names
-	Rename      map[string]string `json:"Rename"`      // renaming of C/C++ names to Go names
-	TypeIgnore  []string          `json:"TypeIgnore"`  // C/C++ type names to ignore
-	NSIgnore    []string          `json:"NSIgnore"`    // namespaces (Go style names) to ignore
-	Pkgs        []string          `json:"Pkgs"`        // sub-packages to generate, optional
+	Name           string            `json:"Name"`           // required, sub package name should start with '/'
+	Language       string            `json:"Language"`       // c, c++, etc. required
+	Dir            string            `json:"Dir"`            // dir or dir/... (recursive), required
+	Files          []string          `json:"Files"`          // selected header files relative to Dir; overrides auto-discovery, optional.
+	Stdlib         string            `json:"Stdlib"`         // C stdlib include dir, optional
+	LLGoPackage    string            `json:"LLGoPackage"`    // optional
+	CFlags         string            `json:"CFlags"`         // optional
+	Deps           []string          `json:"Deps"`           // dependencies (module paths), optional
+	Class          []string          `json:"Class"`          // typedef names to be treated as classes
+	NonClass       []string          `json:"NonClass"`       // typedef names to be treated as non-classes
+	FuncPrefix     []string          `json:"FuncPrefix"`     // global function prefix to remove
+	VarPrefix      []string          `json:"VarPrefix"`      // global variable prefix to remove
+	EnumPrefix     []string          `json:"EnumPrefix"`     // enum value prefix to remove
+	MacroPrefix    []string          `json:"MacroPrefix"`    // macro prefix to remove
+	TypePrefix     []string          `json:"TypePrefix"`     // type prefix to remove
+	TypeSuffix     []string          `json:"TypeSuffix"`     // type suffix to remove
+	TypeAbbrSuffix []string          `json:"TypeAbbrSuffix"` // type abbr suffix to remove, only valid for types that is not in TypeAbbr
+	TypeAbbr       map[string]string `json:"TypeAbbr"`       // Go type name to its abbr, used in function names
+	Rename         map[string]string `json:"Rename"`         // renaming of C/C++ names to Go names
+	TypeIgnore     []string          `json:"TypeIgnore"`     // C/C++ type names to ignore
+	NSIgnore       []string          `json:"NSIgnore"`       // namespaces (Go style names) to ignore
+	Pkgs           []string          `json:"Pkgs"`           // sub-packages to generate, optional
 }
 
 // -----------------------------------------------------------------------------
