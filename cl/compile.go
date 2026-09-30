@@ -293,8 +293,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadClass(ctx, decl, ns, decl.Kind, nil)
 	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
 		loadOutsideMethod(ctx, decl)
-	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl:
-		loadTypedef(ctx, decl, ns)
+	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
+		loadTypedef(ctx, decl, ns, nil)
 	case lc.Cursor_EnumDecl:
 		loadEnum(ctx, decl, ns)
 	case lc.Cursor_MacroDefinition:
@@ -307,14 +307,14 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadVar(ctx, decl, ns)
 	case lc.Cursor_UnionDecl:
 		loadUnion(ctx, decl, ns)
-	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert:
+	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:
 		// noop
 	case lc.Cursor_FunctionTemplate:
 		// TODO(xsw): ignore for now
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
 		loadTemplateClass(ctx, decl, ns, nil)
 	default:
-		log.Panicln("compileDecl: unknown kind =", decl.Kind)
+		ctx.panicf(decl, "loadDecl: unknown kind - %v", decl.Kind)
 	}
 }
 

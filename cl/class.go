@@ -91,7 +91,6 @@ func newTemplateParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor, feats 
 			ret = append(ret, types.NewTypeParam(objName, ctx.any()))
 		case lc.Cursor_NonTypeTemplateParameter, lc.Cursor_TemplateTemplateParameter:
 			*feats |= featIgnored
-			log.Println("unsupported template parameter:", clang.String(decl))
 		default:
 			return clang.Break
 		}
@@ -301,13 +300,13 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 			loadEnum(ctx, decl, clsName)
 		}
 
-	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl:
+	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
 		// A typedef nested in a class acts like one nested in a namespace: it
 		// only affects naming, so it is emitted as a package-level type alias
 		// prefixed by the enclosing class name (the class name acts like a
 		// namespace), e.g. Bar_iterator.
 		if isPublic(decl) {
-			loadTypedef(ctx, decl, clsName)
+			loadTypedef(ctx, decl, clsName, this.scope())
 		}
 
 	case lc.Cursor_CXXBaseSpecifier:
