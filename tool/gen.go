@@ -187,10 +187,11 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 }
 
 func goFileOf(at, srcFilePrefix string) (fname string, ok bool) {
+	const pathSep = string(os.PathSeparator)
 	const goFileExt = ".go"
 	fname, ok = strings.CutPrefix(at, srcFilePrefix)
 	if ok {
-		fname = strings.ReplaceAll(fname, "/", "-")
+		fname = strings.ReplaceAll(fname, pathSep, "-")
 		if pos := strings.LastIndex(fname, "."); pos >= 0 {
 			fname = fname[:pos] + goFileExt
 		} else {
