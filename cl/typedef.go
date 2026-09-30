@@ -21,11 +21,12 @@ import (
 	"log"
 
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
 
-func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
+func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	cName := clang.String(decl.Type())
 	if ctx.isTypeIgnored(cName) {
 		if debugCompileDecl {
@@ -35,21 +36,23 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		return
 	}
 
+	origName := nameWithNS(clang.String(decl), ns)
+	if decl.Kind == lc.Cursor_TypeAliasTemplateDecl {
+		ctx.logf(decl, "typedef %s: template type alias, skipped", origName)
+		return
+	}
+
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-
-	origName := nameWithNS(clang.String(decl), ns)
 	underlying := decl.TypedefDeclUnderlyingType()
 	if debugCompileDecl {
 		log.Println("typedef", origName, "-", clang.String(underlying))
 	}
 
 	feats := 0
-	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, nil)
+	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
 	if feats&featIgnored != 0 {
-		if debugCompileDecl {
-			log.Println("typedef", cName, "- ignored")
-		}
+		ctx.logf(decl, "typedef %s: unsupport underlying type, skipped", origName)
 		ctx.types[cName] = typeObj{nil, featIgnored} // ignored
 		return
 	}
