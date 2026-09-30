@@ -51,7 +51,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 
 	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
-	if feats&featIgnored != 0 {
+	if feats&featIgnored != 0 || isTypedefUnsupported(tunder) {
 		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", origName)
 		ctx.types[cName] = typeObj{nil, featIgnored} // ignored
 		return
@@ -70,22 +70,37 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 		typDefs.SetComments(doc)
 	}
 	var isClass bool
-	if tunder == types.Typ[types.UnsafePointer] {
+	switch tunder {
+	case types.Typ[types.UnsafePointer]:
 		if !contains(cName, ctx.nonClasses) {
 			tunder, isClass = types.Typ[types.Uintptr], true // unsafe.Pointer => uintptr
 		}
-	} else {
+	case tyVoid:
+		tunder = ctx.basicTyp(cVoid)
+	default:
 		isClass = contains(cName, ctx.classes)
 	}
+
+	node := goNode(ctx, decl)
+	tparams := scope.typeParams(nil)
 	if isClass {
-		t := typDefs.NewType(name).InitType(pkg, tunder)
+		t := typDefs.NewType(name, node).InitType(pkg, tunder, tparams...)
 		obj = t.Obj()
 	} else {
-		t := typDefs.AliasType(name, tunder).(*types.Alias)
+		t := typDefs.AliasTypeEx(name, tunder, tparams, node)
 		obj = t.Obj()
 	}
+
 	ctx.types[cName] = typeObj{obj, feats}
 	ctx.aliasTypeName(cName, name)
+}
+
+func isTypedefUnsupported(tunder types.Type) bool {
+	switch tunder.(type) {
+	case *types.TypeParam:
+		return true
+	}
+	return false
 }
 
 // -----------------------------------------------------------------------------

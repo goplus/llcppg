@@ -524,10 +524,47 @@ func (p *overloads) reorder() {
 	}
 }
 
+func cloneTypeName(obj *types.TypeName) *types.TypeName {
+	return types.NewTypeName(obj.Pos(), obj.Pkg(), obj.Name(), obj.Type())
+}
+
+func cloneTypeParams(tparams []*types.TypeParam) []*types.TypeParam {
+	if len(tparams) == 0 {
+		return nil
+	}
+	ret := make([]*types.TypeParam, len(tparams))
+	for i, tp := range tparams {
+		obj := cloneTypeName(tp.Obj())
+		ret[i] = types.NewTypeParam(obj, tp.Constraint())
+	}
+	return ret
+}
+
+func concatTypeParams(a, b []*types.TypeParam) []*types.TypeParam {
+	if len(a) == 0 {
+		return b
+	}
+	a = cloneTypeParams(a)
+	if len(b) == 0 {
+		return a
+	}
+	ret := make([]*types.TypeParam, 0, len(a)+len(b))
+	ret = append(ret, a...)
+	return append(ret, b...)
+}
+
 type scopeCtx struct {
 	overloads map[string]*overloads // name => overload items
 	tparams   []*types.TypeParam    // type parameters, only for class/struct scope
 	parent    *scopeCtx
+}
+
+func (p *scopeCtx) typeParams(in []*types.TypeParam) []*types.TypeParam {
+	for p != nil {
+		in = concatTypeParams(p.tparams, in)
+		p = p.parent
+	}
+	return in
 }
 
 func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
