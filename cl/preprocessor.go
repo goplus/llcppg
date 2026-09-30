@@ -56,7 +56,15 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 	if decl.IsMacroFunctionLike() != 0 {
 		return
 	}
+
 	origName := clang.String(decl)
+	if ctx.isMacroIgnored(origName) {
+		if debugCompileDecl {
+			log.Println("macro", origName, "- ignored")
+		}
+		return
+	}
+
 	tu := clang.TU(decl)
 	tokens, dispose := tu.Tokenize(decl.Extent())
 	defer dispose()

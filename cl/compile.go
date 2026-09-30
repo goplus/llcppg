@@ -112,12 +112,15 @@ type Config struct {
 	// to be ignored (optional).
 	NSIgnore []string
 
+	// MacroIgnore specifies a list of C/C++ macro names to be ignored (optional).
+	MacroIgnore []string
+
 	// TypeIgnore specifies a list of C/C++ type names to be ignored (optional).
 	TypeIgnore []string
 
-	// TypeAbbr specifies a mapping of Go type name to its abbreviated name. The abbreviated
-	// name will be used in function names (optional).
-	TypeAbbr map[string]string
+	// TypeAbbr specifies a mapping of Go type name to its abbreviated name(s). The abbreviated
+	// name(s) can be a `string` or `[]string`. They will be used in function names (optional).
+	TypeAbbr map[string]any
 
 	// TypeAbbrSuffix specifies the suffix to remove from Go type name when generating function
 	// names. It is only valid for types that are not present in TypeAbbr (optional).
@@ -219,9 +222,10 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
-		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix, fnPrefix: conf.FuncPrefix,
-		enumPrefix: conf.EnumPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
-		nsIgnores: conf.NSIgnore, typeIgnores: conf.TypeIgnore, rename: rename,
+		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
+		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix,
+		macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix, rename: rename,
+		nsIgnores: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnores: conf.TypeIgnore,
 		classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), fns: make(map[string]*funcObj),
@@ -312,7 +316,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		// TODO(xsw): ignore for now
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
 		loadTemplateClass(ctx, decl, ns, nil)
-	case lc.Cursor_UnexposedDecl:
+	case lc.Cursor_UnexposedDecl, lc.Cursor_UnexposedAttr:
 		// noop
 	default:
 		ctx.panicf(decl, "loadDecl: unknown kind - %v", decl.Kind)

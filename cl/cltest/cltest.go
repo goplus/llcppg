@@ -34,6 +34,7 @@ type Config struct {
 	WrapFileHeader string   `json:"WrapFileHeader"`
 	CFlags         string   `json:"CFlags"`
 	Files          []string `json:"Files"`
+	MacroIgnore    []string `json:"MacroIgnore"`
 	KeepDoc        bool     `json:"KeepDoc"`
 }
 

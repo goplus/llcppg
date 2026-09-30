@@ -88,6 +88,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			LLGoPackage:    conf.LLGoPackage,
 			Language:       lang,
 			WrapFileHeader: conf.WrapFileHeader,
+			MacroIgnore:    conf.MacroIgnore,
 			CFlags:         conf.CFlags,
 			NameLookup:     nil,
 			DontKeepDoc:    !conf.KeepDoc,

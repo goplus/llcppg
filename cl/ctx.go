@@ -128,9 +128,10 @@ type pkgCtx struct {
 	typeSuffix  []string
 	classes     []string          // typedef names to be treated as classes
 	nonClasses  []string          // typedef names to be treated as non-classes
-	typeAbbr    map[string]string // Go type name => abbreviated name, used in function names
+	typeAbbr    map[string]any    // Go type name => abbreviated name(s), used in function names
 	rename      map[string]string // C/C++ name => Go name
 	typeIgnores []string          // C/C++ type names to be ignored
+	macroIgnore []string          // C/C++ macro names to be ignored
 	nsIgnores   []string          // Go style namespace names to be ignored
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
@@ -280,6 +281,10 @@ func (p *pkgCtx) isTypeIgnored(cName string) bool {
 	return contains(trimTypeTag(cName), p.typeIgnores)
 }
 
+func (p *pkgCtx) isMacroIgnored(name string) bool {
+	return contains(name, p.macroIgnore)
+}
+
 func (p *pkgCtx) isNSIgnored(ns string) bool {
 	return contains(ns, p.nsIgnores)
 }
@@ -342,12 +347,30 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 	if !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
 		name = p.cstyleToGo(name, true)
 		if typName != "" {
+			var typSuffix []string
 			if v, ok := p.typeAbbr[typName]; ok { // Go type name => abbreviated name
-				typName = v
+				switch v := v.(type) {
+				case string:
+					typName = v
+					typSuffix = []string{v}
+				case []any:
+					if n := len(v); n > 0 {
+						abbrs := make([]string, n)
+						for i, v := range v {
+							abbrs[i] = v.(string)
+						}
+						typName = abbrs[n-1]
+						typSuffix = abbrs
+					}
+				default:
+					panic(fmt.Errorf("invalid TypeAbbr for %q: %v", typName, v))
+				}
 			} else {
 				typName = rmSuffix(typName, p.typeAbbrSuffix)
+				typSuffix = []string{typName}
 			}
-			name = cutMethodPrefix(strings.TrimSuffix(name, typName), typName)
+			name = rmSuffix(name, typSuffix)
+			name = cutMethodPrefix(name, typName)
 		}
 	}
 	if order >= 0 {
