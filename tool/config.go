@@ -31,6 +31,7 @@ type Config struct {
 	Name        string            `json:"Name"`        // required, sub package name should sarts with '/'
 	Language    string            `json:"Language"`    // c, c++, etc. required
 	Dir         string            `json:"Dir"`         // dir or dir/... (recursive), required
+	Files       []string          `json:"Files"`       // selected header files, optional
 	Stdlib      string            `json:"Stdlib"`      // C stdlib include dir, optional
 	LLGoPackage string            `json:"LLGoPackage"` // optional
 	CFlags      string            `json:"CFlags"`      // optional

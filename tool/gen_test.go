@@ -178,6 +178,7 @@ func testFromDir(t *testing.T, sel, relDir string, single bool, subPkg ...string
 		if err != nil {
 			log.Fatal("LoadConf failed:", err)
 		}
+		pkgPrefix := conf.Name + "/"
 
 		var pkgSel string
 		if len(subPkg) > 0 {
@@ -233,7 +234,14 @@ func testFromDir(t *testing.T, sel, relDir string, single bool, subPkg ...string
 			return
 		}
 
-		pkg, lang, err := conf.NewPackage("", pkgDir, idx)
+		pkgName := conf.Name
+		destDir := pkgDir
+		if pos := strings.LastIndex(pkgName, "/"); pos >= 0 {
+			destDir = filepath.Join(pkgDir, pkgName[len(pkgPrefix):])
+			pkgName = pkgName[pos+1:]
+			os.MkdirAll(destDir, 0755)
+		}
+		pkg, lang, err := conf.NewPackage("", pkgName, pkgDir, idx)
 		if err != nil {
 			t.Error("conf.NewPackage:", err)
 			return
@@ -242,13 +250,13 @@ func testFromDir(t *testing.T, sel, relDir string, single bool, subPkg ...string
 			if file.Empty() {
 				return // skip empty Go files
 			}
-			exp, _ := os.ReadFile(pkgDir + "/" + fname)
-			testGenGo(t, pkg.Package, pkgDir, fname, exp)
+			exp, _ := os.ReadFile(destDir + "/" + fname)
+			testGenGo(t, pkg.Package, destDir, fname, exp)
 		})
 		wrapFile := "/wrap" + langExts[lang]
-		wrap, _ := os.ReadFile(pkgDir + wrapFile)
+		wrap, _ := os.ReadFile(destDir + wrapFile)
 		if pkg.Wrap != nil {
-			testDiff(t, pkgDir, wrapFile+".txt", &pkg.Wrap.Content, wrap)
+			testDiff(t, destDir, wrapFile+".txt", &pkg.Wrap.Content, wrap)
 		}
 	})
 }
@@ -264,6 +272,10 @@ func TestC(t *testing.T) {
 
 func TestSingleC(t *testing.T) {
 	testFromDir(t, "", "./_testc", true)
+}
+
+func TestCpp_LLVMSystem(t *testing.T) {
+	testFromDir(t, "", "./_testcpp", false, "system")
 }
 
 func TestLLVM_AMDGPUAddrSpace(t *testing.T) {

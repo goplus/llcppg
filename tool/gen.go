@@ -21,7 +21,9 @@ import (
 	"go/token"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/goplus/gogen"
@@ -69,7 +71,7 @@ const includeSuffix = string(os.PathSeparator) + "include"
 
 // NewPackage loads the source files and converts them into a Go package according to the
 // configuration.
-func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret cl.Package, lang cl.Language, err error) {
+func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Index) (ret cl.Package, lang cl.Language, err error) {
 	lang, ok := cfg.Lang()
 	if !ok {
 		err = fmt.Errorf("invalid language: %q", cfg.Language)
@@ -138,9 +140,15 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 		log.Println("==> includeDirs:", incDirs)
 	}
 
-	topHeaders, err := pputil.TopHeaders(dir, recursive, false, incDirs)
-	if err != nil {
-		return
+	var topHeaders []string
+	var selFiles = cfg.Files
+	if len(selFiles) > 0 {
+		topHeaders = listHeaderFiles(selFiles, dir)
+	} else {
+		topHeaders, err = pputil.TopHeaders(dir, recursive, false, incDirs)
+		if err != nil {
+			return
+		}
 	}
 
 	files, err := ParseSources(index, topHeaders, incDirs, cfg.Language)
@@ -150,7 +158,10 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 	defer DisposeSources(files)
 
 	srcFilePrefix := dir + string(os.PathSeparator)
-	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
+	if pkgName == "" {
+		pkgName = path.Base(cfg.Name)
+	}
+	ret, err = cl.NewPackage(pkgPath, pkgName, files, &cl.Config{
 		Fset:           fset,
 		Importer:       imp,
 		LLGoPackage:    cfg.LLGoPackage,
@@ -183,6 +194,16 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 			return goFileOf(headerFile, srcFilePrefix)
 		},
 	})
+	return
+}
+
+func listHeaderFiles(selFiles []string, headerDir string) (topHeaders []string) {
+	headerDir += string(os.PathSeparator)
+	topHeaders = make([]string, len(selFiles))
+	for i, selFile := range selFiles {
+		topHeaders[i] = filepath.Join(headerDir, selFile)
+	}
+	sort.Strings(topHeaders)
 	return
 }
 
@@ -324,7 +345,7 @@ func Gen(destDir, srcDir string, index clang.Index) (err error) {
 		return
 	}
 
-	pkg, _, err := cfg.NewPackage("", srcDir, index)
+	pkg, _, err := cfg.NewPackage("", "", srcDir, index)
 	if err != nil {
 		return
 	}
