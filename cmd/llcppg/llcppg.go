@@ -53,7 +53,7 @@ func main() {
 
 	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
-	err := tool.Gen(destDir, srcDir, idx)
+	err := Gen(destDir, srcDir, idx)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
