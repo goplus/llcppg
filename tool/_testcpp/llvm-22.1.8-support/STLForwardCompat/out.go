@@ -59,6 +59,3 @@ type RemoveCvref[T any] struct {
 }
 type TypeIdentity[T any] struct {
 }
-
-//go:linkname FromRange C._ZN4llvm10from_rangeE
-var FromRange FromRangeT

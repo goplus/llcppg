@@ -20,6 +20,7 @@ import (
 	"log"
 
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -51,16 +52,22 @@ func loadVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 // toType (which switches on the type kind) already yields the unqualified Go
 // type without any special casing here.
 func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
-	origName := nameWithNS(clang.String(decl), ns)
+	localName := clang.String(decl)
+	if varHasInitExpr(ctx, decl) {
+		ctx.logf(decl, "var %s: has initialized expression, skipped", localName)
+		return
+	}
+
 	manglingName := clang.Mangling(decl)
 	if _, ok := ctx.nameLookup(manglingName); !ok {
-		ctx.logf(decl, "var %s: symbol not found in lib files, skipped", clang.String(decl))
+		ctx.logf(decl, "var %s: symbol not found in lib files, skipped", localName)
 		return
 	}
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 
+	origName := nameWithNS(localName, ns)
 	typ := toType(ctx, pkgTypes, decl.Type(), flagIsVarDef, nil)
 	if debugCompileDecl {
 		kind := "var"
@@ -70,12 +77,25 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 		log.Println(kind, origName, "-", clang.String(decl.Type()))
 	}
 
-	name := ctx.varName(origName)
-
+	goName := ctx.varName(origName)
 	ctx.forceImportUnsafe()
 	defs := pkg.NewVarDefs(pkgTypes.Scope()).SetComments(
-		ctx.directiveComments(decl, "\n//go:linkname "+name+" C."+manglingName))
-	defs.New(goNodePos(ctx, decl), typ, name)
+		ctx.directiveComments(decl, "\n//go:linkname "+goName+" C."+manglingName))
+	defs.New(goNodePos(ctx, decl), typ, goName)
+}
+
+func varHasInitExpr(_ *pkgCtx, v clang.Cursor) (hasInitExpr bool) {
+	clang.VisitChildren(v, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		switch decl.Kind {
+		case lc.Cursor_InitListExpr, lc.Cursor_CallExpr:
+			hasInitExpr = true
+			return clang.Break
+		default:
+			// ctx.panicf(decl, "varHasInitExpr: unknown kind - %v", decl.Kind)
+		}
+		return clang.Continue
+	})
+	return
 }
 
 // -----------------------------------------------------------------------------
