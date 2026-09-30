@@ -43,26 +43,39 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	origName := nameWithNS(name, ns)
 	anonymous := decl.IsAnonymous() != 0
 	scoped := decl.EnumDeclIsScoped() != 0
+	definition := decl.IsCursorDefinition() != 0 // TODO(xsw): rename to IsDefinition
 	typ := decl.EnumDeclIntegerType()
 	if debugCompileDecl {
-		log.Println("enum", origName, clang.String(typ), "anonymous:", anonymous, "scoped:", scoped)
+		log.Println(
+			"enum", origName, clang.String(typ), "anonymous:", anonymous,
+			"scoped:", scoped, "definition:", definition)
 	}
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 
+	var ok bool
+	var typDecl typDecl
 	var enumType types.Type
 	if !anonymous {
-		typDefs := pkg.NewTypeDefs()
-		if doc := ctx.docCommentGroup(decl); doc != nil {
-			typDefs.SetComments(doc)
+		typDecl, ok = ctx.typdecls[origName]
+		if !ok {
+			clsName := ctx.typeName(origName, true)
+			typDecl = newType(ctx, decl, clsName, tagEnum)
+			ctx.typdecls[origName] = typDecl
+
+			underType := toType(ctx, pkgTypes, typ, flagIsTypeDef, nil)
+			typDecl.InitType(pkg, underType)
 		}
-		typeName := ctx.typeName(origName, true)
-		typDecl := typDefs.NewType(typeName, goNode(ctx, decl))
-		underType := toType(ctx, pkgTypes, typ, flagIsTypeDef, nil)
-		typNamed := typDecl.InitType(pkg, underType)
-		ctx.addType(tagEnum, decl, typNamed)
-		enumType = typNamed
+	}
+	if !definition {
+		return // declaration only, no definition
+	}
+	if !anonymous {
+		if doc := ctx.docCommentGroup(decl); doc != nil {
+			typDecl.defs.SetComments(doc)
+		}
+		enumType = typDecl.Type()
 	}
 
 	defs := pkg.NewConstDefs(pkgTypes.Scope())

@@ -12,6 +12,7 @@
 #define FVAL  (TRUE * 3.14)
 
 #define MASK  (~FALSE)
+#define MASK2 (~FALSE)
 #define TWO   (THREE * TRUE + -TRUE)
 
 typedef char BOOL, *PBOOL;

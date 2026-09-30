@@ -1,6 +1,15 @@
-enum Global {
+enum Global : int;
+
+enum Global : int {
 	GA,
 	GB
+};
+
+enum class Local : int;
+
+enum class Local : int {
+	LA,
+	LB
 };
 
 namespace bar {

@@ -136,6 +136,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		TypeAbbrSuffix: conf.TypeAbbrSuffix,
 		Rename:         conf.Rename,
 		TypeIgnore:     conf.TypeIgnore,
+		MacroIgnore:    conf.MacroIgnore,
 		NSIgnore:       conf.NSIgnore,
 		NameLookup:     nil,
 		PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {

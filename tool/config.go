@@ -44,10 +44,11 @@ type Config struct {
 	MacroPrefix    []string          `json:"MacroPrefix"`    // macro prefix to remove
 	TypePrefix     []string          `json:"TypePrefix"`     // type prefix to remove
 	TypeSuffix     []string          `json:"TypeSuffix"`     // type suffix to remove
-	TypeAbbrSuffix []string          `json:"TypeAbbrSuffix"` // type abbr suffix to remove, only valid for types that is not in TypeAbbr
-	TypeAbbr       map[string]string `json:"TypeAbbr"`       // Go type name to its abbr, used in function names
+	TypeAbbrSuffix []string          `json:"TypeAbbrSuffix"` // type abbr suffix to remove, only valid for types that are not present in TypeAbbr
+	TypeAbbr       map[string]any    `json:"TypeAbbr"`       // Go type name to its abbr(s), used in function names
 	Rename         map[string]string `json:"Rename"`         // renaming of C/C++ names to Go names
 	TypeIgnore     []string          `json:"TypeIgnore"`     // C/C++ type names to ignore
+	MacroIgnore    []string          `json:"MacroIgnore"`    // C/C++ macro names to ignore
 	NSIgnore       []string          `json:"NSIgnore"`       // namespaces (Go style names) to ignore
 	Pkgs           []string          `json:"Pkgs"`           // sub-packages to generate, optional
 }

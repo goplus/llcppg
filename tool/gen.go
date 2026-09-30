@@ -95,26 +95,43 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		return
 	}
 
-	fset := token.NewFileSet()
-	imp := packages.NewImporter(fset, workDir)
-
-	deps := cfg.Deps
-	if len(deps) > 0 {
-		c := cache.New(pkgHash)
-		c.Prepare(workDir, deps...)
-		imp.SetCache(c)
-	}
-
 	stdlibDirs := cfg.StdlibDirs(workDir)
 	if debugSettings {
 		log.Println("==> stdlibDirs:", stdlibDirs)
 	}
 
-	incDirs, pkgPaths := mod.includeDirs(deps, 1, 1+len(stdlibDirs))
-	for _, stdlibDir := range stdlibDirs {
-		incDirs = append(incDirs, stdlibDir)
-		pkgPaths = append(pkgPaths, "github.com/goplus/lib/c")
+	const (
+		stdlibPkgPath = "github.com/goplus/lib/c"
+		llarhubPrefix = "github.com/llarhub/"
+	)
+
+	nTotal := 1 + len(cfg.Deps) + len(stdlibDirs)
+	pkgPaths := make([]string, 1, nTotal)
+	incDirs := make([]string, 1, nTotal)
+	for _, dep := range cfg.Deps {
+		if !strings.Contains(dep, "/") {
+			dep = llarhubPrefix + dep
+		}
+		incDir, err := mod.IncludeDir(dep)
+		if err != nil {
+			log.Println("[WARN]", err)
+			continue
+		}
+		pkgPaths = append(pkgPaths, dep)
+		incDirs = append(incDirs, incDir)
 	}
+	nDeps := len(pkgPaths)
+	for _, stdlibDir := range stdlibDirs {
+		pkgPaths = append(pkgPaths, stdlibPkgPath)
+		incDirs = append(incDirs, stdlibDir)
+	}
+
+	fset := token.NewFileSet()
+	imp := packages.NewImporter(fset, workDir)
+
+	c := cache.New(pkgHash)
+	c.Prepare(workDir, pkgPaths[1:nDeps+1]...)
+	imp.SetCache(c)
 
 	dir := cfg.Dir
 	recursive := strings.HasSuffix(dir, "/...")
@@ -178,6 +195,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		TypeAbbrSuffix: cfg.TypeAbbrSuffix,
 		Rename:         cfg.Rename,
 		TypeIgnore:     cfg.TypeIgnore,
+		MacroIgnore:    cfg.MacroIgnore,
 		NSIgnore:       cfg.NSIgnore,
 		DefaultGoFile:  "llcppg.i.go",
 		UseStdRecvName: true,
@@ -275,23 +293,6 @@ func (p Module) IncludeDir(modPath string) (includeDir string, err error) {
 		return
 	}
 	return rootDir + includeSuffix, nil
-}
-
-// includeDirs returns the include directories and package paths for the given dependencies.
-// The reserved parameter specifies the number of reserved slots in the returned slices.
-func (p Module) includeDirs(deps []string, n, reserved int) (incDirs, pkgPaths []string) {
-	incDirs = make([]string, n, len(deps)+reserved)
-	pkgPaths = make([]string, n, len(deps)+reserved)
-	for _, dep := range deps {
-		incDir, err := p.IncludeDir(dep)
-		if err != nil {
-			log.Println("[WARN]", err)
-			continue
-		}
-		incDirs = append(incDirs, incDir)
-		pkgPaths = append(pkgPaths, dep)
-	}
-	return
 }
 
 // -----------------------------------------------------------------------------

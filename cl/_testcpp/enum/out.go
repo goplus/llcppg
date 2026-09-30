@@ -2,11 +2,18 @@ package foo
 
 import "github.com/goplus/lib/c"
 
-type Global c.Uint
+type Global c.Int
 
 const (
 	GA Global = 0
 	GB Global = 1
+)
+
+type Local c.Int
+
+const (
+	Local_LA Local = 0
+	Local_LB Local = 1
 )
 
 type BarColor c.Uint

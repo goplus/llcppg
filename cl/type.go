@@ -164,6 +164,8 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		if t, ok := scope.lookupType(name); ok {
 			return t
 		}
+	case lc.Type_LongDouble:
+		return ctx.basicTyp(cLongDouble)
 	case lc.Type_BlockPointer:
 		ctx.logtf(typ, "type %s: C blocks (closures) are unsupported, ignored", clang.String(typ))
 		*feats |= featIgnored
@@ -239,21 +241,23 @@ const (
 	cFloat
 	cDouble
 	cPointer
+	cLongDouble
 	cBasicMax
 )
 
 var ctypBasic = [cBasicMax]string{
-	cVoid:      "Void",
-	cChar:      "Char",
-	cInt:       "Int",
-	cUint:      "Uint",
-	cLong:      "Long",
-	cUlong:     "Ulong",
-	cLongLong:  "LongLong",
-	cUlongLong: "UlongLong",
-	cFloat:     "Float",
-	cDouble:    "Double",
-	cPointer:   "Pointer",
+	cVoid:       "Void",
+	cChar:       "Char",
+	cInt:        "Int",
+	cUint:       "Uint",
+	cLong:       "Long",
+	cUlong:      "Ulong",
+	cLongLong:   "LongLong",
+	cUlongLong:  "UlongLong",
+	cFloat:      "Float",
+	cDouble:     "Double",
+	cPointer:    "Pointer",
+	cLongDouble: "LongDouble",
 }
 
 // -----------------------------------------------------------------------------

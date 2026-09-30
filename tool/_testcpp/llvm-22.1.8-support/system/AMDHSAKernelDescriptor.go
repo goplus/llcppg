@@ -276,18 +276,18 @@ const (
 )
 
 type AMDHSAKernelDescriptor struct {
-	GroupSegmentFixedSize     c.Int
-	PrivateSegmentFixedSize   c.Int
-	KernargSize               c.Int
-	Reserved0                 [4]c.Int
-	KernelCodeEntryByteOffset c.Int
-	Reserved1                 [20]c.Int
-	ComputePgmRsrc3           c.Int
-	ComputePgmRsrc1           c.Int
-	ComputePgmRsrc2           c.Int
-	KernelCodeProperties      c.Int
-	KernargPreload            c.Int
-	Reserved3                 [4]c.Int
+	GroupSegmentFixedSize     c.Uint32T
+	PrivateSegmentFixedSize   c.Uint32T
+	KernargSize               c.Uint32T
+	Reserved0                 [4]c.Uint8T
+	KernelCodeEntryByteOffset c.Int64T
+	Reserved1                 [20]c.Uint8T
+	ComputePgmRsrc3           c.Uint32T
+	ComputePgmRsrc1           c.Uint32T
+	ComputePgmRsrc2           c.Uint32T
+	KernelCodeProperties      c.Uint16T
+	KernargPreload            c.Uint16T
+	Reserved3                 [4]c.Uint8T
 }
 
 const (
