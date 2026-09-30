@@ -21,7 +21,6 @@ import (
 	"go/types"
 	"log"
 	"maps"
-	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -149,13 +148,11 @@ type Config struct {
 	// DefaultGoFile specifies default file name (optional).
 	DefaultGoFile string
 
-	// SourceHeaderFilePrefix specifies the prefix of the source header files. It is required
-	// when GenMultiGoFiles is true, and it is used to generate Go file names for each header
-	// file. If GenMultiGoFiles is false, this field is ignored.
-	SourceHeaderFilePrefix string
-
-	// GenMultiGoFiles specifies whether to generate multiple Go files for each header file.
-	GenMultiGoFiles bool
+	// GoFileOf returns the Go file name for a given header file (optional). If ok is false,
+	// it means we don't know the Go file name for the header file and this header file will
+	// be skipped. If not specified, llcppg will use the default Go file name (DefaultGoFile)
+	// for all header files.
+	GoFileOf func(headerFile string) (string, bool)
 
 	// UseStdRecvName specifies whether to use a standard receiver name (self) for C functions
 	// converted to Go methods (optional). If false, the receiver name is taken from the first
@@ -226,7 +223,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		macroVals: make(map[string]any), types: make(map[string]typeObj),
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
-	loadFiles(ctx, files, pkgPath, conf.SourceHeaderFilePrefix, conf.GenMultiGoFiles)
+	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
 	ctx.compile()
 	for _, typDecl := range typdecls {
 		if !typDecl.Inited() {
@@ -245,7 +242,7 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 
 // -----------------------------------------------------------------------------
 
-func loadFiles(ctx *pkgCtx, files []Source, myPkgPath, srcFilePrefix string, genMultiGoFiles bool) {
+func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(headerFile string) (string, bool)) {
 	pkg := ctx.pkg
 	pkgOf := ctx.pkgOf
 	scope := &ctx.scopeCtx
@@ -262,17 +259,10 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath, srcFilePrefix string, gen
 				if !ok || pkgPath != myPkgPath {
 					return clang.Continue
 				}
-				if genMultiGoFiles {
-					const goFileExt = ".go"
-					fname, ok := strings.CutPrefix(at, srcFilePrefix)
+				if goFileOf != nil {
+					fname, ok := goFileOf(at)
 					if !ok {
 						return clang.Continue
-					}
-					fname = strings.ReplaceAll(fname, "/", "-")
-					if pos := strings.LastIndex(fname, "."); pos >= 0 {
-						fname = fname[:pos] + goFileExt
-					} else {
-						fname += goFileExt
 					}
 					pkg.SetCurFile(fname, true)
 				}

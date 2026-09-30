@@ -149,29 +149,28 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 	}
 	defer DisposeSources(files)
 
+	srcFilePrefix := dir + string(os.PathSeparator)
 	ret, err = cl.NewPackage(pkgPath, cfg.Name, files, &cl.Config{
-		Fset:                   fset,
-		Importer:               imp,
-		LLGoPackage:            cfg.LLGoPackage,
-		Language:               lang,
-		CFlags:                 cfg.CFlags,
-		Class:                  cfg.Class,
-		NonClass:               cfg.NonClass,
-		FuncPrefix:             cfg.FuncPrefix,
-		VarPrefix:              cfg.VarPrefix,
-		EnumPrefix:             cfg.EnumPrefix,
-		MacroPrefix:            cfg.MacroPrefix,
-		TypePrefix:             cfg.TypePrefix,
-		TypeAbbr:               cfg.TypeAbbr,
-		Rename:                 cfg.Rename,
-		TypeIgnore:             cfg.TypeIgnore,
-		NSIgnore:               cfg.NSIgnore,
-		DefaultGoFile:          "llcppg.i.go",
-		SourceHeaderFilePrefix: dir + string(os.PathSeparator),
-		GenMultiGoFiles:        true,
-		UseStdRecvName:         true,
-		NameLookup:             nil,
-		PubFileLookup:          mod.PubFileLookup,
+		Fset:           fset,
+		Importer:       imp,
+		LLGoPackage:    cfg.LLGoPackage,
+		Language:       lang,
+		CFlags:         cfg.CFlags,
+		Class:          cfg.Class,
+		NonClass:       cfg.NonClass,
+		FuncPrefix:     cfg.FuncPrefix,
+		VarPrefix:      cfg.VarPrefix,
+		EnumPrefix:     cfg.EnumPrefix,
+		MacroPrefix:    cfg.MacroPrefix,
+		TypePrefix:     cfg.TypePrefix,
+		TypeAbbr:       cfg.TypeAbbr,
+		Rename:         cfg.Rename,
+		TypeIgnore:     cfg.TypeIgnore,
+		NSIgnore:       cfg.NSIgnore,
+		DefaultGoFile:  "llcppg.i.go",
+		UseStdRecvName: true,
+		NameLookup:     nil,
+		PubFileLookup:  mod.PubFileLookup,
 		PackageOf: func(headerFile string) (pkgPath string, ok bool) {
 			for i, includeDir := range incDirs {
 				if strings.HasPrefix(headerFile, includeDir) {
@@ -180,7 +179,25 @@ func (cfg *Config) NewPackage(pkgPath, workDir string, index clang.Index) (ret c
 			}
 			return
 		},
+		GoFileOf: func(headerFile string) (fname string, ok bool) {
+			return goFileOf(headerFile, srcFilePrefix)
+		},
 	})
+	return
+}
+
+func goFileOf(at, srcFilePrefix string) (fname string, ok bool) {
+	const pathSep = string(os.PathSeparator)
+	const goFileExt = ".go"
+	fname, ok = strings.CutPrefix(at, srcFilePrefix)
+	if ok {
+		fname = strings.ReplaceAll(fname, pathSep, "-")
+		if pos := strings.LastIndex(fname, "."); pos >= 0 {
+			fname = fname[:pos] + goFileExt
+		} else {
+			fname += goFileExt
+		}
+	}
 	return
 }
 
