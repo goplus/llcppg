@@ -131,6 +131,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		MacroPrefix: conf.MacroPrefix,
 		VarPrefix:   conf.VarPrefix,
 		TypePrefix:  conf.TypePrefix,
+		TypeSuffix:  conf.TypeSuffix,
 		TypeAbbr:    conf.TypeAbbr,
 		Rename:      conf.Rename,
 		TypeIgnore:  conf.TypeIgnore,
@@ -280,10 +281,6 @@ func TestCpp_LLVMSystem(t *testing.T) {
 
 func TestLLVM_AMDGPUAddrSpace(t *testing.T) {
 	testFromDir(t, "AMDGPUAddrSpace", "./_testcpp", true, "system")
-}
-
-func TestLLVM_AMDHSAKernelDescriptor(t *testing.T) {
-	testFromDir(t, "AMDHSAKernelDescriptor", "./_testcpp", true, "system")
 }
 
 func TestLLVM_AtomicOrdering(t *testing.T) {

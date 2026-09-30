@@ -123,6 +123,7 @@ type pkgCtx struct {
 	enumPrefix  []string
 	macroPrefix []string
 	typePrefix  []string
+	typeSuffix  []string
 	classes     []string          // typedef names to be treated as classes
 	nonClasses  []string          // typedef names to be treated as non-classes
 	typeAbbr    map[string]string // Go type name => abbreviated name, used in function names
@@ -308,7 +309,12 @@ func (p *pkgCtx) enumvalName(name, ns string) string {
 }
 
 func (p *pkgCtx) typeName(name string, _ bool) string {
-	return p.globalName(name, p.typePrefix)
+	if v, ok := p.rename[name]; ok {
+		return v // special case
+	}
+	name = rmPrefix(name, p.typePrefix)
+	name = rmSuffix(name, p.typeSuffix)
+	return p.cstyleToGo(name, true)
 }
 
 func (p *pkgCtx) funcName(name string, order int, typName, typCName string, global, _ bool) string {
@@ -441,6 +447,15 @@ func rmPrefix(name string, prefix []string) string {
 	for _, pfx := range prefix {
 		if strings.HasPrefix(name, pfx) {
 			return name[len(pfx):]
+		}
+	}
+	return name
+}
+
+func rmSuffix(name string, suffix []string) string {
+	for _, sfx := range suffix {
+		if strings.HasSuffix(name, sfx) {
+			return name[:len(name)-len(sfx)]
 		}
 	}
 	return name

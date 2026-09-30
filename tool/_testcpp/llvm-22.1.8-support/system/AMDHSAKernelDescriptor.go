@@ -275,7 +275,7 @@ const (
 	AMDHSA_KERNARG_PRELOAD_SPEC_OFFSET       = 65408
 )
 
-type AMDHSAKernelDescriptorT struct {
+type AMDHSAKernelDescriptor struct {
 	GroupSegmentFixedSize     c.Int
 	PrivateSegmentFixedSize   c.Int
 	KernargSize               c.Int

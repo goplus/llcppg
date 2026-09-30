@@ -173,6 +173,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		EnumPrefix:     cfg.EnumPrefix,
 		MacroPrefix:    cfg.MacroPrefix,
 		TypePrefix:     cfg.TypePrefix,
+		TypeSuffix:     cfg.TypeSuffix,
 		TypeAbbr:       cfg.TypeAbbr,
 		Rename:         cfg.Rename,
 		TypeIgnore:     cfg.TypeIgnore,

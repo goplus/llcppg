@@ -43,6 +43,7 @@ type Config struct {
 	EnumPrefix  []string          `json:"EnumPrefix"`  // enum value prefix to remove
 	MacroPrefix []string          `json:"MacroPrefix"` // macro prefix to remove
 	TypePrefix  []string          `json:"TypePrefix"`  // type prefix to remove
+	TypeSuffix  []string          `json:"TypeSuffix"`  // type suffix to remove
 	TypeAbbr    map[string]string `json:"TypeAbbr"`    // Go type name to its abbr, used in function names
 	Rename      map[string]string `json:"Rename"`      // renaming of C/C++ names to Go names
 	TypeIgnore  []string          `json:"TypeIgnore"`  // C/C++ type names to ignore
