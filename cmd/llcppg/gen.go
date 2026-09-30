@@ -57,6 +57,12 @@ func Gen(destDir, srcDir string, index clang.Index) (err error) {
 			errPkgCnt++
 			continue
 		}
+		if !strings.HasPrefix(subConf.Name, "/") {
+			fmt.Fprintf(os.Stderr,
+				"sub package %s: name must start with / but got %s\n", pkgSel, subConf.Name)
+			errPkgCnt++
+			continue
+		}
 		subConf.Apply(&cfg)
 		errPkgCnt += convPkg(destDir, srcDir, mainPkgName, index, &subConf)
 	}

@@ -28,7 +28,7 @@ import (
 // -----------------------------------------------------------------------------
 
 type Config struct {
-	Name        string            `json:"Name"`        // required, sub package name should starts with '/'
+	Name        string            `json:"Name"`        // required, sub package name should start with '/'
 	Language    string            `json:"Language"`    // c, c++, etc. required
 	Dir         string            `json:"Dir"`         // dir or dir/... (recursive), required
 	Files       []string          `json:"Files"`       // selected header files relative to Dir; overrides auto-discovery, optional.
