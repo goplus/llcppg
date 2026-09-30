@@ -29,18 +29,18 @@ import (
 
 const (
 	DbgFlagCompileDecl = 1 << iota
-	DbgFlagImport
-	DbgFlagAll = DbgFlagCompileDecl | DbgFlagImport
+	DbgFlagMajorProc
+	DbgFlagAll = DbgFlagCompileDecl | DbgFlagMajorProc
 )
 
 var (
 	debugCompileDecl bool
-	debugImport      bool
+	debugMajorProc   bool
 )
 
 func SetDebug(flags int) {
 	debugCompileDecl = (flags & DbgFlagCompileDecl) != 0
-	debugImport = (flags & DbgFlagImport) != 0
+	debugMajorProc = (flags & DbgFlagMajorProc) != 0
 }
 
 // -----------------------------------------------------------------------------
@@ -119,9 +119,9 @@ type Config struct {
 	// name will be used in function names (optional).
 	TypeAbbr map[string]string
 
-	// TypePrefix specifies the prefix to remove from C/C++ type names when generating Go
-	// type names (optional).
-	TypePrefix []string
+	// TypePrefix/TypeSuffix specifies the prefix/suffix to remove from C/C++ type names
+	// when generating Go type names (optional).
+	TypePrefix, TypeSuffix []string
 
 	// EnumPrefix specifies the prefix to remove from C/C++ enum value names when generating
 	// Go const names (optional).
@@ -213,8 +213,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
-		typeAbbr: conf.TypeAbbr, typePrefix: conf.TypePrefix, fnPrefix: conf.FuncPrefix,
+		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader, typeAbbr: conf.TypeAbbr,
+		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix, fnPrefix: conf.FuncPrefix,
 		enumPrefix: conf.EnumPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
 		nsIgnores: conf.NSIgnore, typeIgnores: conf.TypeIgnore, rename: rename,
 		classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
@@ -224,12 +224,16 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
-	ctx.compile()
+	// NOTE(xsw): should complete uninitialized typDecls before compiling
+	if debugMajorProc {
+		log.Println("==> complete uninitialized type declarations")
+	}
 	for _, typDecl := range typdecls {
 		if !typDecl.Inited() {
 			typDecl.InitType(pkg, types.NewStruct(nil, nil))
 		}
 	}
+	ctx.compile()
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
 	ret.Public = ctx.pubs

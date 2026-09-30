@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool"
@@ -47,8 +48,11 @@ func main() {
 	if *debug {
 		cl.SetDebug(cl.DbgFlagAll)
 		tool.SetDebug(tool.DbgFlagAll)
+		gogen.SetDebug(gogen.DbgFlagAll)
 	} else if *verbose {
+		cl.SetDebug(cl.DbgFlagMajorProc)
 		tool.SetDebug(tool.DbgFlagSettings)
+		gogen.SetDebug(gogen.DbgFlagInstruction)
 	}
 
 	idx := clang.CreateIndex(1, 1)

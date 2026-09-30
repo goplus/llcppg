@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/token"
 	"go/types"
 	"log"
 	"strconv"
@@ -124,7 +123,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 		}
 	} else {
 		typNamed := this.typNamed
-		recv = types.NewParam(token.NoPos, pkgTypes, "this", types.NewPointer(typNamed))
+		recv = types.NewParam(goNodePos(ctx, fn), pkgTypes, "this", types.NewPointer(typNamed))
 		typName = typNamed.Obj().Name()
 	}
 	fnName := ctx.funcName(origName, obj.order(), typName, typCName, this == nil, true)
@@ -147,7 +146,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 	sig := types.NewSignatureType(recv, nil, nil, types.NewTuple(params...), results, variadic)
 	f, err := pkg.NewFuncWith(goNodePos(ctx, fn), fnName, sig, nil)
 	if err != nil {
-		log.Panicln("compileFunc:", origName, err)
+		panic(err)
 	}
 
 	if recv == nil {
@@ -188,8 +187,7 @@ func existMember(typ *types.Named, name string) bool {
 }
 
 const (
-	llgoSupportAliasAsRecv = true
-	c2goMethodRecvName     = "self"
+	c2goMethodRecvName = "self"
 )
 
 func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named, string) {
@@ -200,8 +198,9 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 			// don't convert to method if the first two params have the same type
 			return params, nil, nil, ""
 		}
-		if tp, ok := t.(*types.Pointer); ok {
-			t = tp.Elem()
+		tPtr, isPtr := t.(*types.Pointer)
+		if isPtr {
+			t = tPtr.Elem()
 		}
 		switch t := t.(type) {
 		case *types.Named:
@@ -216,30 +215,16 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 				break
 			}
 			ta := types.Unalias(t)
-			if tp, ok := ta.(*types.Pointer); ok {
-				ta = tp.Elem()
+			if !isPtr {
+				if tp, ok := ta.(*types.Pointer); ok {
+					ta = tp.Elem()
+				}
 			}
 			if tn, ok := ta.(*types.Named); ok && tn.Obj().Pkg() == pkgTypes {
-				if llgoSupportAliasAsRecv {
-					if ctx.stdRecvName {
-						first = types.NewParam(first.Pos(), pkgTypes, c2goMethodRecvName, first.Type())
-					}
-					return params[1:], first, tn, t.Obj().Name()
-				} else {
-					var recvName string
-					if ctx.stdRecvName {
-						recvName = c2goMethodRecvName
-					} else {
-						recvName = first.Name()
-					}
-					first = types.NewParam(first.Pos(), pkgTypes, recvName, types.Unalias(t))
-					tnObjName := tn.Obj().Name()
-					// add type abbreviation for alias type if not exists
-					if _, ok := ctx.typeAbbr[tnObjName]; !ok {
-						ctx.typeAbbr[tnObjName] = t.Obj().Name()
-					}
-					return params[1:], first, tn, tnObjName
+				if ctx.stdRecvName {
+					first = types.NewParam(first.Pos(), pkgTypes, c2goMethodRecvName, first.Type())
 				}
+				return params[1:], first, tn, t.Obj().Name()
 			}
 		}
 	}
