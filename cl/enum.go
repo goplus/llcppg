@@ -37,8 +37,7 @@ import (
 // affects naming: ns carries the enclosing namespace/class prefix (e.g. "bar_"
 // or "Shape_"), so a constant Red becomes bar_Red / Shape_Red and then goes
 // through getPubName for the final Go name.
-func loadEnum(ctx *pkgCtx, decl clang.Cursor, _ns string) {
-	origName := nameWithNS(clang.String(decl), _ns)
+func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
 	ns := cNS(decl)
 	hasName := decl.IsAnonymous() == 0
 	scoped := decl.EnumDeclIsScoped() != 0
@@ -60,11 +59,11 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, _ns string) {
 	var typDecl typDecl
 	var enumType types.Type
 	if hasName {
-		typDecl, ok = ctx.typdecls[origName]
+		typDecl, ok = ctx.typdecls[cName]
 		if !ok {
 			goName := ctx.typeName(cName, true)
 			typDecl = newType(ctx, decl, goName, tagEnum)
-			ctx.typdecls[origName] = typDecl
+			ctx.typdecls[cName] = typDecl
 
 			feats := 0
 			underType := toTypeEx(ctx, pkgTypes, typ, flagIsTypeDef, &feats, nil)

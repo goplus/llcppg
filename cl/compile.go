@@ -314,13 +314,13 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.Cursor_FunctionDecl:
 		loadGlobalFunc(ctx, scope, decl, ns)
 	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
-		loadClass(ctx, decl, ns, decl.Kind, nil)
+		loadClass(ctx, decl, decl.Kind, nil)
 	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
-		loadTypedef(ctx, decl, ns, nil)
+		loadTypedef(ctx, decl, nil)
 	case lc.Cursor_EnumDecl:
-		loadEnum(ctx, decl, ns)
+		loadEnum(ctx, decl)
 	case lc.Cursor_MacroDefinition:
 		loadMacro(ctx, decl)
 	case lc.Cursor_InclusionDirective:
@@ -338,7 +338,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.Cursor_FunctionTemplate:
 		// TODO(xsw): ignore for now
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
-		loadTemplateClass(ctx, decl, ns, nil)
+		loadTemplateClass(ctx, decl, nil)
 	case lc.Cursor_UnexposedDecl, lc.Cursor_UnexposedAttr:
 		// noop
 	default:

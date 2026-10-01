@@ -25,7 +25,7 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
+func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	cName := clang.String(decl.Type())
 	cFullName := cNameOf(decl)
 	if ctx.isTypeIgnored(cFullName) {

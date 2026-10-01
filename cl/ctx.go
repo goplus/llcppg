@@ -303,7 +303,6 @@ func (p *pkgCtx) isNSIgnored(cName string) bool {
 
 type templateClass struct {
 	cName     string       // c/c++ full name
-	name      string       // go name
 	decl      clang.Cursor // AST object
 	overloads *overloads
 }
@@ -424,7 +423,7 @@ func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
 	return nil, false
 }
 
-func (p *scopeCtx) addTemplateClass(ctx *pkgCtx, name string, decl clang.Cursor) (*templateClass, bool) {
+func (p *scopeCtx) addTemplateClass(ctx *pkgCtx, decl clang.Cursor) (*templateClass, bool) {
 	cName := cNameOf(decl)
 	if debugCompileDecl {
 		ctx.logf(decl, "==> addTemplateClass %s", cName)
@@ -432,15 +431,14 @@ func (p *scopeCtx) addTemplateClass(ctx *pkgCtx, name string, decl clang.Cursor)
 	// TODO(xsw): check if the class is already added
 	obj := &templateClass{
 		cName: cName,
-		name:  name,
 		decl:  decl,
 	}
-	ovs, ok := p.overloads[name]
+	ovs, ok := p.overloads[cName]
 	if ok {
 		ovs.classes = append(ovs.classes, obj)
 	} else {
 		ovs = &overloads{classes: []*templateClass{obj}}
-		p.overloads[name] = ovs
+		p.overloads[cName] = ovs
 	}
 	obj.overloads = ovs
 	return obj, true

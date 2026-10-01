@@ -105,9 +105,8 @@ func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor) (ret []*ty
 	return
 }
 
-func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, ns string, parent *scopeCtx) {
-	origName := nameWithNS(clang.String(cls), ns)
-	if obj, ok := ctx.addTemplateClass(ctx, origName, cls); ok {
+func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) {
+	if obj, ok := ctx.addTemplateClass(ctx, cls); ok {
 		ctx.addCompileUnit(func(ctx *pkgCtx) {
 			compileTemplateClass(ctx, obj, parent)
 		})
@@ -115,7 +114,6 @@ func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, ns string, parent *scopeCt
 }
 
 func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
-	origName := obj.name
 	cName := obj.cName
 	cls := obj.decl
 	order := obj.order()
@@ -133,14 +131,14 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 		return
 	}
 
-	var typDecl, ok = ctx.typdecls[origName]
+	var typDecl, ok = ctx.typdecls[cName]
 	if !ok {
 		if cls.IsCursorDefinition() == 0 || cls.NumTemplateArguments() > 0 {
 			return
 		}
-		goName := ctx.typeName(origName, true)
+		goName := ctx.typeName(cName, true)
 		typDecl = newType(ctx, cls, goName, tagClass)
-		ctx.typdecls[origName] = typDecl
+		ctx.typdecls[cName] = typDecl
 	}
 
 	if cls.IsCursorDefinition() == 0 {
@@ -151,23 +149,22 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 	initClassType(ctx, typDecl, cls, goName, tparams, parent)
 }
 
-func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag, parent *scopeCtx) {
-	origName := nameWithNS(clang.String(cls), ns)
+func loadClass(ctx *pkgCtx, cls clang.Cursor, kind typeTag, parent *scopeCtx) {
 	cName := cNameOf(cls)
 	if debugCompileDecl {
 		ctx.logf(cls, "%s", tagStrvals[kind]+cName)
 	}
 
 	if cls.NumTemplateArguments() > 0 {
-		loadTemplateClass(ctx, cls, ns, parent)
+		loadTemplateClass(ctx, cls, parent)
 		return
 	}
 
-	var typDecl, ok = ctx.typdecls[origName]
+	var typDecl, ok = ctx.typdecls[cName]
 	if !ok {
 		goName := ctx.typeName(cName, true)
 		typDecl = newType(ctx, cls, goName, kind)
-		ctx.typdecls[origName] = typDecl
+		ctx.typdecls[cName] = typDecl
 	}
 
 	if cls.IsCursorDefinition() == 0 {
@@ -323,7 +320,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		// emitted as global consts prefixed by the enclosing class name (the
 		// class name acts like a namespace), e.g. Color_Red.
 		if isPublic(decl) {
-			loadEnum(ctx, decl, goName)
+			loadEnum(ctx, decl)
 		}
 
 	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
@@ -332,7 +329,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		// prefixed by the enclosing class name (the class name acts like a
 		// namespace), e.g. Bar_iterator.
 		if isPublic(decl) {
-			loadTypedef(ctx, decl, goName, this.scope())
+			loadTypedef(ctx, decl, this.scope())
 		}
 
 	case lc.Cursor_CXXBaseSpecifier:
@@ -363,11 +360,11 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 			// field's type must resolve to a generated Go type. Its own members'
 			// default visibility still follows C++ rules (struct: public,
 			// class: private).
-			loadClass(ctx, decl, goName, decl.Kind, this.scope())
+			loadClass(ctx, decl, decl.Kind, this.scope())
 		}
 
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
-		loadTemplateClass(ctx, decl, goName, this.scope())
+		loadTemplateClass(ctx, decl, this.scope())
 
 	case lc.Cursor_UnionDecl:
 		switch {
