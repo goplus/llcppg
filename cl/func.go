@@ -89,14 +89,14 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 	scope := this.scope()
 	params, variadic := newParams(ctx, pkgTypes, fn, &feats, scope)
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType(), &feats, scope)
-	if feats&featIgnored != 0 {
-		ctx.logf(fn, "func %s: function with unsupported features, skipped", clang.String(fn))
+	if feats&featAllIgnore != 0 {
+		ctx.ignoref(feats, fn, "func %s: function with unsupported features, ignored", clang.String(fn))
 		return
 	}
 
 	if fn.IsFunctionInlined() != 0 {
 		if ctx.cflags == "" {
-			ctx.logf(fn, "func %s: inline function but no CFlags in config, skipped", clang.String(fn))
+			ctx.ignoref(InlineFuncIgnore, fn, "func %s: inline function but no CFlags in config, ignored", clang.String(fn))
 			return
 		}
 		manglingName = wrapInlineFunc(ctx, manglingName, fn, this)

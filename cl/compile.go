@@ -30,17 +30,20 @@ import (
 const (
 	DbgFlagCompileDecl = 1 << iota
 	DbgFlagMajorProc
-	DbgFlagAll = DbgFlagCompileDecl | DbgFlagMajorProc
+	DbgFlagQuietIgnore
+	DbgFlagAll = DbgFlagCompileDecl | DbgFlagMajorProc | DbgFlagQuietIgnore
 )
 
 var (
 	debugCompileDecl bool
 	debugMajorProc   bool
+	debugQuietIgnore bool
 )
 
 func SetDebug(flags int) {
 	debugCompileDecl = (flags & DbgFlagCompileDecl) != 0
 	debugMajorProc = (flags & DbgFlagMajorProc) != 0
+	debugQuietIgnore = (flags & DbgFlagQuietIgnore) != 0
 }
 
 // -----------------------------------------------------------------------------

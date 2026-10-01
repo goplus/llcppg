@@ -51,6 +51,7 @@ type Config struct {
 	MacroIgnore    []string          `json:"MacroIgnore"`    // C/C++ macro names to ignore
 	NSIgnore       []string          `json:"NSIgnore"`       // namespaces (Go style names) to ignore
 	Pkgs           []string          `json:"Pkgs"`           // sub-packages to generate, optional
+	IgnoreInline   bool              `json:"IgnoreInline"`   // quietly ignore inline functions
 	GroupSubdir    bool              `json:"GroupSubdir"`    // treats sub-directory files as a single file
 }
 

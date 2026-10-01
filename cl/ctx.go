@@ -159,6 +159,12 @@ type pkgCtx struct {
 	keepDoc     bool
 }
 
+func (p *pkgCtx) ignoref(feats int, decl clang.Cursor, format string, args ...any) {
+	if feats&featQuietIgnore == 0 || debugQuietIgnore {
+		p.logf(decl, format, args...)
+	}
+}
+
 func (p *pkgCtx) logf(decl clang.Cursor, format string, args ...any) {
 	pos := p.fset.Position(goNodePos(p, decl))
 	log.Printf("%s: %s", pos, fmt.Sprintf(format, args...))
@@ -271,9 +277,9 @@ func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named)
 	}
 }
 
-func (p *pkgCtx) ignoreType(cName string) {
+func (p *pkgCtx) ignoreType(cName string, feats int) {
 	if _, ok := p.types[cName]; !ok {
-		p.types[cName] = typeObj{nil, featIgnored}
+		p.types[cName] = typeObj{nil, feats}
 	}
 }
 

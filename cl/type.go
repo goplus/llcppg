@@ -58,13 +58,23 @@ func newPointer(ctx *pkgCtx, typ types.Type) types.Type {
 
 const (
 	featHasCallback = 1 << iota
-	featIgnored
+	featExplicitIgnore
+	featQuietIgnore
+	featAllIgnore = featExplicitIgnore | featQuietIgnore
+)
+
+const (
+	QuietIgnoreInline = featQuietIgnore
+)
+
+var (
+	InlineFuncIgnore = featExplicitIgnore
 )
 
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, scope *scopeCtx) types.Type {
 	var feats int
 	ret := toTypeEx(ctx, pkg, typ, flags, &feats, scope)
-	if feats&featIgnored != 0 {
+	if feats&featAllIgnore != 0 {
 		panic("unsupported type - " + clang.String(typ))
 	}
 	return ret
@@ -129,7 +139,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		if o, ok := ctx.types[cName]; ok {
 			if o.feats != 0 {
 				*feats |= o.feats
-				if o.feats&featIgnored != 0 {
+				if o.feats&featAllIgnore != 0 {
 					return types.Typ[types.Invalid] // ignored type
 				}
 			}
@@ -168,13 +178,13 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		return ctx.basicTyp(cLongDouble)
 	case lc.Type_BlockPointer:
 		ctx.logtf(typ, "type %s: C blocks (closures) are unsupported, ignored", clang.String(typ))
-		*feats |= featIgnored
+		*feats |= featQuietIgnore // will always be ignored
 		return types.Typ[types.Invalid]
 	default:
 		ctx.logtf(typ, "toType: unknown kind - %v", typ.Kind)
 	}
 	ctx.logtf(typ, "unsupported type - %s", clang.String(typ))
-	*feats |= featIgnored
+	*feats |= featExplicitIgnore
 	return types.Typ[types.Invalid]
 }
 

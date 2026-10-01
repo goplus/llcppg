@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool"
 	"github.com/qiniu/x/errors"
@@ -43,6 +44,10 @@ func Gen(destDir, srcDir string, index clang.Index) (err error) {
 		return
 	}
 	mainPkgName := cfg.Name
+
+	if cfg.IgnoreInline {
+		cl.InlineFuncIgnore = cl.QuietIgnoreInline // quiet ignore inline functions
+	}
 
 	if len(cfg.Pkgs) == 0 {
 		return genPkg(destDir, srcDir, mainPkgName, index, &cfg)

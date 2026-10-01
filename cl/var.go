@@ -78,7 +78,7 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 
 	feats := 0
 	typ := toTypeEx(ctx, pkgTypes, decl.Type(), flagIsVarDef, &feats, nil)
-	if feats&featIgnored != 0 {
+	if feats&featAllIgnore != 0 {
 		ctx.logf(decl, "var %s: unsupported type, skipped", origName)
 		return
 	}
