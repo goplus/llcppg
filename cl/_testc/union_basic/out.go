@@ -30,6 +30,8 @@ type BigFloat struct {
 }
 type Empty struct {
 }
+type Opaque struct {
+}
 
 func (p *Value) XGof_ref_i() *c.Int {
 	return (*c.Int)(unsafe.Pointer(p))

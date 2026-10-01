@@ -52,36 +52,40 @@ const unionRefPrefix = "XGof_ref_"
 // affects naming: ns carries the enclosing prefix, so the union type name goes
 // through getPubName like a struct's.
 func loadUnion(ctx *pkgCtx, decl clang.Cursor) {
-	if decl.IsCursorDefinition() == 0 {
-		return
-	}
-
 	cName := cNameOf(decl)
 	if debugCompileDecl {
 		ctx.logf(decl, "union %s", cName)
 	}
 
-	goName := ctx.typeName(cName, true)
-	emitUnion(ctx, decl, goName)
+	var typDecl, ok = ctx.typdecls[cName]
+	if !ok {
+		goName := ctx.typeName(cName, true)
+		typDecl = newType(ctx, decl, cName, goName)
+		ctx.typdecls[cName] = typDecl
+	}
+
+	if decl.IsCursorDefinition() == 0 {
+		return // declaration only, no definition
+	}
+
+	initUnionType(ctx, decl, typDecl)
 }
 
 func emitUnion(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
-	pkg := ctx.pkg
-	typDefs := pkg.NewTypeDefs()
-	if doc := ctx.docCommentGroup(decl); doc != nil {
-		typDefs.SetComments(doc)
-	}
-	typDecl := typDefs.NewType(goName, goNode(ctx, decl))
-	typNamed := typDecl.Type()
-	ctx.addType(decl, typNamed)
+	typDecl := newType(ctx, decl, "", goName)
+	initUnionType(ctx, decl, typDecl)
+	return typDecl.Type()
+}
 
+func initUnionType(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl) {
+	pkg := ctx.pkg
 	typ := decl.Type()
 	storage, ok := unionStorageType(typ)
 	if !ok {
 		// A union with no body (GNU empty union) has no storage: emit an empty
 		// struct with no accessors.
 		typDecl.InitType(pkg, types.NewStruct(nil, nil))
-		return typNamed
+		return
 	}
 	typDecl.InitType(pkg, unionStruct(ctx, decl, storage))
 
@@ -99,13 +103,12 @@ func emitUnion(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
 		return clang.Continue
 	})
 
-	recvPtr := types.NewPointer(typNamed)
+	recvPtr := types.NewPointer(typDecl.Type())
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		for _, m := range members {
 			genUnionAccessor(ctx, recvPtr, m)
 		}
 	})
-	return typNamed
 }
 
 // unionStruct builds the "type X struct { _xgo_union <storage> }" definition.

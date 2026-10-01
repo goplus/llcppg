@@ -137,7 +137,7 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 			return
 		}
 		goName := ctx.typeName(cName, true)
-		typDecl = newType(ctx, cls, goName)
+		typDecl = newType(ctx, cls, cName, goName)
 		ctx.typdecls[cName] = typDecl
 	}
 
@@ -163,7 +163,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, kind typeTag, parent *scopeCtx) {
 	var typDecl, ok = ctx.typdecls[cName]
 	if !ok {
 		goName := ctx.typeName(cName, true)
-		typDecl = newType(ctx, cls, goName)
+		typDecl = newType(ctx, cls, cName, goName)
 		ctx.typdecls[cName] = typDecl
 	}
 
@@ -175,10 +175,12 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, kind typeTag, parent *scopeCtx) {
 	initClassType(ctx, typDecl, cls, goName, nil, parent)
 }
 
-func newType(ctx *pkgCtx, cls clang.Cursor, goName string) (ret typDecl) {
+func newType(ctx *pkgCtx, cls clang.Cursor, cName, goName string) (ret typDecl) {
 	ret.defs = ctx.pkg.NewTypeDefs()
 	ret.TypeDecl = ret.defs.NewType(goName, goNode(ctx, cls))
-	ctx.addType(cls, ret.Type())
+	if cName != "" {
+		ctx.addType(cName, cls, ret.Type())
+	}
 	return
 }
 
@@ -243,7 +245,7 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, goName stri
 }
 
 func emitClass(ctx *pkgCtx, cls clang.Cursor, goName string, parent *scopeCtx) *types.Named {
-	typDecl := newType(ctx, cls, goName)
+	typDecl := newType(ctx, cls, "", goName)
 	if !initClassType(ctx, typDecl, cls, goName, nil, parent) {
 		ctx.panicf(cls, "class %s: unsupported feature, failed to initialize class", goName)
 	}

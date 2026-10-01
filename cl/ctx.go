@@ -235,15 +235,13 @@ func (p *pkgCtx) basicTyp(kind basicKind) types.Type {
 }
 
 func (p *pkgCtx) aliasTypeName(cName, goName string) {
-	cName = trimTypeTag(cName)
 	if _, ok := p.rename[cName]; !ok {
 		// insert alias name if not already present
 		p.rename[cName] = goName
 	}
 }
 
-func (p *pkgCtx) addType(decl clang.Cursor, typNamed *types.Named) {
-	cName := cNameOf(decl)
+func (p *pkgCtx) addType(cName string, decl clang.Cursor, typNamed *types.Named) {
 	typObj := typeObj{typNamed.Obj(), 0}
 	p.types[cName] = typObj
 	p.aliasTypeName(cName, typObj.Name())
