@@ -120,6 +120,9 @@ type Config struct {
 	// TypeIgnore specifies a list of C/C++ type names to be ignored (optional).
 	TypeIgnore []string
 
+	// TypeAlias specifies a mapping of C/C++ type names to another C/C++ name (optional).
+	TypeAlias map[string]string
+
 	// TypeAbbr specifies a mapping of Go type name to its abbreviated name(s). The abbreviated
 	// name(s) can be a name or name list. They will be used in function names (optional).
 	TypeAbbr map[string]any
@@ -234,7 +237,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
-		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
+		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix, typeAlias: conf.TypeAlias,
 		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix, rename: rename,
 		nsPrefix: conf.NSPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
 		nsIgnore: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnores: conf.TypeIgnore,

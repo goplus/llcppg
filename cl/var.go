@@ -23,32 +23,12 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// loadVar loads a C/C++ variable declaration (a global variable, a variable
-// within a namespace, or a static variable within a class) and schedules it to
-// be compiled into a Go variable.
-//
-// The Go name is prefixed by ns, which encodes the enclosing namespaces and/or
-// class (the class name acts like a namespace, mirroring how static methods are
-// handled). Non-static class member variables are fields, not VarDecls, and are
-// handled separately in loadClassMember.
 func loadVar(ctx *pkgCtx, decl clang.Cursor) {
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		compileVar(ctx, decl)
 	})
 }
 
-// compileVar compiles a C/C++ variable into a Go variable declared with a
-// //go:linkname directive that binds it to the external C/C++ symbol, similar
-// to how a global function is compiled in compileFuncOrMethod.
-//
-// A const-qualified variable (e.g. const int x;) is handled the same way: in
-// terms of C/C++ semantics a const is just an immutable var, and there is no
-// difference in the underlying binding logic. It maps to the same Go var linked
-// to the same C/C++ symbol; Go has no way to express a linkname-bound immutable
-// value, so the const-ness is not reflected in the generated declaration. The
-// const qualifier is a property of the type, not a distinct type kind, so
-// toType (which switches on the type kind) already yields the unqualified Go
-// type without any special casing here.
 func compileVar(ctx *pkgCtx, decl clang.Cursor) {
 	cName := cNameOf(decl)
 	if varHasInitExpr(ctx, decl) {

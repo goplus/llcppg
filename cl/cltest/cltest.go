@@ -30,12 +30,14 @@ import (
 
 // Config represents the lltest configuration.
 type Config struct {
-	LLGoPackage    string   `json:"LLGoPackage"`
-	WrapFileHeader string   `json:"WrapFileHeader"`
-	CFlags         string   `json:"CFlags"`
-	Files          []string `json:"Files"`
-	MacroIgnore    []string `json:"MacroIgnore"`
-	KeepDoc        bool     `json:"KeepDoc"`
+	LLGoPackage     string            `json:"LLGoPackage"`
+	WrapFileHeader  string            `json:"WrapFileHeader"`
+	CFlags          string            `json:"CFlags"`
+	Files           []string          `json:"Files"`
+	TypeAlias       map[string]string `json:"TypeAlias"`
+	MacroIgnore     []string          `json:"MacroIgnore"`
+	LoadLibcPubFile bool              `json:"LoadLibcPubFile"`
+	KeepDoc         bool              `json:"KeepDoc"`
 }
 
 // LoadConf loads the lltest configuration.

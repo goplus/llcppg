@@ -475,7 +475,7 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor, feats *int) *types.TypeName {
 	}
 	switch t.Kind {
 	case lc.Type_Record:
-		cName := clang.String(t.Declaration().Type())
+		cName := cTypeName(t)
 		if t, ok := ctx.typeObj(cName); ok {
 			return t
 		}

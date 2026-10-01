@@ -130,6 +130,7 @@ type pkgCtx struct {
 	nonClasses  []string          // typedef names to be treated as non-classes
 	typeAbbr    map[string]any    // Go type name => abbreviated name(s), used in function names
 	rename      map[string]string // C/C++ name => Go name
+	typeAlias   map[string]string // C/C++ type name => another C/C++ type name
 	typeIgnores []string          // C/C++ type names to be ignored
 	macroIgnore []string          // C/C++ macro names to be ignored
 	nsIgnore    []string          // C/C++ namespace names to be ignored
@@ -258,18 +259,18 @@ func (p *pkgCtx) ignoreType(cName string, feats int) {
 }
 
 func (p *pkgCtx) isTypeIgnored(cName string) bool {
-	return contains(trimTypeTag(cName), p.typeIgnores)
+	return contains(cName, p.typeIgnores)
 }
 
 func (p *pkgCtx) typeObj(cName string) (*types.TypeName, bool) {
-	if o, ok := p.types[cName]; ok {
+	if o, ok := p.types[cName]; ok && o.feats&featQuietIgnore == 0 {
 		return o.TypeName, true
 	}
 	return nil, false
 }
 
 func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
-	if o, ok := p.types[cName]; ok {
+	if o, ok := p.types[cName]; ok && o.feats&featQuietIgnore == 0 {
 		return o.Type(), true
 	}
 	return nil, false
