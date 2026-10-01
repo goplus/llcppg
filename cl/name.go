@@ -37,14 +37,8 @@ func (p *pkgCtx) nextAnonName() string {
 	return name
 }
 
-// -----------------------------------------------------------------------------
-
 func funcUSR(decl clang.Cursor) string {
 	return clang.USR(decl)
-}
-
-func funcDisplayName(decl clang.Cursor) string {
-	return clang.DisplayName(decl)
 }
 
 // -----------------------------------------------------------------------------
@@ -248,33 +242,6 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 		parts[i] = part
 	}
 	return strings.Join(parts, "")
-}
-
-func (p *pkgCtx) nsName(ns, inner string) string {
-	if v, ok := p.rename[inner]; ok {
-		inner = v // special case
-	}
-	return nsName(ns, inner)
-}
-
-func nsName(ns, inner string) string {
-	if ns != "" {
-		c := ns[len(ns)-1]
-		if 'A' <= c && c <= 'Z' {
-			ns += "_"
-		}
-	}
-	if c := inner[0]; 'a' <= c && c <= 'z' {
-		return ns + string(c-'a'+'A') + inner[1:]
-	}
-	return ns + inner
-}
-
-func nameWithNS(name, ns string) string {
-	if ns == "" {
-		return name
-	}
-	return nsName(ns, name)
 }
 
 // -----------------------------------------------------------------------------

@@ -301,7 +301,7 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 					pkg.SetCurFile(fname, true)
 				}
 			}
-			loadDecl(ctx, scope, decl, "")
+			loadDecl(ctx, scope, decl)
 			return clang.Continue
 		})
 		maps.Copy(lastSeen, ctx.thisSeen)
@@ -309,7 +309,7 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 	scope.reorder()
 }
 
-func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
+func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	switch decl.Kind {
 	case lc.Cursor_FunctionDecl:
 		loadGlobalFunc(ctx, scope, decl)
@@ -326,13 +326,13 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.Cursor_InclusionDirective:
 		loadInclude(ctx, decl)
 	case lc.Cursor_Namespace:
-		loadNamespace(ctx, scope, decl, ns)
+		loadNamespace(ctx, scope, decl)
 	case lc.Cursor_VarDecl:
 		loadVar(ctx, decl)
 	case lc.Cursor_UnionDecl:
 		loadUnion(ctx, decl)
 	case lc.Cursor_LinkageSpec: // extern "C" { ... }
-		loadLinkageSpec(ctx, scope, decl, ns)
+		loadLinkageSpec(ctx, scope, decl)
 	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:
 		// noop
 	case lc.Cursor_FunctionTemplate:
@@ -346,8 +346,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	}
 }
 
-func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns string) {
-	ns = ctx.nsName(ns, clang.String(namespace))
+func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor) {
 	cName := cNameOf(namespace)
 	if ctx.isNSIgnored(cName) {
 		if debugCompileDecl {
@@ -356,14 +355,14 @@ func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns stri
 		return
 	}
 	clang.VisitChildren(namespace, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadDecl(ctx, scope, decl, ns)
+		loadDecl(ctx, scope, decl)
 		return clang.Continue
 	})
 }
 
-func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor, ns string) {
+func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor) {
 	clang.VisitChildren(linkage, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadDecl(ctx, scope, decl, ns)
+		loadDecl(ctx, scope, decl)
 		return clang.Continue
 	})
 }

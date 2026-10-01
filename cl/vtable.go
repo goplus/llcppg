@@ -221,7 +221,7 @@ func vtableSlotFunc(ctx *pkgCtx, pkg *types.Package, recvPtr types.Type, fn clan
 //   - A non-public (private/protected) virtual method still occupies a slot but
 //     is rendered as an unexported placeholder, so later slots keep their index
 //     without exposing an inaccessible member.
-func vtableSlots(ctx *pkgCtx, scope *classCtx, cls clang.Cursor) []vtableSlot {
+func vtableSlots(ctx *pkgCtx, _ *classCtx, cls clang.Cursor) []vtableSlot {
 	var slots []vtableSlot
 	if primary, ok := primaryBase(cls); ok {
 		base := primary.Type().Declaration().Definition()
@@ -352,7 +352,7 @@ func vtableMethodName(ctx *pkgCtx, m clang.Cursor) string {
 	if fn, ok := ctx.fns[fnUSR]; ok {
 		return ctx.funcName(fn.cName, fn.order(), "", "", false, true)
 	}
-	panic("vtableMethodName: method not found - " + funcDisplayName(m))
+	panic("vtableMethodName: method not found - " + cNameOf(m))
 }
 
 // placeholderSlotName returns the field name of an anonymous (reserved) slot at

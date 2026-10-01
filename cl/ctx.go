@@ -431,7 +431,7 @@ func (p *scopeCtx) addTemplateClass(ctx *pkgCtx, decl clang.Cursor) (*templateCl
 func (p *scopeCtx) addFunc(ctx *pkgCtx, cName string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
 	fnUSR := funcUSR(decl)
 	if debugCompileDecl {
-		log.Println("==> addFunc", funcDisplayName(decl), "- USR:", fnUSR)
+		ctx.logf(decl, "==> addFunc %s - USR: %s", cName, fnUSR)
 	}
 
 	if fn, ok := ctx.fns[fnUSR]; ok { // re-declared

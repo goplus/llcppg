@@ -493,7 +493,7 @@ func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
 	if m, ok := ctx.fns[fnUSR]; ok {
 		m.decl = outsideDecl
 	} else {
-		ctx.logf(outsideDecl, "[WARN] method undeclared - %s", funcDisplayName(outsideDecl))
+		ctx.logf(outsideDecl, "[WARN] method undeclared - %s", cNameOf(outsideDecl))
 	}
 }
 
