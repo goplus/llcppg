@@ -483,10 +483,11 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor, feats *int) *types.TypeName {
 			return t
 		}
 	case lc.Type_Unexposed:
+		ctx.logf(decl, "baseClass %s: with unexposed type, skipped", clang.String(decl))
 		*feats |= featExplicitIgnore
 		return nil
 	}
-	ctx.panicf(decl, "baseClass: unknown base class type - %s (%d)", clang.String(t), t.Kind)
+	ctx.panicf(decl, "baseClass %s: unknown base class - %s (%d)", clang.String(decl), clang.String(t), t.Kind)
 	return nil
 }
 
