@@ -177,7 +177,6 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	case lc.Type_LongDouble:
 		return ctx.basicTyp(cLongDouble)
 	case lc.Type_BlockPointer:
-		ctx.logtf(typ, "type %s: C blocks (closures) are unsupported, ignored", clang.String(typ))
 		*feats |= featQuietIgnore // will always be ignored
 		return types.Typ[types.Invalid]
 	default:
