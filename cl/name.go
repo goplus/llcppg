@@ -74,13 +74,13 @@ func cNameWithNS(name, ns string) string {
 }
 
 func cNameOf(decl clang.Cursor) string {
-	cName := cTypeName(decl)
+	cName := cLocalName(decl)
 	for {
 		decl = decl.SemanticParent()
 		if decl.Kind == lc.Cursor_TranslationUnit {
 			break
 		}
-		cName = cTypeName(decl) + "::" + cName
+		cName = cLocalName(decl) + "::" + cName
 	}
 	return cName
 }
@@ -91,7 +91,7 @@ func cNS(decl clang.Cursor) (ns string) {
 		if decl.Kind == lc.Cursor_TranslationUnit {
 			return
 		}
-		name := cTypeName(decl)
+		name := cLocalName(decl)
 		if ns == "" {
 			ns = name
 		} else {
@@ -100,8 +100,12 @@ func cNS(decl clang.Cursor) (ns string) {
 	}
 }
 
-func cTypeName(decl clang.Cursor) string {
+func cLocalName(decl clang.Cursor) string {
 	return trimTypeTag(clang.String(decl))
+}
+
+func cTypeName(typ lc.Type) string {
+	return cNameOf(typ.Declaration())
 }
 
 // -----------------------------------------------------------------------------

@@ -244,18 +244,13 @@ func (p *pkgCtx) aliasTypeName(cName, goName string) {
 }
 
 func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named) {
-	var cName string
-	if decl.Kind == lc.Cursor_ClassTemplate { // TODO(xsw): check if this is correct
-		cName = clang.String(decl)
-	} else {
-		cName = clang.String(decl.Type())
-	}
+	cName := cNameOf(decl)
 	typObj := typeObj{typNamed.Obj(), 0}
 	p.types[cName] = typObj
 	p.aliasTypeName(cName, typObj.Name())
 
 	if debugCompileDecl {
-		log.Println("==> addType", cName, typObj.Name())
+		p.logf(decl, "==> addType %s: %v", cName, typNamed)
 	}
 
 	// name of typedef <tag> may be "m" instead of "<tag> m"

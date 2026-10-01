@@ -330,7 +330,7 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	case lc.Cursor_VarDecl:
 		loadVar(ctx, decl, ns)
 	case lc.Cursor_UnionDecl:
-		loadUnion(ctx, decl, ns)
+		loadUnion(ctx, decl)
 	case lc.Cursor_LinkageSpec: // extern "C" { ... }
 		loadLinkageSpec(ctx, scope, decl, ns)
 	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:

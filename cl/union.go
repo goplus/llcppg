@@ -19,7 +19,6 @@ package cl
 import (
 	"fmt"
 	"go/types"
-	"log"
 
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
@@ -52,33 +51,27 @@ const unionRefPrefix = "XGof_ref_"
 // Whether the union is global, in a namespace, or nested inside a class only
 // affects naming: ns carries the enclosing prefix, so the union type name goes
 // through getPubName like a struct's.
-func loadUnion(ctx *pkgCtx, decl clang.Cursor, ns string) {
+func loadUnion(ctx *pkgCtx, decl clang.Cursor) {
 	if decl.IsCursorDefinition() == 0 {
 		return
 	}
 
-	origName := nameWithNS(clang.String(decl), ns)
+	cName := cNameOf(decl)
 	if debugCompileDecl {
-		log.Println("union", origName)
+		ctx.logf(decl, "union %s", cName)
 	}
 
-	uName := ctx.typeName(origName, true)
-	emitUnion(ctx, decl, uName)
+	goName := ctx.typeName(cName, true)
+	emitUnion(ctx, decl, goName)
 }
 
-// emitUnion generates the Go struct "type uName struct { _xgo_union <storage> }"
-// for a union declaration together with its XGof_ref_<member> accessors, and
-// returns the named type. It is shared by loadUnion (named/tagged unions, where
-// uName comes from getPubName) and by the anonymous-union hoisting in
-// loadClassMember (where uName is a "_llcppg_union_<n>" from
-// pkgCtx.nextAnonUnionName). See issue goplus/llcppg#775.
-func emitUnion(ctx *pkgCtx, decl clang.Cursor, uName string) *types.Named {
+func emitUnion(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
 	pkg := ctx.pkg
 	typDefs := pkg.NewTypeDefs()
 	if doc := ctx.docCommentGroup(decl); doc != nil {
 		typDefs.SetComments(doc)
 	}
-	typDecl := typDefs.NewType(uName, goNode(ctx, decl))
+	typDecl := typDefs.NewType(goName, goNode(ctx, decl))
 	typNamed := typDecl.Type()
 	ctx.addType(tagUnion, decl, typNamed)
 

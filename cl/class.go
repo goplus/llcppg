@@ -378,7 +378,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 			// A named nested union is emitted at package level for the same
 			// reason as a named nested class/struct above: a field may use it
 			// as its type even when declared in a private section.
-			loadUnion(ctx, decl, goName)
+			loadUnion(ctx, decl)
 		}
 
 	case lc.Cursor_TemplateTypeParameter, lc.Cursor_NonTypeTemplateParameter,

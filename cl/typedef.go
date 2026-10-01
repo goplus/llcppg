@@ -26,16 +26,15 @@ import (
 // -----------------------------------------------------------------------------
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
-	cName := clang.String(decl.Type())
-	cFullName := cNameOf(decl)
-	if ctx.isTypeIgnored(cFullName) {
-		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", cFullName)
+	cName := cNameOf(decl)
+	if ctx.isTypeIgnored(cName) {
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", cName)
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 
 	if decl.Kind == lc.Cursor_TypeAliasTemplateDecl {
-		ctx.logf(decl, "typedef %s: template type alias, skipped", cFullName)
+		ctx.logf(decl, "typedef %s: template type alias, skipped", cName)
 		return
 	}
 
@@ -43,23 +42,23 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	pkgTypes := pkg.Types
 	underlying := decl.TypedefDeclUnderlyingType()
 	if debugCompileDecl {
-		ctx.logf(decl, "typedef %s (%s) - %s", cFullName, cName, clang.String(underlying))
+		ctx.logf(decl, "typedef %ss: %s", cName, clang.String(underlying))
 	}
 
 	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
 	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
-		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type, ignored", cFullName)
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type, ignored", cName)
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 	if feats&featExplicitIgnore != 0 {
-		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", cFullName)
+		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", cName)
 		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
 
-	goName := ctx.typeName(cFullName, true)
+	goName := ctx.typeName(cName, true)
 	if tn, ok := tunder.(*types.Named); ok {
 		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == goName {
 			return // already defined
