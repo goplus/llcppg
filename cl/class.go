@@ -311,7 +311,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		// by the enclosing class name (the class name acts like a namespace),
 		// mirroring how a static method is handled above.
 		if isPublic(decl) {
-			loadVar(ctx, decl, goName)
+			loadVar(ctx, decl)
 		}
 
 	case lc.Cursor_CXXAccessSpecifier, lc.Cursor_FriendDecl, lc.Cursor_UsingDeclaration:
