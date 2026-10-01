@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/goplus/gogen"
@@ -45,6 +46,7 @@ func main() {
 		srcDir = args[1]
 	}
 
+	log.SetFlags(0)
 	if *debug {
 		cl.SetDebug(cl.DbgFlagAll)
 		tool.SetDebug(tool.DbgFlagAll)

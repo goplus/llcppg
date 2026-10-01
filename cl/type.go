@@ -182,7 +182,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	default:
 		ctx.logtf(typ, "toType: unknown kind - %v", typ.Kind)
 	}
-	ctx.logtf(typ, "unsupported type - %s", clang.String(typ))
+	ctx.logtf(typ, "toType: unsupported type - %s", clang.String(typ))
 	*feats |= featExplicitIgnore
 	return types.Typ[types.Invalid]
 }

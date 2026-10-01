@@ -18,6 +18,7 @@ package cl_test
 
 import (
 	"bytes"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,10 +29,12 @@ import (
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/cl/cltest"
 	"github.com/goplus/llcppg/clang"
+	"github.com/goplus/llcppg/tool"
 	"github.com/qiniu/x/test"
 )
 
 func init() {
+	log.SetFlags(0)
 	cl.SetDebug(cl.DbgFlagAll)
 }
 
@@ -60,12 +63,24 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
+
 	cltest.TestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
 		pkgDir, _ = filepath.Abs(pkgDir)
+
 		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
 		srcFiles := conf.Files
 		if len(srcFiles) == 0 {
 			srcFiles = []string{"in.h"}
+		}
+
+		var mod tool.Module
+		if conf.LoadLibcPubFile {
+			m, err := tool.LoadModuleFrom(pkgDir)
+			if err != nil {
+				t.Errorf("failed to load module: %v", err)
+				return
+			}
+			mod = m
 		}
 
 		files := make([]cl.Source, len(srcFiles))
@@ -84,17 +99,21 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 		rootDir, myPkgName := filepath.Split(pkgDir)
 		imp := packages.NewImporter(nil, rootDir)
 		pkg, err := cl.NewPackage(pkgPrefix+myPkgName, "foo", files, &cl.Config{
-			Importer:       imp,
-			LLGoPackage:    conf.LLGoPackage,
-			Language:       lang,
-			WrapFileHeader: conf.WrapFileHeader,
-			MacroIgnore:    conf.MacroIgnore,
-			CFlags:         conf.CFlags,
-			NameLookup:     nil,
-			DontKeepDoc:    !conf.KeepDoc,
+			Importer:        imp,
+			LLGoPackage:     conf.LLGoPackage,
+			Language:        lang,
+			WrapFileHeader:  conf.WrapFileHeader,
+			TypeAlias:       conf.TypeAlias,
+			MacroIgnore:     conf.MacroIgnore,
+			CFlags:          conf.CFlags,
+			LoadLibcPubFile: conf.LoadLibcPubFile,
+			DontKeepDoc:     !conf.KeepDoc,
+			NameLookup:      nil,
 			PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
 				if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {
 					return filepath.Join(rootDir, name, "llcppg.pub"), true
+				} else if conf.LoadLibcPubFile {
+					return mod.PubFileLookup(pkgPath)
 				}
 				return
 			},
