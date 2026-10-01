@@ -33,7 +33,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 		if debugCompileDecl {
 			log.Println("typedef", cName, "- ignored")
 		}
-		ctx.types[cName] = typeObj{nil, featIgnored} // ignored
+		ctx.ignoreType(cName)
 		return
 	}
 
@@ -54,7 +54,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
 	if feats&featIgnored != 0 || isTypedefUnsupported(tunder) {
 		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", origName)
-		ctx.types[cName] = typeObj{nil, featIgnored} // ignored
+		ctx.ignoreType(cName)
 		return
 	}
 
@@ -72,7 +72,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	}
 	var isClass bool
 	switch tunder {
-	case types.Typ[types.UnsafePointer]:
+	case ctx.unsafePointer():
 		if !contains(cName, ctx.nonClasses) {
 			tunder, isClass = types.Typ[types.Uintptr], true // unsafe.Pointer => uintptr
 		}

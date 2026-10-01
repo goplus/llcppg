@@ -90,7 +90,6 @@ func emitUnion(ctx *pkgCtx, decl clang.Cursor, uName string) *types.Named {
 		typDecl.InitType(pkg, types.NewStruct(nil, nil))
 		return typNamed
 	}
-	ctx.forceImportUnsafe()
 	typDecl.InitType(pkg, unionStruct(ctx, decl, storage))
 
 	// Collect the members that get an accessor, then generate the accessors in
@@ -239,7 +238,7 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 	cb := f.BodyStart(pkg)
 	// return (*T)(unsafe.Pointer(p))
 	cb.Typ(retType).
-		Typ(types.Typ[types.UnsafePointer]).VarVal("p").
+		Typ(ctx.unsafePointer()).VarVal("p").
 		Call(1).
 		Call(1).
 		Return(1).End()

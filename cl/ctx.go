@@ -112,6 +112,7 @@ type pkgCtx struct {
 	c    gogen.PkgRef
 	ctyp [cBasicMax]types.Type
 	tany types.Type
+	tptr types.Type
 
 	cflags string
 	lang   Language
@@ -216,6 +217,13 @@ func (p *pkgCtx) compile() {
 	}
 }
 
+func (p *pkgCtx) unsafePointer() types.Type {
+	if p.tptr == nil {
+		p.tptr = p.pkg.Import("unsafe").Ref("Pointer").Type()
+	}
+	return p.tptr
+}
+
 func (p *pkgCtx) any() types.Type {
 	if p.tany == nil {
 		p.tany = types.Universe.Lookup("any").Type()
@@ -263,6 +271,16 @@ func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named)
 	}
 }
 
+func (p *pkgCtx) ignoreType(cName string) {
+	if _, ok := p.types[cName]; !ok {
+		p.types[cName] = typeObj{nil, featIgnored}
+	}
+}
+
+func (p *pkgCtx) isTypeIgnored(cName string) bool {
+	return contains(trimTypeTag(cName), p.typeIgnores)
+}
+
 func (p *pkgCtx) typeObj(cName string) (*types.TypeName, bool) {
 	if o, ok := p.types[cName]; ok {
 		return o.TypeName, true
@@ -275,10 +293,6 @@ func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
 		return o.Type(), true
 	}
 	return nil, false
-}
-
-func (p *pkgCtx) isTypeIgnored(cName string) bool {
-	return contains(trimTypeTag(cName), p.typeIgnores)
 }
 
 func (p *pkgCtx) isMacroIgnored(name string) bool {

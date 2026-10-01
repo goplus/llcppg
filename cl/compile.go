@@ -161,6 +161,9 @@ type Config struct {
 	// for all header files.
 	GoFileOf func(headerFile string) (string, bool)
 
+	// LoadLibcPubFile specifies whether to load the pubFile for libc package (optional).
+	LoadLibcPubFile bool
+
 	// UseStdRecvName specifies whether to use a standard receiver name (self) for C functions
 	// converted to Go methods (optional). If false, the receiver name is taken from the first
 	// parameter name. This option does not affect C++ instance methods, whose receiver is
@@ -171,6 +174,10 @@ type Config struct {
 	// Go package. If true, the documentation comments will be removed (optional).
 	DontKeepDoc bool
 }
+
+const (
+	libcPkgPath = "github.com/goplus/lib/c"
+)
 
 // -----------------------------------------------------------------------------
 
@@ -206,7 +213,6 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		}, 0, 0, nil, "LLGoPackage")
 	}
 
-	c := pkg.Import("github.com/goplus/lib/c")
 	nameLookup := conf.NameLookup
 	if nameLookup == nil {
 		nameLookup = defaultNameLookup
@@ -218,7 +224,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	typdecls := make(map[string]typDecl)
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
-		llgo: llgo, fset: pkg.Fset, c: c, lang: conf.Language,
+		llgo: llgo, fset: pkg.Fset, lang: conf.Language,
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
@@ -232,16 +238,25 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		macroVals: make(map[string]any), types: make(map[string]typeObj),
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
+
+	if conf.LoadLibcPubFile {
+		ctx.c.Types = ctx.importPkg(libcPkgPath)
+	} else {
+		ctx.c = pkg.Import(libcPkgPath)
+	}
+
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
+
 	// NOTE(xsw): should complete uninitialized typDecls before compiling
 	if debugMajorProc {
 		log.Println("==> complete uninitialized type declarations")
 	}
 	for _, typDecl := range typdecls {
-		if !typDecl.Inited() {
+		if typDecl.State() == gogen.TyStateUninited {
 			typDecl.InitType(pkg, types.NewStruct(nil, nil))
 		}
 	}
+
 	ctx.compile()
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
@@ -310,6 +325,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadVar(ctx, decl, ns)
 	case lc.Cursor_UnionDecl:
 		loadUnion(ctx, decl, ns)
+	case lc.Cursor_LinkageSpec: // extern "C" { ... }
+		loadLinkageSpec(ctx, scope, decl, ns)
 	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:
 		// noop
 	case lc.Cursor_FunctionTemplate:
@@ -332,6 +349,13 @@ func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns stri
 		return
 	}
 	clang.VisitChildren(namespace, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		loadDecl(ctx, scope, decl, ns)
+		return clang.Continue
+	})
+}
+
+func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor, ns string) {
+	clang.VisitChildren(linkage, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadDecl(ctx, scope, decl, ns)
 		return clang.Continue
 	})

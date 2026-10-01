@@ -52,7 +52,6 @@ func main() {
 	} else if *verbose {
 		cl.SetDebug(cl.DbgFlagMajorProc)
 		tool.SetDebug(tool.DbgFlagSettings)
-		gogen.SetDebug(gogen.DbgFlagInstruction)
 	}
 
 	idx := clang.CreateIndex(1, 1)

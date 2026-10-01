@@ -145,9 +145,9 @@ func (p *pkgCtx) forceImportUnsafe() {
 	p.pkg.ForceImport("unsafe")
 }
 
-func (p *pkgCtx) importPkg(pkgPath string) {
+func (p *pkgCtx) importPkg(pkgPath string) *types.Package {
 	if _, ok := p.impPkgs[pkgPath]; ok {
-		return // imported already
+		return nil // imported already
 	}
 	p.impPkgs[pkgPath] = none{}
 
@@ -156,7 +156,7 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 		log.Panicln("[ERROR] pubFile not found for", pkgPath)
 	}
 
-	if debugCompileDecl {
+	if debugMajorProc {
 		log.Println("==> importPkg", pkgPath)
 	}
 
@@ -164,7 +164,7 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 	entries, err := loadPubFile(pubFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return // ignore missing pub file
+			return pkg.Types // ignore missing pub file
 		}
 		log.Panicln("[ERROR] loadPubFile failed:", err)
 	}
@@ -192,6 +192,7 @@ func (p *pkgCtx) importPkg(pkgPath string) {
 			panic("importPkg: unsupport - " + e.Name)
 		}
 	}
+	return pkg.Types
 }
 
 // -----------------------------------------------------------------------------
