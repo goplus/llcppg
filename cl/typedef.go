@@ -27,7 +27,7 @@ import (
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	cName := clang.String(decl.Type())
-	cFullName := cNameOf(decl) // TODO(xsw): use full name with namespace
+	cFullName := cNameOf(decl)
 	if ctx.isTypeIgnored(cFullName) {
 		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", cFullName)
 		ctx.ignoreType(cName, featQuietIgnore)

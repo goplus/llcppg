@@ -120,6 +120,7 @@ type pkgCtx struct {
 
 	typeAbbrSuffix []string
 
+	nsPrefix    []string
 	fnPrefix    []string
 	varPrefix   []string
 	enumPrefix  []string
@@ -132,7 +133,7 @@ type pkgCtx struct {
 	rename      map[string]string // C/C++ name => Go name
 	typeIgnores []string          // C/C++ type names to be ignored
 	macroIgnore []string          // C/C++ macro names to be ignored
-	nsIgnores   []string          // Go style namespace names to be ignored
+	nsIgnore    []string          // C/C++ namespace names to be ignored
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -295,7 +296,7 @@ func (p *pkgCtx) isMacroIgnored(cName string) bool {
 }
 
 func (p *pkgCtx) isNSIgnored(cName string) bool {
-	return contains(cName, p.nsIgnores)
+	return contains(cName, p.nsIgnore)
 }
 
 // -----------------------------------------------------------------------------
@@ -424,7 +425,7 @@ func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
 }
 
 func (p *scopeCtx) addTemplateClass(ctx *pkgCtx, name string, decl clang.Cursor) (*templateClass, bool) {
-	cName := cNameOf(decl) // TODO(xsw): use full name with namespace
+	cName := cNameOf(decl)
 	if debugCompileDecl {
 		ctx.logf(decl, "==> addTemplateClass %s", cName)
 	}

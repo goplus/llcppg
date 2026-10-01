@@ -153,7 +153,7 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 
 func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag, parent *scopeCtx) {
 	origName := nameWithNS(clang.String(cls), ns)
-	cName := cNameOf(cls) // TODO(xsw): use full name with namespace
+	cName := cNameOf(cls)
 	if debugCompileDecl {
 		ctx.logf(cls, "%s", tagStrvals[kind]+cName)
 	}

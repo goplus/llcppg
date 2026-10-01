@@ -38,6 +38,7 @@ type Config struct {
 	Deps           []string          `json:"Deps"`           // dependencies (module paths), optional
 	Class          []string          `json:"Class"`          // typedef names to be treated as classes
 	NonClass       []string          `json:"NonClass"`       // typedef names to be treated as non-classes
+	NSPrefix       []string          `json:"NSPrefix"`       // namespace prefix to remove
 	FuncPrefix     []string          `json:"FuncPrefix"`     // global function prefix to remove
 	VarPrefix      []string          `json:"VarPrefix"`      // global variable prefix to remove
 	EnumPrefix     []string          `json:"EnumPrefix"`     // enum value prefix to remove

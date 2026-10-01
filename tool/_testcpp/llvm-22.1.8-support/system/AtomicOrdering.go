@@ -11,12 +11,12 @@ import "github.com/goplus/lib/c"
 type AtomicOrderingCABI c.Int
 
 const (
-	AtomicOrderingCABI_Relaxed AtomicOrderingCABI = 0
-	AtomicOrderingCABI_Consume AtomicOrderingCABI = 1
-	AtomicOrderingCABI_Acquire AtomicOrderingCABI = 2
-	AtomicOrderingCABI_Release AtomicOrderingCABI = 3
-	AtomicOrderingCABI_AcqRel  AtomicOrderingCABI = 4
-	AtomicOrderingCABI_SeqCst  AtomicOrderingCABI = 5
+	AtomicOrderingCABI_relaxed AtomicOrderingCABI = 0
+	AtomicOrderingCABI_consume AtomicOrderingCABI = 1
+	AtomicOrderingCABI_acquire AtomicOrderingCABI = 2
+	AtomicOrderingCABI_release AtomicOrderingCABI = 3
+	AtomicOrderingCABI_acqRel  AtomicOrderingCABI = 4
+	AtomicOrderingCABI_seqCst  AtomicOrderingCABI = 5
 )
 
 // Atomic ordering for LLVM's memory model.

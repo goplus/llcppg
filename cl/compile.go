@@ -111,8 +111,7 @@ type Config struct {
 	// in the map, it will be renamed to the corresponding Go name.
 	Rename map[string]string
 
-	// NSIgnore specifies a list of namespaces (their names have been converted to Go style)
-	// to be ignored (optional).
+	// NSIgnore specifies a list of C/C++ namespaces to be ignored (optional).
 	NSIgnore []string
 
 	// MacroIgnore specifies a list of C/C++ macro names to be ignored (optional).
@@ -148,6 +147,10 @@ type Config struct {
 	// VarPrefix specifies the prefix to remove from C/C++ global variable names when
 	// generating Go variable names (optional).
 	VarPrefix []string
+
+	// NSPrefix specifies the prefix to remove from C/C++ namespace names when generating
+	// Go package names (optional).
+	NSPrefix []string
 
 	// Class specifies a list of C/C++ typedef names to be treated as classes (optional).
 	Class []string
@@ -232,9 +235,9 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
 		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
-		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix,
-		macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix, rename: rename,
-		nsIgnores: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnores: conf.TypeIgnore,
+		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix, rename: rename,
+		nsPrefix: conf.NSPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
+		nsIgnore: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnores: conf.TypeIgnore,
 		classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), fns: make(map[string]*funcObj),
@@ -345,9 +348,10 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 
 func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns string) {
 	ns = ctx.nsName(ns, clang.String(namespace))
-	if ctx.isNSIgnored(ns) {
+	cName := cNameOf(namespace)
+	if ctx.isNSIgnored(cName) {
 		if debugCompileDecl {
-			log.Println("namespace", ns, "- ignored")
+			ctx.logf(namespace, "namespace %s - ignored", cName)
 		}
 		return
 	}
