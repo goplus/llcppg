@@ -45,7 +45,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
 
 	var cName string
 	if hasName {
-		cName = cNameWithNS(cLocalName(decl), ns)
+		cName = cNameWithNS(cBaseName(decl), ns)
 	}
 
 	if debugCompileDecl {

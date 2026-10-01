@@ -306,7 +306,7 @@ func (p *templateClass) order() int {
 }
 
 type funcObj struct {
-	name      string       // go name
+	cName     string       // c/c++ full name
 	decl      clang.Cursor // AST object
 	overloads *overloads
 
@@ -428,7 +428,7 @@ func (p *scopeCtx) addTemplateClass(ctx *pkgCtx, decl clang.Cursor) (*templateCl
 	return obj, true
 }
 
-func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
+func (p *scopeCtx) addFunc(ctx *pkgCtx, cName string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
 	fnUSR := funcUSR(decl)
 	if debugCompileDecl {
 		log.Println("==> addFunc", funcDisplayName(decl), "- USR:", fnUSR)
@@ -442,16 +442,16 @@ func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp boo
 	}
 
 	obj := &funcObj{
-		name:       name,
+		cName:      cName,
 		decl:       decl,
 		isOperator: isOp,
 	}
-	ovs, ok := p.overloads[name]
+	ovs, ok := p.overloads[cName]
 	if ok {
 		ovs.fns = append(ovs.fns, obj)
 	} else {
 		ovs = &overloads{fns: []*funcObj{obj}}
-		p.overloads[name] = ovs
+		p.overloads[cName] = ovs
 	}
 	obj.overloads = ovs
 	ctx.fns[fnUSR] = obj

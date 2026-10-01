@@ -74,13 +74,13 @@ func cNameWithNS(name, ns string) string {
 }
 
 func cNameOf(decl clang.Cursor) string {
-	cName := cLocalName(decl)
+	cName := cBaseName(decl)
 	for {
 		decl = decl.SemanticParent()
 		if decl.Kind == lc.Cursor_TranslationUnit {
 			break
 		}
-		cName = cLocalName(decl) + "::" + cName
+		cName = cBaseName(decl) + "::" + cName
 	}
 	return cName
 }
@@ -91,7 +91,7 @@ func cNS(decl clang.Cursor) (ns string) {
 		if decl.Kind == lc.Cursor_TranslationUnit {
 			return
 		}
-		name := cLocalName(decl)
+		name := cBaseName(decl)
 		if ns == "" {
 			ns = name
 		} else {
@@ -100,7 +100,7 @@ func cNS(decl clang.Cursor) (ns string) {
 	}
 }
 
-func cLocalName(decl clang.Cursor) string {
+func cBaseName(decl clang.Cursor) string {
 	return trimTypeTag(clang.String(decl))
 }
 
@@ -158,6 +158,7 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 	if v, ok := p.rename[name]; ok {
 		return v // special case
 	}
+	name = rmPrefix(name, p.nsPrefix)
 	if global {
 		name = rmPrefix(name, p.fnPrefix)
 		if typCName != "" {

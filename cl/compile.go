@@ -312,7 +312,7 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	switch decl.Kind {
 	case lc.Cursor_FunctionDecl:
-		loadGlobalFunc(ctx, scope, decl, ns)
+		loadGlobalFunc(ctx, scope, decl)
 	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
 		loadClass(ctx, decl, decl.Kind, nil)
 	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:

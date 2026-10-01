@@ -269,7 +269,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		default:
 			if decl.CXXMethodIsStatic() != 0 {
 				if isPublic(decl) {
-					loadGlobalFunc(ctx, &ctx.scopeCtx, decl, goName)
+					loadGlobalFunc(ctx, &ctx.scopeCtx, decl)
 				}
 				return
 			}
