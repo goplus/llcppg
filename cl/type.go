@@ -112,7 +112,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		// it before recursing so inner arrays are not wrongly decayed.
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
 		return newPointer(ctx, pointee)
-	case lc.Type_LValueReference:
+	case lc.Type_LValueReference, lc.Type_RValueReference: // TODO(xsw): check RVRef is a pointer
 		elem := typ.NonReference()
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
 		return newPointer(ctx, pointee)

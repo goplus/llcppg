@@ -173,6 +173,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 	}
 	defer DisposeSources(files)
 
+	groupSubdir := cfg.GroupSubdir
 	srcFilePrefix := dir + string(os.PathSeparator)
 	if pkgName == "" {
 		pkgName = path.Base(cfg.Name)
@@ -211,7 +212,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 			return
 		},
 		GoFileOf: func(headerFile string) (fname string, ok bool) {
-			return goFileOf(headerFile, srcFilePrefix)
+			return goFileOf(headerFile, srcFilePrefix, groupSubdir)
 		},
 	})
 	return
@@ -227,13 +228,19 @@ func listHeaderFiles(selFiles []string, headerDir string) (topHeaders []string) 
 	return
 }
 
-func goFileOf(at, srcFilePrefix string) (fname string, ok bool) {
+func goFileOf(at, srcFilePrefix string, groupSubdir bool) (fname string, ok bool) {
 	const pathSep = string(os.PathSeparator)
 	const goFileExt = ".go"
 	fname, ok = strings.CutPrefix(at, srcFilePrefix)
 	if ok {
-		fname = strings.ReplaceAll(fname, pathSep, "-")
-		if pos := strings.LastIndex(fname, "."); pos >= 0 {
+		if groupSubdir {
+			if pos := strings.Index(fname, pathSep); pos > 0 {
+				fname = fname[:pos]
+			}
+		} else {
+			fname = strings.ReplaceAll(fname, pathSep, "-")
+		}
+		if pos := strings.LastIndex(fname, "."); pos > 0 {
 			fname = fname[:pos] + goFileExt
 		} else {
 			fname += goFileExt
