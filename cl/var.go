@@ -68,13 +68,19 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	pkgTypes := pkg.Types
 
 	origName := nameWithNS(localName, ns)
-	typ := toType(ctx, pkgTypes, decl.Type(), flagIsVarDef, nil)
 	if debugCompileDecl {
 		kind := "var"
 		if decl.Type().IsConstQualified() != 0 {
 			kind = "const var"
 		}
 		log.Println(kind, origName, "-", clang.String(decl.Type()))
+	}
+
+	feats := 0
+	typ := toTypeEx(ctx, pkgTypes, decl.Type(), flagIsVarDef, &feats, nil)
+	if feats&featIgnored != 0 {
+		ctx.logf(decl, "var %s: unsupported type, skipped", origName)
+		return
 	}
 
 	goName := ctx.varName(origName)

@@ -252,10 +252,11 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		log.Println("==> complete uninitialized type declarations")
 	}
 	for _, typDecl := range typdecls {
-		if !typDecl.Inited() {
+		if typDecl.State() == gogen.TyStateUninited {
 			typDecl.InitType(pkg, types.NewStruct(nil, nil))
 		}
 	}
+
 	ctx.compile()
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
@@ -324,6 +325,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 		loadVar(ctx, decl, ns)
 	case lc.Cursor_UnionDecl:
 		loadUnion(ctx, decl, ns)
+	case lc.Cursor_LinkageSpec: // extern "C" { ... }
+		loadLinkageSpec(ctx, scope, decl, ns)
 	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:
 		// noop
 	case lc.Cursor_FunctionTemplate:
@@ -346,6 +349,13 @@ func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns stri
 		return
 	}
 	clang.VisitChildren(namespace, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+		loadDecl(ctx, scope, decl, ns)
+		return clang.Continue
+	})
+}
+
+func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor, ns string) {
+	clang.VisitChildren(linkage, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadDecl(ctx, scope, decl, ns)
 		return clang.Continue
 	})
