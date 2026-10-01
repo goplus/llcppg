@@ -33,12 +33,12 @@ import (
 // methods) llcppg emits, in addition to the struct that mirrors the C++ data
 // layout:
 //
-//   - a typed vtable struct `_xgo_vtable_X`, annotated `// llgo:type C`, with one
+//   - a typed vtable struct `X_vtable_XXX`, annotated `// llgo:type C`, with one
 //     field per virtual slot in vtable order. A public method's slot is a
 //     function-pointer field whose first parameter is "this *X"; a reserved or
 //     non-public slot is instead an unexported "_xgo_slotN unsafe.Pointer"
 //     placeholder that only holds the slot's position (see vtableSlot).
-//   - an accessor method "func (p *X) XGo_vptr() *_xgo_vtable_X" that reinterprets
+//   - an accessor method "func (p *X) XGo_vptr() *X_vtable_XXX" that reinterprets
 //     the pointer stored at offset 0 as the typed vtable.
 //
 // The vptr slot itself keeps the layout it already had; the only change is that
@@ -50,9 +50,9 @@ import (
 // See issue goplus/llcppg#754 for the full proposal.
 
 // vtableName returns the Go name of the typed vtable struct for a class named
-// clsName, e.g. "Shape" -> "_xgo_vtable_Shape".
+// clsName, e.g. "Shape" -> "X_vtable_Shape".
 func vtableName(clsName string) string {
-	return "_xgo_vtable_" + clsName
+	return "X_vtable_" + clsName
 }
 
 // vtableSlot describes one entry of a class vtable.
@@ -85,7 +85,7 @@ func vtableSlotOf(ctx *pkgCtx, m clang.Cursor, named bool) vtableSlot {
 	}
 }
 
-// genVtable emits the "_xgo_vtable_X" struct and the "XGo_vptr()" accessor for a
+// genVtable emits the "X_vtable_XXX" struct and the "XGo_vptr()" accessor for a
 // polymorphic class. ownsVptr reports whether the class declares its own vptr
 // field (no primary base); when false the class shares its primary base's vptr,
 // which sits at offset 0.
@@ -151,16 +151,16 @@ func cloneTypes(tparams []*types.TypeParam) []types.Type {
 	return ret
 }
 
-// genVptrAccessor emits "func (p *X) XGo_vptr() *_xgo_vtable_X".
+// genVptrAccessor emits "func (p *X) XGo_vptr() *X_vtable_XXX".
 //
 // When the class owns its vptr the body is:
 //
-//	return (*_xgo_vtable_X)(p._xgo_vptr)
+//	return (*X_vtable_XXX)(p._xgo_vptr)
 //
 // otherwise the class shares its primary base's vptr at offset 0, so the body
 // reads that pointer directly:
 //
-//	return (*_xgo_vtable_X)(*(*unsafe.Pointer)(unsafe.Pointer(p)))
+//	return (*X_vtable_XXX)(*(*unsafe.Pointer)(unsafe.Pointer(p)))
 func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
@@ -175,7 +175,7 @@ func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 		panic("genVptrAccessor: " + err.Error())
 	}
 	cb := f.BodyStart(pkg)
-	cb.Typ(vtPtr) // (*_xgo_vtable_X)( ...
+	cb.Typ(vtPtr) // (*X_vtable_XXX)( ...
 	if ownsVptr {
 		// p._xgo_vptr
 		cb.VarVal("p").MemberVal(vptrName, 1)

@@ -38,7 +38,7 @@ import (
 const vptrName = "_xgo_vptr"
 
 // vptrAccessorName is the exported method that returns the typed vtable for a
-// polymorphic class, e.g. "func (p *X) XGo_vptr() *_xgo_vtable_X". It must
+// polymorphic class, e.g. "func (p *X) XGo_vptr() *X_vtable_XXX". It must
 // differ from vptrName so the method and the field can coexist.
 const vptrAccessorName = "XGo_vptr"
 

@@ -16,12 +16,12 @@ type Bar[T1 any, T2 any] struct {
 }
 
 // llgo:type C
-type _xgo_vtable_Bar[T1 any, T2 any] struct {
+type X_vtable_Bar[T1 any, T2 any] struct {
 	XGo_dtor          func(this *Bar)
 	XGo_dtor_deleting func(this *Bar)
 	G                 func(this *Bar, val1 T1, val2 T2, val3 c.Int) T2
 }
 
-func (p *Bar[T1, T2]) XGo_vptr() *_xgo_vtable_Bar[T1, T2] {
-	return (*_xgo_vtable_Bar[T1, T2])(p._xgo_vptr)
+func (p *Bar[T1, T2]) XGo_vptr() *X_vtable_Bar[T1, T2] {
+	return (*X_vtable_Bar[T1, T2])(p._xgo_vptr)
 }
