@@ -18,7 +18,6 @@ package cl
 
 import (
 	"go/types"
-	"log"
 
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
@@ -28,16 +27,15 @@ import (
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	cName := clang.String(decl.Type())
-	localName := clang.String(decl) // TODO(xsw): use full name with namespace
-	if ctx.isTypeIgnored(localName) {
-		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", localName)
+	cFullName := cNameOf(decl) // TODO(xsw): use full name with namespace
+	if ctx.isTypeIgnored(cFullName) {
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", cFullName)
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 
-	origName := nameWithNS(localName, ns)
 	if decl.Kind == lc.Cursor_TypeAliasTemplateDecl {
-		ctx.logf(decl, "typedef %s: template type alias, skipped", localName)
+		ctx.logf(decl, "typedef %s: template type alias, skipped", cFullName)
 		return
 	}
 
@@ -45,25 +43,25 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	pkgTypes := pkg.Types
 	underlying := decl.TypedefDeclUnderlyingType()
 	if debugCompileDecl {
-		log.Println("typedef", origName, "-", clang.String(underlying))
+		ctx.logf(decl, "typedef %s (%s) - %s", cFullName, cName, clang.String(underlying))
 	}
 
 	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
 	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
-		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type, ignored", localName)
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type, ignored", cFullName)
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 	if feats&featExplicitIgnore != 0 {
-		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", localName)
+		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", cFullName)
 		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
 
-	name := ctx.typeName(origName, true)
+	goName := ctx.typeName(cFullName, true)
 	if tn, ok := tunder.(*types.Named); ok {
-		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == name {
+		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == goName {
 			return // already defined
 		}
 	}
@@ -88,15 +86,15 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	node := goNode(ctx, decl)
 	tparams := scope.typeParams(nil)
 	if isClass {
-		t := typDefs.NewType(name, node).InitType(pkg, tunder, tparams...)
+		t := typDefs.NewType(goName, node).InitType(pkg, tunder, tparams...)
 		obj = t.Obj()
 	} else {
-		t := typDefs.AliasTypeEx(name, tunder, tparams, node)
+		t := typDefs.AliasTypeEx(goName, tunder, tparams, node)
 		obj = t.Obj()
 	}
 
 	ctx.types[cName] = typeObj{obj, feats}
-	ctx.aliasTypeName(cName, name)
+	ctx.aliasTypeName(cName, goName)
 }
 
 func isTypedefUnsupported(tunder types.Type) bool {

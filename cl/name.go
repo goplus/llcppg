@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -44,6 +45,44 @@ func funcUSR(decl clang.Cursor) string {
 
 func funcDisplayName(decl clang.Cursor) string {
 	return clang.DisplayName(decl)
+}
+
+// -----------------------------------------------------------------------------
+
+func cNameSplit(cName string) (parts []string) {
+	for {
+		pos := strings.IndexAny(cName, "_:")
+		if pos < 0 {
+			parts = append(parts, cName)
+			return
+		}
+		parts = append(parts, cName[:pos])
+		if cName[pos] == ':' && len(cName) > pos+1 && cName[pos+1] == ':' {
+			cName = cName[pos+2:]
+		} else {
+			cName = cName[pos+1:]
+		}
+	}
+}
+
+func cNameWithNS(decl clang.Cursor, ns string) string {
+	return ns + cLocalName(decl)
+}
+
+func cNameOf(decl clang.Cursor) string {
+	cName := cLocalName(decl)
+	for {
+		decl = decl.SemanticParent()
+		if decl.Kind == lc.Cursor_TranslationUnit {
+			break
+		}
+		cName = cLocalName(decl) + "::" + cName
+	}
+	return cName
+}
+
+func cLocalName(decl clang.Cursor) string {
+	return trimTypeTag(clang.String(decl))
 }
 
 // -----------------------------------------------------------------------------
@@ -140,7 +179,7 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 	rename := p.rename
-	parts := strings.Split(cName, "_")
+	parts := cNameSplit(cName)
 	if isAllUpperStart(parts) {
 		if parts[0] == "" && public {
 			return "X" + cName
