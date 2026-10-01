@@ -41,11 +41,11 @@ var (
 	tyVoid = types.Typ[types.UntypedNil]
 )
 
-func newPointer(typ types.Type) types.Type {
+func newPointer(ctx *pkgCtx, typ types.Type) types.Type {
 	switch t := typ.(type) {
 	case *types.Basic:
 		if t == tyVoid {
-			return types.Typ[types.UnsafePointer]
+			return ctx.unsafePointer()
 		}
 	case *types.Named:
 		/* TODO(xsw):
@@ -111,11 +111,11 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		// flagIsParam only governs the outermost type of a parameter, so clear
 		// it before recursing so inner arrays are not wrongly decayed.
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
-		return newPointer(pointee)
+		return newPointer(ctx, pointee)
 	case lc.Type_LValueReference:
 		elem := typ.NonReference()
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
-		return newPointer(pointee)
+		return newPointer(ctx, pointee)
 	case lc.Type_FunctionProto:
 		*feats |= featHasCallback
 		return toFuncType(ctx, pkg, typ, feats)
@@ -144,7 +144,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
 		// flagIsParam before recursing since decay applies only to this level.
 		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats, scope)
-		return newPointer(elem)
+		return newPointer(ctx, elem)
 	case lc.Type_ConstantArray:
 		// A fixed-size C array T[N] is a true array only when it has real
 		// storage, e.g. as a struct field. As a function parameter it is a
@@ -156,7 +156,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		// would decay its inner [4] too, yielding **c.Int instead of *[4]c.Int.
 		elem := toTypeEx(ctx, pkg, typ.ArrayElement(), flagIsTypeDef, feats, scope)
 		if flags&flagIsParam != 0 {
-			return newPointer(elem)
+			return newPointer(ctx, elem)
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
 	case lc.Type_Unexposed:
@@ -169,7 +169,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	case lc.Type_BlockPointer:
 		ctx.logtf(typ, "type %s: C blocks (closures) are unsupported, ignored", clang.String(typ))
 		*feats |= featIgnored
-		return types.Typ[types.UnsafePointer]
+		return types.Typ[types.Invalid]
 	default:
 		ctx.logtf(typ, "toType: unknown kind - %v", typ.Kind)
 	}
@@ -240,7 +240,6 @@ const (
 	cUlongLong
 	cFloat
 	cDouble
-	cPointer
 	cLongDouble
 	cBasicMax
 )
@@ -256,7 +255,6 @@ var ctypBasic = [cBasicMax]string{
 	cUlongLong:  "UlongLong",
 	cFloat:      "Float",
 	cDouble:     "Double",
-	cPointer:    "Pointer",
 	cLongDouble: "LongDouble",
 }
 

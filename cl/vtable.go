@@ -100,8 +100,6 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	clsName := clsNamed.Obj().Name()
 	recvPtr := types.NewPointer(clsNamed)
 
-	ctx.forceImportUnsafe()
-
 	// The vtable struct: one field per slot. A named slot is a function pointer
 	// whose first parameter is "this *X"; an anonymous slot is an unexported
 	// unsafe.Pointer placeholder.
@@ -114,7 +112,7 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 			fldType = vtableSlotFunc(ctx, pkgTypes, recvPtr, slot.decl, this.scope())
 		} else {
 			fldName = placeholderSlotName(i)
-			fldType = types.Typ[types.UnsafePointer]
+			fldType = ctx.unsafePointer()
 		}
 		fields = append(fields, types.NewField(goNodePos(ctx, this.decl), pkgTypes, fldName, fldType, false))
 	}
@@ -166,7 +164,7 @@ func cloneTypes(tparams []*types.TypeParam) []types.Type {
 func genVptrAccessor(ctx *pkgCtx, recvPtr, vtPtr types.Type, ownsVptr bool) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	tyUP := types.Typ[types.UnsafePointer]
+	tyUP := ctx.unsafePointer()
 
 	recv := types.NewParam(0, pkgTypes, "p", recvPtr)
 	results := types.NewTuple(types.NewParam(0, pkgTypes, "", vtPtr))

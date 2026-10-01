@@ -19,6 +19,7 @@ package cl
 import (
 	"go/types"
 	"log"
+	"strconv"
 	"unsafe"
 
 	"github.com/goplus/llcppg/clang"
@@ -81,12 +82,17 @@ func compileClass(ctx *pkgCtx, this *classCtx) {
 	}
 }
 
-func newTemplateParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor, feats *int) []*types.TypeParam {
+func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor, feats *int) []*types.TypeParam {
+	idx := 0
 	ret := make([]*types.TypeParam, 0, 2)
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
 		case lc.Cursor_TemplateTypeParameter:
+			idx++
 			name := clang.String(decl)
+			if name == "" {
+				name = "_llcppg_tparam" + strconv.Itoa(idx)
+			}
 			objName := types.NewTypeName(0, pkg, name, nil)
 			ret = append(ret, types.NewTypeParam(objName, ctx.any()))
 		case lc.Cursor_NonTypeTemplateParameter, lc.Cursor_TemplateTemplateParameter:
@@ -118,7 +124,7 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	feats := 0
-	tparams := newTemplateParams(ctx, pkgTypes, cls, &feats)
+	tparams := newTypeParams(ctx, pkgTypes, cls, &feats)
 	if feats&featIgnored != 0 || obj.order() >= 0 {
 		ctx.logf(cls, "class %s: unsupported template params, skipped", clang.String(cls))
 		return
@@ -211,6 +217,9 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, clsName str
 		loadClassMember(ctx, pkgTypes, this, clsName, decl, feats)
 		return clang.Continue
 	})
+	if *feats&featIgnored != 0 {
+		return
+	}
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
 	// polymorphic class shares its vptr with its primary base (the first
 	// non-virtual *polymorphic* direct base in declaration order); that base is
@@ -223,8 +232,8 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, clsName str
 		}
 		this.polymorphic = true
 	} else if isPolymorphic(cls) {
-		ctx.forceImportUnsafe()
-		vptr := types.NewField(goNodePos(ctx, cls), pkgTypes, vptrName, types.Typ[types.UnsafePointer], false)
+		voidptr := ctx.unsafePointer()
+		vptr := types.NewField(goNodePos(ctx, cls), pkgTypes, vptrName, voidptr, false)
 		this.fields = append([]*types.Var{vptr}, this.fields...)
 		this.polymorphic = true
 		this.ownsVptr = true

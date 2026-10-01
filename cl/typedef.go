@@ -72,7 +72,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	}
 	var isClass bool
 	switch tunder {
-	case types.Typ[types.UnsafePointer]:
+	case ctx.unsafePointer():
 		if !contains(cName, ctx.nonClasses) {
 			tunder, isClass = types.Typ[types.Uintptr], true // unsafe.Pointer => uintptr
 		}

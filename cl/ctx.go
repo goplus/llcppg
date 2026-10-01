@@ -112,6 +112,7 @@ type pkgCtx struct {
 	c    gogen.PkgRef
 	ctyp [cBasicMax]types.Type
 	tany types.Type
+	tptr types.Type
 
 	cflags string
 	lang   Language
@@ -214,6 +215,13 @@ func (p *pkgCtx) compile() {
 			c.fn(p)
 		}
 	}
+}
+
+func (p *pkgCtx) unsafePointer() types.Type {
+	if p.tptr == nil {
+		p.tptr = p.pkg.Import("unsafe").Ref("Pointer").Type()
+	}
+	return p.tptr
 }
 
 func (p *pkgCtx) any() types.Type {

@@ -238,6 +238,9 @@ func goFileOf(at, srcFilePrefix string) (fname string, ok bool) {
 		} else {
 			fname += goFileExt
 		}
+		if fname[0] == '_' {
+			fname = "z" + fname
+		}
 	}
 	return
 }
