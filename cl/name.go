@@ -49,7 +49,7 @@ func funcDisplayName(decl clang.Cursor) string {
 
 // -----------------------------------------------------------------------------
 
-func cNameSplit(cName string) (parts []string) {
+func cNameSplit(cName string) (parts []string, hasNS bool) {
 	for {
 		pos := strings.IndexAny(cName, "_:")
 		if pos < 0 {
@@ -58,6 +58,7 @@ func cNameSplit(cName string) (parts []string) {
 		}
 		parts = append(parts, cName[:pos])
 		if cName[pos] == ':' && len(cName) > pos+1 && cName[pos+1] == ':' {
+			hasNS = true
 			cName = cName[pos+2:]
 		} else {
 			cName = cName[pos+1:]
@@ -113,13 +114,13 @@ func (p *pkgCtx) enumvalName(name, ns string) string {
 	return p.globalName(nameWithNS(name, ns), p.enumPrefix)
 }
 
-func (p *pkgCtx) typeName(name string, _ bool) string {
-	if v, ok := p.rename[name]; ok {
+func (p *pkgCtx) typeName(cName string, _ bool) string {
+	if v, ok := p.rename[cName]; ok {
 		return v // special case
 	}
-	name = rmPrefix(name, p.typePrefix)
-	name = rmSuffix(name, p.typeSuffix)
-	return p.cstyleToGo(name, true)
+	cName = rmPrefix(cName, p.typePrefix)
+	cName = rmSuffix(cName, p.typeSuffix)
+	return p.cstyleToGo(cName, true)
 }
 
 func (p *pkgCtx) funcName(name string, order int, typName, typCName string, global, _ bool) string {
@@ -179,8 +180,8 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 	rename := p.rename
-	parts := cNameSplit(cName)
-	if isAllUpperStart(parts) {
+	parts, hasNS := cNameSplit(cName)
+	if !hasNS && isAllUpperStart(parts) {
 		if parts[0] == "" && public {
 			return "X" + cName
 		}
