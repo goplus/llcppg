@@ -177,7 +177,7 @@ func (p *pkgCtx) importPkg(pkgPath string) *types.Package {
 
 		case entryType:
 			if e.GoName == "" {
-				e.GoName = p.typeName(strings.ReplaceAll(e.Name, "::", "_"), true)
+				e.GoName = p.typeName(e.Name, true)
 			}
 			if o := scope.Lookup(e.GoName); o != nil {
 				if t, ok := o.(*types.TypeName); ok {

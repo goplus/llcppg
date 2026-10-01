@@ -23,7 +23,6 @@ import (
 	"go/types"
 	"log"
 	"sort"
-	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -120,6 +119,7 @@ type pkgCtx struct {
 
 	typeAbbrSuffix []string
 
+	nsPrefix    []string
 	fnPrefix    []string
 	varPrefix   []string
 	enumPrefix  []string
@@ -132,7 +132,7 @@ type pkgCtx struct {
 	rename      map[string]string // C/C++ name => Go name
 	typeIgnores []string          // C/C++ type names to be ignored
 	macroIgnore []string          // C/C++ macro names to be ignored
-	nsIgnores   []string          // Go style namespace names to be ignored
+	nsIgnore    []string          // C/C++ namespace names to be ignored
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -235,34 +235,19 @@ func (p *pkgCtx) basicTyp(kind basicKind) types.Type {
 }
 
 func (p *pkgCtx) aliasTypeName(cName, goName string) {
-	cName = trimTypeTag(cName)
 	if _, ok := p.rename[cName]; !ok {
 		// insert alias name if not already present
 		p.rename[cName] = goName
 	}
 }
 
-func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named) {
-	var cName string
-	if decl.Kind == lc.Cursor_ClassTemplate { // TODO(xsw): check if this is correct
-		cName = clang.String(decl)
-	} else {
-		cName = clang.String(decl.Type())
-	}
+func (p *pkgCtx) addType(cName string, decl clang.Cursor, typNamed *types.Named) {
 	typObj := typeObj{typNamed.Obj(), 0}
 	p.types[cName] = typObj
 	p.aliasTypeName(cName, typObj.Name())
 
 	if debugCompileDecl {
-		log.Println("==> addType", cName, typObj.Name())
-	}
-
-	// name of typedef <tag> may be "m" instead of "<tag> m"
-	tag := tagStrvals[kind]
-	if strings.HasPrefix(cName, tag) {
-		p.types[cName[len(tag):]] = typObj
-	} else {
-		p.types[tag+cName] = typObj
+		p.logf(decl, "==> addType %s: %v", cName, typNamed)
 	}
 }
 
@@ -295,13 +280,13 @@ func (p *pkgCtx) isMacroIgnored(cName string) bool {
 }
 
 func (p *pkgCtx) isNSIgnored(cName string) bool {
-	return contains(cName, p.nsIgnores)
+	return contains(cName, p.nsIgnore)
 }
 
 // -----------------------------------------------------------------------------
 
 type templateClass struct {
-	name      string       // go name
+	cName     string       // c/c++ full name
 	decl      clang.Cursor // AST object
 	overloads *overloads
 }
@@ -321,7 +306,7 @@ func (p *templateClass) order() int {
 }
 
 type funcObj struct {
-	name      string       // go name
+	cName     string       // c/c++ full name
 	decl      clang.Cursor // AST object
 	overloads *overloads
 
@@ -422,30 +407,31 @@ func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
 	return nil, false
 }
 
-func (p *scopeCtx) addTemplateClass(_ *pkgCtx, name string, decl clang.Cursor) (*templateClass, bool) {
+func (p *scopeCtx) addTemplateClass(ctx *pkgCtx, decl clang.Cursor) (*templateClass, bool) {
+	cName := cNameOf(decl)
 	if debugCompileDecl {
-		log.Println("==> addTemplateClass", name, "-", clang.DisplayName(decl))
+		ctx.logf(decl, "==> addTemplateClass %s", cName)
 	}
 	// TODO(xsw): check if the class is already added
 	obj := &templateClass{
-		name: name,
-		decl: decl,
+		cName: cName,
+		decl:  decl,
 	}
-	ovs, ok := p.overloads[name]
+	ovs, ok := p.overloads[cName]
 	if ok {
 		ovs.classes = append(ovs.classes, obj)
 	} else {
 		ovs = &overloads{classes: []*templateClass{obj}}
-		p.overloads[name] = ovs
+		p.overloads[cName] = ovs
 	}
 	obj.overloads = ovs
 	return obj, true
 }
 
-func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
+func (p *scopeCtx) addFunc(ctx *pkgCtx, cName string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
 	fnUSR := funcUSR(decl)
 	if debugCompileDecl {
-		log.Println("==> addFunc", funcDisplayName(decl), "- USR:", fnUSR)
+		ctx.logf(decl, "==> addFunc %s - USR: %s", cName, fnUSR)
 	}
 
 	if fn, ok := ctx.fns[fnUSR]; ok { // re-declared
@@ -456,16 +442,16 @@ func (p *scopeCtx) addFunc(ctx *pkgCtx, name string, decl clang.Cursor, isOp boo
 	}
 
 	obj := &funcObj{
-		name:       name,
+		cName:      cName,
 		decl:       decl,
 		isOperator: isOp,
 	}
-	ovs, ok := p.overloads[name]
+	ovs, ok := p.overloads[cName]
 	if ok {
 		ovs.fns = append(ovs.fns, obj)
 	} else {
 		ovs = &overloads{fns: []*funcObj{obj}}
-		p.overloads[name] = ovs
+		p.overloads[cName] = ovs
 	}
 	obj.overloads = ovs
 	ctx.fns[fnUSR] = obj

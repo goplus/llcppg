@@ -18,7 +18,6 @@ package cl
 
 import (
 	"go/types"
-	"log"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -38,17 +37,19 @@ import (
 // affects naming: ns carries the enclosing namespace/class prefix (e.g. "bar_"
 // or "Shape_"), so a constant Red becomes bar_Red / Shape_Red and then goes
 // through getPubName for the final Go name.
-func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
-	name := clang.String(decl)
-	origName := nameWithNS(name, ns)
-	anonymous := decl.IsAnonymous() != 0
+func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
+	ns := cNS(decl)
+	hasName := decl.IsAnonymous() == 0
 	scoped := decl.EnumDeclIsScoped() != 0
-	definition := decl.IsCursorDefinition() != 0 // TODO(xsw): rename to IsDefinition
 	typ := decl.EnumDeclIntegerType()
+
+	var cName string
+	if hasName {
+		cName = cNameWithNS(cBaseName(decl), ns)
+	}
+
 	if debugCompileDecl {
-		log.Println(
-			"enum", origName, clang.String(typ), "anonymous:", anonymous,
-			"scoped:", scoped, "definition:", definition)
+		ctx.logf(decl, "enum %s - hasName: %v, scoped: %v", cName, hasName, scoped)
 	}
 
 	pkg := ctx.pkg
@@ -57,25 +58,25 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	var ok bool
 	var typDecl typDecl
 	var enumType types.Type
-	if !anonymous {
-		typDecl, ok = ctx.typdecls[origName]
+	if hasName {
+		typDecl, ok = ctx.typdecls[cName]
 		if !ok {
-			clsName := ctx.typeName(origName, true)
-			typDecl = newType(ctx, decl, clsName, tagEnum)
-			ctx.typdecls[origName] = typDecl
+			goName := ctx.typeName(cName, true)
+			typDecl = newType(ctx, decl, cName, goName)
+			ctx.typdecls[cName] = typDecl
 
 			feats := 0
 			underType := toTypeEx(ctx, pkgTypes, typ, flagIsTypeDef, &feats, nil)
 			if feats&featAllIgnore != 0 {
-				ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d)", name, clang.String(typ), typ.Kind)
+				ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d)", cName, clang.String(typ), typ.Kind)
 			}
 			typDecl.InitType(pkg, underType)
 		}
 	}
-	if !definition {
+	if decl.IsCursorDefinition() == 0 {
 		return // declaration only, no definition
 	}
-	if !anonymous {
+	if hasName {
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			typDecl.defs.SetComments(doc)
 		}
@@ -85,13 +86,12 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor, ns string) {
 	defs := pkg.NewConstDefs(pkgTypes.Scope())
 	// For an anonymous enum there is no type to carry the doc, so attach the
 	// enum's doc comment to the generated const block instead.
-	if anonymous {
+	if !hasName {
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			defs.SetComments(doc)
 		}
-	}
-	if scoped {
-		ns = origName + "_"
+	} else if scoped {
+		ns = cName
 	}
 	clang.VisitChildren(decl, func(item, parent clang.Cursor) clang.ChildVisitResult {
 		if item.Kind != lc.Cursor_EnumConstantDecl {

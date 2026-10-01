@@ -25,7 +25,7 @@ type StringRef struct {
 	Length c.SizeT
 }
 type StringRefIterator = *c.Char
-type StringRefConstStringRefIterator = *c.Char
+type StringRefConstIterator = *c.Char
 type StringRefSizeType = c.SizeT
 type StringRefValueType = c.Char
 

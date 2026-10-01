@@ -130,12 +130,12 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		*feats |= featHasCallback
 		return toFuncType(ctx, pkg, typ, feats)
 	case lc.Type_Enum:
-		cName := clang.String(typ.Declaration().Type())
+		cName := cTypeName(typ)
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}
 	case lc.Type_Record, lc.Type_Typedef:
-		cName := clang.String(typ.Declaration().Type())
+		cName := cTypeName(typ)
 		if o, ok := ctx.types[cName]; ok {
 			if o.feats != 0 {
 				*feats |= o.feats
@@ -146,7 +146,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 			return o.Type()
 		}
 	case lc.Type_Elaborated:
-		cName := clang.String(typ.Named())
+		cName := cTypeName(typ.Named())
 		if t, ok := ctx.typeOf(cName); ok {
 			return t
 		}

@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -36,14 +37,69 @@ func (p *pkgCtx) nextAnonName() string {
 	return name
 }
 
-// -----------------------------------------------------------------------------
-
 func funcUSR(decl clang.Cursor) string {
 	return clang.USR(decl)
 }
 
-func funcDisplayName(decl clang.Cursor) string {
-	return clang.DisplayName(decl)
+// -----------------------------------------------------------------------------
+
+func cNameSplit(cName string) (parts []string, hasNS bool) {
+	for {
+		pos := strings.IndexAny(cName, "_:")
+		if pos < 0 {
+			parts = append(parts, cName)
+			return
+		}
+		parts = append(parts, cName[:pos])
+		if cName[pos] == ':' && len(cName) > pos+1 && cName[pos+1] == ':' {
+			hasNS = true
+			cName = cName[pos+2:]
+		} else {
+			cName = cName[pos+1:]
+		}
+	}
+}
+
+func cNameWithNS(name, ns string) string {
+	if ns == "" {
+		return name
+	}
+	return ns + "::" + name
+}
+
+func cNameOf(decl clang.Cursor) string {
+	cName := cBaseName(decl)
+	for {
+		decl = decl.SemanticParent()
+		if decl.Kind == lc.Cursor_TranslationUnit {
+			break
+		}
+		cName = cBaseName(decl) + "::" + cName
+	}
+	return cName
+}
+
+func cNS(decl clang.Cursor) (ns string) {
+	for {
+		decl = decl.SemanticParent()
+		if decl.Kind == lc.Cursor_TranslationUnit {
+			return
+		}
+		name := cBaseName(decl)
+		if ns == "" {
+			ns = name
+		} else {
+			ns = name + "::" + ns
+		}
+	}
+}
+
+func cBaseName(decl clang.Cursor) string {
+	return trimTypeTag(clang.String(decl))
+}
+
+func cTypeName(typ lc.Type) string {
+	return cNameOf(typ.Declaration())
 }
 
 // -----------------------------------------------------------------------------
@@ -68,25 +124,35 @@ func (p *pkgCtx) macroName(name string) string {
 }
 
 func (p *pkgCtx) enumvalName(name, ns string) string {
-	if strings.HasSuffix(ns, "_") {
-		return p.globalName(ns, p.enumPrefix) + p.cstyleToGo(name, true)
+	if ns == "" {
+		return p.globalName(name, p.enumPrefix)
 	}
-	return p.globalName(nameWithNS(name, ns), p.enumPrefix)
-}
-
-func (p *pkgCtx) typeName(name string, _ bool) string {
+	ns = p.globalName(ns, p.nsPrefix)
+	name = p.cstyleToGo(name, false)
+	if ns != "" {
+		name = ns + "_" + name
+	}
 	if v, ok := p.rename[name]; ok {
 		return v // special case
 	}
-	name = rmPrefix(name, p.typePrefix)
-	name = rmSuffix(name, p.typeSuffix)
-	return p.cstyleToGo(name, true)
+	return name
+}
+
+func (p *pkgCtx) typeName(cName string, _ bool) string {
+	if v, ok := p.rename[cName]; ok {
+		return v // special case
+	}
+	cName = rmPrefix(cName, p.nsPrefix)
+	cName = rmPrefix(cName, p.typePrefix)
+	cName = rmSuffix(cName, p.typeSuffix)
+	return p.cstyleToGo(cName, true)
 }
 
 func (p *pkgCtx) funcName(name string, order int, typName, typCName string, global, _ bool) string {
 	if v, ok := p.rename[name]; ok {
 		return v // special case
 	}
+	name = rmPrefix(name, p.nsPrefix)
 	if global {
 		name = rmPrefix(name, p.fnPrefix)
 		if typCName != "" {
@@ -140,13 +206,14 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 	rename := p.rename
-	parts := strings.Split(cName, "_")
-	if isAllUpperStart(parts) {
+	parts, hasNS := cNameSplit(cName)
+	if !hasNS && isAllUpperStart(parts) {
 		if parts[0] == "" && public {
 			return "X" + cName
 		}
 		return cName
 	}
+	lastEndWithUpper := false
 	for i := 0; i < len(parts); i++ {
 		part := parts[i]
 		if part == "" {
@@ -156,40 +223,25 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 			} else {
 				parts[i] = "_"
 			}
-		} else if v, ok := rename[part]; ok {
-			parts[i] = v
-		} else if i > 0 || public {
-			parts[i] = cPubName(part)
+			continue
 		}
+		if v, ok := rename[part]; ok && v != "" {
+			part = v
+		} else if i > 0 || public {
+			if c := part[0]; 'a' <= c && c <= 'z' {
+				c -= 'a' - 'A'
+				part = string(c) + part[1:]
+			}
+		}
+		c := part[len(part)-1]
+		endWithUpper := 'A' <= c && c <= 'Z'
+		if lastEndWithUpper && endWithUpper {
+			part = "_" + part
+		}
+		lastEndWithUpper = endWithUpper
+		parts[i] = part
 	}
 	return strings.Join(parts, "")
-}
-
-func (p *pkgCtx) nsName(ns, inner string) string {
-	if v, ok := p.rename[inner]; ok {
-		inner = v // special case
-	}
-	return nsName(ns, inner)
-}
-
-func nsName(ns, inner string) string {
-	if ns != "" {
-		c := ns[len(ns)-1]
-		if 'A' <= c && c <= 'Z' {
-			ns += "_"
-		}
-	}
-	if c := inner[0]; 'a' <= c && c <= 'z' {
-		return ns + string(c-'a'+'A') + inner[1:]
-	}
-	return ns + inner
-}
-
-func nameWithNS(name, ns string) string {
-	if ns == "" {
-		return name
-	}
-	return nsName(ns, name)
 }
 
 // -----------------------------------------------------------------------------
@@ -217,16 +269,6 @@ func cutPrefix(name, prefix string) string {
 		if c := after[0]; 'A' <= c && c <= 'Z' {
 			return after
 		}
-	}
-	return name
-}
-
-func cPubName(name string) string {
-	if r := name[0]; 'a' <= r && r <= 'z' {
-		r -= 'a' - 'A'
-		return string(r) + name[1:]
-	} else if r == '_' {
-		return "X" + name
 	}
 	return name
 }

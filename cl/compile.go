@@ -111,8 +111,7 @@ type Config struct {
 	// in the map, it will be renamed to the corresponding Go name.
 	Rename map[string]string
 
-	// NSIgnore specifies a list of namespaces (their names have been converted to Go style)
-	// to be ignored (optional).
+	// NSIgnore specifies a list of C/C++ namespaces to be ignored (optional).
 	NSIgnore []string
 
 	// MacroIgnore specifies a list of C/C++ macro names to be ignored (optional).
@@ -148,6 +147,10 @@ type Config struct {
 	// VarPrefix specifies the prefix to remove from C/C++ global variable names when
 	// generating Go variable names (optional).
 	VarPrefix []string
+
+	// NSPrefix specifies the prefix to remove from C/C++ namespace names when generating
+	// Go package names (optional).
+	NSPrefix []string
 
 	// Class specifies a list of C/C++ typedef names to be treated as classes (optional).
 	Class []string
@@ -232,9 +235,9 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
 		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
-		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix,
-		macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix, rename: rename,
-		nsIgnores: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnores: conf.TypeIgnore,
+		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix, rename: rename,
+		nsPrefix: conf.NSPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
+		nsIgnore: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnores: conf.TypeIgnore,
 		classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), fns: make(map[string]*funcObj),
@@ -298,7 +301,7 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 					pkg.SetCurFile(fname, true)
 				}
 			}
-			loadDecl(ctx, scope, decl, "")
+			loadDecl(ctx, scope, decl)
 			return clang.Continue
 		})
 		maps.Copy(lastSeen, ctx.thisSeen)
@@ -306,36 +309,36 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 	scope.reorder()
 }
 
-func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
+func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	switch decl.Kind {
 	case lc.Cursor_FunctionDecl:
-		loadGlobalFunc(ctx, scope, decl, ns)
+		loadGlobalFunc(ctx, scope, decl)
 	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
-		loadClass(ctx, decl, ns, decl.Kind, nil)
+		loadClass(ctx, decl, decl.Kind, nil)
 	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
 		loadOutsideMethod(ctx, decl)
 	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
-		loadTypedef(ctx, decl, ns, nil)
+		loadTypedef(ctx, decl, nil)
 	case lc.Cursor_EnumDecl:
-		loadEnum(ctx, decl, ns)
+		loadEnum(ctx, decl)
 	case lc.Cursor_MacroDefinition:
 		loadMacro(ctx, decl)
 	case lc.Cursor_InclusionDirective:
 		loadInclude(ctx, decl)
 	case lc.Cursor_Namespace:
-		loadNamespace(ctx, scope, decl, ns)
+		loadNamespace(ctx, scope, decl)
 	case lc.Cursor_VarDecl:
-		loadVar(ctx, decl, ns)
+		loadVar(ctx, decl)
 	case lc.Cursor_UnionDecl:
-		loadUnion(ctx, decl, ns)
+		loadUnion(ctx, decl)
 	case lc.Cursor_LinkageSpec: // extern "C" { ... }
-		loadLinkageSpec(ctx, scope, decl, ns)
+		loadLinkageSpec(ctx, scope, decl)
 	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:
 		// noop
 	case lc.Cursor_FunctionTemplate:
 		// TODO(xsw): ignore for now
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
-		loadTemplateClass(ctx, decl, ns, nil)
+		loadTemplateClass(ctx, decl, nil)
 	case lc.Cursor_UnexposedDecl, lc.Cursor_UnexposedAttr:
 		// noop
 	default:
@@ -343,23 +346,23 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor, ns string) {
 	}
 }
 
-func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor, ns string) {
-	ns = ctx.nsName(ns, clang.String(namespace))
-	if ctx.isNSIgnored(ns) {
+func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor) {
+	cName := cNameOf(namespace)
+	if ctx.isNSIgnored(cName) {
 		if debugCompileDecl {
-			log.Println("namespace", ns, "- ignored")
+			ctx.logf(namespace, "namespace %s - ignored", cName)
 		}
 		return
 	}
 	clang.VisitChildren(namespace, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadDecl(ctx, scope, decl, ns)
+		loadDecl(ctx, scope, decl)
 		return clang.Continue
 	})
 }
 
-func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor, ns string) {
+func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor) {
 	clang.VisitChildren(linkage, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadDecl(ctx, scope, decl, ns)
+		loadDecl(ctx, scope, decl)
 		return clang.Continue
 	})
 }

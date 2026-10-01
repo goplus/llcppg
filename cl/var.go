@@ -17,8 +17,6 @@
 package cl
 
 import (
-	"log"
-
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
 )
@@ -33,9 +31,9 @@ import (
 // class (the class name acts like a namespace, mirroring how static methods are
 // handled). Non-static class member variables are fields, not VarDecls, and are
 // handled separately in loadClassMember.
-func loadVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
+func loadVar(ctx *pkgCtx, decl clang.Cursor) {
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
-		compileVar(ctx, decl, ns)
+		compileVar(ctx, decl)
 	})
 }
 
@@ -51,39 +49,34 @@ func loadVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
 // const qualifier is a property of the type, not a distinct type kind, so
 // toType (which switches on the type kind) already yields the unqualified Go
 // type without any special casing here.
-func compileVar(ctx *pkgCtx, decl clang.Cursor, ns string) {
-	localName := clang.String(decl)
+func compileVar(ctx *pkgCtx, decl clang.Cursor) {
+	cName := cNameOf(decl)
 	if varHasInitExpr(ctx, decl) {
-		ctx.logf(decl, "var %s: has initialized expression, skipped", localName)
+		ctx.logf(decl, "var %s: has initialized expression, skipped", cName)
 		return
 	}
 
 	manglingName := clang.Mangling(decl)
 	if _, ok := ctx.nameLookup(manglingName); !ok {
-		ctx.logf(decl, "var %s: symbol not found in lib files, skipped", localName)
+		ctx.logf(decl, "var %s: symbol not found in lib files, skipped", cName)
 		return
+	}
+
+	if debugCompileDecl {
+		ctx.logf(decl, "var %s: %s", cName, clang.String(decl.Type()))
 	}
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 
-	origName := nameWithNS(localName, ns)
-	if debugCompileDecl {
-		kind := "var"
-		if decl.Type().IsConstQualified() != 0 {
-			kind = "const var"
-		}
-		log.Println(kind, origName, "-", clang.String(decl.Type()))
-	}
-
 	feats := 0
 	typ := toTypeEx(ctx, pkgTypes, decl.Type(), flagIsVarDef, &feats, nil)
 	if feats&featAllIgnore != 0 {
-		ctx.ignoref(feats, decl, "var %s: unsupported type, ignored", localName)
+		ctx.ignoref(feats, decl, "var %s: unsupported type, ignored", cName)
 		return
 	}
 
-	goName := ctx.varName(origName)
+	goName := ctx.varName(cName)
 	ctx.forceImportUnsafe()
 	defs := pkg.NewVarDefs(pkgTypes.Scope()).SetComments(
 		ctx.directiveComments(decl, "\n//go:linkname "+goName+" C."+manglingName))

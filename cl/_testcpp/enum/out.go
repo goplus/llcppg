@@ -19,9 +19,9 @@ const (
 type BarColor c.Uint
 
 const (
-	BarRed   BarColor = 0
-	BarGreen BarColor = 5
-	BarBlue  BarColor = 6
+	Bar_Red   BarColor = 0
+	Bar_Green BarColor = 5
+	Bar_Blue  BarColor = 6
 )
 
 type Shape struct {
@@ -29,7 +29,7 @@ type Shape struct {
 type ShapeKind c.Uint
 
 const (
-	ShapeCircle   ShapeKind = 0
-	ShapeSquare   ShapeKind = 1
-	ShapeTriangle ShapeKind = 2
+	Shape_Circle   ShapeKind = 0
+	Shape_Square   ShapeKind = 1
+	Shape_Triangle ShapeKind = 2
 )

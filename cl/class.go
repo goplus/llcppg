@@ -18,7 +18,6 @@ package cl
 
 import (
 	"go/types"
-	"log"
 	"strconv"
 	"unsafe"
 
@@ -106,9 +105,8 @@ func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor) (ret []*ty
 	return
 }
 
-func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, ns string, parent *scopeCtx) {
-	origName := nameWithNS(clang.String(cls), ns)
-	if obj, ok := ctx.addTemplateClass(ctx, origName, cls); ok {
+func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) {
+	if obj, ok := ctx.addTemplateClass(ctx, cls); ok {
 		ctx.addCompileUnit(func(ctx *pkgCtx) {
 			compileTemplateClass(ctx, obj, parent)
 		})
@@ -116,89 +114,88 @@ func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, ns string, parent *scopeCt
 }
 
 func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
-	origName := obj.name
+	cName := obj.cName
 	cls := obj.decl
+	order := obj.order()
 	if debugCompileDecl {
-		log.Println("template class", origName, "order:", obj.order())
+		ctx.logf(cls, "template class %s: order - %d", cName, order)
 	}
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	tparams, quietIgnore := newTypeParams(ctx, pkgTypes, cls)
-	if quietIgnore || obj.order() >= 0 {
+	if quietIgnore || order >= 0 {
 		if debugQuietIgnore {
-			ctx.logf(cls, "class %s: unsupported template params, ignored", clang.String(cls))
+			ctx.logf(cls, "class %s: unsupported template params, ignored", cName)
 		}
 		return
 	}
 
-	var clsName string
-	var typDecl, ok = ctx.typdecls[origName]
+	var typDecl, ok = ctx.typdecls[cName]
 	if !ok {
 		if cls.IsCursorDefinition() == 0 || cls.NumTemplateArguments() > 0 {
 			return
 		}
-		clsName = ctx.typeName(origName, true)
-		typDecl = newType(ctx, cls, clsName, tagClass)
-		ctx.typdecls[origName] = typDecl
+		goName := ctx.typeName(cName, true)
+		typDecl = newType(ctx, cls, cName, goName)
+		ctx.typdecls[cName] = typDecl
 	}
+
 	if cls.IsCursorDefinition() == 0 {
 		return // declaration only, no definition
 	}
 
-	if clsName == "" {
-		clsName = ctx.typeName(origName, true)
-	}
-	initClassType(ctx, typDecl, cls, clsName, tparams, parent)
+	goName := typDecl.Type().Obj().Name()
+	initClassType(ctx, typDecl, cls, goName, tparams, parent)
 }
 
-func loadClass(ctx *pkgCtx, cls clang.Cursor, ns string, kind typeTag, parent *scopeCtx) {
-	origName := nameWithNS(clang.String(cls), ns)
+func loadClass(ctx *pkgCtx, cls clang.Cursor, kind typeTag, parent *scopeCtx) {
+	cName := cNameOf(cls)
 	if debugCompileDecl {
-		log.Println(tagStrvals[kind] + origName)
+		ctx.logf(cls, "%s", tagStrvals[kind]+cName)
 	}
 
 	if cls.NumTemplateArguments() > 0 {
-		loadTemplateClass(ctx, cls, ns, parent)
+		loadTemplateClass(ctx, cls, parent)
 		return
 	}
 
-	var clsName string
-	var typDecl, ok = ctx.typdecls[origName]
+	var typDecl, ok = ctx.typdecls[cName]
 	if !ok {
-		clsName = ctx.typeName(origName, true)
-		typDecl = newType(ctx, cls, clsName, kind)
-		ctx.typdecls[origName] = typDecl
+		goName := ctx.typeName(cName, true)
+		typDecl = newType(ctx, cls, cName, goName)
+		ctx.typdecls[cName] = typDecl
 	}
+
 	if cls.IsCursorDefinition() == 0 {
 		return // declaration only, no definition
 	}
 
-	if clsName == "" {
-		clsName = ctx.typeName(origName, true)
-	}
-	initClassType(ctx, typDecl, cls, clsName, nil, parent)
+	goName := typDecl.Type().Obj().Name()
+	initClassType(ctx, typDecl, cls, goName, nil, parent)
 }
 
-func newType(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) (ret typDecl) {
+func newType(ctx *pkgCtx, cls clang.Cursor, cName, goName string) (ret typDecl) {
 	ret.defs = ctx.pkg.NewTypeDefs()
-	ret.TypeDecl = ret.defs.NewType(clsName, goNode(ctx, cls))
-	ctx.addType(kind, cls, ret.Type())
+	ret.TypeDecl = ret.defs.NewType(goName, goNode(ctx, cls))
+	if cName != "" {
+		ctx.addType(cName, cls, ret.Type())
+	}
 	return
 }
 
-func initClassType(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, clsName string, tparams []*types.TypeParam, parent *scopeCtx) bool {
+func initClassType(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, goName string, tparams []*types.TypeParam, parent *scopeCtx) bool {
 	feats := 0
-	initClassTypeEx(ctx, typDecl, cls, clsName, tparams, parent, &feats)
+	initClassTypeEx(ctx, typDecl, cls, goName, tparams, parent, &feats)
 	if feats&featAllIgnore != 0 {
-		ctx.ignoref(feats, cls, "class %s: unsupported features, ignored", clang.String(cls))
+		ctx.ignoref(feats, cls, "class %s: unsupported features, ignored", goName)
 		typDecl.Delete()
 		return false
 	}
 	return true
 }
 
-func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, clsName string, tparams []*types.TypeParam, parent *scopeCtx, feats *int) {
+func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, goName string, tparams []*types.TypeParam, parent *scopeCtx, feats *int) {
 	// Attach the doc at the TypeDefs (GenDecl) level rather than on the
 	// TypeSpec; see the note in loadTypedef for why a spec-level doc renders as
 	// "type// doc" here.
@@ -216,7 +213,7 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, clsName str
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadClassMember(ctx, pkgTypes, this, clsName, decl, feats)
+		loadClassMember(ctx, pkgTypes, this, goName, decl, feats)
 		return clang.Continue
 	})
 	if *feats&featAllIgnore != 0 {
@@ -247,10 +244,10 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, clsName str
 	})
 }
 
-func emitClass(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag, parent *scopeCtx) *types.Named {
-	typDecl := newType(ctx, cls, clsName, kind)
-	if !initClassType(ctx, typDecl, cls, clsName, nil, parent) {
-		ctx.panicf(cls, "unsupported feature, failed to initialize class")
+func emitClass(ctx *pkgCtx, cls clang.Cursor, goName string, parent *scopeCtx) *types.Named {
+	typDecl := newType(ctx, cls, "", goName)
+	if !initClassType(ctx, typDecl, cls, goName, nil, parent) {
+		ctx.panicf(cls, "class %s: unsupported feature, failed to initialize class", goName)
 	}
 	return typDecl.Type()
 }
@@ -259,7 +256,7 @@ func isPublic(decl clang.Cursor) bool {
 	return decl.CXXAccessSpecifier() == lc.CXXPublic
 }
 
-func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName string, decl clang.Cursor, feats *int) {
+func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName string, decl clang.Cursor, feats *int) {
 	switch decl.Kind {
 	case lc.Cursor_CXXMethod, lc.Cursor_FunctionTemplate,
 		lc.Cursor_Constructor, lc.Cursor_Destructor, lc.Cursor_ConversionFunction:
@@ -272,7 +269,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 		default:
 			if decl.CXXMethodIsStatic() != 0 {
 				if isPublic(decl) {
-					loadGlobalFunc(ctx, &ctx.scopeCtx, decl, clsName)
+					loadGlobalFunc(ctx, &ctx.scopeCtx, decl)
 				}
 				return
 			}
@@ -293,7 +290,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 				if ftd.Kind == lc.Cursor_UnionDecl {
 					fldType = emitUnion(ctx, ftd, ctx.nextAnonName())
 				} else {
-					fldType = emitClass(ctx, ftd, ctx.nextAnonName(), ftd.Kind, this.scope())
+					fldType = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
 				}
 				anonymous = true
 			}
@@ -314,7 +311,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 		// by the enclosing class name (the class name acts like a namespace),
 		// mirroring how a static method is handled above.
 		if isPublic(decl) {
-			loadVar(ctx, decl, clsName)
+			loadVar(ctx, decl)
 		}
 
 	case lc.Cursor_CXXAccessSpecifier, lc.Cursor_FriendDecl, lc.Cursor_UsingDeclaration:
@@ -325,7 +322,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 		// emitted as global consts prefixed by the enclosing class name (the
 		// class name acts like a namespace), e.g. Color_Red.
 		if isPublic(decl) {
-			loadEnum(ctx, decl, clsName)
+			loadEnum(ctx, decl)
 		}
 
 	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
@@ -334,7 +331,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 		// prefixed by the enclosing class name (the class name acts like a
 		// namespace), e.g. Bar_iterator.
 		if isPublic(decl) {
-			loadTypedef(ctx, decl, clsName, this.scope())
+			loadTypedef(ctx, decl, this.scope())
 		}
 
 	case lc.Cursor_CXXBaseSpecifier:
@@ -351,7 +348,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
-			hoisted := emitClass(ctx, decl, ctx.nextAnonName(), decl.Kind, this.scope())
+			hoisted := emitClass(ctx, decl, ctx.nextAnonName(), this.scope())
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
 			this.fields = append(this.fields, fld)
 		case decl.IsAnonymous() != 0:
@@ -365,11 +362,11 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 			// field's type must resolve to a generated Go type. Its own members'
 			// default visibility still follows C++ rules (struct: public,
 			// class: private).
-			loadClass(ctx, decl, clsName, decl.Kind, this.scope())
+			loadClass(ctx, decl, decl.Kind, this.scope())
 		}
 
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
-		loadTemplateClass(ctx, decl, clsName, this.scope())
+		loadTemplateClass(ctx, decl, this.scope())
 
 	case lc.Cursor_UnionDecl:
 		switch {
@@ -383,7 +380,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 			// A named nested union is emitted at package level for the same
 			// reason as a named nested class/struct above: a field may use it
 			// as its type even when declared in a private section.
-			loadUnion(ctx, decl, clsName)
+			loadUnion(ctx, decl)
 		}
 
 	case lc.Cursor_TemplateTypeParameter, lc.Cursor_NonTypeTemplateParameter,
@@ -394,7 +391,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 		if decl.Kind >= lc.Cursor_FirstAttr && decl.Kind <= lc.Cursor_LastAttr {
 			return // noop
 		}
-		ctx.panicf(decl, "loadClassMember: unknown kind = %v", decl.Kind)
+		ctx.panicf(decl, "class %s: unknown child node kind - %v", goName, decl.Kind)
 	}
 }
 
@@ -496,7 +493,7 @@ func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
 	if m, ok := ctx.fns[fnUSR]; ok {
 		m.decl = outsideDecl
 	} else {
-		ctx.logf(outsideDecl, "[WARN] method undeclared - %s", funcDisplayName(outsideDecl))
+		ctx.logf(outsideDecl, "[WARN] method undeclared - %s", cNameOf(outsideDecl))
 	}
 }
 
