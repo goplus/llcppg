@@ -30,16 +30,14 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 	cName := clang.String(decl.Type())
 	localName := clang.String(decl) // TODO(xsw): use full name with namespace
 	if ctx.isTypeIgnored(localName) {
-		if debugCompileDecl {
-			log.Println("typedef", cName, "- ignored")
-		}
-		ctx.ignoreType(cName)
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", localName)
+		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 
 	origName := nameWithNS(localName, ns)
 	if decl.Kind == lc.Cursor_TypeAliasTemplateDecl {
-		ctx.logf(decl, "typedef %s: template type alias, skipped", origName)
+		ctx.logf(decl, "typedef %s: template type alias, skipped", localName)
 		return
 	}
 
@@ -52,9 +50,14 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, ns string, scope *scopeCtx) {
 
 	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
-	if feats&featIgnored != 0 || isTypedefUnsupported(tunder) {
-		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", origName)
-		ctx.ignoreType(cName)
+	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type, ignored", localName)
+		ctx.ignoreType(cName, featQuietIgnore)
+		return
+	}
+	if feats&featExplicitIgnore != 0 {
+		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", localName)
+		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
 

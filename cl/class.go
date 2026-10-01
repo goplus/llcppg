@@ -82,9 +82,9 @@ func compileClass(ctx *pkgCtx, this *classCtx) {
 	}
 }
 
-func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor, feats *int) []*types.TypeParam {
+func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor) (ret []*types.TypeParam, quietIgnore bool) {
 	idx := 0
-	ret := make([]*types.TypeParam, 0, 2)
+	ret = make([]*types.TypeParam, 0, 2)
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
 		case lc.Cursor_TemplateTypeParameter:
@@ -96,13 +96,14 @@ func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor, feats *int
 			objName := types.NewTypeName(0, pkg, name, nil)
 			ret = append(ret, types.NewTypeParam(objName, ctx.any()))
 		case lc.Cursor_NonTypeTemplateParameter, lc.Cursor_TemplateTemplateParameter:
-			*feats |= featIgnored
+			quietIgnore = true
+			fallthrough
 		default:
 			return clang.Break
 		}
 		return clang.Continue
 	})
-	return ret
+	return
 }
 
 func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, ns string, parent *scopeCtx) {
@@ -123,10 +124,11 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	feats := 0
-	tparams := newTypeParams(ctx, pkgTypes, cls, &feats)
-	if feats&featIgnored != 0 || obj.order() >= 0 {
-		ctx.logf(cls, "class %s: unsupported template params, skipped", clang.String(cls))
+	tparams, quietIgnore := newTypeParams(ctx, pkgTypes, cls)
+	if quietIgnore || obj.order() >= 0 {
+		if debugQuietIgnore {
+			ctx.logf(cls, "class %s: unsupported template params, ignored", clang.String(cls))
+		}
 		return
 	}
 
@@ -188,8 +190,8 @@ func newType(ctx *pkgCtx, cls clang.Cursor, clsName string, kind typeTag) (ret t
 func initClassType(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, clsName string, tparams []*types.TypeParam, parent *scopeCtx) bool {
 	feats := 0
 	initClassTypeEx(ctx, typDecl, cls, clsName, tparams, parent, &feats)
-	if feats&featIgnored != 0 {
-		ctx.logf(cls, "class %s: unsupported features, skipped", clang.String(cls))
+	if feats&featAllIgnore != 0 {
+		ctx.ignoref(feats, cls, "class %s: unsupported features, ignored", clang.String(cls))
 		typDecl.Delete()
 		return false
 	}
@@ -217,7 +219,7 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, clsName str
 		loadClassMember(ctx, pkgTypes, this, clsName, decl, feats)
 		return clang.Continue
 	})
-	if *feats&featIgnored != 0 {
+	if *feats&featAllIgnore != 0 {
 		return
 	}
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
@@ -297,7 +299,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, clsName st
 			}
 		}
 		if !anonymous {
-			if fldType = toTypeEx(ctx, pkg, ft, flagIsVarDef, feats, this.scope()); *feats&featIgnored != 0 {
+			if fldType = toTypeEx(ctx, pkg, ft, flagIsVarDef, feats, this.scope()); *feats&featAllIgnore != 0 {
 				return
 			}
 		}
@@ -481,10 +483,11 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor, feats *int) *types.TypeName {
 			return t
 		}
 	case lc.Type_Unexposed:
-		*feats |= featIgnored
+		ctx.logf(decl, "baseClass %s: with unexposed type, skipped", clang.String(decl))
+		*feats |= featExplicitIgnore
 		return nil
 	}
-	ctx.panicf(decl, "baseClass: unknown base class type - %s (%d)", clang.String(t), t.Kind)
+	ctx.panicf(decl, "baseClass %s: unknown base class - %s (%d)", clang.String(decl), clang.String(t), t.Kind)
 	return nil
 }
 
