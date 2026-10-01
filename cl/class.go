@@ -137,7 +137,7 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 			return
 		}
 		goName := ctx.typeName(cName, true)
-		typDecl = newType(ctx, cls, goName, tagClass)
+		typDecl = newType(ctx, cls, goName)
 		ctx.typdecls[cName] = typDecl
 	}
 
@@ -163,7 +163,7 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, kind typeTag, parent *scopeCtx) {
 	var typDecl, ok = ctx.typdecls[cName]
 	if !ok {
 		goName := ctx.typeName(cName, true)
-		typDecl = newType(ctx, cls, goName, kind)
+		typDecl = newType(ctx, cls, goName)
 		ctx.typdecls[cName] = typDecl
 	}
 
@@ -175,10 +175,10 @@ func loadClass(ctx *pkgCtx, cls clang.Cursor, kind typeTag, parent *scopeCtx) {
 	initClassType(ctx, typDecl, cls, goName, nil, parent)
 }
 
-func newType(ctx *pkgCtx, cls clang.Cursor, goName string, kind typeTag) (ret typDecl) {
+func newType(ctx *pkgCtx, cls clang.Cursor, goName string) (ret typDecl) {
 	ret.defs = ctx.pkg.NewTypeDefs()
 	ret.TypeDecl = ret.defs.NewType(goName, goNode(ctx, cls))
-	ctx.addType(kind, cls, ret.Type())
+	ctx.addType(cls, ret.Type())
 	return
 }
 
@@ -242,8 +242,8 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, cls clang.Cursor, goName stri
 	})
 }
 
-func emitClass(ctx *pkgCtx, cls clang.Cursor, goName string, kind typeTag, parent *scopeCtx) *types.Named {
-	typDecl := newType(ctx, cls, goName, kind)
+func emitClass(ctx *pkgCtx, cls clang.Cursor, goName string, parent *scopeCtx) *types.Named {
+	typDecl := newType(ctx, cls, goName)
 	if !initClassType(ctx, typDecl, cls, goName, nil, parent) {
 		ctx.panicf(cls, "class %s: unsupported feature, failed to initialize class", goName)
 	}
@@ -288,7 +288,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 				if ftd.Kind == lc.Cursor_UnionDecl {
 					fldType = emitUnion(ctx, ftd, ctx.nextAnonName())
 				} else {
-					fldType = emitClass(ctx, ftd, ctx.nextAnonName(), ftd.Kind, this.scope())
+					fldType = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
 				}
 				anonymous = true
 			}
@@ -346,7 +346,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
-			hoisted := emitClass(ctx, decl, ctx.nextAnonName(), decl.Kind, this.scope())
+			hoisted := emitClass(ctx, decl, ctx.nextAnonName(), this.scope())
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
 			this.fields = append(this.fields, fld)
 		case decl.IsAnonymous() != 0:

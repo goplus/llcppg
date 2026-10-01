@@ -73,7 +73,7 @@ func emitUnion(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
 	}
 	typDecl := typDefs.NewType(goName, goNode(ctx, decl))
 	typNamed := typDecl.Type()
-	ctx.addType(tagUnion, decl, typNamed)
+	ctx.addType(decl, typNamed)
 
 	typ := decl.Type()
 	storage, ok := unionStorageType(typ)

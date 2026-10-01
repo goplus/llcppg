@@ -62,7 +62,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
 		typDecl, ok = ctx.typdecls[cName]
 		if !ok {
 			goName := ctx.typeName(cName, true)
-			typDecl = newType(ctx, decl, goName, tagEnum)
+			typDecl = newType(ctx, decl, goName)
 			ctx.typdecls[cName] = typDecl
 
 			feats := 0

@@ -23,7 +23,6 @@ import (
 	"go/types"
 	"log"
 	"sort"
-	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -243,7 +242,7 @@ func (p *pkgCtx) aliasTypeName(cName, goName string) {
 	}
 }
 
-func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named) {
+func (p *pkgCtx) addType(decl clang.Cursor, typNamed *types.Named) {
 	cName := cNameOf(decl)
 	typObj := typeObj{typNamed.Obj(), 0}
 	p.types[cName] = typObj
@@ -251,14 +250,6 @@ func (p *pkgCtx) addType(kind typeTag, decl clang.Cursor, typNamed *types.Named)
 
 	if debugCompileDecl {
 		p.logf(decl, "==> addType %s: %v", cName, typNamed)
-	}
-
-	// name of typedef <tag> may be "m" instead of "<tag> m"
-	tag := tagStrvals[kind]
-	if strings.HasPrefix(cName, tag) {
-		p.types[cName[len(tag):]] = typObj
-	} else {
-		p.types[tag+cName] = typObj
 	}
 }
 
