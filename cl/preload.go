@@ -256,6 +256,9 @@ func newClassCtx(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) *classCtx {
 		switch decl.Kind {
 		case lc.Cursor_CXXMethod, lc.Cursor_FunctionTemplate,
 			lc.Cursor_Constructor, lc.Cursor_Destructor, lc.Cursor_ConversionFunction:
+			if !isPublic(decl) {
+				break
+			}
 			var name string
 			switch decl.Kind {
 			case lc.Cursor_Constructor:
@@ -264,20 +267,18 @@ func newClassCtx(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) *classCtx {
 				name = "XGo_Dtor"
 			default:
 				if decl.CXXMethodIsStatic() != 0 {
-					name = cNameOf(decl)
+					name = cNameOf(decl) // static method name
 				} else {
 					name = clang.String(decl) // method name
 				}
 			}
-			if isPublic(decl) {
-				if decl.CXXMethodIsStatic() != 0 {
-					preloadGlobalFunc(ctx, &ctx.scopeCtx, decl)
-					break
-				}
-				fn, isNew := this.addOveerloadObj(ctx, name, decl)
-				if isNew {
-					this.publicMethods = append(this.publicMethods, fn)
-				}
+			if decl.CXXMethodIsStatic() != 0 {
+				preloadGlobalFunc(ctx, &ctx.scopeCtx, decl)
+				break
+			}
+			fn, isNew := this.addOveerloadObj(ctx, name, decl)
+			if isNew {
+				this.publicMethods = append(this.publicMethods, fn)
 			}
 		}
 		return clang.Continue
