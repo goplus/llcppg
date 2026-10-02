@@ -71,7 +71,7 @@ func cNameOf(decl clang.Cursor) string {
 	cName := cBaseName(decl)
 	for {
 		decl = decl.SemanticParent()
-		if decl.Kind == lc.Cursor_TranslationUnit {
+		if decl.IsNull() != 0 || decl.Kind == lc.Cursor_TranslationUnit {
 			break
 		}
 		cName = cBaseName(decl) + "::" + cName

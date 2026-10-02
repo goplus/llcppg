@@ -170,6 +170,10 @@ type Config struct {
 	// for all header files.
 	GoFileOf func(headerFile string) (string, bool)
 
+	// FailFast specifies whether to fail fast on errors (optional). If FailFast is non-zero,
+	// llcppg will stop after printing errors `FailFast` times.
+	FailFast int
+
 	// LoadLibcPubFile specifies whether to load the pubFile for libc package (optional).
 	LoadLibcPubFile bool
 
@@ -233,7 +237,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	typdecls := make(map[string]typDecl)
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
-		llgo: llgo, fset: pkg.Fset, lang: conf.Language,
+		llgo: llgo, fset: pkg.Fset, lang: conf.Language, failFast: conf.FailFast,
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
 		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,

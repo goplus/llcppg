@@ -77,7 +77,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 
 	manglingName := clang.Mangling(fn)
 	if manglingName == "" {
-		ctx.logf(fn, "func %s: no mangled symbol, skipped", cName)
+		ctx.ignoref(featExplicitIgnore, fn, "func %s: no mangled symbol, ignored", cName)
 		return
 	}
 
@@ -100,7 +100,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 		}
 		manglingName = wrapInlineFunc(ctx, manglingName, fn, this)
 	} else if _, ok := ctx.nameLookup(manglingName); !ok {
-		ctx.logf(fn, "func %s: symbol not found in lib files, skipped", cName)
+		ctx.ignoref(featExplicitIgnore, fn, "func %s: symbol not found in lib files, ignored", cName)
 		return
 	}
 

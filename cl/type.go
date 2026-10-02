@@ -129,26 +129,15 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	case lc.Type_FunctionProto:
 		*feats |= featHasCallback
 		return toFuncType(ctx, pkg, typ, feats)
-	case lc.Type_Enum:
+	case lc.Type_Enum, lc.Type_Record, lc.Type_Typedef:
 		cName := cTypeName(typ)
-		if t, ok := ctx.typeOf(cName); ok {
-			return t
-		}
-	case lc.Type_Record, lc.Type_Typedef:
-		cName := cTypeName(typ)
-		if o, ok := ctx.types[cName]; ok {
-			if o.feats != 0 {
-				*feats |= o.feats
-				if o.feats&featAllIgnore != 0 {
-					return types.Typ[types.Invalid] // ignored type
-				}
-			}
+		if o, ok := ctx.getTypeObj(cName, feats); ok {
 			return o.Type()
 		}
 	case lc.Type_Elaborated:
 		cName := cTypeName(typ.Named())
-		if t, ok := ctx.typeOf(cName); ok {
-			return t
+		if o, ok := ctx.getTypeObj(cName, feats); ok {
+			return o.Type()
 		}
 	case lc.Type_IncompleteArray, lc.Type_VariableArray:
 		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
@@ -170,7 +159,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
 	case lc.Type_Unexposed:
-		name := clang.String(typ)
+		name := clang.String(typ) // maybe typeParams
 		if t, ok := scope.lookupType(name); ok {
 			return t
 		}
@@ -179,10 +168,8 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	case lc.Type_BlockPointer:
 		*feats |= featQuietIgnore // will always be ignored
 		return types.Typ[types.Invalid]
-	default:
-		ctx.logtf(typ, "toType: unknown kind - %v", typ.Kind)
 	}
-	ctx.logtf(typ, "toType: unsupported type - %s", clang.String(typ))
+	ctx.logtf(typ, "toType: unsupported type - %s (%d: %s)", cTypeName(typ), typ.Kind, clang.String(typ))
 	*feats |= featExplicitIgnore
 	return types.Typ[types.Invalid]
 }

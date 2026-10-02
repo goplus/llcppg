@@ -22,6 +22,7 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"os"
 	"sort"
 
 	"github.com/goplus/gogen"
@@ -153,7 +154,8 @@ type pkgCtx struct {
 	compiles []compileUnit
 	pubs     []Entry
 
-	anonSeq int
+	failFast int
+	anonSeq  int
 
 	stdRecvName bool
 	keepDoc     bool
@@ -162,6 +164,10 @@ type pkgCtx struct {
 func (p *pkgCtx) ignoref(feats int, decl clang.Cursor, format string, args ...any) {
 	if feats&featQuietIgnore == 0 || debugQuietIgnore {
 		p.logf(decl, format, args...)
+		p.failFast--
+		if p.failFast == 0 {
+			os.Exit(1)
+		}
 	}
 }
 
@@ -253,27 +259,35 @@ func (p *pkgCtx) addType(cName string, decl clang.Cursor, typNamed *types.Named)
 }
 
 func (p *pkgCtx) ignoreType(cName string, feats int) {
-	if _, ok := p.types[cName]; !ok {
-		p.types[cName] = typeObj{nil, feats}
+	if o, ok := p.types[cName]; ok {
+		if o.TypeName != nil && o.Pkg() == p.pkg.Types { // don't ignore external type
+			o.feats |= feats
+		}
+		return
 	}
+	p.types[cName] = typeObj{nil, feats}
 }
 
-func (p *pkgCtx) isTypeIgnored(cName string) bool {
+func (p *pkgCtx) isConfTypeIgnored(cName string) bool {
 	return contains(cName, p.typeIgnores)
 }
 
-func (p *pkgCtx) typeObj(cName string) (*types.TypeName, bool) {
-	if o, ok := p.types[cName]; ok && o.feats&featQuietIgnore == 0 {
-		return o.TypeName, true
+func (p *pkgCtx) nsFeats(ns string) int {
+	if ns != "" {
+		if o, ok := p.types[ns]; ok {
+			return o.feats
+		}
 	}
-	return nil, false
+	return 0
 }
 
-func (p *pkgCtx) typeOf(cName string) (types.Type, bool) {
-	if o, ok := p.types[cName]; ok && o.feats&featQuietIgnore == 0 {
-		return o.Type(), true
+func (p *pkgCtx) getTypeObj(cName string, feats *int) (ret *types.TypeName, ok bool) {
+	o, ok := p.types[cName]
+	if ok {
+		ret, ok = o.TypeName, o.feats&featAllIgnore == 0
+		*feats |= o.feats
 	}
-	return nil, false
+	return
 }
 
 func (p *pkgCtx) isMacroIgnored(cName string) bool {
