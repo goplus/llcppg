@@ -35,22 +35,24 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	var cName = cNameOf(decl)
 	var goName = ctx.typeName(cName, true)
 	if cNewName, ok := ctx.typeAlias[cName]; ok {
-		if t, ok := ctx.typeOf(cNewName); ok {
-			tunder = t
+		if o, ok := ctx.getTypeObj(cNewName, &feats); ok {
+			tunder = o.Type()
 			goto lzFind
 		}
-		ctx.logf(decl, "typedef %s: alias to %s but not found, skipped", cName, cNewName)
+		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: alias to %s but not found, ignored", cName, cNewName)
+		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
 
-	if ctx.isTypeIgnored(cName) {
+	if ctx.isConfTypeIgnored(cName) {
 		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", cName)
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 
 	if decl.Kind == lc.Cursor_TypeAliasTemplateDecl {
-		ctx.logf(decl, "typedef %s: template type alias, skipped", cName)
+		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: template type alias, ignored", cName)
+		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
 
@@ -66,7 +68,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		return
 	}
 	if feats&featExplicitIgnore != 0 {
-		ctx.logf(decl, "typedef %s: unsupported underlying type, skipped", cName)
+		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type, ignored", cName)
 		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}

@@ -87,6 +87,10 @@ func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor) (ret []*ty
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
 		case lc.Cursor_TemplateTypeParameter:
+			if isParameterPack(decl) {
+				quietIgnore = true
+				return clang.Break
+			}
 			idx++
 			name := clang.String(decl)
 			if name == "" {
@@ -103,6 +107,19 @@ func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor) (ret []*ty
 		return clang.Continue
 	})
 	return
+}
+
+func isParameterPack(decl clang.Cursor) bool { // <class... T>
+	tu := clang.TranslationUnit{TranslationUnit: decl.TranslationUnit()}
+	extent := decl.Extent()
+	tokens, dispose := tu.Tokenize(extent)
+	defer dispose()
+	for _, token := range tokens {
+		if token.Kind() == lc.Token_Punctuation && tu.TokenSpelling(token) == "..." {
+			return true
+		}
+	}
+	return false
 }
 
 func loadTemplateClass(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) {
@@ -125,9 +142,8 @@ func compileTemplateClass(ctx *pkgCtx, obj *templateClass, parent *scopeCtx) {
 	pkgTypes := pkg.Types
 	tparams, quietIgnore := newTypeParams(ctx, pkgTypes, cls)
 	if quietIgnore || order >= 0 {
-		if debugQuietIgnore {
-			ctx.logf(cls, "class %s: unsupported template params, ignored", cName)
-		}
+		ctx.ignoref(featQuietIgnore, cls, "class %s: unsupported template params, ignored", cName)
+		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 
@@ -474,13 +490,12 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor, feats *int) *types.TypeName {
 		t = t.Named()
 	}
 	switch t.Kind {
-	case lc.Type_Record:
+	case lc.Type_Record, lc.Type_Typedef:
 		cName := cTypeName(t)
-		if t, ok := ctx.typeObj(cName); ok {
-			return t
+		if o, ok := ctx.getTypeObj(cName, feats); ok {
+			return o
 		}
 	case lc.Type_Unexposed:
-		ctx.logf(decl, "baseClass %s: with unexposed type, skipped", clang.String(decl))
 		*feats |= featExplicitIgnore
 		return nil
 	}
@@ -493,7 +508,7 @@ func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
 	if m, ok := ctx.fns[fnUSR]; ok {
 		m.decl = outsideDecl
 	} else {
-		ctx.logf(outsideDecl, "[WARN] method undeclared - %s", cNameOf(outsideDecl))
+		ctx.ignoref(featExplicitIgnore, outsideDecl, "[WARN] method undeclared - %s", cNameOf(outsideDecl))
 	}
 }
 

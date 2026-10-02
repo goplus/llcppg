@@ -34,7 +34,7 @@ import (
 // Gen generates Go files from the C/C++ header files and llcppg.cfg in the specified
 // source directory and writes them to the destination directory. It uses the provided
 // clang index for parsing.
-func Gen(destDir, srcDir string, index clang.Index) (err error) {
+func Gen(destDir, srcDir string, index clang.Index, verbose bool) (err error) {
 	cfg, err := tool.LoadConf(filepath.Join(srcDir, "llcppg.cfg"))
 	if err != nil {
 		return
@@ -45,7 +45,7 @@ func Gen(destDir, srcDir string, index clang.Index) (err error) {
 	}
 	mainPkgName := cfg.Name
 
-	if cfg.IgnoreInline {
+	if !verbose && cfg.IgnoreInline {
 		cl.InlineFuncIgnore = cl.QuietIgnoreInline // quiet ignore inline functions
 	}
 

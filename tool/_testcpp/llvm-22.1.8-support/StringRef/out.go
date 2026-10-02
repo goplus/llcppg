@@ -56,9 +56,6 @@ func ConsumeUnsignedInteger(Str *StringRef, Radix c.Uint, Result *c.UlongLong) b
 //go:linkname ConsumeSignedInteger C._ZN4llvm20consumeSignedIntegerERNS_9StringRefEjRx
 func ConsumeSignedInteger(Str *StringRef, Radix c.Uint, Result *c.LongLong) bool
 
-//go:linkname StringRefNpos C._ZN4llvm9StringRef4nposE
-var StringRefNpos c.SizeT
-
 // Compare two strings, ignoring case.
 //
 // llgo:link (*StringRef).CompareInsensitive C._ZNK4llvm9StringRef19compare_insensitiveES0_

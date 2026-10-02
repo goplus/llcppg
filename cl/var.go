@@ -30,15 +30,20 @@ func loadVar(ctx *pkgCtx, decl clang.Cursor) {
 }
 
 func compileVar(ctx *pkgCtx, decl clang.Cursor) {
-	cName := cNameOf(decl)
+	ns := cNS(decl)
+	cName := cNameWithNS(clang.String(decl), ns)
+	if feats := ctx.nsFeats(ns); feats&featAllIgnore != 0 {
+		ctx.ignoref(feats, decl, "var %s: parent is ignored", cName)
+		return
+	}
 	if varHasInitExpr(ctx, decl) {
-		ctx.logf(decl, "var %s: has initialized expression, skipped", cName)
+		ctx.ignoref(featQuietIgnore, decl, "var %s: has initialized expression, ignored", cName)
 		return
 	}
 
 	manglingName := clang.Mangling(decl)
 	if _, ok := ctx.nameLookup(manglingName); !ok {
-		ctx.logf(decl, "var %s: symbol not found in lib files, skipped", cName)
+		ctx.ignoref(featExplicitIgnore, decl, "var %s: symbol not found in lib files, ignored", cName)
 		return
 	}
 
@@ -63,14 +68,16 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor) {
 	defs.New(goNodePos(ctx, decl), typ, goName)
 }
 
-func varHasInitExpr(_ *pkgCtx, v clang.Cursor) (hasInitExpr bool) {
+func varHasInitExpr(ctx *pkgCtx, v clang.Cursor) (hasInitExpr bool) {
 	clang.VisitChildren(v, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
-		case lc.Cursor_InitListExpr, lc.Cursor_CallExpr:
+		case lc.Cursor_InitListExpr, lc.Cursor_CallExpr, lc.Cursor_DeclRefExpr,
+			lc.Cursor_UnaryOperator, lc.Cursor_UnexposedExpr:
 			hasInitExpr = true
 			return clang.Break
+		case lc.Cursor_TypeRef, lc.Cursor_UnaryExpr:
 		default:
-			// ctx.panicf(decl, "varHasInitExpr: unknown kind - %v", decl.Kind)
+			ctx.panicf(decl, "varHasInitExpr: unknown kind - %v", decl.Kind)
 		}
 		return clang.Continue
 	})
