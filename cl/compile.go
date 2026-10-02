@@ -19,12 +19,10 @@ package cl
 import (
 	"go/token"
 	"go/types"
-	"log"
 	"maps"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/llarhub/clang-c"
 )
 
 const (
@@ -247,7 +245,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		nsIgnore: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnores: conf.TypeIgnore,
 		classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
-		fileBases: make(map[clang.File]int), fns: make(map[string]*funcObj),
+		fileBases: make(map[clang.File]int), ovobjs: make(map[string]*overloadObj),
 		macroVals: make(map[string]any), types: make(map[string]typeObj),
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
@@ -259,16 +257,6 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	}
 
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
-
-	// NOTE(xsw): should complete uninitialized typDecls before compiling
-	if debugMajorProc {
-		log.Println("==> complete uninitialized type declarations")
-	}
-	for _, typDecl := range typdecls {
-		if typDecl.State() == gogen.TyStateUninited {
-			typDecl.InitType(pkg, types.NewStruct(nil, nil))
-		}
-	}
 
 	ctx.compile()
 	ret.Package = pkg
@@ -314,64 +302,6 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 		maps.Copy(lastSeen, ctx.thisSeen)
 	}
 	scope.reorder()
-}
-
-func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
-	switch decl.Kind {
-	case lc.Cursor_FunctionDecl:
-		loadGlobalFunc(ctx, scope, decl)
-	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
-		loadClass(ctx, decl, decl.Kind, nil)
-	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
-		loadOutsideMethod(ctx, decl)
-	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
-		loadTypedef(ctx, decl, nil)
-	case lc.Cursor_EnumDecl:
-		loadEnum(ctx, decl)
-	case lc.Cursor_MacroDefinition:
-		loadMacro(ctx, decl)
-	case lc.Cursor_InclusionDirective:
-		loadInclude(ctx, decl)
-	case lc.Cursor_Namespace:
-		loadNamespace(ctx, scope, decl)
-	case lc.Cursor_VarDecl:
-		loadVar(ctx, decl)
-	case lc.Cursor_UnionDecl:
-		loadUnion(ctx, decl)
-	case lc.Cursor_LinkageSpec: // extern "C" { ... }
-		loadLinkageSpec(ctx, scope, decl)
-	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:
-		// noop
-	case lc.Cursor_FunctionTemplate:
-		// TODO(xsw): ignore for now
-	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
-		loadTemplateClass(ctx, decl, nil)
-	case lc.Cursor_UnexposedDecl, lc.Cursor_UnexposedAttr:
-		// noop
-	default:
-		ctx.panicf(decl, "loadDecl: unknown kind - %v", decl.Kind)
-	}
-}
-
-func loadNamespace(ctx *pkgCtx, scope *scopeCtx, namespace clang.Cursor) {
-	cName := cNameOf(namespace)
-	if ctx.isNSIgnored(cName) {
-		if debugCompileDecl {
-			ctx.logf(namespace, "namespace %s - ignored", cName)
-		}
-		return
-	}
-	clang.VisitChildren(namespace, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadDecl(ctx, scope, decl)
-		return clang.Continue
-	})
-}
-
-func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor) {
-	clang.VisitChildren(linkage, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		loadDecl(ctx, scope, decl)
-		return clang.Continue
-	})
 }
 
 // -----------------------------------------------------------------------------

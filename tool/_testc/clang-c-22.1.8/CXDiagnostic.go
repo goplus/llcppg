@@ -28,13 +28,6 @@ const (
 	Diagnostic_Fatal DiagnosticSeverity = 4
 )
 
-// A single diagnostic, containing the diagnostic's severity,
-// location, text, source ranges, and fix-it hints.
-type Diagnostic uintptr
-
-// A group of CXDiagnostics.
-type DiagnosticSet uintptr
-
 // Describes the kind of error that occurred (if any) in a call to
 // \c clang_loadDiagnostics.
 type LoadDiag_Error c.Uint
@@ -103,6 +96,13 @@ const (
 	// \c -fdiagnostics-show-category=name.
 	Diagnostic_DisplayCategoryName DiagnosticDisplayOptions = 32
 )
+
+// A single diagnostic, containing the diagnostic's severity,
+// location, text, source ranges, and fix-it hints.
+type Diagnostic uintptr
+
+// A group of CXDiagnostics.
+type DiagnosticSet uintptr
 
 // Determine the number of diagnostics in a CXDiagnosticSet.
 //
