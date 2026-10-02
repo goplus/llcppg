@@ -7,14 +7,6 @@ import (
 	_ "unsafe"
 )
 
-// Error codes for Compilation Database
-type CompilationDatabase_Error c.Uint
-
-const (
-	CompilationDatabase_NoError            CompilationDatabase_Error = 0
-	CompilationDatabase_CanNotLoadDatabase CompilationDatabase_Error = 1
-)
-
 // A compilation database holds all information used to compile files in a
 // project. For each file in the database, it can be queried for the working
 // directory or the command line used for the compiler invocation.
@@ -33,6 +25,14 @@ type CompileCommands uintptr
 
 // Represents the command line invocation to compile a specific file.
 type CompileCommand uintptr
+
+// Error codes for Compilation Database
+type CompilationDatabase_Error c.Uint
+
+const (
+	CompilationDatabase_NoError            CompilationDatabase_Error = 0
+	CompilationDatabase_CanNotLoadDatabase CompilationDatabase_Error = 1
+)
 
 // Creates a compilation database from the database found in directory
 // buildDir. For example, CMake can output a compile_commands.json which can
