@@ -60,12 +60,12 @@ func loadGlobalFunc(ctx *pkgCtx, obj *overloadObj) {
 // is non-nil, it is an instance method compiled with a "this" receiver.
 func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	fn := obj.decl
-	cName := obj.cName
-	baseName := clang.String(fn)
-	isOp := isOperator(baseName)
+	cName := cNameOf(fn)
+	name := obj.name
+	isOp := isOperator(name)
 	if debugCompileDecl {
 		fnType := clang.String(fn.Type())
-		ctx.logf(fn, "func %s: %s - isOp: %v", obj.cName, fnType, isOp)
+		ctx.logf(fn, "func %s: %s - isOp: %v", cName, fnType, isOp)
 	}
 	if isOp {
 		return // TODO(xsw): support operator
@@ -122,17 +122,6 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 		typName = typNamed.Obj().Name()
 	}
 
-	name := cName
-	switch fn.Kind {
-	case lc.Cursor_Constructor:
-		name = "XGo_Ctor"
-	case lc.Cursor_Destructor:
-		name = "XGo_Dtor"
-	case lc.Cursor_CXXMethod, lc.Cursor_FunctionTemplate:
-		if fn.CXXMethodIsStatic() == 0 {
-			name = clang.String(fn) // method name
-		}
-	}
 	fnName := ctx.funcName(name, obj.order(), typName, typCName, this == nil, true)
 
 	if recv == nil {

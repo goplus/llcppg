@@ -125,8 +125,8 @@ func isParameterPack(decl clang.Cursor) bool { // <class... T>
 }
 
 func loadTemplateClass(ctx *pkgCtx, this *classCtx, obj *overloadObj) {
-	cName := obj.cName
 	cls := obj.decl
+	cName := cNameOf(cls)
 	order := obj.order()
 	if debugCompileDecl {
 		ctx.logf(cls, "template class %s: order - %d", cName, order)
@@ -347,8 +347,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 	case lc.Cursor_ClassTemplate:
 		nested := newClassCtx(ctx, decl, this.scope())
 		loadTemplateClass(ctx, nested, &overloadObj{
-			cName: cNameOf(decl),
-			decl:  decl,
+			decl: decl,
 		})
 
 	case lc.Cursor_ClassTemplatePartialSpecialization:
