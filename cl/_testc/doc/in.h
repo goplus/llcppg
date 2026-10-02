@@ -25,7 +25,7 @@ int add(int a, int b);
 typedef int MyInt;
 
 /// A documented global variable.
-extern MyInt counter;
+extern int counter;
 
 /// Maximum size limit.
 #define MAX_SIZE 100

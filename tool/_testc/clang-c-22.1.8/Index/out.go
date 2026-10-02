@@ -15,6 +15,36 @@ const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
 const CINDEX_VERSION_MAJOR = 0
 const CINDEX_VERSION_MINOR = 64
 
+// An "index" that consists of a set of translation units that would
+// typically be linked together into an executable or library.
+type Index uintptr
+type TargetInfoImpl struct {
+}
+
+// An opaque type representing target information for a given translation
+// unit.
+type TargetInfo = *TargetInfoImpl
+type TranslationUnitImpl struct {
+}
+
+// A single translation unit, which resides in an index.
+type TranslationUnit = *TranslationUnitImpl
+
+// Opaque pointer representing client data that will be passed through
+// to various callbacks and visitors.
+type ClientData = unsafe.Pointer
+
+// Provides the contents of a file that has not yet been saved to disk.
+//
+// Each CXUnsavedFile instance provides the name of a file on the
+// system along with the current contents of that file that have not
+// yet been saved to disk.
+type UnsavedFile struct {
+	Filename *c.Char
+	Contents *c.Char
+	Length   c.Ulong
+}
+
 // Describes the availability of a particular entity, which indicates
 // whether the use of this entity will result in a warning or error due to
 // it being deprecated or unavailable.
@@ -32,6 +62,13 @@ const (
 	// an error.
 	Availability_NotAccessible AvailabilityKind = 3
 )
+
+// Describes a version number of the form major.minor.subminor.
+type Version struct {
+	Major    c.Int
+	Minor    c.Int
+	Subminor c.Int
+}
 
 // Describes the exception specification of a cursor.
 //
@@ -94,6 +131,37 @@ const (
 	// background priority.
 	GlobalOpt_ThreadBackgroundPriorityForAll GlobalOptFlags = 3
 )
+
+// Index initialization options.
+//
+// 0 is the default value of each member of this struct except for Size.
+// Initialize the struct in one of the following three ways to avoid adapting
+// code each time a new member is added to it:
+// \code
+// CXIndexOptions Opts;
+// memset(&Opts, 0, sizeof(Opts));
+// Opts.Size = sizeof(CXIndexOptions);
+// \endcode
+// or explicitly initialize the first data member and zero-initialize the rest:
+// \code
+// CXIndexOptions Opts = { sizeof(CXIndexOptions) };
+// \endcode
+// or to prevent the -Wmissing-field-initializers warning for the above version:
+// \code
+// CXIndexOptions Opts{};
+// Opts.Size = sizeof(CXIndexOptions);
+// \endcode
+type IndexOptions struct {
+	Size                                c.Uint
+	ThreadBackgroundPriorityForIndexing uint8
+	ThreadBackgroundPriorityForEditing  uint8
+	ExcludeDeclarationsFromPCH          c.Uint
+	DisplayDiagnostics                  c.Uint
+	StorePreamblesInMemory              c.Uint
+	X                                   c.Uint
+	PreambleStoragePath                 *c.Char
+	InvocationEmissionPath              *c.Char
+}
 
 // Flags that control the creation of translation units.
 //
@@ -270,6 +338,18 @@ const (
 	TUResourceUsage_First                              TUResourceUsageKind = 1
 	TUResourceUsage_Last                               TUResourceUsageKind = 14
 )
+
+type TUResourceUsageEntry struct {
+	Kind   TUResourceUsageKind
+	Amount c.Ulong
+}
+
+// The memory usage of a CXTranslationUnit, broken into categories.
+type TUResourceUsage struct {
+	Data       unsafe.Pointer
+	NumEntries c.Uint
+	Entries    *TUResourceUsageEntry
+}
 
 // Describes the kind of entity that a cursor refers to.
 type CursorKind c.Uint
@@ -1114,6 +1194,28 @@ const (
 	Cursor_OverloadCandidate CursorKind = 700
 )
 
+// A cursor representing some element in the abstract syntax tree for
+// a translation unit.
+//
+// The cursor abstraction unifies the different kinds of entities in a
+// program--declaration, statements, expressions, references to declarations,
+// etc.--under a single "cursor" abstraction with a common set of operations.
+// Common operation for a cursor include: getting the physical location in
+// a source file where the cursor points, getting the name associated with a
+// cursor, and retrieving cursors for any child nodes of a particular cursor.
+//
+// Cursors can be produced in two specific ways.
+// clang_getTranslationUnitCursor() produces a cursor for a translation unit,
+// from which one can use clang_visitChildren() to explore the rest of the
+// translation unit. clang_getCursor() maps from a physical source location
+// to the entity that resides at that location, allowing one to map from the
+// source code into the AST.
+type Cursor struct {
+	Kind  CursorKind
+	Xdata c.Int
+	Data  [3]unsafe.Pointer
+}
+
 // Describe the linkage of the entity referred to by a cursor.
 type LinkageKind c.Uint
 
@@ -1147,6 +1249,17 @@ const (
 	Visibility_Default VisibilityKind = 3
 )
 
+// Describes the availability of a given entity on a particular platform, e.g.,
+// a particular class might only be available on Mac OS 10.7 or newer.
+type PlatformAvailability struct {
+	Platform    CXString.String
+	Introduced  Version
+	Deprecated  Version
+	Obsoleted   Version
+	Unavailable c.Int
+	Message     CXString.String
+}
+
 // Describe the "language" of the entity referred to by a cursor.
 type LanguageKind c.Uint
 
@@ -1166,6 +1279,12 @@ const (
 	TLS_Dynamic TLSKind = 1
 	TLS_Static  TLSKind = 2
 )
+
+type CursorSetImpl struct {
+}
+
+// A fast container representing a set of CXCursors.
+type CursorSet = *CursorSetImpl
 
 // Describes the kind of type
 type TypeKind c.Uint
@@ -1669,6 +1788,12 @@ const (
 	CallingConv_Unexposed          CallingConv = 200
 )
 
+// The type of an element in the abstract syntax tree.
+type Type struct {
+	Kind TypeKind
+	Data [2]unsafe.Pointer
+}
+
 // Describes the kind of a template argument.
 //
 // See the definition of llvm::clang::TemplateArgument::ArgKind for full
@@ -1828,6 +1953,24 @@ const (
 	ChildVisit_Recurse ChildVisitResult = 2
 )
 
+// Visitor invoked for each cursor found by a traversal.
+//
+// This visitor function will be invoked for each cursor found by
+// clang_visitCursorChildren(). Its first argument is the cursor being
+// visited, its second argument is the parent visitor for that cursor,
+// and its third argument is the client data provided to
+// clang_visitCursorChildren().
+//
+// The visitor should return one of the \c CXChildVisitResult values
+// to direct clang_visitCursorChildren().
+//
+// llgo:type C
+type CursorVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 Cursor, _llcppg_param3 ClientData) ChildVisitResult
+
+// Opaque pointer representing a policy that controls pretty printing
+// for \c clang_getCursorPrettyPrinted.
+type PrintingPolicy uintptr
+
 // Properties for the printing policy.
 //
 // See \c clang::PrintingPolicy for more information.
@@ -1897,6 +2040,12 @@ const (
 	ObjCDeclQualifier_Oneway ObjCDeclQualifierKind = 32
 )
 
+// \defgroup CINDEX_MODULE Module introspection
+//
+// The functions in this group provide access to information about modules.
+//
+// @{
+type Module uintptr
 type NameRefFlags c.Uint
 
 const (
@@ -1932,6 +2081,31 @@ const (
 	// A comment.
 	Token_Comment TokenKind = 4
 )
+
+// Describes a single preprocessing token.
+type Token struct {
+	IntData [4]c.Uint
+	PtrData unsafe.Pointer
+}
+
+// A semantic string that describes a code-completion result.
+//
+// A semantic string that describes the formatting of a code-completion
+// result as a single "template" of text that should be inserted into the
+// source buffer when a particular code-completion result is selected.
+// Each semantic string is made up of some number of "chunks", each of which
+// contains some text along with a description of what that text means, e.g.,
+// the name of the entity being referenced, whether the text chunk is part of
+// the template, or whether it is a "placeholder" that the user should replace
+// with actual code,of a specific kind. See \c CXCompletionChunkKind for a
+// description of the different kinds of chunks.
+type CompletionString uintptr
+
+// A single result of code completion.
+type CompletionResult struct {
+	CursorKind       CursorKind
+	CompletionString CompletionString
+}
 
 // Describes a single piece of text within a code-completion string.
 //
@@ -2062,6 +2236,16 @@ const (
 	CompletionChunk_VerticalSpace CompletionChunkKind = 20
 )
 
+// Contains the results of code-completion.
+//
+// This data structure contains the results of code completion, as
+// produced by \c clang_codeCompleteAt(). Its contents must be freed by
+// \c clang_disposeCodeCompleteResults.
+type CodeCompleteResults struct {
+	Results    *CompletionResult
+	NumResults c.Uint
+}
+
 // Flags that can be passed to \c clang_codeCompleteAt() to
 // modify its behavior.
 //
@@ -2164,6 +2348,18 @@ const (
 	CompletionContext_Unknown CompletionContext = 8388607
 )
 
+// Visitor invoked for each file in a translation unit
+//        (used with clang_getInclusions()).
+//
+// This visitor function will be invoked by clang_getInclusions() for each
+// file included (either at the top-level or by \#include directives) within
+// a translation unit.  The first argument is the file being included, and
+// the second and third arguments provide the inclusion stack.  The
+// array is sorted in order of immediate inclusion.  For example,
+// the first element refers to the location that included 'included_file'.
+//
+// llgo:type C
+type InclusionVisitor = func(_llcppg_param1 CXFile.File, _llcppg_param2 *CXSourceLocation.SourceLocation, _llcppg_param3 c.Uint, _llcppg_param4 ClientData)
 type EvalResultKind c.Uint
 
 const (
@@ -2176,6 +2372,9 @@ const (
 	Eval_UnExposed      EvalResultKind = 0
 )
 
+// Evaluation result of a cursor
+type EvalResult uintptr
+
 // \defgroup CINDEX_HIGH Higher level API functions
 //
 // @{
@@ -2186,6 +2385,10 @@ const (
 	Visit_Continue VisitorResult = 1
 )
 
+type CursorAndRangeVisitor struct {
+	Context unsafe.Pointer
+	Visit   func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 Cursor, _llcppg_param3 CXSourceLocation.SourceRange) VisitorResult
+}
 type Result c.Uint
 
 const (
@@ -2198,6 +2401,43 @@ const (
 	Result_VisitBreak Result = 2
 )
 
+// The client's data object that is associated with a CXFile.
+type IdxClientFile uintptr
+
+// The client's data object that is associated with a semantic entity.
+type IdxClientEntity uintptr
+
+// The client's data object that is associated with a semantic container
+// of entities.
+type IdxClientContainer uintptr
+
+// The client's data object that is associated with an AST file (PCH
+// or module).
+type IdxClientASTFile uintptr
+
+// Source location passed to index callbacks.
+type IdxLoc struct {
+	PtrData [2]unsafe.Pointer
+	IntData c.Uint
+}
+
+// Data for ppIncludedFile callback.
+type IdxIncludedFileInfo struct {
+	HashLoc        IdxLoc
+	Filename       *c.Char
+	File           CXFile.File
+	IsImport       c.Int
+	IsAngled       c.Int
+	IsModuleImport c.Int
+}
+
+// Data for IndexerCallbacks#importedASTFile.
+type IdxImportedASTFileInfo struct {
+	File       CXFile.File
+	Module     Module
+	Loc        IdxLoc
+	IsImplicit c.Int
+}
 type IdxEntityKind c.Uint
 
 const (
@@ -2267,10 +2507,49 @@ const (
 	IdxAttr_IBOutletCollection IdxAttrKind = 3
 )
 
+type IdxAttrInfo struct {
+	Kind   IdxAttrKind
+	Cursor Cursor
+	Loc    IdxLoc
+}
+type IdxEntityInfo struct {
+	Kind          IdxEntityKind
+	TemplateKind  IdxEntityCXXTemplateKind
+	Lang          IdxEntityLanguage
+	Name          *c.Char
+	USR           *c.Char
+	Cursor        Cursor
+	Attributes    **IdxAttrInfo
+	NumAttributes c.Uint
+}
+type IdxContainerInfo struct {
+	Cursor Cursor
+}
+type IdxIBOutletCollectionAttrInfo struct {
+	AttrInfo    *IdxAttrInfo
+	ObjcClass   *IdxEntityInfo
+	ClassCursor Cursor
+	ClassLoc    IdxLoc
+}
 type IdxDeclInfoFlags c.Uint
 
 const IdxDeclFlag_Skipped IdxDeclInfoFlags = 1
 
+type IdxDeclInfo struct {
+	EntityInfo        *IdxEntityInfo
+	Cursor            Cursor
+	Loc               IdxLoc
+	SemanticContainer *IdxContainerInfo
+	LexicalContainer  *IdxContainerInfo
+	IsRedeclaration   c.Int
+	IsDefinition      c.Int
+	IsContainer       c.Int
+	DeclAsContainer   *IdxContainerInfo
+	IsImplicit        c.Int
+	Attributes        **IdxAttrInfo
+	NumAttributes     c.Uint
+	Flags             c.Uint
+}
 type IdxObjCContainerKind c.Uint
 
 const (
@@ -2278,6 +2557,47 @@ const (
 	IdxObjCContainer_Interface      IdxObjCContainerKind = 1
 	IdxObjCContainer_Implementation IdxObjCContainerKind = 2
 )
+
+type IdxObjCContainerDeclInfo struct {
+	DeclInfo *IdxDeclInfo
+	Kind     IdxObjCContainerKind
+}
+type IdxBaseClassInfo struct {
+	Base   *IdxEntityInfo
+	Cursor Cursor
+	Loc    IdxLoc
+}
+type IdxObjCProtocolRefInfo struct {
+	Protocol *IdxEntityInfo
+	Cursor   Cursor
+	Loc      IdxLoc
+}
+type IdxObjCProtocolRefListInfo struct {
+	Protocols    **IdxObjCProtocolRefInfo
+	NumProtocols c.Uint
+}
+type IdxObjCInterfaceDeclInfo struct {
+	ContainerInfo *IdxObjCContainerDeclInfo
+	SuperInfo     *IdxBaseClassInfo
+	Protocols     *IdxObjCProtocolRefListInfo
+}
+type IdxObjCCategoryDeclInfo struct {
+	ContainerInfo *IdxObjCContainerDeclInfo
+	ObjcClass     *IdxEntityInfo
+	ClassCursor   Cursor
+	ClassLoc      IdxLoc
+	Protocols     *IdxObjCProtocolRefListInfo
+}
+type IdxObjCPropertyDeclInfo struct {
+	DeclInfo *IdxDeclInfo
+	Getter   *IdxEntityInfo
+	Setter   *IdxEntityInfo
+}
+type IdxCXXClassDeclInfo struct {
+	DeclInfo *IdxDeclInfo
+	Bases    **IdxBaseClassInfo
+	NumBases c.Uint
+}
 
 // Data for IndexerCallbacks#indexEntityReference.
 //
@@ -2312,6 +2632,33 @@ const (
 	SymbolRole_Implicit    SymbolRole = 256
 )
 
+// Data for IndexerCallbacks#indexEntityReference.
+type IdxEntityRefInfo struct {
+	Kind             IdxEntityRefKind
+	Cursor           Cursor
+	Loc              IdxLoc
+	ReferencedEntity *IdxEntityInfo
+	ParentEntity     *IdxEntityInfo
+	Container        *IdxContainerInfo
+	Role             SymbolRole
+}
+
+// A group of callbacks used by #clang_indexSourceFile and
+// #clang_indexTranslationUnit.
+type IndexerCallbacks struct {
+	AbortQuery             func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) c.Int
+	Diagnostic             func(_llcppg_param1 ClientData, _llcppg_param2 CXDiagnostic.DiagnosticSet, _llcppg_param3 unsafe.Pointer)
+	EnteredMainFile        func(_llcppg_param1 ClientData, _llcppg_param2 CXFile.File, _llcppg_param3 unsafe.Pointer) IdxClientFile
+	PpIncludedFile         func(_llcppg_param1 ClientData, _llcppg_param2 *IdxIncludedFileInfo) IdxClientFile
+	ImportedASTFile        func(_llcppg_param1 ClientData, _llcppg_param2 *IdxImportedASTFileInfo) IdxClientASTFile
+	StartedTranslationUnit func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) IdxClientContainer
+	IndexDeclaration       func(_llcppg_param1 ClientData, _llcppg_param2 *IdxDeclInfo)
+	IndexEntityReference   func(_llcppg_param1 ClientData, _llcppg_param2 *IdxEntityRefInfo)
+}
+
+// An indexing action/session, to be applied to one or multiple
+// translation units.
+type IndexAction uintptr
 type IndexOptFlags c.Uint
 
 const (
@@ -2334,6 +2681,19 @@ const (
 	// Bodies in system headers are always skipped.
 	IndexOpt_SkipParsedBodiesInSession IndexOptFlags = 16
 )
+
+// Visitor invoked for each field found by a traversal.
+//
+// This visitor function will be invoked for each field found by
+// \c clang_Type_visitFields. Its first argument is the cursor being
+// visited, its second argument is the client data provided to
+// \c clang_Type_visitFields.
+//
+// The visitor should return one of the \c CXVisitorResult values
+// to direct \c clang_Type_visitFields.
+//
+// llgo:type C
+type FieldVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 ClientData) VisitorResult
 
 // Describes the kind of binary operators.
 type BinaryOperatorKind c.Uint
@@ -2446,367 +2806,6 @@ const (
 	// C++ co_await operator.
 	UnaryOperator_Coawait UnaryOperatorKind = 14
 )
-
-// An "index" that consists of a set of translation units that would
-// typically be linked together into an executable or library.
-type Index uintptr
-type TargetInfoImpl struct {
-}
-
-// An opaque type representing target information for a given translation
-// unit.
-type TargetInfo = *TargetInfoImpl
-type TranslationUnitImpl struct {
-}
-
-// A single translation unit, which resides in an index.
-type TranslationUnit = *TranslationUnitImpl
-
-// Opaque pointer representing client data that will be passed through
-// to various callbacks and visitors.
-type ClientData = unsafe.Pointer
-
-// Provides the contents of a file that has not yet been saved to disk.
-//
-// Each CXUnsavedFile instance provides the name of a file on the
-// system along with the current contents of that file that have not
-// yet been saved to disk.
-type UnsavedFile struct {
-	Filename *c.Char
-	Contents *c.Char
-	Length   c.Ulong
-}
-
-// Describes a version number of the form major.minor.subminor.
-type Version struct {
-	Major    c.Int
-	Minor    c.Int
-	Subminor c.Int
-}
-
-// Index initialization options.
-//
-// 0 is the default value of each member of this struct except for Size.
-// Initialize the struct in one of the following three ways to avoid adapting
-// code each time a new member is added to it:
-// \code
-// CXIndexOptions Opts;
-// memset(&Opts, 0, sizeof(Opts));
-// Opts.Size = sizeof(CXIndexOptions);
-// \endcode
-// or explicitly initialize the first data member and zero-initialize the rest:
-// \code
-// CXIndexOptions Opts = { sizeof(CXIndexOptions) };
-// \endcode
-// or to prevent the -Wmissing-field-initializers warning for the above version:
-// \code
-// CXIndexOptions Opts{};
-// Opts.Size = sizeof(CXIndexOptions);
-// \endcode
-type IndexOptions struct {
-	Size                                c.Uint
-	ThreadBackgroundPriorityForIndexing uint8
-	ThreadBackgroundPriorityForEditing  uint8
-	ExcludeDeclarationsFromPCH          c.Uint
-	DisplayDiagnostics                  c.Uint
-	StorePreamblesInMemory              c.Uint
-	X                                   c.Uint
-	PreambleStoragePath                 *c.Char
-	InvocationEmissionPath              *c.Char
-}
-type TUResourceUsageEntry struct {
-	Kind   TUResourceUsageKind
-	Amount c.Ulong
-}
-
-// The memory usage of a CXTranslationUnit, broken into categories.
-type TUResourceUsage struct {
-	Data       unsafe.Pointer
-	NumEntries c.Uint
-	Entries    *TUResourceUsageEntry
-}
-
-// A cursor representing some element in the abstract syntax tree for
-// a translation unit.
-//
-// The cursor abstraction unifies the different kinds of entities in a
-// program--declaration, statements, expressions, references to declarations,
-// etc.--under a single "cursor" abstraction with a common set of operations.
-// Common operation for a cursor include: getting the physical location in
-// a source file where the cursor points, getting the name associated with a
-// cursor, and retrieving cursors for any child nodes of a particular cursor.
-//
-// Cursors can be produced in two specific ways.
-// clang_getTranslationUnitCursor() produces a cursor for a translation unit,
-// from which one can use clang_visitChildren() to explore the rest of the
-// translation unit. clang_getCursor() maps from a physical source location
-// to the entity that resides at that location, allowing one to map from the
-// source code into the AST.
-type Cursor struct {
-	Kind  CursorKind
-	Xdata c.Int
-	Data  [3]unsafe.Pointer
-}
-
-// Describes the availability of a given entity on a particular platform, e.g.,
-// a particular class might only be available on Mac OS 10.7 or newer.
-type PlatformAvailability struct {
-	Platform    CXString.String
-	Introduced  Version
-	Deprecated  Version
-	Obsoleted   Version
-	Unavailable c.Int
-	Message     CXString.String
-}
-type CursorSetImpl struct {
-}
-
-// A fast container representing a set of CXCursors.
-type CursorSet = *CursorSetImpl
-
-// The type of an element in the abstract syntax tree.
-type Type struct {
-	Kind TypeKind
-	Data [2]unsafe.Pointer
-}
-
-// Visitor invoked for each cursor found by a traversal.
-//
-// This visitor function will be invoked for each cursor found by
-// clang_visitCursorChildren(). Its first argument is the cursor being
-// visited, its second argument is the parent visitor for that cursor,
-// and its third argument is the client data provided to
-// clang_visitCursorChildren().
-//
-// The visitor should return one of the \c CXChildVisitResult values
-// to direct clang_visitCursorChildren().
-//
-// llgo:type C
-type CursorVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 Cursor, _llcppg_param3 ClientData) ChildVisitResult
-
-// Opaque pointer representing a policy that controls pretty printing
-// for \c clang_getCursorPrettyPrinted.
-type PrintingPolicy uintptr
-
-// \defgroup CINDEX_MODULE Module introspection
-//
-// The functions in this group provide access to information about modules.
-//
-// @{
-type Module uintptr
-
-// Describes a single preprocessing token.
-type Token struct {
-	IntData [4]c.Uint
-	PtrData unsafe.Pointer
-}
-
-// A semantic string that describes a code-completion result.
-//
-// A semantic string that describes the formatting of a code-completion
-// result as a single "template" of text that should be inserted into the
-// source buffer when a particular code-completion result is selected.
-// Each semantic string is made up of some number of "chunks", each of which
-// contains some text along with a description of what that text means, e.g.,
-// the name of the entity being referenced, whether the text chunk is part of
-// the template, or whether it is a "placeholder" that the user should replace
-// with actual code,of a specific kind. See \c CXCompletionChunkKind for a
-// description of the different kinds of chunks.
-type CompletionString uintptr
-
-// A single result of code completion.
-type CompletionResult struct {
-	CursorKind       CursorKind
-	CompletionString CompletionString
-}
-
-// Contains the results of code-completion.
-//
-// This data structure contains the results of code completion, as
-// produced by \c clang_codeCompleteAt(). Its contents must be freed by
-// \c clang_disposeCodeCompleteResults.
-type CodeCompleteResults struct {
-	Results    *CompletionResult
-	NumResults c.Uint
-}
-
-// Visitor invoked for each file in a translation unit
-//        (used with clang_getInclusions()).
-//
-// This visitor function will be invoked by clang_getInclusions() for each
-// file included (either at the top-level or by \#include directives) within
-// a translation unit.  The first argument is the file being included, and
-// the second and third arguments provide the inclusion stack.  The
-// array is sorted in order of immediate inclusion.  For example,
-// the first element refers to the location that included 'included_file'.
-//
-// llgo:type C
-type InclusionVisitor = func(_llcppg_param1 CXFile.File, _llcppg_param2 *CXSourceLocation.SourceLocation, _llcppg_param3 c.Uint, _llcppg_param4 ClientData)
-
-// Evaluation result of a cursor
-type EvalResult uintptr
-type CursorAndRangeVisitor struct {
-	Context unsafe.Pointer
-	Visit   func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 Cursor, _llcppg_param3 CXSourceLocation.SourceRange) VisitorResult
-}
-
-// The client's data object that is associated with a CXFile.
-type IdxClientFile uintptr
-
-// The client's data object that is associated with a semantic entity.
-type IdxClientEntity uintptr
-
-// The client's data object that is associated with a semantic container
-// of entities.
-type IdxClientContainer uintptr
-
-// The client's data object that is associated with an AST file (PCH
-// or module).
-type IdxClientASTFile uintptr
-
-// Source location passed to index callbacks.
-type IdxLoc struct {
-	PtrData [2]unsafe.Pointer
-	IntData c.Uint
-}
-
-// Data for ppIncludedFile callback.
-type IdxIncludedFileInfo struct {
-	HashLoc        IdxLoc
-	Filename       *c.Char
-	File           CXFile.File
-	IsImport       c.Int
-	IsAngled       c.Int
-	IsModuleImport c.Int
-}
-
-// Data for IndexerCallbacks#importedASTFile.
-type IdxImportedASTFileInfo struct {
-	File       CXFile.File
-	Module     Module
-	Loc        IdxLoc
-	IsImplicit c.Int
-}
-type IdxAttrInfo struct {
-	Kind   IdxAttrKind
-	Cursor Cursor
-	Loc    IdxLoc
-}
-type IdxEntityInfo struct {
-	Kind          IdxEntityKind
-	TemplateKind  IdxEntityCXXTemplateKind
-	Lang          IdxEntityLanguage
-	Name          *c.Char
-	USR           *c.Char
-	Cursor        Cursor
-	Attributes    **IdxAttrInfo
-	NumAttributes c.Uint
-}
-type IdxContainerInfo struct {
-	Cursor Cursor
-}
-type IdxIBOutletCollectionAttrInfo struct {
-	AttrInfo    *IdxAttrInfo
-	ObjcClass   *IdxEntityInfo
-	ClassCursor Cursor
-	ClassLoc    IdxLoc
-}
-type IdxDeclInfo struct {
-	EntityInfo        *IdxEntityInfo
-	Cursor            Cursor
-	Loc               IdxLoc
-	SemanticContainer *IdxContainerInfo
-	LexicalContainer  *IdxContainerInfo
-	IsRedeclaration   c.Int
-	IsDefinition      c.Int
-	IsContainer       c.Int
-	DeclAsContainer   *IdxContainerInfo
-	IsImplicit        c.Int
-	Attributes        **IdxAttrInfo
-	NumAttributes     c.Uint
-	Flags             c.Uint
-}
-type IdxObjCContainerDeclInfo struct {
-	DeclInfo *IdxDeclInfo
-	Kind     IdxObjCContainerKind
-}
-type IdxBaseClassInfo struct {
-	Base   *IdxEntityInfo
-	Cursor Cursor
-	Loc    IdxLoc
-}
-type IdxObjCProtocolRefInfo struct {
-	Protocol *IdxEntityInfo
-	Cursor   Cursor
-	Loc      IdxLoc
-}
-type IdxObjCProtocolRefListInfo struct {
-	Protocols    **IdxObjCProtocolRefInfo
-	NumProtocols c.Uint
-}
-type IdxObjCInterfaceDeclInfo struct {
-	ContainerInfo *IdxObjCContainerDeclInfo
-	SuperInfo     *IdxBaseClassInfo
-	Protocols     *IdxObjCProtocolRefListInfo
-}
-type IdxObjCCategoryDeclInfo struct {
-	ContainerInfo *IdxObjCContainerDeclInfo
-	ObjcClass     *IdxEntityInfo
-	ClassCursor   Cursor
-	ClassLoc      IdxLoc
-	Protocols     *IdxObjCProtocolRefListInfo
-}
-type IdxObjCPropertyDeclInfo struct {
-	DeclInfo *IdxDeclInfo
-	Getter   *IdxEntityInfo
-	Setter   *IdxEntityInfo
-}
-type IdxCXXClassDeclInfo struct {
-	DeclInfo *IdxDeclInfo
-	Bases    **IdxBaseClassInfo
-	NumBases c.Uint
-}
-
-// Data for IndexerCallbacks#indexEntityReference.
-type IdxEntityRefInfo struct {
-	Kind             IdxEntityRefKind
-	Cursor           Cursor
-	Loc              IdxLoc
-	ReferencedEntity *IdxEntityInfo
-	ParentEntity     *IdxEntityInfo
-	Container        *IdxContainerInfo
-	Role             SymbolRole
-}
-
-// A group of callbacks used by #clang_indexSourceFile and
-// #clang_indexTranslationUnit.
-type IndexerCallbacks struct {
-	AbortQuery             func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) c.Int
-	Diagnostic             func(_llcppg_param1 ClientData, _llcppg_param2 CXDiagnostic.DiagnosticSet, _llcppg_param3 unsafe.Pointer)
-	EnteredMainFile        func(_llcppg_param1 ClientData, _llcppg_param2 CXFile.File, _llcppg_param3 unsafe.Pointer) IdxClientFile
-	PpIncludedFile         func(_llcppg_param1 ClientData, _llcppg_param2 *IdxIncludedFileInfo) IdxClientFile
-	ImportedASTFile        func(_llcppg_param1 ClientData, _llcppg_param2 *IdxImportedASTFileInfo) IdxClientASTFile
-	StartedTranslationUnit func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) IdxClientContainer
-	IndexDeclaration       func(_llcppg_param1 ClientData, _llcppg_param2 *IdxDeclInfo)
-	IndexEntityReference   func(_llcppg_param1 ClientData, _llcppg_param2 *IdxEntityRefInfo)
-}
-
-// An indexing action/session, to be applied to one or multiple
-// translation units.
-type IndexAction uintptr
-
-// Visitor invoked for each field found by a traversal.
-//
-// This visitor function will be invoked for each field found by
-// \c clang_Type_visitFields. Its first argument is the cursor being
-// visited, its second argument is the client data provided to
-// \c clang_Type_visitFields.
-//
-// The visitor should return one of the \c CXVisitorResult values
-// to direct \c clang_Type_visitFields.
-//
-// llgo:type C
-type FieldVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 ClientData) VisitorResult
 
 // @}
 type Remapping uintptr

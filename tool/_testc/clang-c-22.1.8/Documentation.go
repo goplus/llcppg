@@ -7,6 +7,12 @@ import (
 	"unsafe"
 )
 
+// A parsed comment.
+type Comment struct {
+	ASTNode         unsafe.Pointer
+	TranslationUnit TranslationUnit
+}
+
 // Describes the type of the comment AST node (\c CXComment).  A comment
 // node can be considered block content (e. g., paragraph), inline content
 // (plain text) or neither (the root AST node).
@@ -111,11 +117,6 @@ const (
 	CommentParamPassDirection_InOut CommentParamPassDirection = 2
 )
 
-// A parsed comment.
-type Comment struct {
-	ASTNode         unsafe.Pointer
-	TranslationUnit TranslationUnit
-}
 type APISetImpl struct {
 }
 
