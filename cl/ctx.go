@@ -262,6 +262,7 @@ func (p *pkgCtx) ignoreType(cName string, feats int) {
 	if o, ok := p.types[cName]; ok {
 		if o.TypeName != nil && o.Pkg() == p.pkg.Types { // don't ignore external type
 			o.feats |= feats
+			p.types[cName] = o
 		}
 		return
 	}

@@ -68,7 +68,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		return
 	}
 	if feats&featExplicitIgnore != 0 {
-		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type, skipped", cName)
+		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type, ignored", cName)
 		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
