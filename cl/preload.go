@@ -176,7 +176,9 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	case lc.Cursor_FunctionDecl:
 		preloadGlobalFunc(ctx, scope, decl)
 	case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
-		preloadOutsideMethod(ctx, decl)
+		ctx.addLoadUnit(func(ctx *pkgCtx) {
+			loadOutsideMethod(ctx, decl)
+		})
 	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
 		ctx.addLoadUnit(func(ctx *pkgCtx) {
 			loadTypedef(ctx, decl, nil)
@@ -233,7 +235,7 @@ func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor) {
 	})
 }
 
-func preloadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
+func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
 	fnUSR := objUSR(outsideDecl)
 	if m, ok := ctx.ovobjs[fnUSR]; ok {
 		// TODO(xsw): check another definition of the same method
@@ -298,7 +300,7 @@ func preloadClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
 	}
 	this := newClassCtx(ctx, cls, scope)
 	ctx.addLoadUnit(func(ctx *pkgCtx) {
-		loadClass(ctx, this, cls)
+		loadClass(ctx, cName, this, cls)
 	})
 }
 
@@ -308,7 +310,7 @@ func preloadTemplateClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
 	if isNew {
 		ctx.addLoadUnit(func(ctx *pkgCtx) {
 			this := newClassCtx(ctx, obj.decl, scope)
-			loadTemplateClass(ctx, this, obj)
+			loadTemplateClass(ctx, cName, this, obj)
 		})
 	}
 }

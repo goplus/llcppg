@@ -124,9 +124,8 @@ func isParameterPack(decl clang.Cursor) bool { // <class... T>
 	return false
 }
 
-func loadTemplateClass(ctx *pkgCtx, this *classCtx, obj *overloadObj) {
+func loadTemplateClass(ctx *pkgCtx, cName string, this *classCtx, obj *overloadObj) {
 	cls := obj.decl
-	cName := cNameOf(cls)
 	order := obj.order()
 	if debugCompileDecl {
 		ctx.logf(cls, "template class %s: order - %d", cName, order)
@@ -162,8 +161,7 @@ func loadTemplateClass(ctx *pkgCtx, this *classCtx, obj *overloadObj) {
 
 // -----------------------------------------------------------------------------
 
-func loadClass(ctx *pkgCtx, this *classCtx, cls clang.Cursor) {
-	cName := cNameOf(cls)
+func loadClass(ctx *pkgCtx, cName string, this *classCtx, cls clang.Cursor) {
 	if debugCompileDecl {
 		ctx.logf(cls, "%s", tagStrvals[cls.Kind]+cName)
 	}
@@ -341,12 +339,12 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 			// noop
 		default:
 			nested := newClassCtx(ctx, decl, this.scope())
-			loadClass(ctx, nested, decl)
+			loadClass(ctx, cNameOf(decl), nested, decl)
 		}
 
 	case lc.Cursor_ClassTemplate:
 		nested := newClassCtx(ctx, decl, this.scope())
-		loadTemplateClass(ctx, nested, &overloadObj{
+		loadTemplateClass(ctx, cNameOf(decl), nested, &overloadObj{
 			decl: decl,
 		})
 
