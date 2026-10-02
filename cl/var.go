@@ -23,6 +23,12 @@ import (
 
 // -----------------------------------------------------------------------------
 
+func loadVar(ctx *pkgCtx, decl clang.Cursor) {
+	ctx.addCompileUnit(func(ctx *pkgCtx) {
+		compileVar(ctx, decl)
+	})
+}
+
 func compileVar(ctx *pkgCtx, decl clang.Cursor) {
 	ns := cNS(decl)
 	cName := cNameWithNS(clang.String(decl), ns)

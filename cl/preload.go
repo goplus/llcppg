@@ -191,8 +191,8 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 	case lc.Cursor_Namespace:
 		loadNamespace(ctx, scope, decl)
 	case lc.Cursor_VarDecl:
-		ctx.addCompileUnit(func(ctx *pkgCtx) {
-			compileVar(ctx, decl)
+		ctx.addLoadUnit(func(ctx *pkgCtx) {
+			loadVar(ctx, decl)
 		})
 	case lc.Cursor_UnionDecl:
 		ctx.addLoadUnit(func(ctx *pkgCtx) {

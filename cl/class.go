@@ -297,9 +297,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 
 	case lc.Cursor_VarDecl:
 		if isPublic(decl) {
-			ctx.addCompileUnit(func(ctx *pkgCtx) {
-				compileVar(ctx, decl)
-			})
+			loadVar(ctx, decl)
 		}
 
 	case lc.Cursor_CXXAccessSpecifier, lc.Cursor_FriendDecl, lc.Cursor_UsingDeclaration:
