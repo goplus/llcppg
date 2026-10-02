@@ -24,8 +24,9 @@ import (
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/llarhub/clang-c"
 	"github.com/qiniu/x/ctype"
+
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -40,21 +41,15 @@ func isOperator(baseName string) bool {
 	return false
 }
 
-func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
-	var baseName = clang.String(decl)
-	var name string
-	var isOp = isOperator(baseName)
-	if isOp {
-		name = baseName[len(operatorPrefix):]
-	} else {
-		name = cNameOf(decl)
-	}
-	if obj, ok := scope.addFunc(ctx, name, decl, isOp); ok {
-		ctx.addCompileUnit(func(ctx *pkgCtx) {
-			compileFuncOrMethod(ctx, obj, nil)
-		})
-	}
+// -----------------------------------------------------------------------------
+
+func loadGlobalFunc(ctx *pkgCtx, obj *overloadObj) {
+	ctx.addCompileUnit(func(ctx *pkgCtx) {
+		compileFuncOrMethod(ctx, obj, nil)
+	})
 }
+
+// -----------------------------------------------------------------------------
 
 // compileFuncOrMethod compiles a C/C++ function or method into a Go function.
 //
@@ -63,13 +58,14 @@ func loadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 // has no implicit "this", so it is loaded as a global function (its Go name is
 // prefixed by the enclosing class name, which acts like a namespace). When cls
 // is non-nil, it is an instance method compiled with a "this" receiver.
-func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
+func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	fn := obj.decl
 	cName := obj.cName
-	isOp := obj.isOperator
+	baseName := clang.String(fn)
+	isOp := isOperator(baseName)
 	if debugCompileDecl {
 		fnType := clang.String(fn.Type())
-		ctx.logf(fn, "func %s: %s - isOp: %v", cName, fnType, isOp)
+		ctx.logf(fn, "func %s: %s - isOp: %v", obj.cName, fnType, isOp)
 	}
 	if isOp {
 		return // TODO(xsw): support operator
@@ -125,13 +121,26 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *funcObj, this *classCtx) {
 		recv = types.NewParam(goNodePos(ctx, fn), pkgTypes, "this", types.NewPointer(typNamed))
 		typName = typNamed.Obj().Name()
 	}
-	fnName := ctx.funcName(cName, obj.order(), typName, typCName, this == nil, true)
+
+	name := cName
+	switch fn.Kind {
+	case lc.Cursor_Constructor:
+		name = "XGo_Ctor"
+	case lc.Cursor_Destructor:
+		name = "XGo_Dtor"
+	case lc.Cursor_CXXMethod, lc.Cursor_FunctionTemplate:
+		if fn.CXXMethodIsStatic() == 0 {
+			name = clang.String(fn) // method name
+		}
+	}
+	fnName := ctx.funcName(name, obj.order(), typName, typCName, this == nil, true)
+
 	if recv == nil {
 		nameInPkg = fnName
 	} else {
 		if typRecv != nil {
 			if existMember(typRecv, fnName) {
-				newName := ctx.funcName(cName, obj.order(), "", typCName, true, true)
+				newName := ctx.funcName(name, obj.order(), "", typCName, true, true)
 				log.Printf("==> member %s.%s already exists, rename to %s\n", typName, fnName, newName)
 				fnName = newName
 			}

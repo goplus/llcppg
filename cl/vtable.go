@@ -348,8 +348,8 @@ func overriddenRoots(m clang.Cursor) []clang.Cursor {
 }
 
 func vtableMethodName(ctx *pkgCtx, m clang.Cursor) string {
-	fnUSR := funcUSR(m)
-	if fn, ok := ctx.fns[fnUSR]; ok {
+	fnUSR := objUSR(m)
+	if fn, ok := ctx.ovobjs[fnUSR]; ok {
 		return ctx.funcName(fn.cName, fn.order(), "", "", false, true)
 	}
 	panic("vtableMethodName: method not found - " + cNameOf(m))

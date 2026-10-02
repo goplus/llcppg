@@ -23,7 +23,6 @@ import (
 	"go/types"
 	"log"
 	"os"
-	"sort"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -143,14 +142,15 @@ type pkgCtx struct {
 
 	fileBases map[clang.File]int // clang.File => base
 
-	macroVals map[string]any      // macroName => value
-	fns       map[string]*funcObj // fnUSR => func object
-	types     map[string]typeObj  // c/c++ fullName => type name object (include external types)
-	typdecls  map[string]typDecl  // c/c++ fullName => type declaration object (only local types)
-	impPkgs   map[string]none     // imported package path set
-	lastSeen  map[string]none     // last seen include file set (loaded include files)
-	thisSeen  map[string]none     // include file set seen in this translation unit
+	macroVals map[string]any          // macroName => value
+	ovobjs    map[string]*overloadObj // objUSR => overload object
+	types     map[string]typeObj      // c/c++ fullName => type name object (include external types)
+	typdecls  map[string]typDecl      // c/c++ fullName => type declaration object (only local types)
+	impPkgs   map[string]none         // imported package path set
+	lastSeen  map[string]none         // last seen include file set (loaded include files)
+	thisSeen  map[string]none         // include file set seen in this translation unit
 
+	loads    []compileUnit
 	compiles []compileUnit
 	pubs     []Entry
 
@@ -197,6 +197,13 @@ func (p *pkgCtx) getFileBase(c clang.Cursor, file clang.File) int {
 	return base
 }
 
+func (p *pkgCtx) addLoadUnit(f compileFunc) {
+	p.loads = append(p.loads, compileUnit{
+		fn: f,
+		at: p.pkg.CurFile(),
+	})
+}
+
 func (p *pkgCtx) addCompileUnit(f compileFunc) {
 	p.compiles = append(p.compiles, compileUnit{
 		fn: f,
@@ -205,13 +212,27 @@ func (p *pkgCtx) addCompileUnit(f compileFunc) {
 }
 
 func (p *pkgCtx) compile() {
+	doCompile(p, &p.loads)
+	if debugMajorProc {
+		log.Println("==> complete uninitialized type declarations")
+	}
+	pkg := p.pkg
+	for _, typDecl := range p.typdecls {
+		if typDecl.State() == gogen.TyStateUninited {
+			typDecl.InitType(pkg, types.NewStruct(nil, nil))
+		}
+	}
+	doCompile(p, &p.compiles)
+}
+
+func doCompile(p *pkgCtx, pcompiles *[]compileUnit) {
 	pkg := p.pkg
 	for {
-		compiles := p.compiles
+		compiles := *pcompiles
 		if len(compiles) == 0 {
 			break
 		}
-		p.compiles = nil
+		*pcompiles = nil
 		for _, c := range compiles {
 			pkg.RestoreCurFile(c.at)
 			c.fn(p)
@@ -297,188 +318,6 @@ func (p *pkgCtx) isMacroIgnored(cName string) bool {
 
 func (p *pkgCtx) isNSIgnored(cName string) bool {
 	return contains(cName, p.nsIgnore)
-}
-
-// -----------------------------------------------------------------------------
-
-type templateClass struct {
-	cName     string       // c/c++ full name
-	decl      clang.Cursor // AST object
-	overloads *overloads
-}
-
-// order returns the order of the template class in the overloads list.
-// -1 means no order (only one overload, or not found).
-func (p *templateClass) order() int {
-	items := p.overloads.classes
-	if len(items) > 1 {
-		for i, obj := range items {
-			if obj == p {
-				return i
-			}
-		}
-	}
-	return -1
-}
-
-type funcObj struct {
-	cName     string       // c/c++ full name
-	decl      clang.Cursor // AST object
-	overloads *overloads
-
-	isOperator bool
-}
-
-// order returns the order of the object in the overloads list.
-// -1 means no order (only one overload, or not found).
-func (p *funcObj) order() int {
-	items := p.overloads.fns
-	if len(items) > 1 {
-		for i, obj := range items {
-			if obj == p {
-				return i
-			}
-		}
-	}
-	return -1
-}
-
-type overloads struct {
-	fns     []*funcObj
-	classes []*templateClass
-}
-
-func (p *overloads) reorder() {
-	items := p.fns
-	if len(items) > 1 {
-		sort.SliceStable(items, func(i, j int) bool {
-			a, b := items[i].decl, items[j].decl
-			na, nb := a.NumArguments(), b.NumArguments()
-			if na != nb {
-				return na < nb
-			}
-			for k := range c.Uint(na) {
-				ta, tb := a.Argument(k).Type(), b.Argument(k).Type()
-				if ret := cmpType(ta, tb); ret != 0 {
-					return ret < 0
-				}
-			}
-			return false
-		})
-	}
-}
-
-func cloneTypeName(obj *types.TypeName) *types.TypeName {
-	return types.NewTypeName(obj.Pos(), obj.Pkg(), obj.Name(), obj.Type())
-}
-
-func cloneTypeParams(tparams []*types.TypeParam) []*types.TypeParam {
-	if len(tparams) == 0 {
-		return nil
-	}
-	ret := make([]*types.TypeParam, len(tparams))
-	for i, tp := range tparams {
-		obj := cloneTypeName(tp.Obj())
-		ret[i] = types.NewTypeParam(obj, tp.Constraint())
-	}
-	return ret
-}
-
-func concatTypeParams(a, b []*types.TypeParam) []*types.TypeParam {
-	if len(a) == 0 {
-		return b
-	}
-	a = cloneTypeParams(a)
-	if len(b) == 0 {
-		return a
-	}
-	ret := make([]*types.TypeParam, 0, len(a)+len(b))
-	ret = append(ret, a...)
-	return append(ret, b...)
-}
-
-type scopeCtx struct {
-	overloads map[string]*overloads // name => overload items
-	tparams   []*types.TypeParam    // type parameters, only for class/struct scope
-	parent    *scopeCtx
-}
-
-func (p *scopeCtx) typeParams(in []*types.TypeParam) []*types.TypeParam {
-	for p != nil {
-		in = concatTypeParams(p.tparams, in)
-		p = p.parent
-	}
-	return in
-}
-
-func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
-	for p != nil {
-		for _, t := range p.tparams {
-			if t.Obj().Name() == name {
-				return t, true
-			}
-		}
-		p = p.parent
-	}
-	return nil, false
-}
-
-func (p *scopeCtx) addTemplateClass(ctx *pkgCtx, decl clang.Cursor) (*templateClass, bool) {
-	cName := cNameOf(decl)
-	if debugCompileDecl {
-		ctx.logf(decl, "==> addTemplateClass %s", cName)
-	}
-	// TODO(xsw): check if the class is already added
-	obj := &templateClass{
-		cName: cName,
-		decl:  decl,
-	}
-	ovs, ok := p.overloads[cName]
-	if ok {
-		ovs.classes = append(ovs.classes, obj)
-	} else {
-		ovs = &overloads{classes: []*templateClass{obj}}
-		p.overloads[cName] = ovs
-	}
-	obj.overloads = ovs
-	return obj, true
-}
-
-func (p *scopeCtx) addFunc(ctx *pkgCtx, cName string, decl clang.Cursor, isOp bool) (*funcObj, bool) {
-	fnUSR := funcUSR(decl)
-	if debugCompileDecl {
-		ctx.logf(decl, "==> addFunc %s - USR: %s", cName, fnUSR)
-	}
-
-	if fn, ok := ctx.fns[fnUSR]; ok { // re-declared
-		if decl.IsFunctionInlined() != 0 {
-			fn.decl = decl // use the latest inline decl
-		}
-		return fn, false
-	}
-
-	obj := &funcObj{
-		cName:      cName,
-		decl:       decl,
-		isOperator: isOp,
-	}
-	ovs, ok := p.overloads[cName]
-	if ok {
-		ovs.fns = append(ovs.fns, obj)
-	} else {
-		ovs = &overloads{fns: []*funcObj{obj}}
-		p.overloads[cName] = ovs
-	}
-	obj.overloads = ovs
-	ctx.fns[fnUSR] = obj
-
-	return obj, true
-}
-
-func (p *scopeCtx) reorder() {
-	for _, o := range p.overloads {
-		o.reorder()
-	}
 }
 
 // -----------------------------------------------------------------------------
