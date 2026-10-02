@@ -163,14 +163,20 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		if t, ok := scope.lookupType(name); ok {
 			return t
 		}
+		name = cTypeName(typ)
+		if o, ok := ctx.getTypeObj(name, feats); ok {
+			return o.Type()
+		}
 	case lc.Type_LongDouble:
 		return ctx.basicTyp(cLongDouble)
 	case lc.Type_BlockPointer:
 		*feats |= featQuietIgnore // will always be ignored
 		return types.Typ[types.Invalid]
 	}
-	ctx.logtf(typ, "toType: unsupported type - %s (%d: %s)", cTypeName(typ), typ.Kind, clang.String(typ))
-	*feats |= featExplicitIgnore
+	if *feats&featQuietIgnore == 0 {
+		ctx.logtf(typ, "toType: unsupported type - %s (%d: %s)", cTypeName(typ), typ.Kind, clang.String(typ))
+		*feats |= featExplicitIgnore
+	}
 	return types.Typ[types.Invalid]
 }
 
