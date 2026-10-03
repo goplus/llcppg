@@ -68,7 +68,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
 			feats := 0
 			underType := toTypeEx(ctx, pkgTypes, typ, flagIsTypeDef, &feats, nil)
 			if feats&featAllIgnore != 0 {
-				ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d)", cName, clang.String(typ), typ.Kind)
+				ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d: %s)", cName, cTypeName(typ), typ.Kind, clang.String(typ))
 			}
 			typDecl.InitType(pkg, underType)
 		}

@@ -130,13 +130,11 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		*feats |= featHasCallback
 		return toFuncType(ctx, pkg, typ, feats)
 	case lc.Type_Enum, lc.Type_Record, lc.Type_Typedef:
-		cName := cTypeName(typ)
-		if o, ok := ctx.getTypeObj(cName, feats); ok {
+		if o, ok := namedObj(ctx, typ, feats); ok {
 			return o.Type()
 		}
 	case lc.Type_Elaborated:
-		cName := cTypeName(typ.Named())
-		if o, ok := ctx.getTypeObj(cName, feats); ok {
+		if o, ok := namedObj(ctx, typ.Named(), feats); ok {
 			return o.Type()
 		}
 	case lc.Type_IncompleteArray, lc.Type_VariableArray:
@@ -175,12 +173,21 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	return types.Typ[types.Invalid]
 }
 
+func namedObj(ctx *pkgCtx, typ lc.Type, feats *int) (ret *types.TypeName, found bool) {
+	cName := cTypeName(typ)
+	if o, ok := ctx.typeAliasOf(cName, feats); ok {
+		return o, true
+	}
+	return ctx.getTypeObj(cName, feats)
+}
+
 func unexposedObj(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret *types.TypeName, found bool) {
 	name := clang.String(typ)
 	if o, ok := ctx.typeAliasOf(name, feats); ok { // typeAlias supported in config
 		return o, true
 	}
-	if hasPredefinedDirective(name) { // clang predefined directive
+	if strings.HasPrefix(name, "typename ") || hasPredefinedDirective(name) {
+		// typename XXX | clang predefined directive
 		*feats |= featQuietIgnore
 		return
 	}

@@ -195,7 +195,7 @@ const (
 // Source represents a source file to be processed by llcppg.
 type Source = clang.TranslationUnit
 
-// NewPackage loads a translation unit and generates a Go package with the given package
+// NewPackage loads translation units and generates a Go package with the given package
 // path, name and configuration.
 func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Package, err error) {
 	interp := &nodeInterp{}
