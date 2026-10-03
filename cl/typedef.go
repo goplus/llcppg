@@ -20,7 +20,6 @@ import (
 	"go/types"
 
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -31,7 +30,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	goName := ctx.typeName(cName, true)
 	if cNewName, ok := ctx.typeAlias[cName]; ok {
 		if o, ok := ctx.getTypeObj(cNewName, &feats); ok {
-			defineTypedef(ctx, decl, cName, goName, scope, o.Type(), feats)
+			defineTypedef(ctx, decl, cName, goName, scope, o.Type(), nil, feats)
 			return
 		}
 		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: alias to %s but not found, ignored", cName, cNewName)
@@ -45,9 +44,12 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		return
 	}
 
-	if decl.Kind == lc.Cursor_TypeAliasTemplateDecl {
-		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: template type alias, ignored", cName)
-		ctx.ignoreType(cName, featExplicitIgnore)
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	tparams, quietIgnore := newTypeParams(ctx, pkgTypes, decl)
+	if quietIgnore {
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported template params, ignored", cName)
+		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 
@@ -56,16 +58,14 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		ctx.logf(decl, "typedef %ss: %s", cName, clang.String(underlying))
 	}
 
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
 	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
-		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, underlying)
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, clang.String(underlying))
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 	if feats&featExplicitIgnore != 0 {
-		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, underlying)
+		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, clang.String(underlying))
 		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
@@ -76,10 +76,10 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		}
 	}
 
-	defineTypedef(ctx, decl, cName, goName, scope, tunder, feats)
+	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
 }
 
-func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, feats int) {
+func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam, feats int) {
 	pkg := ctx.pkg
 	typDefs := pkg.NewTypeDefs()
 	if doc := ctx.directiveTypeC(decl, feats&featHasCallback != 0); doc != nil {
@@ -99,7 +99,7 @@ func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *
 	}
 
 	node := goNode(ctx, decl)
-	tparams := scope.typeParams(nil)
+	tparams = scope.typeParams(tparams)
 
 	var obj *types.TypeName
 	if isClass {
