@@ -161,13 +161,7 @@ func (p *overloads) reorder() {
 			// would otherwise wrap to ~4.3 billion iterations and hang the
 			// generator. See issue goplus/llcppg#894.
 			na, nb := a.NumArguments(), b.NumArguments()
-			if na < 0 {
-				na = 0
-			}
-			if nb < 0 {
-				nb = 0
-			}
-			if na != nb {
+			if na != nb || na < 0 {
 				return na < nb
 			}
 			for k := range c.Uint(na) {
