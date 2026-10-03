@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"unsafe"
 
+	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
 )
@@ -155,6 +156,17 @@ func loadTemplateClass(ctx *pkgCtx, cName string, this *classCtx, obj *overloadO
 		return
 	}
 
+	// The same C/C++ class may be reached more than once (a redeclaration or a
+	// definition that shows up again across the translation units that pull in
+	// the header). The type declaration is created on first sight above, but its
+	// body must be initialized exactly once; initializing it again re-queues a
+	// compile unit and re-emits anonymous members, which drives llcppg into a
+	// loop. A non-uninited state means the body is already (being) built, so
+	// skip it. See issue goplus/llcppg#894.
+	if typDecl.State() != gogen.TyStateUninited {
+		return
+	}
+
 	goName := typDecl.Type().Obj().Name()
 	initClassType(ctx, typDecl, this, goName, tparams)
 }
@@ -175,6 +187,13 @@ func loadClass(ctx *pkgCtx, cName string, this *classCtx, cls clang.Cursor) {
 
 	if this == nil {
 		return // declaration only, no definition
+	}
+
+	// Initialize the class body at most once per type: see the note in
+	// loadTemplateClass. A redeclaration or a repeated definition would
+	// otherwise re-visit the body and loop. See issue goplus/llcppg#894.
+	if typDecl.State() != gogen.TyStateUninited {
+		return
 	}
 
 	goName := typDecl.Type().Obj().Name()
