@@ -70,11 +70,11 @@ func (p *scopeCtx) typeParams(in []*types.TypeParam) []*types.TypeParam {
 	return in
 }
 
-func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
+func (p *scopeCtx) lookupTypeObj(name string) (*types.TypeName, bool) {
 	for p != nil {
 		for _, t := range p.tparams {
-			if t.Obj().Name() == name {
-				return t, true
+			if o := t.Obj(); o.Name() == name {
+				return o, true
 			}
 		}
 		p = p.parent

@@ -201,7 +201,7 @@ func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName, goName s
 	feats := 0
 	initClassTypeEx(ctx, typDecl, this, goName, tparams, &feats)
 	if feats&featAllIgnore != 0 {
-		ctx.ignoref(feats, this.decl, "class %s: unsupported features, ignored", goName)
+		ctx.ignoref(feats, this.decl, "class %s: unsupported features, ignored", cName)
 		ctx.ignoreType(cName, feats)
 		typDecl.Delete()
 		return false
@@ -330,7 +330,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		if decl.IsVirtualBase() != 0 {
 			panic("todo: virtual base class is not supported")
 		}
-		if base := baseClass(ctx, decl, feats); base != nil {
+		if base := baseClass(ctx, this, decl, feats); base != nil {
 			fld := types.NewField(goNodePos(ctx, decl), pkg, base.Name(), base.Type(), true)
 			this.fields = append(this.fields, fld)
 		}
@@ -413,16 +413,16 @@ func primaryBase(cls clang.Cursor) (spec clang.Cursor, ok bool) {
 // hoistPrimaryBase moves the embedded field of the given primary base to the
 // front of scope.fields, so its shared vptr sits at offset 0 (the ABI lays the
 // primary base out first, regardless of its declaration order among bases).
-func hoistPrimaryBase(ctx *pkgCtx, scope *classCtx, spec clang.Cursor, feats *int) bool {
-	if base := baseClass(ctx, spec, feats); base != nil {
+func hoistPrimaryBase(ctx *pkgCtx, this *classCtx, spec clang.Cursor, feats *int) bool {
+	if base := baseClass(ctx, this, spec, feats); base != nil {
 		name := base.Name()
-		for i, f := range scope.fields {
+		for i, f := range this.fields {
 			if f.Embedded() && f.Name() == name {
 				if i != 0 {
-					rest := make([]*types.Var, 0, len(scope.fields))
-					rest = append(rest, scope.fields[:i]...)
-					rest = append(rest, scope.fields[i+1:]...)
-					scope.fields = append([]*types.Var{f}, rest...)
+					rest := make([]*types.Var, 0, len(this.fields))
+					rest = append(rest, this.fields[:i]...)
+					rest = append(rest, this.fields[i+1:]...)
+					this.fields = append([]*types.Var{f}, rest...)
 				}
 				break
 			}
@@ -454,7 +454,7 @@ func isPolymorphic(cls clang.Cursor) bool {
 	return found
 }
 
-func baseClass(ctx *pkgCtx, decl clang.Cursor, feats *int) *types.TypeName {
+func baseClass(ctx *pkgCtx, this *classCtx, decl clang.Cursor, feats *int) *types.TypeName {
 	t := decl.Type()
 	// Depending on the libclang version, a base specifier's type may be reported
 	// as an elaborated type (e.g. "struct Base") rather than the bare record;
@@ -469,13 +469,8 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor, feats *int) *types.TypeName {
 			return o
 		}
 	case lc.Type_Unexposed:
-		name := clang.String(t)
-		if hasPredefinedDirective(name) {
-			*feats |= featQuietIgnore
-		} else {
-			*feats |= featExplicitIgnore
-		}
-		return nil
+		o, _ := unexposedObj(ctx, t, feats, this.scope())
+		return o
 	}
 	ctx.panicf(decl, "baseClass %s: unknown base class - %s (%d)", clang.String(decl), clang.String(t), t.Kind)
 	return nil

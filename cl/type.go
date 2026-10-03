@@ -159,20 +159,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
 	case lc.Type_Unexposed:
-		name := clang.String(typ)
-		if o, ok := ctx.typeAliasOf(name, feats); ok { // typeAlias supported in config
-			return o.Type()
-		}
-		if hasPredefinedDirective(name) { // clang predefined directive
-			*feats |= featQuietIgnore
-			return types.Typ[types.Invalid]
-		}
-		name = removeCV(name)
-		if t, ok := scope.lookupType(name); ok { // typeParams
-			return t
-		}
-		cName := cTypeName(typ)
-		if o, ok := ctx.getTypeObj(cName, feats); ok {
+		if o, ok := unexposedObj(ctx, typ, feats, scope); ok {
 			return o.Type()
 		}
 	case lc.Type_LongDouble:
@@ -186,6 +173,23 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		*feats |= featExplicitIgnore
 	}
 	return types.Typ[types.Invalid]
+}
+
+func unexposedObj(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret *types.TypeName, found bool) {
+	name := clang.String(typ)
+	if o, ok := ctx.typeAliasOf(name, feats); ok { // typeAlias supported in config
+		return o, true
+	}
+	if hasPredefinedDirective(name) { // clang predefined directive
+		*feats |= featQuietIgnore
+		return
+	}
+	name = removeCV(name)
+	if o, ok := scope.lookupTypeObj(name); ok { // typeParams
+		return o, true
+	}
+	cName := cTypeName(typ)
+	return ctx.getTypeObj(cName, feats)
 }
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int) *types.Signature {
@@ -325,6 +329,12 @@ func hasPredefinedDirective(name string) bool {
 var clangPredefinedDirectives = map[string]none{
 	"decay":                  {},
 	"remove_cv":              {},
+	"remove_const":           {},
+	"remove_volatile":        {},
+	"remove_reference_t":     {},
+	"remove_extent":          {},
+	"remove_all_extents":     {},
+	"remove_pointer":         {},
 	"add_pointer":            {},
 	"add_lvalue_reference":   {},
 	"add_rvalue_reference":   {},
