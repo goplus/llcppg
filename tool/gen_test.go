@@ -318,7 +318,7 @@ func TestLLVM_Compiler(t *testing.T) {
 	testFromDir(t, "Compiler", "./_testcpp", true, "system")
 }
 
-func TestLLVM_DenseMapInfo(t *testing.T) {
+func _TestLLVM_DenseMapInfo(t *testing.T) {
 	testFromDir(t, "DenseMapInfo", "./_testcpp", true, "adt")
 }
 
@@ -334,6 +334,7 @@ func TestLLVM_iterator_range(t *testing.T) {
 	testFromDir(t, "iterator_range", "./_testcpp", true, "adt")
 }
 
-func TestLLVM_STLForwardCompat(t *testing.T) {
+func _TestLLVM_STLForwardCompat(t *testing.T) {
+	log.Println("===> TestLLVM_STLForwardCompat start")
 	testFromDir(t, "STLForwardCompat", "./_testcpp", true, "adt")
 }

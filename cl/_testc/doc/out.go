@@ -40,4 +40,4 @@ func Add(a c.Int, b c.Int) c.Int
 // A documented global variable.
 //
 //go:linkname Counter C.counter
-var Counter c.Int
+var Counter MyInt
