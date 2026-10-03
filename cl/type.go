@@ -159,12 +159,15 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
 	case lc.Type_Unexposed:
-		name := clang.String(typ) // maybe typeParams
-		if t, ok := scope.lookupType(name); ok {
+		name := clang.String(typ)
+		if t, ok := scope.lookupType(name); ok { // typeParams
 			return t
 		}
-		name = cTypeName(typ)
-		if o, ok := ctx.getTypeObj(name, feats); ok {
+		if o, ok := ctx.typeAliasOf(name, feats); ok { // typeAlias supported in config
+			return o.Type()
+		}
+		cName := cTypeName(typ)
+		if o, ok := ctx.getTypeObj(cName, feats); ok {
 			return o.Type()
 		}
 	case lc.Type_LongDouble:

@@ -29,13 +29,8 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	ns := cNS(decl)
 	cName := cNameWithNS(clang.String(decl), ns)
 	goName := ctx.typeName(cName, true)
-	if cNewName, ok := ctx.typeAlias[cName]; ok {
-		if o, ok := ctx.getTypeObj(cNewName, &feats); ok {
-			defineTypedef(ctx, decl, cName, goName, scope, o.Type(), nil, feats)
-			return
-		}
-		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: alias to %s but not found, ignored", cName, cNewName)
-		ctx.ignoreType(cName, featExplicitIgnore)
+	if o, ok := ctx.typeAliasOf(cName, &feats); ok {
+		defineTypedef(ctx, decl, cName, goName, scope, o.Type(), nil, feats)
 		return
 	}
 
