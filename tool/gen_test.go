@@ -70,7 +70,7 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir, fname string, exp any) {
 
 func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile string, conf *tool.Config) {
 	myPkgName := headerFile[len(headerDir) : len(headerFile)-2]
-	if (myPkgName == "Index" || myPkgName == "DenseMapInfo" || myPkgName == "StringRef" || myPkgName == "STLForwardCompat") && runtime.GOOS != "darwin" {
+	if (myPkgName == "Index" || myPkgName == "DenseMapInfo" || myPkgName == "StringRef") && runtime.GOOS != "darwin" {
 		log.Println("==> only test Index on macOS")
 		return
 	}
@@ -104,6 +104,27 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	log.Println("==> includeDirs:", incDirs)
 
 	flags := tool.ParseFlags(incDirs, conf.Language)
+	if lang == cl.LanguageCXX && runtime.GOOS != "darwin" {
+		// These two flags let the C++ ADT headers parse against the bundled
+		// libc++ (github.com/llarhub/libcxx) on non-Apple hosts, where macOS
+		// otherwise "just works".
+		//
+		//   -nostdinc++: on a C++ translation unit clang injects its own default
+		//   C++ standard library search paths (the host GCC libstdc++, e.g.
+		//   /usr/include/c++/NN) ahead of our explicitly supplied libc++ include
+		//   dir. Mixing libstdc++ and libc++ headers makes libstdc++'s <math.h>
+		//   fail with "no member named 'abs' in namespace 'std'". Suppressing the
+		//   builtin C++ paths leaves only the bundled libc++ we added via -I.
+		//
+		//   -D_LIBCPP_DISABLE_AVAILABILITY: the bundled libc++ ships an
+		//   Apple-vendor __config_site (_LIBCPP_HAS_VENDOR_AVAILABILITY_ANNOTATIONS
+		//   =1). On non-Apple platforms no vendor branch in
+		//   <__configuration/availability.h> matches, so it hard-errors with
+		//   "trying to enable vendor availability markup ... haven't defined the
+		//   corresponding macros yet". This flag is libc++'s documented switch to
+		//   turn vendor availability markup off, which is correct off-Apple.
+		flags = append(flags, "-nostdinc++", "-D_LIBCPP_DISABLE_AVAILABILITY")
+	}
 	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)
 	if err != nil {
 		t.Error("ParseTranslationUnit failed:", err)
