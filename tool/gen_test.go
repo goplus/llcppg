@@ -104,6 +104,18 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	log.Println("==> includeDirs:", incDirs)
 
 	flags := tool.ParseFlags(incDirs, conf.Language)
+	if lang == cl.LanguageCXX && runtime.GOOS != "darwin" {
+		// The bundled libc++ (github.com/llarhub/libcxx) is configured as an
+		// Apple-vendor build (_LIBCPP_HAS_VENDOR_AVAILABILITY_ANNOTATIONS=1 in
+		// its __config_site). On Apple platforms the vendor availability markup
+		// resolves against the OS version macros; on other platforms no vendor
+		// branch matches and <__configuration/availability.h> hard-errors with
+		// "trying to enable vendor availability markup ... haven't defined the
+		// corresponding macros yet". _LIBCPP_DISABLE_AVAILABILITY turns the
+		// markup off (the documented escape hatch), which is correct for a
+		// non-Apple host and lets the C++ ADT headers parse on Ubuntu.
+		flags = append(flags, "-D_LIBCPP_DISABLE_AVAILABILITY")
+	}
 	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)
 	if err != nil {
 		t.Error("ParseTranslationUnit failed:", err)
