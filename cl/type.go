@@ -166,13 +166,17 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		if o, ok := ctx.typeAliasOf(name, feats); ok { // typeAlias supported in config
 			return o.Type()
 		}
+		if strings.HasPrefix(name, "__remove_cv(") { // clang predefined directive
+			*feats |= featQuietIgnore
+			return types.Typ[types.Invalid]
+		}
 		cName := cTypeName(typ)
 		if o, ok := ctx.getTypeObj(cName, feats); ok {
 			return o.Type()
 		}
 	case lc.Type_LongDouble:
 		return ctx.basicTyp(cLongDouble)
-	case lc.Type_BlockPointer:
+	case lc.Type_BlockPointer, lc.Type_Invalid:
 		*feats |= featQuietIgnore // will always be ignored
 		return types.Typ[types.Invalid]
 	}
