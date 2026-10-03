@@ -152,7 +152,21 @@ func (p *overloads) reorder() {
 	if len(items) > 1 {
 		sort.SliceStable(items, func(i, j int) bool {
 			a, b := items[i].decl, items[j].decl
+			// NumArguments reports -1 for cursors that are not functions or
+			// methods (e.g. a class template and its partial specializations,
+			// which share one overload group under the same C/C++ name). Clamp
+			// to 0 so such cursors are treated as having no arguments: the
+			// argument-based ordering below is only meaningful for function
+			// overloads, and feeding -1 into the unsigned loop counter c.Uint(na)
+			// would otherwise wrap to ~4.3 billion iterations and hang the
+			// generator. See issue goplus/llcppg#894.
 			na, nb := a.NumArguments(), b.NumArguments()
+			if na < 0 {
+				na = 0
+			}
+			if nb < 0 {
+				nb = 0
+			}
 			if na != nb {
 				return na < nb
 			}

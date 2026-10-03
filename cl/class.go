@@ -21,7 +21,6 @@ import (
 	"strconv"
 	"unsafe"
 
-	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
 )
@@ -156,17 +155,6 @@ func loadTemplateClass(ctx *pkgCtx, cName string, this *classCtx, obj *overloadO
 		return
 	}
 
-	// The same C/C++ class may be reached more than once (a redeclaration or a
-	// definition that shows up again across the translation units that pull in
-	// the header). The type declaration is created on first sight above, but its
-	// body must be initialized exactly once; initializing it again re-queues a
-	// compile unit and re-emits anonymous members, which drives llcppg into a
-	// loop. A non-uninited state means the body is already (being) built, so
-	// skip it. See issue goplus/llcppg#894.
-	if typDecl.State() != gogen.TyStateUninited {
-		return
-	}
-
 	goName := typDecl.Type().Obj().Name()
 	initClassType(ctx, typDecl, this, goName, tparams)
 }
@@ -189,13 +177,6 @@ func loadClass(ctx *pkgCtx, cName string, this *classCtx, cls clang.Cursor) {
 		return // declaration only, no definition
 	}
 
-	// Initialize the class body at most once per type: see the note in
-	// loadTemplateClass. A redeclaration or a repeated definition would
-	// otherwise re-visit the body and loop. See issue goplus/llcppg#894.
-	if typDecl.State() != gogen.TyStateUninited {
-		return
-	}
-
 	goName := typDecl.Type().Obj().Name()
 	initClassType(ctx, typDecl, this, goName, nil)
 }
@@ -212,23 +193,6 @@ func newType(ctx *pkgCtx, cls clang.Cursor, cName, goName string) (ret typDecl) 
 }
 
 func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string, tparams []*types.TypeParam) bool {
-	// Initialize a class body at most once, and never re-enter one that is
-	// already being initialized. The body is only established (via InitType) at
-	// the very end of initClassTypeEx, so a class reached again *while its own
-	// members are still being visited* would otherwise re-run the full visit:
-	// each pass re-queues a compile unit and re-emits anonymous members, which
-	// drives llcppg into an infinite loop on headers that reach the same class
-	// repeatedly (e.g. the LLVM ADT fixtures that pull in <tuple>, <optional>,
-	// <type_traits>, <utility>). A State()-only guard in loadClass/
-	// loadTemplateClass is not enough because the type stays TyStateUninited
-	// throughout its own initialization. See issue goplus/llcppg#894.
-	obj := typDecl.Type().Obj()
-	if _, loading := ctx.initing[obj]; loading {
-		return true
-	}
-	ctx.initing[obj] = none{}
-	defer delete(ctx.initing, obj)
-
 	feats := 0
 	initClassTypeEx(ctx, typDecl, this, goName, tparams, &feats)
 	if feats&featAllIgnore != 0 {

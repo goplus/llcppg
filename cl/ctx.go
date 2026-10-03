@@ -142,14 +142,13 @@ type pkgCtx struct {
 
 	fileBases map[clang.File]int // clang.File => base
 
-	macroVals map[string]any           // macroName => value
-	ovobjs    map[string]*overloadObj  // objUSR => overload object
-	types     map[string]typeObj       // c/c++ fullName => type name object (include external types)
-	typdecls  map[string]typDecl       // c/c++ fullName => type declaration object (only local types)
-	initing   map[*types.TypeName]none // class type objects whose body is currently being initialized
-	impPkgs   map[string]none          // imported package path set
-	lastSeen  map[string]none          // last seen include file set (loaded include files)
-	thisSeen  map[string]none          // include file set seen in this translation unit
+	macroVals map[string]any          // macroName => value
+	ovobjs    map[string]*overloadObj // objUSR => overload object
+	types     map[string]typeObj      // c/c++ fullName => type name object (include external types)
+	typdecls  map[string]typDecl      // c/c++ fullName => type declaration object (only local types)
+	impPkgs   map[string]none         // imported package path set
+	lastSeen  map[string]none         // last seen include file set (loaded include files)
+	thisSeen  map[string]none         // include file set seen in this translation unit
 
 	loads    []compileUnit
 	compiles []compileUnit
