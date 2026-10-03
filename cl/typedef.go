@@ -20,27 +20,17 @@ import (
 	"go/types"
 
 	"github.com/goplus/llcppg/clang"
-	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
-
-	var feats int
-	var underlying lc.Type
-	var tunder types.Type
-	var cName = cNameOf(decl)
-	var goName = ctx.typeName(cName, true)
-	if cNewName, ok := ctx.typeAlias[cName]; ok {
-		if o, ok := ctx.getTypeObj(cNewName, &feats); ok {
-			tunder = o.Type()
-			goto lzFind
-		}
-		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: alias to %s but not found, ignored", cName, cNewName)
-		ctx.ignoreType(cName, featExplicitIgnore)
+	feats := 0
+	ns := cNS(decl)
+	cName := cNameWithNS(clang.String(decl), ns)
+	goName := ctx.typeName(cName, true)
+	if o, ok := ctx.typeAliasOf(cName, &feats); ok {
+		defineTypedef(ctx, decl, cName, goName, scope, o.Type(), nil, feats)
 		return
 	}
 
@@ -50,25 +40,34 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		return
 	}
 
-	if decl.Kind == lc.Cursor_TypeAliasTemplateDecl {
-		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: template type alias, ignored", cName)
-		ctx.ignoreType(cName, featExplicitIgnore)
+	if feats := ctx.nsFeats(ns); feats&featAllIgnore != 0 {
+		ctx.ignoref(feats, decl, "typedef %s: its parent is ignored, ignored too", cName)
+		ctx.ignoreType(cName, feats)
 		return
 	}
 
-	underlying = decl.TypedefDeclUnderlyingType()
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	tparams, quietIgnore := newTypeParams(ctx, pkgTypes, decl)
+	if quietIgnore {
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported template params, ignored", cName)
+		ctx.ignoreType(cName, featQuietIgnore)
+		return
+	}
+
+	underlying := decl.TypedefDeclUnderlyingType()
 	if debugCompileDecl {
 		ctx.logf(decl, "typedef %ss: %s", cName, clang.String(underlying))
 	}
 
-	tunder = toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
+	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
 	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
-		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type, ignored", cName)
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, clang.String(underlying))
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 	if feats&featExplicitIgnore != 0 {
-		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type, ignored", cName)
+		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, clang.String(underlying))
 		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
@@ -79,12 +78,16 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		}
 	}
 
-lzFind:
-	var obj *types.TypeName
-	var typDefs = pkg.NewTypeDefs()
+	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
+}
+
+func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam, feats int) {
+	pkg := ctx.pkg
+	typDefs := pkg.NewTypeDefs()
 	if doc := ctx.directiveTypeC(decl, feats&featHasCallback != 0); doc != nil {
 		typDefs.SetComments(doc)
 	}
+
 	var isClass bool
 	switch tunder {
 	case ctx.unsafePointer():
@@ -98,7 +101,9 @@ lzFind:
 	}
 
 	node := goNode(ctx, decl)
-	tparams := scope.typeParams(nil)
+	tparams = scope.typeParams(tparams)
+
+	var obj *types.TypeName
 	if isClass {
 		t := typDefs.NewType(goName, node).InitType(pkg, tunder, tparams...)
 		obj = t.Obj()

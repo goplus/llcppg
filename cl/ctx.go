@@ -312,6 +312,13 @@ func (p *pkgCtx) getTypeObj(cName string, feats *int) (ret *types.TypeName, ok b
 	return
 }
 
+func (p *pkgCtx) typeAliasOf(name string, feats *int) (ret *types.TypeName, ok bool) {
+	if newName, ok := p.typeAlias[name]; ok {
+		return p.getTypeObj(newName, feats)
+	}
+	return
+}
+
 func (p *pkgCtx) isMacroIgnored(cName string) bool {
 	return contains(cName, p.macroIgnore)
 }

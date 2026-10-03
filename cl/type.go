@@ -159,17 +159,12 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
 	case lc.Type_Unexposed:
-		name := clang.String(typ) // maybe typeParams
-		if t, ok := scope.lookupType(name); ok {
-			return t
-		}
-		name = cTypeName(typ)
-		if o, ok := ctx.getTypeObj(name, feats); ok {
+		if o, ok := unexposedObj(ctx, typ, feats, scope); ok {
 			return o.Type()
 		}
 	case lc.Type_LongDouble:
 		return ctx.basicTyp(cLongDouble)
-	case lc.Type_BlockPointer:
+	case lc.Type_BlockPointer, lc.Type_Invalid:
 		*feats |= featQuietIgnore // will always be ignored
 		return types.Typ[types.Invalid]
 	}
@@ -178,6 +173,23 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		*feats |= featExplicitIgnore
 	}
 	return types.Typ[types.Invalid]
+}
+
+func unexposedObj(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret *types.TypeName, found bool) {
+	name := clang.String(typ)
+	if o, ok := ctx.typeAliasOf(name, feats); ok { // typeAlias supported in config
+		return o, true
+	}
+	if hasPredefinedDirective(name) { // clang predefined directive
+		*feats |= featQuietIgnore
+		return
+	}
+	name = removeCV(name)
+	if o, ok := scope.lookupTypeObj(name); ok { // typeParams
+		return o, true
+	}
+	cName := cTypeName(typ)
+	return ctx.getTypeObj(cName, feats)
 }
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int) *types.Signature {
@@ -284,6 +296,60 @@ func trimTypeTag(typCName string) string {
 		typCName = typCName[pos+1:]
 	}
 	return typCName
+}
+
+// const T, volatile T, const volatile T => T
+func removeCV(name string) string {
+	for {
+		pos := strings.IndexByte(name, ' ')
+		if pos > 0 {
+			switch name[:pos] {
+			case "const", "volatile":
+				name = name[pos+1:]
+				continue
+			}
+		}
+		return name
+	}
+}
+
+// __remove_cv(T), __is_integral(T), etc
+func hasPredefinedDirective(name string) bool {
+	epos := strings.IndexByte(name, '(')
+	if epos > 0 {
+		if pos := strings.LastIndex(name[:epos], "__"); pos >= 0 {
+			if _, ok := clangPredefinedDirectives[name[pos+2:epos]]; ok {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+var clangPredefinedDirectives = map[string]none{
+	"decay":                  {},
+	"remove_cv":              {},
+	"remove_const":           {},
+	"remove_volatile":        {},
+	"remove_reference_t":     {},
+	"remove_extent":          {},
+	"remove_all_extents":     {},
+	"remove_pointer":         {},
+	"add_pointer":            {},
+	"add_lvalue_reference":   {},
+	"add_rvalue_reference":   {},
+	"has_virtual_destructor": {},
+	"is_pointer":             {},
+	"is_reference":           {},
+	"is_const":               {},
+	"is_array":               {},
+	"is_enum":                {},
+	"is_class":               {},
+	"is_integral":            {},
+	"is_same":                {},
+	"is_base_of":             {},
+	"is_constructible":       {},
+	"is_abstract":            {},
 }
 
 // -----------------------------------------------------------------------------
