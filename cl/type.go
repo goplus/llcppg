@@ -130,14 +130,12 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		*feats |= featHasCallback
 		return toFuncType(ctx, pkg, typ, feats)
 	case lc.Type_Enum, lc.Type_Record, lc.Type_Typedef:
-		cName := cTypeName(typ)
-		if o, ok := ctx.getTypeObj(cName, feats); ok {
-			return o.Type()
+		if t, ok := namedType(ctx, typ, feats); ok {
+			return t
 		}
 	case lc.Type_Elaborated:
-		cName := cTypeName(typ.Named())
-		if o, ok := ctx.getTypeObj(cName, feats); ok {
-			return o.Type()
+		if t, ok := namedType(ctx, typ.Named(), feats); ok {
+			return t
 		}
 	case lc.Type_IncompleteArray, lc.Type_VariableArray:
 		// T[] (and VLAs) have no known extent, so they behave like T*. Clear
@@ -159,8 +157,8 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		}
 		return types.NewArray(elem, int64(typ.ArraySize()))
 	case lc.Type_Unexposed:
-		if o, ok := unexposedObj(ctx, typ, feats, scope); ok {
-			return o.Type()
+		if t, ok := unexposedType(ctx, typ, feats, scope); ok {
+			return t
 		}
 	case lc.Type_LongDouble:
 		return ctx.basicTyp(cLongDouble)
@@ -175,21 +173,36 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	return types.Typ[types.Invalid]
 }
 
-func unexposedObj(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret *types.TypeName, found bool) {
-	name := clang.String(typ)
-	if o, ok := ctx.typeAliasOf(name, feats); ok { // typeAlias supported in config
-		return o, true
+func namedType(ctx *pkgCtx, typ lc.Type, feats *int) (ret types.Type, found bool) {
+	cName := cTypeName(typ)
+	if t, ok := ctx.typeAliasOf(cName); ok {
+		return t, true
 	}
-	if hasPredefinedDirective(name) { // clang predefined directive
+	if o, ok := ctx.getTypeObj(cName, feats); ok {
+		return o.Type(), true
+	}
+	return
+}
+
+func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret types.Type, found bool) {
+	name := clang.String(typ)
+	if t, ok := ctx.typeAliasOf(name); ok { // typeAlias supported in config
+		return t, true
+	}
+	if strings.HasPrefix(name, "typename ") || hasPredefinedDirective(name) {
+		// typename XXX | clang predefined directive
 		*feats |= featQuietIgnore
 		return
 	}
 	name = removeCV(name)
 	if o, ok := scope.lookupTypeObj(name); ok { // typeParams
-		return o, true
+		return o.Type(), true
 	}
 	cName := cTypeName(typ)
-	return ctx.getTypeObj(cName, feats)
+	if o, ok := ctx.getTypeObj(cName, feats); ok {
+		return o.Type(), true
+	}
+	return
 }
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int) *types.Signature {

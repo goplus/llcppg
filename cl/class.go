@@ -330,8 +330,8 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		if decl.IsVirtualBase() != 0 {
 			panic("todo: virtual base class is not supported")
 		}
-		if base := baseClass(ctx, this, decl, feats); base != nil {
-			fld := types.NewField(goNodePos(ctx, decl), pkg, base.Name(), base.Type(), true)
+		if typ, name, ok := baseClass(ctx, this, decl, feats); ok {
+			fld := types.NewField(goNodePos(ctx, decl), pkg, name, typ, true)
 			this.fields = append(this.fields, fld)
 		}
 
@@ -414,8 +414,7 @@ func primaryBase(cls clang.Cursor) (spec clang.Cursor, ok bool) {
 // front of scope.fields, so its shared vptr sits at offset 0 (the ABI lays the
 // primary base out first, regardless of its declaration order among bases).
 func hoistPrimaryBase(ctx *pkgCtx, this *classCtx, spec clang.Cursor, feats *int) bool {
-	if base := baseClass(ctx, this, spec, feats); base != nil {
-		name := base.Name()
+	if _, name, ok := baseClass(ctx, this, spec, feats); ok {
 		for i, f := range this.fields {
 			if f.Embedded() && f.Name() == name {
 				if i != 0 {
@@ -454,7 +453,7 @@ func isPolymorphic(cls clang.Cursor) bool {
 	return found
 }
 
-func baseClass(ctx *pkgCtx, this *classCtx, decl clang.Cursor, feats *int) *types.TypeName {
+func baseClass(ctx *pkgCtx, this *classCtx, decl clang.Cursor, feats *int) (typ types.Type, name string, found bool) {
 	t := decl.Type()
 	// Depending on the libclang version, a base specifier's type may be reported
 	// as an elaborated type (e.g. "struct Base") rather than the bare record;
@@ -466,14 +465,31 @@ func baseClass(ctx *pkgCtx, this *classCtx, decl clang.Cursor, feats *int) *type
 	case lc.Type_Record, lc.Type_Typedef:
 		cName := cTypeName(t)
 		if o, ok := ctx.getTypeObj(cName, feats); ok {
-			return o
+			return o.Type(), o.Name(), true
 		}
 	case lc.Type_Unexposed:
-		o, _ := unexposedObj(ctx, t, feats, this.scope())
-		return o
+		typ, found = unexposedType(ctx, t, feats, this.scope())
+		if found {
+			name = goNamedTypeName(typ)
+		}
+		return
 	}
 	ctx.panicf(decl, "baseClass %s: unknown base class - %s (%d)", clang.String(decl), clang.String(t), t.Kind)
-	return nil
+	return
+}
+
+func goNamedTypeName(typ types.Type) string {
+	switch typ := typ.(type) {
+	case *types.Named:
+		return typ.Obj().Name()
+	case *types.Alias:
+		return typ.Obj().Name()
+	case *types.Basic:
+		return typ.Name()
+	case *types.TypeParam:
+		return typ.Obj().Name()
+	}
+	panic("goNamedTypeName: unreachable")
 }
 
 // -----------------------------------------------------------------------------

@@ -118,7 +118,8 @@ type Config struct {
 	// TypeIgnore specifies a list of C/C++ type names to be ignored (optional).
 	TypeIgnore []string
 
-	// TypeAlias specifies a mapping of C/C++ type names to another C/C++ name (optional).
+	// TypeAlias specifies a mapping of C/C++ type names to a Go type name in pkgPath.Name
+	// format (pkgPath can be empty if Name is in current package), optional.
 	TypeAlias map[string]string
 
 	// TypeAbbr specifies a mapping of Go type name to its abbreviated name(s). The abbreviated
@@ -195,7 +196,7 @@ const (
 // Source represents a source file to be processed by llcppg.
 type Source = clang.TranslationUnit
 
-// NewPackage loads a translation unit and generates a Go package with the given package
+// NewPackage loads translation units and generates a Go package with the given package
 // path, name and configuration.
 func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Package, err error) {
 	interp := &nodeInterp{}

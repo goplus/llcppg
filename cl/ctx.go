@@ -23,6 +23,7 @@ import (
 	"go/types"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
@@ -312,9 +313,87 @@ func (p *pkgCtx) getTypeObj(cName string, feats *int) (ret *types.TypeName, ok b
 	return
 }
 
-func (p *pkgCtx) typeAliasOf(name string, feats *int) (ret *types.TypeName, ok bool) {
-	if newName, ok := p.typeAlias[name]; ok {
-		return p.getTypeObj(newName, feats)
+func (p *pkgCtx) goNamedTypeObj(typName string) (ret *types.TypeName, ok bool) {
+	var scope *types.Scope
+	pos := strings.IndexByte(typName, '.')
+	if pos < 0 {
+		scope = types.Universe
+	} else {
+		var pkg *types.Package
+		var pkgPath = typName[:pos]
+		switch pkgPath {
+		case "":
+			pkg = p.pkg.Types
+		case "c":
+			pkg = p.c.Types
+		default:
+			pkg = p.pkg.TryImport(pkgPath).Types
+			if pkg == nil {
+				return
+			}
+		}
+		scope = pkg.Scope()
+		typName = typName[pos+1:]
+	}
+	o := scope.Lookup(typName)
+	if o != nil {
+		ret, ok = o.(*types.TypeName)
+	}
+	return
+}
+
+func (p *pkgCtx) goTypeArgs(typArgs string) (ret []types.Type, found bool) {
+	parts := strings.Split(typArgs, ",")
+	ret = make([]types.Type, len(parts))
+	for i, part := range parts {
+		o, ok := p.goNamedTypeObj(strings.TrimSpace(part))
+		if !ok {
+			return
+		}
+		ret[i] = o.Type()
+	}
+	found = true
+	return
+}
+
+func (p *pkgCtx) goNamedType(goName string) (ret types.Type, found bool) {
+	typArgs := ""
+	if goName[len(goName)-1] == ']' { // has typeArgs
+		pos := strings.IndexByte(goName, '[')
+		if pos <= 0 {
+			return
+		}
+		typArgs = goName[pos+1 : len(goName)-1]
+		goName = goName[:pos]
+	}
+	obj, ok := p.goNamedTypeObj(goName)
+	if !ok {
+		return
+	}
+	ret = obj.Type()
+	if typArgs != "" {
+		targs, ok := p.goTypeArgs(typArgs)
+		if !ok {
+			return
+		}
+		inst, err := types.Instantiate(p.typeCtx(), ret, targs, true)
+		if err != nil {
+			return
+		}
+		ret = inst
+	}
+	found = true
+	return
+}
+
+func (p *pkgCtx) typeAliasOf(name string) (ret types.Type, found bool) {
+	newName, ok := p.typeAlias[name]
+	if !ok || newName == "" {
+		return
+	}
+	ret, found = p.goNamedType(newName)
+	if !found {
+		log.Printf("[WARN] alias %s => %s in config: target type not found\n", name, newName)
 	}
 	return
 }
@@ -325,6 +404,10 @@ func (p *pkgCtx) isMacroIgnored(cName string) bool {
 
 func (p *pkgCtx) isNSIgnored(cName string) bool {
 	return contains(cName, p.nsIgnore)
+}
+
+func (p *pkgCtx) typeCtx() *types.Context {
+	return nil // TODO(xsw): check this
 }
 
 // -----------------------------------------------------------------------------
