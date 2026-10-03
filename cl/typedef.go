@@ -26,7 +26,8 @@ import (
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	feats := 0
-	cName := cNameOf(decl)
+	ns := cNS(decl)
+	cName := cNameWithNS(clang.String(decl), ns)
 	goName := ctx.typeName(cName, true)
 	if cNewName, ok := ctx.typeAlias[cName]; ok {
 		if o, ok := ctx.getTypeObj(cNewName, &feats); ok {
@@ -41,6 +42,12 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	if ctx.isConfTypeIgnored(cName) {
 		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", cName)
 		ctx.ignoreType(cName, featQuietIgnore)
+		return
+	}
+
+	if feats := ctx.nsFeats(ns); feats&featAllIgnore != 0 {
+		ctx.ignoref(feats, decl, "typedef %s: its parent is ignored, ignored too", cName)
+		ctx.ignoreType(cName, feats)
 		return
 	}
 

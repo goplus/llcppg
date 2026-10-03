@@ -103,7 +103,12 @@ func newTypeParams(ctx *pkgCtx, pkg *types.Package, cls clang.Cursor) (ret []*ty
 		case lc.Cursor_NonTypeTemplateParameter, lc.Cursor_TemplateTemplateParameter:
 			quietIgnore = true
 			fallthrough
-		default:
+		case lc.Cursor_CXXMethod, lc.Cursor_FunctionTemplate, lc.Cursor_Constructor,
+			lc.Cursor_Destructor, lc.Cursor_ConversionFunction, lc.Cursor_FieldDecl,
+			lc.Cursor_CXXBaseSpecifier, lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl,
+			lc.Cursor_TypeAliasTemplateDecl, lc.Cursor_VarDecl, lc.Cursor_ClassDecl,
+			lc.Cursor_CXXAccessSpecifier, lc.Cursor_FriendDecl, lc.Cursor_UsingDeclaration,
+			lc.Cursor_EnumDecl, lc.Cursor_StructDecl:
 			return clang.Break
 		}
 		return clang.Continue
