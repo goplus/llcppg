@@ -82,7 +82,7 @@ func (p *scopeCtx) lookupType(name string) (types.Type, bool) {
 	return nil, false
 }
 
-func (p *scopeCtx) addOveerloadObj(ctx *pkgCtx, name string, decl clang.Cursor) (obj *overloadObj, isNew bool) {
+func (p *scopeCtx) addOverloadObj(ctx *pkgCtx, name string, decl clang.Cursor) (obj *overloadObj, isNew bool) {
 	oUSR := objUSR(decl)
 	if debugCompileDecl {
 		ctx.logf(decl, "==> addOveerloadObj %s - USR: %s", name, oUSR)
@@ -125,7 +125,7 @@ type overloadObj struct {
 	overloads *overloads
 }
 
-// order returns the order of the template class in the overloads list.
+// order returns the order of the overloadObj in the overloads list.
 // -1 means no order (only one overload, or not found).
 func (p *overloadObj) order() int {
 	ovs := p.overloads
@@ -278,7 +278,7 @@ func newClassCtx(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) *classCtx {
 				preloadGlobalFunc(ctx, &ctx.scopeCtx, decl)
 				break
 			}
-			fn, isNew := this.addOveerloadObj(ctx, name, decl)
+			fn, isNew := this.addOverloadObj(ctx, name, decl)
 			if isNew {
 				this.publicMethods = append(this.publicMethods, fn)
 			}
@@ -295,7 +295,7 @@ func isPublic(decl clang.Cursor) bool {
 func preloadClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
 	cName := cNameOf(cls)
 	if cls.NumTemplateArguments() >= 0 { // note: -1 means not a template class
-		scope.addOveerloadObj(ctx, cName, cls)
+		scope.addOverloadObj(ctx, cName, cls)
 		return
 	}
 	this := newClassCtx(ctx, cls, scope)
@@ -306,7 +306,7 @@ func preloadClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
 
 func preloadTemplateClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
 	cName := cNameOf(cls)
-	obj, isNew := scope.addOveerloadObj(ctx, cName, cls)
+	obj, isNew := scope.addOverloadObj(ctx, cName, cls)
 	if isNew {
 		ctx.addLoadUnit(func(ctx *pkgCtx) {
 			this := newClassCtx(ctx, obj.decl, scope)
@@ -317,7 +317,7 @@ func preloadTemplateClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
 
 func preloadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, fn clang.Cursor) {
 	cName := cNameOf(fn)
-	obj, isNew := scope.addOveerloadObj(ctx, cName, fn)
+	obj, isNew := scope.addOverloadObj(ctx, cName, fn)
 	if isNew {
 		ctx.addLoadUnit(func(ctx *pkgCtx) {
 			loadGlobalFunc(ctx, obj)

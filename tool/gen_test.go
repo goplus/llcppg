@@ -335,6 +335,5 @@ func TestLLVM_iterator_range(t *testing.T) {
 }
 
 func _TestLLVM_STLForwardCompat(t *testing.T) {
-	log.Println("===> TestLLVM_STLForwardCompat start")
 	testFromDir(t, "STLForwardCompat", "./_testcpp", true, "adt")
 }
