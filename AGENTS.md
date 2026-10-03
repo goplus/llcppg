@@ -34,7 +34,7 @@ the most critical; changes to either must be tested with `llgo test`.
 | `cl/` | Core compiler kernel: loads clang translation units and generates the Go package. |
 | `cl/_testc/`, `cl/_testcpp/`, `cl/_testpp/` | Fixture inputs (C, C++, and package tests) consumed by `cl` tests. Directories are `_`-prefixed so the Go toolchain ignores them as packages. |
 | `tool/` | Orchestration layer that integrates the components: loads configuration, parses sources, and drives `cl` to generate a package (`Config.NewPackage`). Used by `cmd/llcppg`. |
-| `tool/_testc/`, `tool/_testcpp/` | Fixture inputs consumed by `tool` tests, mirroring the `cl` fixture layout. |
+| `tool/_testc/`, `tool/_testcpp/` | Fixture inputs consumed by `tool` tests. Unlike the flat `in.h` + `out.go` `cl` fixtures, these are config/package-driven: nested `include/` header trees plus `llcppg.cfg`/`llcppg.pub`, with a golden `out.go` per generated sub-package. |
 | `tool/pputil/` | Preprocessor utilities (header listing, include resolution) used by `tool`. |
 | `cmd/llcppg/` | Main `llcppg` command-line entry point. |
 | `clang/` | Higher-level clang helpers (based on package `github.com/llarhub/clang-c`). |
@@ -87,10 +87,19 @@ llgo test -v -run 'TestLLVM_String' ./tool/
 
 #### Fixtures and golden files
 
-Each fixture directory has an input header (`in.h`) and a golden `out.go`. The
-test harness (`cl/compile_test.go` for `cl`, `tool/gen_test.go` for `tool`)
-parses `in.h` with libclang, generates Go, and diffs it against `out.go`. When
-adding or changing a fixture:
+The two packages use different fixture layouts:
+
+- **`cl`** (`cl/compile_test.go`): each fixture directory has a flat input
+  header (`in.h`) and a golden `out.go`. The harness parses `in.h` with
+  libclang, generates Go, and diffs it against `out.go`.
+- **`tool`** (`tool/gen_test.go`): fixtures are config/package-driven — a
+  nested `include/` header tree plus `llcppg.cfg`/`llcppg.pub`. The harness
+  loads the config, drives `cl` via `Config.NewPackage`, and diffs each
+  generated sub-package against its own `out.go` (e.g.
+  `tool/_testc/clang-c-22.1.8/CXString/out.go`); there is no `in.h`.
+
+In both cases the output is compared against a golden `out.go`. When adding or
+changing a fixture:
 
 1. Implement the generator change, then run the fixture test.
 2. When the generated Go differs from the golden (including a missing or stale
