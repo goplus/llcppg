@@ -115,10 +115,6 @@ func (p *pkgCtx) fieldName(name string, public bool) string {
 	return p.cstyleToGo(name, public)
 }
 
-func (p *pkgCtx) varName(name string) string {
-	return p.globalName(name, p.varPrefix)
-}
-
 func (p *pkgCtx) macroName(name string) string {
 	return p.globalName(name, p.macroPrefix)
 }
@@ -136,6 +132,15 @@ func (p *pkgCtx) enumvalName(name, ns string) string {
 		return v // special case
 	}
 	return name
+}
+
+func (p *pkgCtx) varName(cName string) string {
+	if v, ok := p.rename[cName]; ok {
+		return v // special case
+	}
+	cName = rmPrefix(cName, p.nsPrefix)
+	cName = rmPrefix(cName, p.varPrefix)
+	return p.cstyleToGo(cName, true)
 }
 
 func (p *pkgCtx) typeName(cName string, _ bool) string {
