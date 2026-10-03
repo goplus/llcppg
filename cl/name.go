@@ -37,7 +37,7 @@ func (p *pkgCtx) nextAnonName() string {
 	return name
 }
 
-func funcUSR(decl clang.Cursor) string {
+func objUSR(decl clang.Cursor) string {
 	return clang.USR(decl)
 }
 
