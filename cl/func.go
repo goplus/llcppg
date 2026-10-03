@@ -60,7 +60,8 @@ func loadGlobalFunc(ctx *pkgCtx, obj *overloadObj) {
 // is non-nil, it is an instance method compiled with a "this" receiver.
 func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	fn := obj.decl
-	cName := cNameOf(fn)
+	ns := cNS(fn)
+	cName := cNameWithNS(clang.String(fn), ns)
 	name := obj.name
 	isOp := isOperator(name)
 	if debugCompileDecl {
@@ -69,6 +70,12 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	}
 	if isOp {
 		return // TODO(xsw): support operator
+	}
+
+	if feats := ctx.nsFeats(ns); feats&featAllIgnore != 0 {
+		ctx.ignoref(feats, fn, "func %s: its parent is ignored, ignored too", cName)
+		ctx.ignoreType(cName, feats)
+		return
 	}
 
 	manglingName := clang.Mangling(fn)
