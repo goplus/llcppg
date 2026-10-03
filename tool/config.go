@@ -48,7 +48,7 @@ type Config struct {
 	TypeAbbrSuffix []string          `json:"TypeAbbrSuffix"` // Go type abbr suffix to remove, only valid for types that are not present in TypeAbbr
 	TypeAbbr       map[string]any    `json:"TypeAbbr"`       // Go type name to its abbr(s), used in function names
 	Rename         map[string]string `json:"Rename"`         // renaming of C/C++ names to Go names
-	TypeAlias      map[string]string `json:"TypeAlias"`      // C/C++ type name to another C/C++ type name
+	TypeAlias      map[string]string `json:"TypeAlias"`      // C/C++ type name to a Go type name in pkgPath.Name format (pkgPath can be empty if Name is in current package), optional
 	TypeIgnore     []string          `json:"TypeIgnore"`     // C/C++ type names to ignore
 	MacroIgnore    []string          `json:"MacroIgnore"`    // C/C++ macro names to ignore
 	NSIgnore       []string          `json:"NSIgnore"`       // C/C++ namespaces to ignore

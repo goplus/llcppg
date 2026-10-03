@@ -25,18 +25,17 @@ import (
 // -----------------------------------------------------------------------------
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
-	feats := 0
 	ns := cNS(decl)
 	cName := cNameWithNS(clang.String(decl), ns)
-	goName := ctx.typeName(cName, true)
-	if o, ok := ctx.typeAliasOf(cName, &feats); ok {
-		defineTypedef(ctx, decl, cName, goName, scope, o.Type(), nil, feats)
-		return
-	}
-
 	if ctx.isConfTypeIgnored(cName) {
 		ctx.ignoref(featQuietIgnore, decl, "typedef %s: ignored by config", cName)
 		ctx.ignoreType(cName, featQuietIgnore)
+		return
+	}
+
+	goName := ctx.typeName(cName, true)
+	if t, ok := ctx.typeAliasOf(cName); ok {
+		defineTypedef(ctx, decl, cName, goName, scope, t, nil)
 		return
 	}
 
@@ -60,6 +59,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		ctx.logf(decl, "typedef %ss: %s", cName, clang.String(underlying))
 	}
 
+	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
 	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
 		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, clang.String(underlying))
@@ -78,13 +78,13 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		}
 	}
 
-	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
+	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams)
 }
 
-func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam, feats int) {
+func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam) {
 	pkg := ctx.pkg
 	typDefs := pkg.NewTypeDefs()
-	if doc := ctx.directiveTypeC(decl, feats&featHasCallback != 0); doc != nil {
+	if doc := ctx.docCommentGroup(decl); doc != nil {
 		typDefs.SetComments(doc)
 	}
 
@@ -112,7 +112,7 @@ func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *
 		obj = t.Obj()
 	}
 
-	ctx.types[cName] = typeObj{obj, feats}
+	ctx.types[cName] = typeObj{obj, 0}
 	ctx.aliasTypeName(cName, goName)
 }
 

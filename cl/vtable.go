@@ -135,7 +135,7 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	}
 	vtNamed := vtDecl.InitType(pkg, vtStruct, tparams...)
 	if hasTarg {
-		vtRecv, _ = types.Instantiate(nil, vtNamed, cloneTypes(targs), false)
+		vtRecv, _ = types.Instantiate(ctx.typeCtx(), vtNamed, cloneTypes(targs), false)
 	} else {
 		vtRecv = vtNamed
 	}
