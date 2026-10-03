@@ -160,15 +160,16 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		return types.NewArray(elem, int64(typ.ArraySize()))
 	case lc.Type_Unexposed:
 		name := clang.String(typ)
-		if t, ok := scope.lookupType(name); ok { // typeParams
-			return t
-		}
 		if o, ok := ctx.typeAliasOf(name, feats); ok { // typeAlias supported in config
 			return o.Type()
 		}
-		if strings.HasPrefix(name, "__remove_cv(") { // clang predefined directive
+		if hasPredefinedDirective(name) { // clang predefined directive
 			*feats |= featQuietIgnore
 			return types.Typ[types.Invalid]
+		}
+		name = removeCV(name)
+		if t, ok := scope.lookupType(name); ok { // typeParams
+			return t
 		}
 		cName := cTypeName(typ)
 		if o, ok := ctx.getTypeObj(cName, feats); ok {
@@ -291,6 +292,54 @@ func trimTypeTag(typCName string) string {
 		typCName = typCName[pos+1:]
 	}
 	return typCName
+}
+
+// const T, volatile T, const volatile T => T
+func removeCV(name string) string {
+	for {
+		pos := strings.IndexByte(name, ' ')
+		if pos > 0 {
+			switch name[:pos] {
+			case "const", "volatile":
+				name = name[pos+1:]
+				continue
+			}
+		}
+		return name
+	}
+}
+
+// __remove_cv(T), __is_integral(T), etc
+func hasPredefinedDirective(name string) bool {
+	epos := strings.IndexByte(name, '(')
+	if epos > 0 {
+		if pos := strings.LastIndex(name[:epos], "__"); pos >= 0 {
+			if _, ok := clangPredefinedDirectives[name[pos+2:epos]]; ok {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+var clangPredefinedDirectives = map[string]none{
+	"decay":                  {},
+	"remove_cv":              {},
+	"add_pointer":            {},
+	"add_lvalue_reference":   {},
+	"add_rvalue_reference":   {},
+	"has_virtual_destructor": {},
+	"is_pointer":             {},
+	"is_reference":           {},
+	"is_const":               {},
+	"is_array":               {},
+	"is_enum":                {},
+	"is_class":               {},
+	"is_integral":            {},
+	"is_same":                {},
+	"is_base_of":             {},
+	"is_constructible":       {},
+	"is_abstract":            {},
 }
 
 // -----------------------------------------------------------------------------

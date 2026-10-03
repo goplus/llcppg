@@ -161,7 +161,7 @@ func loadTemplateClass(ctx *pkgCtx, cName string, this *classCtx, obj *overloadO
 	}
 
 	goName := typDecl.Type().Obj().Name()
-	initClassType(ctx, typDecl, this, goName, tparams)
+	initClassType(ctx, typDecl, this, cName, goName, tparams)
 }
 
 // -----------------------------------------------------------------------------
@@ -183,7 +183,7 @@ func loadClass(ctx *pkgCtx, cName string, this *classCtx, cls clang.Cursor) {
 	}
 
 	goName := typDecl.Type().Obj().Name()
-	initClassType(ctx, typDecl, this, goName, nil)
+	initClassType(ctx, typDecl, this, cName, goName, nil)
 }
 
 // -----------------------------------------------------------------------------
@@ -197,11 +197,12 @@ func newType(ctx *pkgCtx, cls clang.Cursor, cName, goName string) (ret typDecl) 
 	return
 }
 
-func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string, tparams []*types.TypeParam) bool {
+func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName, goName string, tparams []*types.TypeParam) bool {
 	feats := 0
 	initClassTypeEx(ctx, typDecl, this, goName, tparams, &feats)
 	if feats&featAllIgnore != 0 {
 		ctx.ignoref(feats, this.decl, "class %s: unsupported features, ignored", goName)
+		ctx.ignoreType(cName, feats)
 		typDecl.Delete()
 		return false
 	}
@@ -262,7 +263,7 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, goName string, parent *scopeCtx) *
 		overloads: make(map[string]*overloads),
 		parent:    parent,
 	}
-	if !initClassType(ctx, typDecl, this, goName, nil) {
+	if !initClassType(ctx, typDecl, this, "", goName, nil) {
 		ctx.panicf(cls, "class %s: unsupported feature, failed to initialize class", goName)
 	}
 	return typDecl.Type()
@@ -468,7 +469,12 @@ func baseClass(ctx *pkgCtx, decl clang.Cursor, feats *int) *types.TypeName {
 			return o
 		}
 	case lc.Type_Unexposed:
-		*feats |= featExplicitIgnore
+		name := clang.String(t)
+		if hasPredefinedDirective(name) {
+			*feats |= featQuietIgnore
+		} else {
+			*feats |= featExplicitIgnore
+		}
 		return nil
 	}
 	ctx.panicf(decl, "baseClass %s: unknown base class - %s (%d)", clang.String(decl), clang.String(t), t.Kind)
