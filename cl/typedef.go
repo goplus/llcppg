@@ -35,7 +35,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 
 	goName := ctx.typeName(cName, true)
 	if t, ok := ctx.typeAliasOf(cName); ok {
-		defineTypedef(ctx, decl, cName, goName, scope, t, nil)
+		defineTypedef(ctx, decl, cName, goName, scope, t, nil, 0)
 		return
 	}
 
@@ -78,13 +78,13 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		}
 	}
 
-	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams)
+	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
 }
 
-func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam) {
+func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam, feats int) {
 	pkg := ctx.pkg
 	typDefs := pkg.NewTypeDefs()
-	if doc := ctx.docCommentGroup(decl); doc != nil {
+	if doc := ctx.directiveTypeC(decl, feats&featHasCallback != 0); doc != nil {
 		typDefs.SetComments(doc)
 	}
 
