@@ -26,18 +26,13 @@ import (
 // -----------------------------------------------------------------------------
 
 func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
-
-	var feats int
-	var underlying lc.Type
-	var tunder types.Type
-	var cName = cNameOf(decl)
-	var goName = ctx.typeName(cName, true)
+	feats := 0
+	cName := cNameOf(decl)
+	goName := ctx.typeName(cName, true)
 	if cNewName, ok := ctx.typeAlias[cName]; ok {
 		if o, ok := ctx.getTypeObj(cNewName, &feats); ok {
-			tunder = o.Type()
-			goto lzFind
+			defineTypedef(ctx, decl, cName, goName, scope, o.Type(), feats)
+			return
 		}
 		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: alias to %s but not found, ignored", cName, cNewName)
 		ctx.ignoreType(cName, featExplicitIgnore)
@@ -56,19 +51,21 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		return
 	}
 
-	underlying = decl.TypedefDeclUnderlyingType()
+	underlying := decl.TypedefDeclUnderlyingType()
 	if debugCompileDecl {
 		ctx.logf(decl, "typedef %ss: %s", cName, clang.String(underlying))
 	}
 
-	tunder = toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
 	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
-		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type, ignored", cName)
+		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, underlying)
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
 	}
 	if feats&featExplicitIgnore != 0 {
-		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type, ignored", cName)
+		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type (%v), ignored", cName, underlying)
 		ctx.ignoreType(cName, featExplicitIgnore)
 		return
 	}
@@ -79,12 +76,16 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		}
 	}
 
-lzFind:
-	var obj *types.TypeName
-	var typDefs = pkg.NewTypeDefs()
+	defineTypedef(ctx, decl, cName, goName, scope, tunder, feats)
+}
+
+func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, feats int) {
+	pkg := ctx.pkg
+	typDefs := pkg.NewTypeDefs()
 	if doc := ctx.directiveTypeC(decl, feats&featHasCallback != 0); doc != nil {
 		typDefs.SetComments(doc)
 	}
+
 	var isClass bool
 	switch tunder {
 	case ctx.unsafePointer():
@@ -99,6 +100,8 @@ lzFind:
 
 	node := goNode(ctx, decl)
 	tparams := scope.typeParams(nil)
+
+	var obj *types.TypeName
 	if isClass {
 		t := typDefs.NewType(goName, node).InitType(pkg, tunder, tparams...)
 		obj = t.Obj()
