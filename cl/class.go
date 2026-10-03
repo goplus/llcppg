@@ -212,6 +212,23 @@ func newType(ctx *pkgCtx, cls clang.Cursor, cName, goName string) (ret typDecl) 
 }
 
 func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string, tparams []*types.TypeParam) bool {
+	// Initialize a class body at most once, and never re-enter one that is
+	// already being initialized. The body is only established (via InitType) at
+	// the very end of initClassTypeEx, so a class reached again *while its own
+	// members are still being visited* would otherwise re-run the full visit:
+	// each pass re-queues a compile unit and re-emits anonymous members, which
+	// drives llcppg into an infinite loop on headers that reach the same class
+	// repeatedly (e.g. the LLVM ADT fixtures that pull in <tuple>, <optional>,
+	// <type_traits>, <utility>). A State()-only guard in loadClass/
+	// loadTemplateClass is not enough because the type stays TyStateUninited
+	// throughout its own initialization. See issue goplus/llcppg#894.
+	obj := typDecl.Type().Obj()
+	if _, loading := ctx.initing[obj]; loading {
+		return true
+	}
+	ctx.initing[obj] = none{}
+	defer delete(ctx.initing, obj)
+
 	feats := 0
 	initClassTypeEx(ctx, typDecl, this, goName, tparams, &feats)
 	if feats&featAllIgnore != 0 {
