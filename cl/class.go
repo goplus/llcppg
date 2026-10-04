@@ -157,7 +157,7 @@ func loadTemplateClass(ctx *pkgCtx, cName string, this *classCtx, obj *overloadO
 			return
 		}
 		goName := ctx.typeName(cName, true)
-		typDecl = newType(ctx, cls, cName, goName)
+		typDecl = newType(ctx, cls, cName, goName, tparams...)
 		ctx.typdecls[cName] = typDecl
 	}
 
@@ -194,9 +194,9 @@ func loadClass(ctx *pkgCtx, cName string, this *classCtx, cls clang.Cursor) {
 
 // -----------------------------------------------------------------------------
 
-func newType(ctx *pkgCtx, cls clang.Cursor, cName, goName string) (ret typDecl) {
+func newType(ctx *pkgCtx, cls clang.Cursor, cName, goName string, tparams ...*types.TypeParam) (ret typDecl) {
 	ret.defs = ctx.pkg.NewTypeDefs()
-	ret.TypeDecl = ret.defs.NewType(goName, goNode(ctx, cls))
+	ret.TypeDecl = ret.defs.NewType(goName, tparams, goNode(ctx, cls))
 	if cName != "" {
 		ctx.addType(cName, cls, ret.Type())
 	}
@@ -256,7 +256,7 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 		this.ownsVptr = true
 	}
 	typStruc := types.NewStruct(this.fields, nil)
-	typDecl.InitType(pkg, typStruc, tparams...)
+	typDecl.InitType(pkg, typStruc)
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		compileClassImpl(ctx, this)
 	})

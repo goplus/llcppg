@@ -132,15 +132,15 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	// reinterpret cast in the accessor is valid. The leading "\n" renders a
 	// blank line before the directive, matching the spacing of the generated
 	// method blocks.
-	vtDecl := pkg.NewTypeDefs().SetComments(&ast.CommentGroup{
-		List: []*ast.Comment{{Text: "\n// llgo:type C"}},
-	}).NewType(vtableName(clsName), goNode(ctx, this.decl))
-
 	var tparams []*types.TypeParam
 	if hasTarg {
 		tparams = cloneTypeParams(targs)
 	}
-	vtRecv := types.Type(vtDecl.InitType(pkg, vtStruct, tparams...))
+	vtDecl := pkg.NewTypeDefs().SetComments(&ast.CommentGroup{
+		List: []*ast.Comment{{Text: "\n// llgo:type C"}},
+	}).NewType(vtableName(clsName), tparams, goNode(ctx, this.decl))
+
+	vtRecv := types.Type(vtDecl.InitType(pkg, vtStruct))
 	if hasTarg {
 		vtRecv, _ = types.Instantiate(ctx.typeCtx(), vtRecv, typeParamsToTypes(targs), false)
 	}
