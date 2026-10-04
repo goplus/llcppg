@@ -7,6 +7,9 @@ struct iterator {
   typedef _Category iterator_category;
 };
 
+template <class _Category, class _Tp, class _Distance, class _Pointer, class _Reference>
+using __iterator_alias = iterator<_Category, _Tp, _Distance, _Pointer, _Reference>;
+
 template <class _Derived, class _Category, class _Tp, class _Distance, class _Pointer, class _Reference>
 using __iterator_base = iterator<_Category, _Tp, _Distance, _Pointer, _Reference>;
 

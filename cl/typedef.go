@@ -18,6 +18,7 @@ package cl
 
 import (
 	"go/types"
+	"strings"
 
 	"github.com/goplus/llcppg/clang"
 )
@@ -33,10 +34,8 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		return
 	}
 
-	goName := ctx.typeName(cName, true)
-	if t, ok := ctx.typeAliasOf(cName); ok {
-		tinst, tparams := typeParamsAndInstantiate(ctx, t)
-		defineTypedef(ctx, decl, cName, goName, &ctx.scopeCtx, tinst, tparams, 0)
+	if _, ok := ctx.typeAliasOf(cName); ok {
+		// NOTE(xsw): typeAliasOf does the type alias when cName is first encountered.
 		return
 	}
 
@@ -73,6 +72,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		return
 	}
 
+	goName := ctx.typeName(cName, true)
 	if tn, ok := tunder.(*types.Named); ok {
 		if o := tn.Obj(); o.Pkg() == pkgTypes && o.Name() == goName {
 			return // already defined
@@ -80,6 +80,14 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	}
 
 	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
+}
+
+func isTypedefUnsupported(tunder types.Type) bool {
+	switch tunder.(type) {
+	case *types.TypeParam:
+		return true
+	}
+	return false
 }
 
 func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam, feats int) {
@@ -117,15 +125,24 @@ func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *
 	ctx.aliasTypeName(cName, goName)
 }
 
-func isTypedefUnsupported(tunder types.Type) bool {
-	switch tunder.(type) {
-	case *types.TypeParam:
-		return true
+// -----------------------------------------------------------------------------
+
+func doAliasType(ctx *pkgCtx, cName string, tunder types.Type, scope *scopeCtx) *types.Alias {
+	var tparams []*types.TypeParam
+	if scope != nil {
+		tparams = scope.tparams
+	} else {
+		tparams, tunder = typeParamsAndInstantiate(ctx, tunder)
 	}
-	return false
+	goName := ctx.typeName(cName, true)
+	t := ctx.pkg.NewTypeDefs().AliasTypeEx(goName, tunder, tparams)
+	obj := t.Obj()
+	ctx.types[cName] = typeObj{obj, 0}
+	ctx.aliasTypeName(cName, goName)
+	return t
 }
 
-func typeParamsAndInstantiate(ctx *pkgCtx, t types.Type) (inst types.Type, tparams []*types.TypeParam) {
+func typeParamsAndInstantiate(ctx *pkgCtx, t types.Type) (tparams []*types.TypeParam, inst types.Type) {
 	var tlist *types.TypeList
 	var tplist *types.TypeParamList
 	switch tt := t.(type) {
@@ -135,7 +152,7 @@ func typeParamsAndInstantiate(ctx *pkgCtx, t types.Type) (inst types.Type, tpara
 		tplist, tlist = tt.TypeParams(), tt.TypeArgs()
 	}
 	if tlist.Len() > 0 || tplist.Len() == 0 {
-		return t, nil
+		return nil, t
 	}
 	n := tplist.Len()
 	tparams = make([]*types.TypeParam, n)
@@ -147,6 +164,53 @@ func typeParamsAndInstantiate(ctx *pkgCtx, t types.Type) (inst types.Type, tpara
 	}
 	inst, _ = types.Instantiate(ctx.typeCtx(), t, targs, false)
 	return
+}
+
+// alias = .StdBasicString[byte, c.Void, c.Void]
+// alias = .Iterator
+// alias = [_Derived, _Category, _Tp, _Distance, _Pointer, _Reference] = .Iterator[_Category, _Tp, _Distance, _Pointer, _Reference]
+func (p *pkgCtx) aliasType(name, alias string) (ret types.Type, found bool) {
+	var ok bool
+	var scope *scopeCtx
+	if alias[0] == '[' { // has typeParams
+		pos := strings.IndexByte(alias, ']')
+		if pos <= 0 {
+			return
+		}
+		typParams := alias[1:pos]
+		alias, ok = strings.CutPrefix(strings.TrimSpace(alias[pos+1:]), "=")
+		if !ok {
+			return
+		}
+		alias = strings.TrimLeft(alias, " \t")
+		scope = &scopeCtx{tparams: p.goTypeParams(typParams)}
+	}
+	typArgs := ""
+	if alias[len(alias)-1] == ']' { // has typeArgs
+		pos := strings.IndexByte(alias, '[')
+		if pos <= 0 {
+			return
+		}
+		typArgs = alias[pos+1 : len(alias)-1]
+		alias = alias[:pos]
+	}
+	obj, ok := p.goNamedTypeObj(alias, scope)
+	if !ok {
+		return
+	}
+	ret = obj.Type()
+	if typArgs != "" {
+		targs, ok := p.goTypeArgs(typArgs, scope)
+		if !ok {
+			return
+		}
+		inst, err := types.Instantiate(p.typeCtx(), ret, targs, true)
+		if err != nil {
+			return
+		}
+		ret = inst
+	}
+	return doAliasType(p, name, ret, scope), true
 }
 
 // -----------------------------------------------------------------------------

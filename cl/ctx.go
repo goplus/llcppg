@@ -131,11 +131,13 @@ type pkgCtx struct {
 	nonClasses  []string          // typedef names to be treated as non-classes
 	typeAbbr    map[string]any    // Go type name => abbreviated name(s), used in function names
 	rename      map[string]string // C/C++ name => Go name
-	typeAlias   map[string]string // C/C++ type name => another C/C++ type name
+	typeAlias   map[string]string // C/C++ type name => Go name
 	typeIgnore  []string          // C/C++ type names to be ignored
 	macroIgnore []string          // C/C++ macro names to be ignored
 	fnIgnore    []string          // C/C++ function names to be ignored
 	nsIgnore    []string          // C/C++ namespace names to be ignored
+
+	typeAliasCache map[string]types.Type
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -337,10 +339,13 @@ func (p *pkgCtx) getTypeObj(cName string, feats *int) (ret *types.TypeName, ok b
 	return
 }
 
-func (p *pkgCtx) goNamedTypeObj(typName string) (ret *types.TypeName, ok bool) {
+func (p *pkgCtx) goNamedTypeObj(typName string, at *scopeCtx) (ret *types.TypeName, ok bool) {
 	var scope *types.Scope
 	pos := strings.IndexByte(typName, '.')
 	if pos < 0 {
+		if ret, ok = at.lookupTypeObj(typName); ok {
+			return
+		}
 		scope = types.Universe
 	} else {
 		var pkg *types.Package
@@ -366,11 +371,11 @@ func (p *pkgCtx) goNamedTypeObj(typName string) (ret *types.TypeName, ok bool) {
 	return
 }
 
-func (p *pkgCtx) goTypeArgs(typArgs string) (ret []types.Type, found bool) {
+func (p *pkgCtx) goTypeArgs(typArgs string, at *scopeCtx) (ret []types.Type, found bool) {
 	parts := strings.Split(typArgs, ",")
 	ret = make([]types.Type, len(parts))
 	for i, part := range parts {
-		o, ok := p.goNamedTypeObj(strings.TrimSpace(part))
+		o, ok := p.goNamedTypeObj(strings.TrimSpace(part), at)
 		if !ok {
 			return
 		}
@@ -380,43 +385,30 @@ func (p *pkgCtx) goTypeArgs(typArgs string) (ret []types.Type, found bool) {
 	return
 }
 
-func (p *pkgCtx) goNamedType(goName string) (ret types.Type, found bool) {
-	typArgs := ""
-	if goName[len(goName)-1] == ']' { // has typeArgs
-		pos := strings.IndexByte(goName, '[')
-		if pos <= 0 {
-			return
-		}
-		typArgs = goName[pos+1 : len(goName)-1]
-		goName = goName[:pos]
+func (p *pkgCtx) goTypeParams(typParams string) []*types.TypeParam {
+	pkg := p.pkg.Types
+	parts := strings.Split(typParams, ",")
+	ret := make([]*types.TypeParam, len(parts))
+	for i, part := range parts {
+		name := strings.TrimSpace(part)
+		tn := types.NewTypeName(token.NoPos, pkg, name, nil)
+		ret[i] = types.NewTypeParam(tn, p.any())
 	}
-	obj, ok := p.goNamedTypeObj(goName)
-	if !ok {
-		return
-	}
-	ret = obj.Type()
-	if typArgs != "" {
-		targs, ok := p.goTypeArgs(typArgs)
-		if !ok {
-			return
-		}
-		inst, err := types.Instantiate(p.typeCtx(), ret, targs, true)
-		if err != nil {
-			return
-		}
-		ret = inst
-	}
-	found = true
-	return
+	return ret
 }
 
 func (p *pkgCtx) typeAliasOf(name string) (ret types.Type, found bool) {
+	if t, ok := p.typeAliasCache[name]; ok {
+		return t, true
+	}
 	newName, ok := p.typeAlias[name]
 	if !ok || newName == "" {
 		return
 	}
-	ret, found = p.goNamedType(newName)
-	if !found {
+	ret, found = p.aliasType(name, newName)
+	if found {
+		p.typeAliasCache[name] = ret
+	} else {
 		log.Printf("[WARN] alias %s => %s in config: target type not found\n", name, newName)
 	}
 	return
