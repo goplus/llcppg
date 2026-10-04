@@ -131,11 +131,13 @@ type pkgCtx struct {
 	nonClasses  []string          // typedef names to be treated as non-classes
 	typeAbbr    map[string]any    // Go type name => abbreviated name(s), used in function names
 	rename      map[string]string // C/C++ name => Go name
-	typeAlias   map[string]string // C/C++ type name => another C/C++ type name
+	typeAlias   map[string]string // C/C++ type name => Go name
 	typeIgnore  []string          // C/C++ type names to be ignored
 	macroIgnore []string          // C/C++ macro names to be ignored
 	fnIgnore    []string          // C/C++ function names to be ignored
 	nsIgnore    []string          // C/C++ namespace names to be ignored
+
+	typeAliasCache map[string]types.Type
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
@@ -411,12 +413,17 @@ func (p *pkgCtx) goNamedType(goName string) (ret types.Type, found bool) {
 }
 
 func (p *pkgCtx) typeAliasOf(name string) (ret types.Type, found bool) {
+	if t, ok := p.typeAliasCache[name]; ok {
+		return t, true
+	}
 	newName, ok := p.typeAlias[name]
 	if !ok || newName == "" {
 		return
 	}
 	ret, found = p.goNamedType(newName)
-	if !found {
+	if found {
+		p.typeAliasCache[name] = ret
+	} else {
 		log.Printf("[WARN] alias %s => %s in config: target type not found\n", name, newName)
 	}
 	return
