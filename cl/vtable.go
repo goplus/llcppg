@@ -148,14 +148,6 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	genVptrAccessor(ctx, recvPtr, vtPtr, ownsVptr)
 }
 
-func cloneTypes(tparams []*types.TypeParam) []types.Type {
-	ret := make([]types.Type, len(tparams))
-	for i, tp := range tparams {
-		ret[i] = tp
-	}
-	return ret
-}
-
 // genVptrAccessor emits "func (p *X) XGo_vptr() *X_vtable_XXX".
 //
 // When the class owns its vptr the body is:
