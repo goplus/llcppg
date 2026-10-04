@@ -38,30 +38,63 @@ the most critical; changes to either must be tested with `llgo test`.
 | `tool/pputil/` | Preprocessor utilities (header listing, include resolution) used by `tool`. |
 | `cmd/llcppg/` | Main `llcppg` command-line entry point. |
 | `clang/` | Higher-level clang helpers (based on package `github.com/llarhub/clang-c`). |
-| `.github/` | CI workflow (`workflows/llgo.yml`) that installs llgo via the `xgo-dev/setup-llgo` action. |
+| `.github/` | CI workflow (`workflows/llgo.yml`) and `scripts/install-llgo.sh`, which installs Go, LLVM and llgo (used by both CI and agents). |
 
 ## Build and test
 
 ### Install the llgo toolchain
 
-The single most important setup step is installing `llgo` correctly; AI agents
-frequently get this wrong. Do **not** try to build llgo from source by hand.
-Instead, mirror exactly what CI does. The `.github/workflows/llgo.yml` workflow
-installs llgo through the [`xgo-dev/setup-llgo`](https://github.com/xgo-dev/setup-llgo)
-action:
+**Installing llgo is a required, supported step. "I cannot install llgo" is not
+an acceptable reason to skip `llgo test`.** Do not build llgo by hand or use
+`setup-llgo` outside CI; run the repository's install script, which is also what
+CI runs (`.github/workflows/llgo.yml`), so it stays tested.
 
-```yaml
-    - name: Setup llgo
-      uses: xgo-dev/setup-llgo@v0.2.0
-      with:
-        go-version: ${{ matrix.go }}
-        llvm-version: ${{ matrix.llvm }}
-        llgo-version: ${{ matrix.llgo }}
-```
+Prerequisites: Linux (Ubuntu/Debian with `apt`) or macOS (Homebrew), `git`,
+`curl`, network access, and `sudo` (or root) on Linux. Any `go` on `PATH` is
+enough to start; the script obtains the exact Go version from `go.mod`
+(currently Go 1.27.0).
 
-The versions CI pins (see `workflows/llgo.yml`) are Go `1.27`, LLVM `22`, and
-llgo `main`. Use the same action/versions to reproduce the toolchain; after it
-runs, `llgo` is on `PATH`.
+1. Install (idempotent, ~1-5 minutes; safe to re-run):
+
+   ```bash
+   .github/scripts/install-llgo.sh
+   ```
+
+   Pinned versions (what CI uses): LLVM `22`, llgo `main`, Go from `go.mod`.
+   To pick others, set env vars, e.g.
+   `LLGO_REF=<branch|tag|commit> LLVM_VERSION=22 .github/scripts/install-llgo.sh`
+   (see the header of the script for all options).
+
+2. Activate it in your shell using the `export` lines the script prints at the
+   end (they must be re-run in every new shell). Typical Linux values:
+
+   ```bash
+   export PATH="$HOME/.llgo/bin:/usr/lib/llvm-22/bin:$PATH"
+   export GOTOOLCHAIN=local
+   export LLGO_ROOT="$HOME/.llgo-src"
+   ```
+
+   The printed `PATH` also contains the Go 1.27 `bin` directory; it **must**
+   come before any older `go` (see failure modes below).
+
+3. Confirm success:
+
+   ```bash
+   llgo version                      # prints "llgo v1.0.x ... linux/amd64"
+   llgo test ./tool/pputil/...       # prints "ok  github.com/goplus/llcppg/tool/pputil"
+   ```
+
+Common failure modes:
+
+- `go: unknown GOEXPERIMENT dwarf5`: an older `go` (e.g. 1.24) is first on
+  `PATH`. Put the Go 1.27 `bin` dir printed by the script first, and set
+  `GOTOOLCHAIN=local`.
+- `llvm-config`/`clang` not found or wrong version: add
+  `/usr/lib/llvm-22/bin` (Linux) or `$(brew --prefix llvm@22)/bin` (macOS) to
+  `PATH`.
+- `llgo: command not found`: re-run the `export PATH=...` line from step 2.
+- apt/brew/network errors: re-run the script; it is idempotent.
+- Link errors with missing symbols: you ran plain `go test`; use `llgo test`.
 
 ### Run the tests
 
