@@ -114,10 +114,10 @@ func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *
 
 	var obj *types.TypeName
 	if isClass {
-		t := typDefs.NewType(goName, node).InitType(pkg, tunder, tparams...)
+		t := typDefs.NewType(goName, tparams, node).InitType(pkg, tunder)
 		obj = t.Obj()
 	} else {
-		t := typDefs.AliasTypeEx(goName, tunder, tparams, node)
+		t := typDefs.NewType(goName, tparams, node).AliasType(pkg, tunder)
 		obj = t.Obj()
 	}
 
@@ -135,7 +135,7 @@ func doAliasType(ctx *pkgCtx, cName string, tunder types.Type, scope *scopeCtx) 
 		tparams, tunder = typeParamsAndInstantiate(ctx, tunder)
 	}
 	goName := ctx.typeName(cName, true)
-	t := ctx.pkg.NewTypeDefs().AliasTypeEx(goName, tunder, tparams)
+	t := ctx.pkg.NewTypeDefs().NewType(goName, tparams).AliasType(ctx.pkg, tunder)
 	obj := t.Obj()
 	ctx.types[cName] = typeObj{obj, 0}
 	ctx.aliasTypeName(cName, goName)
