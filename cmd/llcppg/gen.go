@@ -45,8 +45,13 @@ func Gen(destDir, srcDir string, index clang.Index, verbose bool) (err error) {
 	}
 	mainPkgName := cfg.Name
 
-	if !verbose && cfg.IgnoreInline {
-		cl.InlineFuncIgnore = cl.QuietIgnoreInline // quiet ignore inline functions
+	if !verbose {
+		if cfg.IgnoreInline {
+			cl.InlineFuncIgnore = cl.QuietIgnore // quiet ignore inline functions
+		}
+		if cfg.NoManglingIgnore {
+			cl.NoManglingIgnore = cl.QuietIgnore // quiet ignore functions with no mangled symbol
+		}
 	}
 
 	if len(cfg.Pkgs) == 0 {

@@ -64,11 +64,12 @@ const (
 )
 
 const (
-	QuietIgnoreInline = featQuietIgnore
+	QuietIgnore = featQuietIgnore
 )
 
 var (
 	InlineFuncIgnore = featExplicitIgnore
+	NoManglingIgnore = featExplicitIgnore
 )
 
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, scope *scopeCtx) types.Type {
@@ -162,6 +163,8 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		}
 	case lc.Type_LongDouble:
 		return ctx.basicTyp(cLongDouble)
+	case lc.Type_WChar:
+		return ctx.basicTyp(cWcharT)
 	case lc.Type_BlockPointer, lc.Type_Invalid:
 		*feats |= featQuietIgnore // will always be ignored
 		return types.Typ[types.Invalid]
@@ -268,6 +271,7 @@ const (
 	cFloat
 	cDouble
 	cLongDouble
+	cWcharT
 	cBasicMax
 )
 
@@ -283,6 +287,7 @@ var ctypBasic = [cBasicMax]string{
 	cFloat:      "Float",
 	cDouble:     "Double",
 	cLongDouble: "LongDouble",
+	cWcharT:     "WcharT",
 }
 
 // -----------------------------------------------------------------------------

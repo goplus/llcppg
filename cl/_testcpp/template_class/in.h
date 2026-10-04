@@ -22,3 +22,10 @@ public:
 		return val2;
 	}
 };
+
+template <typename T1, typename T2, typename T3>
+class Baz {
+	T1 val1;
+	T2 val2;
+	T3 val3;
+};

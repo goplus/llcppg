@@ -173,6 +173,25 @@ func (p *pkgCtx) ignoref(feats int, decl clang.Cursor, format string, args ...an
 }
 
 func (p *pkgCtx) logf(decl clang.Cursor, format string, args ...any) {
+	switch decl.Kind {
+	case lc.Cursor_FunctionDecl, lc.Cursor_FunctionTemplate,
+		lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
+		var hasUnexposedAttr bool
+		var firstNotUnexposed clang.Cursor
+		clang.VisitChildren(decl, func(cur, parent clang.Cursor) clang.ChildVisitResult {
+			switch cur.Kind {
+			case lc.Cursor_UnexposedAttr:
+				hasUnexposedAttr = true
+				return clang.Continue
+			default:
+				firstNotUnexposed = cur
+				return clang.Break
+			}
+		})
+		if hasUnexposedAttr {
+			decl = firstNotUnexposed
+		}
+	}
 	pos := p.fset.Position(goNodePos(p, decl))
 	log.Printf("%s: %s", pos, fmt.Sprintf(format, args...))
 }

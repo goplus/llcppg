@@ -35,6 +35,7 @@ type Config struct {
 	CFlags          string            `json:"CFlags"`
 	Files           []string          `json:"Files"`
 	TypeAlias       map[string]string `json:"TypeAlias"`
+	TypeIgnore      []string          `json:"TypeIgnore"`
 	MacroIgnore     []string          `json:"MacroIgnore"`
 	LoadLibcPubFile bool              `json:"LoadLibcPubFile"`
 	KeepDoc         bool              `json:"KeepDoc"`

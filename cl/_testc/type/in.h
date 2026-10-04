@@ -1,3 +1,5 @@
+typedef long double LongDouble;
+
 // An enumeration type used as a value type.
 enum Color {
 	Red,

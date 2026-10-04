@@ -131,6 +131,12 @@ func isParameterPack(decl clang.Cursor) bool { // <class... T>
 
 func loadTemplateClass(ctx *pkgCtx, cName string, this *classCtx, obj *overloadObj) {
 	cls := obj.decl
+	if ctx.isConfTypeIgnored(cName) {
+		ctx.ignoref(featQuietIgnore, cls, "template class %s: ignored by config", cName)
+		ctx.ignoreType(cName, featQuietIgnore)
+		return
+	}
+
 	order := obj.order()
 	if debugCompileDecl {
 		ctx.logf(cls, "template class %s: order - %d", cName, order)
