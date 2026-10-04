@@ -30,6 +30,49 @@ import (
 
 // -----------------------------------------------------------------------------
 
+func cloneTypeName(obj *types.TypeName) *types.TypeName {
+	return types.NewTypeName(obj.Pos(), obj.Pkg(), obj.Name(), obj.Type())
+}
+
+func cloneTypeParam(tp *types.TypeParam) *types.TypeParam {
+	obj := cloneTypeName(tp.Obj())
+	return types.NewTypeParam(obj, tp.Constraint())
+}
+
+func cloneTypeParams(tparams []*types.TypeParam) []*types.TypeParam {
+	if len(tparams) == 0 {
+		return nil
+	}
+	ret := make([]*types.TypeParam, len(tparams))
+	for i, tp := range tparams {
+		ret[i] = cloneTypeParam(tp)
+	}
+	return ret
+}
+
+func typeParamsToTypes(tparams []*types.TypeParam) []types.Type {
+	ret := make([]types.Type, len(tparams))
+	for i, tp := range tparams {
+		ret[i] = tp
+	}
+	return ret
+}
+
+func concatTypeParams(a, b []*types.TypeParam) []*types.TypeParam {
+	if len(a) == 0 {
+		return b
+	}
+	a = cloneTypeParams(a)
+	if len(b) == 0 {
+		return a
+	}
+	ret := make([]*types.TypeParam, 0, len(a)+len(b))
+	ret = append(ret, a...)
+	return append(ret, b...)
+}
+
+// -----------------------------------------------------------------------------
+
 const (
 	flagIsParam = 1 << iota
 	flagIsVarDef

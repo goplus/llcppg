@@ -106,7 +106,7 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	recvPtr := types.Type(types.NewPointer(clsNamed))
 	recvInstPtr := recvPtr
 	if hasTarg {
-		clsType, _ := types.Instantiate(ctx.typeCtx(), clsNamed, cloneTypes(targs), false)
+		clsType, _ := types.Instantiate(ctx.typeCtx(), clsNamed, typeParamsToTypes(targs), false)
 		recvInstPtr = types.NewPointer(clsType)
 	}
 
@@ -142,18 +142,10 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	}
 	vtRecv := types.Type(vtDecl.InitType(pkg, vtStruct, tparams...))
 	if hasTarg {
-		vtRecv, _ = types.Instantiate(ctx.typeCtx(), vtRecv, cloneTypes(targs), false)
+		vtRecv, _ = types.Instantiate(ctx.typeCtx(), vtRecv, typeParamsToTypes(targs), false)
 	}
 	vtPtr := types.NewPointer(vtRecv)
 	genVptrAccessor(ctx, recvPtr, vtPtr, ownsVptr)
-}
-
-func cloneTypes(tparams []*types.TypeParam) []types.Type {
-	ret := make([]types.Type, len(tparams))
-	for i, tp := range tparams {
-		ret[i] = tp
-	}
-	return ret
 }
 
 // genVptrAccessor emits "func (p *X) XGo_vptr() *X_vtable_XXX".

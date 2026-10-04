@@ -35,7 +35,8 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 
 	goName := ctx.typeName(cName, true)
 	if t, ok := ctx.typeAliasOf(cName); ok {
-		defineTypedef(ctx, decl, cName, goName, scope, t, nil, 0)
+		tinst, tparams := typeParamsAndInstantiate(ctx, t)
+		defineTypedef(ctx, decl, cName, goName, &ctx.scopeCtx, tinst, tparams, 0)
 		return
 	}
 
@@ -122,6 +123,30 @@ func isTypedefUnsupported(tunder types.Type) bool {
 		return true
 	}
 	return false
+}
+
+func typeParamsAndInstantiate(ctx *pkgCtx, t types.Type) (inst types.Type, tparams []*types.TypeParam) {
+	var tlist *types.TypeList
+	var tplist *types.TypeParamList
+	switch tt := t.(type) {
+	case *types.Named:
+		tplist, tlist = tt.TypeParams(), tt.TypeArgs()
+	case *types.Alias:
+		tplist, tlist = tt.TypeParams(), tt.TypeArgs()
+	}
+	if tlist.Len() > 0 || tplist.Len() == 0 {
+		return t, nil
+	}
+	n := tplist.Len()
+	tparams = make([]*types.TypeParam, n)
+	targs := make([]types.Type, n)
+	for i := range n {
+		tp := cloneTypeParam(tplist.At(i))
+		targs[i] = tp
+		tparams[i] = tp
+	}
+	inst, _ = types.Instantiate(ctx.typeCtx(), t, targs, false)
+	return
 }
 
 // -----------------------------------------------------------------------------
