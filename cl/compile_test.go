@@ -104,6 +104,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language) {
 			Language:        lang,
 			WrapFileHeader:  conf.WrapFileHeader,
 			TypeAlias:       conf.TypeAlias,
+			TypeIgnore:      conf.TypeIgnore,
 			MacroIgnore:     conf.MacroIgnore,
 			CFlags:          conf.CFlags,
 			LoadLibcPubFile: conf.LoadLibcPubFile,
