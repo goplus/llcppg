@@ -15,6 +15,7 @@ const (
 	Blue  Color = 2
 )
 
+type LongDouble = c.LongDouble
 type Matrix struct {
 	Rows c.Int
 	Cols c.Int
