@@ -157,6 +157,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		TypeAbbrSuffix: conf.TypeAbbrSuffix,
 		Rename:         conf.Rename,
 		TypeIgnore:     conf.TypeIgnore,
+		FuncIgnore:     conf.FuncIgnore,
 		MacroIgnore:    conf.MacroIgnore,
 		NSIgnore:       conf.NSIgnore,
 		NameLookup:     nil,

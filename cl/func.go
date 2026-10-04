@@ -51,6 +51,14 @@ func loadGlobalFunc(ctx *pkgCtx, obj *overloadObj) {
 
 // -----------------------------------------------------------------------------
 
+func isTemplateFunc(fn clang.Cursor) bool {
+	if fn.Kind == lc.Cursor_FunctionTemplate {
+		return true
+	}
+	sct := fn.SpecializedCursorTemplate()
+	return sct.IsNull() == 0
+}
+
 // compileFuncOrMethod compiles a C/C++ function or method into a Go function.
 //
 // When cls is nil, it is compiled as a receiver-less global function with a
@@ -62,6 +70,16 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	fn := obj.decl
 	ns := cNS(fn)
 	cName := cNameWithNS(clang.String(fn), ns)
+	if isTemplateFunc(fn) {
+		ctx.ignoref(featQuietIgnore, fn, "func %s: is template, ignored", cName)
+		return
+	}
+
+	if ctx.isConfFuncIgnored(cName) {
+		ctx.ignoref(featQuietIgnore, fn, "func %s: ignored by config", cName)
+		return
+	}
+
 	name := obj.name
 	isOp := isOperator(name)
 	if debugCompileDecl {
@@ -92,7 +110,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	params, variadic := newParams(ctx, pkgTypes, fn, &feats, scope)
 	results := toFuncResults(ctx, pkgTypes, fn.ResultType(), &feats, scope)
 	if feats&featAllIgnore != 0 {
-		ctx.ignoref(feats, fn, "func %s: function with unsupported features, ignored", cName)
+		ctx.ignoref(feats, fn, "func %s (%d): function with unsupported features, ignored", cName, fn.Kind)
 		return
 	}
 

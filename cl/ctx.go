@@ -132,8 +132,9 @@ type pkgCtx struct {
 	typeAbbr    map[string]any    // Go type name => abbreviated name(s), used in function names
 	rename      map[string]string // C/C++ name => Go name
 	typeAlias   map[string]string // C/C++ type name => another C/C++ type name
-	typeIgnores []string          // C/C++ type names to be ignored
+	typeIgnore  []string          // C/C++ type names to be ignored
 	macroIgnore []string          // C/C++ macro names to be ignored
+	fnIgnore    []string          // C/C++ function names to be ignored
 	nsIgnore    []string          // C/C++ namespace names to be ignored
 
 	nameLookup func(manglingName string) (archivePath string, ok bool)
@@ -174,8 +175,8 @@ func (p *pkgCtx) ignoref(feats int, decl clang.Cursor, format string, args ...an
 
 func (p *pkgCtx) logf(decl clang.Cursor, format string, args ...any) {
 	switch decl.Kind {
-	case lc.Cursor_FunctionDecl, lc.Cursor_FunctionTemplate,
-		lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor:
+	case lc.Cursor_FunctionDecl, lc.Cursor_FunctionTemplate, lc.Cursor_CXXMethod,
+		lc.Cursor_Constructor, lc.Cursor_Destructor:
 		var hasUnexposedAttr bool
 		var firstNotUnexposed clang.Cursor
 		clang.VisitChildren(decl, func(cur, parent clang.Cursor) clang.ChildVisitResult {
@@ -311,7 +312,11 @@ func (p *pkgCtx) ignoreType(cName string, feats int) {
 }
 
 func (p *pkgCtx) isConfTypeIgnored(cName string) bool {
-	return contains(cName, p.typeIgnores)
+	return contains(cName, p.typeIgnore)
+}
+
+func (p *pkgCtx) isConfFuncIgnored(cName string) bool {
+	return contains(cName, p.fnIgnore)
 }
 
 func (p *pkgCtx) nsFeats(ns string) int {

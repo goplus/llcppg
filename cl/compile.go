@@ -118,6 +118,9 @@ type Config struct {
 	// TypeIgnore specifies a list of C/C++ type names to be ignored (optional).
 	TypeIgnore []string
 
+	// FuncIgnore specifies a list of C/C++ function names to be ignored (optional).
+	FuncIgnore []string
+
 	// TypeAlias specifies a mapping of C/C++ type names to a Go type name in pkgPath.Name
 	// format (pkgPath can be empty if Name is in current package), optional.
 	TypeAlias map[string]string
@@ -243,8 +246,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix, typeAlias: conf.TypeAlias,
 		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix, rename: rename,
 		nsPrefix: conf.NSPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
-		nsIgnore: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnores: conf.TypeIgnore,
-		classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
+		nsIgnore: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnore: conf.TypeIgnore,
+		fnIgnore: conf.FuncIgnore, classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), ovobjs: make(map[string]*overloadObj),
 		macroVals: make(map[string]any), types: make(map[string]typeObj),

@@ -278,8 +278,8 @@ func newClassCtx(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) *classCtx {
 	}
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
-		case lc.Cursor_CXXMethod, lc.Cursor_FunctionTemplate,
-			lc.Cursor_Constructor, lc.Cursor_Destructor, lc.Cursor_ConversionFunction:
+		case lc.Cursor_CXXMethod, lc.Cursor_Constructor, lc.Cursor_Destructor,
+			lc.Cursor_FunctionTemplate, lc.Cursor_ConversionFunction:
 			if !isPublic(decl) {
 				break
 			}

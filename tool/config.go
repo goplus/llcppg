@@ -50,6 +50,7 @@ type Config struct {
 	Rename           map[string]string `json:"Rename"`           // renaming of C/C++ names to Go names
 	TypeAlias        map[string]string `json:"TypeAlias"`        // C/C++ type name to a Go type name in pkgPath.Name format (pkgPath can be empty if Name is in current package), optional
 	TypeIgnore       []string          `json:"TypeIgnore"`       // C/C++ type names to ignore
+	FuncIgnore       []string          `json:"FuncIgnore"`       // C/C++ function names to ignore
 	MacroIgnore      []string          `json:"MacroIgnore"`      // C/C++ macro names to ignore
 	NSIgnore         []string          `json:"NSIgnore"`         // C/C++ namespaces to ignore
 	Pkgs             []string          `json:"Pkgs"`             // sub-packages to generate, optional
