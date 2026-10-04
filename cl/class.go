@@ -337,7 +337,8 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 			panic("todo: virtual base class is not supported")
 		}
 		if typ, name, ok := baseClass(ctx, this, decl, feats); ok {
-			fld := types.NewField(goNodePos(ctx, decl), pkg, name, typ, true)
+			_, isTypeParam := typ.(*types.TypeParam) // typeParam can't be embedded
+			fld := types.NewField(goNodePos(ctx, decl), pkg, name, typ, !isTypeParam)
 			this.fields = append(this.fields, fld)
 		}
 

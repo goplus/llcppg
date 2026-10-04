@@ -94,11 +94,21 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	if len(slots) == 0 {
 		return
 	}
+
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
+
+	targs := this.tparams
+	hasTarg := len(targs) > 0
+
 	clsNamed := this.typNamed
 	clsName := clsNamed.Obj().Name()
-	recvPtr := types.NewPointer(clsNamed)
+	recvPtr := types.Type(types.NewPointer(clsNamed))
+	recvInstvtr := recvPtr
+	if hasTarg {
+		clsType, _ := types.Instantiate(ctx.typeCtx(), clsNamed, cloneTypes(targs), false)
+		recvInstvtr = types.NewPointer(clsType)
+	}
 
 	// The vtable struct: one field per slot. A named slot is a function pointer
 	// whose first parameter is "this *X"; an anonymous slot is an unexported
@@ -109,7 +119,7 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 		var fldName string
 		if slot.named {
 			fldName = slot.name
-			fldType = vtableSlotFunc(ctx, pkgTypes, recvPtr, slot.decl, this.scope())
+			fldType = vtableSlotFunc(ctx, pkgTypes, recvInstvtr, slot.decl, this.scope())
 		} else {
 			fldName = placeholderSlotName(i)
 			fldType = ctx.unsafePointer()
@@ -126,18 +136,13 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 		List: []*ast.Comment{{Text: "\n// llgo:type C"}},
 	}).NewType(vtableName(clsName), goNode(ctx, this.decl))
 
-	var targs = this.tparams
 	var tparams []*types.TypeParam
-	var vtRecv types.Type
-	var hasTarg = len(targs) > 0
 	if hasTarg {
 		tparams = cloneTypeParams(targs)
 	}
-	vtNamed := vtDecl.InitType(pkg, vtStruct, tparams...)
+	vtRecv := types.Type(vtDecl.InitType(pkg, vtStruct, tparams...))
 	if hasTarg {
-		vtRecv, _ = types.Instantiate(ctx.typeCtx(), vtNamed, cloneTypes(targs), false)
-	} else {
-		vtRecv = vtNamed
+		vtRecv, _ = types.Instantiate(ctx.typeCtx(), vtRecv, cloneTypes(targs), false)
 	}
 	vtPtr := types.NewPointer(vtRecv)
 	genVptrAccessor(ctx, recvPtr, vtPtr, ownsVptr)
