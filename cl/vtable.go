@@ -104,10 +104,10 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	clsNamed := this.typNamed
 	clsName := clsNamed.Obj().Name()
 	recvPtr := types.Type(types.NewPointer(clsNamed))
-	recvInstvtr := recvPtr
+	recvInstPtr := recvPtr
 	if hasTarg {
 		clsType, _ := types.Instantiate(ctx.typeCtx(), clsNamed, cloneTypes(targs), false)
-		recvInstvtr = types.NewPointer(clsType)
+		recvInstPtr = types.NewPointer(clsType)
 	}
 
 	// The vtable struct: one field per slot. A named slot is a function pointer
@@ -119,7 +119,7 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 		var fldName string
 		if slot.named {
 			fldName = slot.name
-			fldType = vtableSlotFunc(ctx, pkgTypes, recvInstvtr, slot.decl, this.scope())
+			fldType = vtableSlotFunc(ctx, pkgTypes, recvInstPtr, slot.decl, this.scope())
 		} else {
 			fldName = placeholderSlotName(i)
 			fldType = ctx.unsafePointer()
