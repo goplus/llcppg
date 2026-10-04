@@ -50,7 +50,7 @@ func cloneTypeParams(tparams []*types.TypeParam) []*types.TypeParam {
 	return ret
 }
 
-func cloneTypes(tparams []*types.TypeParam) []types.Type {
+func typeParamsToTypes(tparams []*types.TypeParam) []types.Type {
 	ret := make([]types.Type, len(tparams))
 	for i, tp := range tparams {
 		ret[i] = tp
