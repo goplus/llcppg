@@ -244,12 +244,26 @@ func loadLinkageSpec(ctx *pkgCtx, scope *scopeCtx, linkage clang.Cursor) {
 }
 
 func loadOutsideMethod(ctx *pkgCtx, outsideDecl clang.Cursor) {
+	ns := cNS(outsideDecl)
+	name := clang.String(outsideDecl)
+	cName := cNameWithNS(name, ns)
+	parent := outsideDecl.SemanticParent()
+	switch parent.Kind {
+	case lc.Cursor_StructDecl, lc.Cursor_ClassDecl, lc.Cursor_ClassTemplate:
+		sct := parent.SpecializedCursorTemplate()
+		if sct.IsNull() == 0 {
+			ctx.ignoref(featQuietIgnore, sct, "method %s: specialized method, ignored", cName)
+			return
+		}
+	}
 	fnUSR := objUSR(outsideDecl)
 	if m, ok := ctx.ovobjs[fnUSR]; ok {
 		// TODO(xsw): check another definition of the same method
 		m.decl = outsideDecl
+	} else if name == "operator()" {
+		ctx.ignoref(featQuietIgnore, outsideDecl, "%s is ignored", cName)
 	} else {
-		ctx.ignoref(featExplicitIgnore, outsideDecl, "[WARN] method undeclared - %s", cNameOf(outsideDecl))
+		ctx.ignoref(featExplicitIgnore, outsideDecl, "[WARN] method undeclared - %s", cName)
 	}
 }
 
