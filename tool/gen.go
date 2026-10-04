@@ -198,6 +198,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		TypeAlias:       cfg.TypeAlias,
 		Rename:          cfg.Rename,
 		TypeIgnore:      cfg.TypeIgnore,
+		FuncIgnore:      cfg.FuncIgnore,
 		MacroIgnore:     cfg.MacroIgnore,
 		NSIgnore:        cfg.NSIgnore,
 		DefaultGoFile:   "llcppg.i.go",
