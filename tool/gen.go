@@ -351,6 +351,7 @@ func ParseFlags(includeDirs []string, lang string) []string {
 // to those files.
 func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) ([]cl.Source, error) {
 	flags := ParseFlags(includeDirs, lang)
+	flags = append(flags, "-fparse-all-comments")
 	files := make([]cl.Source, len(headerFiles))
 	for i, headerFile := range headerFiles {
 		tu, e := index.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)

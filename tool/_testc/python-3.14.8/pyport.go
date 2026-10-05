@@ -13,9 +13,15 @@ const PY_BIG_ENDIAN = 0
 const PY_LITTLE_ENDIAN = 1
 const Py_CAN_START_THREADS = 1
 
+// uintptr_t is the C9X name for an unsigned integral type such that a
+// legitimate void* can be cast to uintptr_t and then back to void* again
+// without loss of information.  Similarly for intptr_t, wrt a signed
+// integral type.
 type PyUintptrT = c.UintptrT
 type PyIntptrT = c.IntptrT
 type PySsizeT = c.SsizeT
 type PyHashT = PySsizeT
 type PyUhashT = c.SizeT
+
+// Now PY_SSIZE_T_CLEAN is mandatory. This is just for backward compatibility.
 type PySsizeCleanT = PySsizeT
