@@ -44,44 +44,75 @@ func (p *pkgCtx) docComments(decl clang.Cursor) []*ast.Comment {
 	return toLineComments(raw)
 }
 
+// cleanCommentLine strips the C/C++ comment markers and Doxygen/Javadoc
+// decoration that may appear on a single physical line of a raw comment,
+// returning just the human-readable content.
+//
+// Markers can appear at either end of the line because a raw comment reported
+// by libclang may concatenate multiple comment blocks (a plain "/* ... */"
+// banner immediately followed by a "/** ... */" doc block), which puts an
+// opener or closer mid-stream rather than only at the ends of the whole string.
+// The order matters: block openers/closers are removed first (so "Declarations
+// */" and "/**" collapse correctly), then line-comment markers, then a single
+// leading "*" decoration.
+func cleanCommentLine(line string) string {
+	line = strings.TrimSpace(line)
+	// Strip a leading block-opener: "/" followed by a run of "*" ("/*", "/**",
+	// "/***", banner "/*****").
+	if s, ok := strings.CutPrefix(line, "/"); ok {
+		if t := strings.TrimLeft(s, "*"); len(t) < len(s) {
+			line = strings.TrimSpace(t)
+		}
+	}
+	// Strip a trailing block-closer: a run of "*" followed by "/" ("*/", "**/",
+	// banner "*****/").
+	if s, ok := strings.CutSuffix(line, "/"); ok {
+		if t := strings.TrimRight(s, "*"); len(t) < len(s) {
+			line = strings.TrimSpace(t)
+		}
+	}
+	switch {
+	case strings.HasPrefix(line, "//"):
+		// Line-comment markers: "//", "///", "//!".
+		s := strings.TrimPrefix(line, "//")
+		s = strings.TrimPrefix(s, "/")
+		s = strings.TrimPrefix(s, "!")
+		line = strings.TrimPrefix(s, " ")
+	case strings.TrimRight(line, "*") == "":
+		// A line that is only "*" decoration (a blank Doxygen line) or a run
+		// of asterisks (a banner separator) carries no content.
+		line = ""
+	default:
+		// Drop a single Doxygen/Javadoc leading "*" decoration.
+		if s, ok := strings.CutPrefix(line, "* "); ok {
+			line = s
+		} else if s, ok := strings.CutPrefix(line, "*"); ok {
+			line = s
+		}
+	}
+	return line
+}
+
 // toLineComments converts a raw C/C++ documentation comment into a slice of Go
-// "//" line comments. It handles both block comments ("/* ... */", "/** ... */")
-// and consecutive line comments ("//", "///", "//!"), stripping the markers and
-// any common leading " * " decoration from block comments. It returns nil when
-// there is no meaningful content.
+// "//" line comments. It handles block comments ("/* ... */", "/** ... */"),
+// consecutive line comments ("//", "///", "//!"), and raw comments that
+// concatenate several blocks (e.g. "/* Declarations */\n/** ... */", which
+// libclang reports when a plain comment immediately precedes a doc comment on
+// the same declaration). The markers and any Doxygen/Javadoc "*" decoration are
+// stripped. It returns nil when there is no meaningful content.
 func toLineComments(raw string) []*ast.Comment {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		return nil
 	}
 
+	// Process the raw comment line by line. Because a single raw comment may
+	// contain more than one comment block, the opening ("/*", "/**", ...) and
+	// closing ("*/", "**/", ...) markers can appear on interior lines, not just
+	// at the very ends of the string, so each line is cleaned independently.
 	var lines []string
-	switch {
-	case strings.HasPrefix(raw, "/*"):
-		body := strings.TrimPrefix(raw, "/*")
-		body = strings.TrimSuffix(body, "*/")
-		for _, line := range strings.Split(body, "\n") {
-			line = strings.TrimSpace(line)
-			// Drop a Doxygen/Javadoc-style leading "*" decoration.
-			if line == "*" {
-				line = ""
-			} else if s, ok := strings.CutPrefix(line, "* "); ok {
-				line = s
-			} else if s, ok := strings.CutPrefix(line, "*"); ok {
-				line = s
-			}
-			lines = append(lines, line)
-		}
-	default:
-		for _, line := range strings.Split(raw, "\n") {
-			line = strings.TrimSpace(line)
-			line = strings.TrimPrefix(line, "//")
-			// Doxygen line-comment markers: "///" and "//!".
-			line = strings.TrimPrefix(line, "/")
-			line = strings.TrimPrefix(line, "!")
-			line = strings.TrimPrefix(line, " ")
-			lines = append(lines, line)
-		}
+	for _, line := range strings.Split(raw, "\n") {
+		lines = append(lines, cleanCommentLine(line))
 	}
 
 	// Trim leading/trailing blank lines that come from the markers being on

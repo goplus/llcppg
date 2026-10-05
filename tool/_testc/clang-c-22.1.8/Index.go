@@ -3495,7 +3495,6 @@ func (self CursorKind) IsTranslationUnit() c.Uint {
 	return 0
 }
 
-// *
 // Determine whether the given cursor represents a preprocessing
 // element, such as a preprocessor directive or macro instantiation.
 //
@@ -3504,7 +3503,6 @@ func (self CursorKind) IsPreprocessing() c.Uint {
 	return 0
 }
 
-// *
 // Determine whether the given cursor represents a currently
 //  unexposed piece of the AST (e.g., CXCursor_UnexposedStmt).
 //
