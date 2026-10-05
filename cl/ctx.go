@@ -161,8 +161,9 @@ type pkgCtx struct {
 	failFast int
 	anonSeq  int
 
-	stdRecvName bool
-	keepDoc     bool
+	stdRecvName    bool
+	keepDoc        bool
+	forceCamelCase bool
 }
 
 func (p *pkgCtx) ignoref(feats int, decl clang.Cursor, format string, args ...any) {

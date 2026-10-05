@@ -209,6 +209,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		TypeAbbrSuffix:  cfg.TypeAbbrSuffix,
 		TypeAlias:       cfg.TypeAlias,
 		Rename:          cfg.Rename,
+		ForceCamelCase:  cfg.ForceCamelCase,
 		TypeIgnore:      cfg.TypeIgnore,
 		FuncIgnore:      cfg.FuncIgnore,
 		MacroIgnore:     cfg.MacroIgnore,
