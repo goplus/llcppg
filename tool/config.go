@@ -58,6 +58,7 @@ type Config struct {
 	IgnoreInline     bool              `json:"IgnoreInline"`     // quietly ignore inline functions
 	NoManglingIgnore bool              `json:"NoManglingIgnore"` // quietly ignore functions with no mangled symbol
 	GroupSubdir      bool              `json:"GroupSubdir"`      // treats sub-directory files as a single file
+	GroupSubdirBy    string            `json:"GroupSubdirBy"`    // criterion to group sub-directory files by, e.g., "dir" or "fname". `GroupSubdir = true` is equivalent to `GroupSubdirBy = "dir"`.
 }
 
 // -----------------------------------------------------------------------------
