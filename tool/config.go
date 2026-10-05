@@ -48,7 +48,6 @@ type Config struct {
 	TypeAbbrSuffix   []string          `json:"TypeAbbrSuffix"`   // Go type abbr suffix to remove, only valid for types that are not present in TypeAbbr
 	TypeAbbr         map[string]any    `json:"TypeAbbr"`         // Go type name to its abbr(s), used in function names
 	Rename           map[string]string `json:"Rename"`           // renaming of C/C++ names to Go names
-	ForceCamelCase   bool              `json:"ForceCamelCase"`   // convert capitalized, underscore-joined names to camel case
 	TypeAlias        map[string]string `json:"TypeAlias"`        // C/C++ type name to a Go type name in pkgPath.Name format (pkgPath can be empty if Name is in current package), optional
 	TypeIgnore       []string          `json:"TypeIgnore"`       // C/C++ type names to ignore
 	FuncIgnore       []string          `json:"FuncIgnore"`       // C/C++ function names to ignore
@@ -56,6 +55,7 @@ type Config struct {
 	NSIgnore         []string          `json:"NSIgnore"`         // C/C++ namespaces to ignore
 	Pkgs             []string          `json:"Pkgs"`             // sub-packages to generate, optional
 	FailFast         int               `json:"FailFast"`         // exit on first N errors, optional
+	ForceCamelCase   bool              `json:"ForceCamelCase"`   // convert capitalized, underscore-joined names to camel case, except names whose final segment is all-uppercase (acronyms/macros), which are kept as-is.
 	IgnoreInline     bool              `json:"IgnoreInline"`     // quietly ignore inline functions
 	NoManglingIgnore bool              `json:"NoManglingIgnore"` // quietly ignore functions with no mangled symbol
 	GroupSubdir      bool              `json:"GroupSubdir"`      // treats sub-directory files as a single file. Deprecated: use GroupSubdirBy instead.

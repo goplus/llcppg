@@ -219,13 +219,11 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 	rename := p.rename
 	parts, hasNS := cNameSplit(cName)
-	if !hasNS && isAllUpperStart(parts) {
-		if !p.forceCamelCase || len(parts) <= 1 || !strings.Contains(cName, "_") || isAllUpper(parts[len(parts)-1]) {
-			if parts[0] == "" && public {
-				return "X" + cName
-			}
-			return cName
+	if p.shouldKeepCStyle(parts, hasNS) {
+		if parts[0] == "" && public {
+			return "X" + cName
 		}
+		return cName
 	}
 	lastEndWithUpper := false
 	for i := 0; i < len(parts); i++ {
@@ -258,12 +256,22 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 	return strings.Join(parts, "")
 }
 
+func (p *pkgCtx) shouldKeepCStyle(parts []string, hasNS bool) bool {
+	if !hasNS && isAllUpperStart(parts) {
+		if p.forceCamelCase {
+			return isAnyUpperEnd(parts)
+		}
+		return true
+	}
+	return false
+}
+
 // -----------------------------------------------------------------------------
 
 func isAllUpperStart(parts []string) bool {
 	for _, part := range parts {
 		if part != "" {
-			if r := part[0]; 'a' <= r && r <= 'z' {
+			if c := part[0]; 'a' <= c && c <= 'z' {
 				return false
 			}
 		}
@@ -271,16 +279,15 @@ func isAllUpperStart(parts []string) bool {
 	return true
 }
 
-func isAllUpper(name string) bool {
-	hasUpper := false
-	for i := 0; i < len(name); i++ {
-		if c := name[i]; 'a' <= c && c <= 'z' {
-			return false
-		} else if 'A' <= c && c <= 'Z' {
-			hasUpper = true
+func isAnyUpperEnd(parts []string) bool {
+	for _, part := range parts {
+		if part != "" {
+			if c := part[len(part)-1]; 'A' <= c && c <= 'Z' {
+				return true
+			}
 		}
 	}
-	return hasUpper
+	return false
 }
 
 func cutMethodPrefix(name, objName string) string {

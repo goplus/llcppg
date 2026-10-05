@@ -110,9 +110,6 @@ type Config struct {
 	// in the map, it will be renamed to the corresponding Go name.
 	Rename map[string]string
 
-	// ForceCamelCase converts capitalized, underscore-joined names to camel case (optional).
-	ForceCamelCase bool
-
 	// NSIgnore specifies a list of C/C++ namespaces to be ignored (optional).
 	NSIgnore []string
 
@@ -180,6 +177,11 @@ type Config struct {
 	// llcppg will stop after printing errors `FailFast` times.
 	FailFast int
 
+	// ForceCamelCase converts capitalized, underscore-joined names to camel case (optional),
+	// except names whose final segment is all-uppercase (acronyms/macros), which are kept
+	// as-is.
+	ForceCamelCase bool
+
 	// LoadLibcPubFile specifies whether to load the pubFile for libc package (optional).
 	LoadLibcPubFile bool
 
@@ -244,14 +246,13 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, lang: conf.Language, failFast: conf.FailFast,
-		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
+		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName, cflags: conf.CFlags,
+		wrapFileHeader: conf.WrapFileHeader, forceCamelCase: conf.ForceCamelCase,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
 		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
 		typeAlias: conf.TypeAlias, typeAliasCache: make(map[string]types.Type),
 		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix, rename: rename,
-		forceCamelCase: conf.ForceCamelCase,
-		nsPrefix:       conf.NSPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
+		nsPrefix: conf.NSPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
 		nsIgnore: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnore: conf.TypeIgnore,
 		fnIgnore: conf.FuncIgnore, classes: conf.Class, nonClasses: conf.NonClass, typdecls: typdecls,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,

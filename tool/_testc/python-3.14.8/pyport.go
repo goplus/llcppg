@@ -8,9 +8,9 @@ const HAVE_LONG_LONG = 1
 const PYLONG_BITS_IN_DIGIT = 30
 const SIZEOF_PY_HASH_T = 8
 const SIZEOF_PY_UHASH_T = 8
-const PY_FORMAT_SIZE_T = "z"
-const PY_BIG_ENDIAN = 0
-const PY_LITTLE_ENDIAN = 1
+const FORMAT_SIZE_T = "z"
+const BIG_ENDIAN = 0
+const LITTLE_ENDIAN = 1
 const Py_CAN_START_THREADS = 1
 
 // uintptr_t is the C9X name for an unsigned integral type such that a
