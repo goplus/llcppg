@@ -38,10 +38,9 @@ import (
 // or "Shape_"), so a constant Red becomes bar_Red / Shape_Red and then goes
 // through getPubName for the final Go name.
 func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
-	ns := cNS(decl)
+	ns := ctx.cNS(decl)
 	hasName := decl.IsAnonymous() == 0
 	scoped := decl.EnumDeclIsScoped() != 0
-	typ := decl.EnumDeclIntegerType()
 
 	var cName string
 	if hasName {
@@ -52,47 +51,68 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
 		ctx.logf(decl, "enum %s - hasName: %v, scoped: %v", cName, hasName, scoped)
 	}
 
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
-
 	var ok bool
 	var typDecl typDecl
-	var enumType types.Type
 	if hasName {
 		typDecl, ok = ctx.typdecls[cName]
 		if !ok {
 			goName := ctx.typeName(cName, true)
-			typDecl = newType(ctx, decl, cName, goName)
+			typDecl = newEnumType(ctx, decl, cName, goName)
 			ctx.typdecls[cName] = typDecl
-
-			feats := 0
-			underType := toTypeEx(ctx, pkgTypes, typ, flagIsTypeDef, &feats, nil)
-			if feats&featAllIgnore != 0 {
-				ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d: %s)", cName, cTypeName(typ), typ.Kind, clang.String(typ))
-			}
-			typDecl.InitType(pkg, underType)
 		}
-	}
-	if decl.IsCursorDefinition() == 0 {
-		return // declaration only, no definition
-	}
-	if hasName {
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			typDecl.defs.SetComments(doc)
 		}
-		enumType = typDecl.Type()
 	}
 
+	if decl.IsCursorDefinition() == 0 {
+		return // declaration only, no definition
+	}
+
+	if scoped {
+		ns = cName
+	}
+	initEnumvals(ctx, decl, typDecl, ns)
+}
+
+func emitEnum(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
+	typDecl := newEnumType(ctx, decl, "", goName)
+	initEnumvals(ctx, decl, typDecl, ctx.cNS(decl))
+	return typDecl.Type()
+}
+
+func newEnumType(ctx *pkgCtx, decl clang.Cursor, cName, goName string) typDecl {
+	typDecl := newType(ctx, decl, cName, goName)
+
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+
+	feats := 0
+	typ := decl.EnumDeclIntegerType()
+	underType := toTypeEx(ctx, pkgTypes, typ, flagIsTypeDef, &feats, nil)
+	if feats&featAllIgnore != 0 {
+		ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d: %s)", cNameOf(decl), cTypeName(typ), typ.Kind, clang.String(typ))
+	}
+	typDecl.InitType(pkg, underType)
+	return typDecl
+}
+
+func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
 	defs := pkg.NewConstDefs(pkgTypes.Scope())
-	// For an anonymous enum there is no type to carry the doc, so attach the
-	// enum's doc comment to the generated const block instead.
-	if !hasName {
+
+	var enumType types.Type
+	if typDecl.defs != nil {
+		enumType = typDecl.Type()
+	} else {
+		// For an anonymous enum there is no type to carry the doc, so attach the
+		// enum's doc comment to the generated const block instead.
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			defs.SetComments(doc)
 		}
-	} else if scoped {
-		ns = cName
 	}
+
 	clang.VisitChildren(decl, func(item, parent clang.Cursor) clang.ChildVisitResult {
 		if item.Kind != lc.Cursor_EnumConstantDecl {
 			return clang.Continue
