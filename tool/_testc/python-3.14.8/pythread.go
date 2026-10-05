@@ -10,15 +10,15 @@ import (
 
 // Return status codes for Python lock acquisition.  Chosen for maximum
 // backwards compatibility, ie failure -> 0, success -> 1.
-type PyLockStatus c.Uint
+type LockStatus c.Uint
 
 const (
-	PY_LOCK_FAILURE  PyLockStatus = 0
-	PY_LOCK_ACQUIRED PyLockStatus = 1
-	PY_LOCK_INTR     PyLockStatus = 2
+	LOCK_FAILURE  LockStatus = 0
+	LOCK_ACQUIRED LockStatus = 1
+	LOCK_INTR     LockStatus = 2
 )
 
-type PyThreadTypeLock uintptr
+type ThreadTypeLock uintptr
 
 // When Py_LIMITED_API is not defined, the type layout of Py_tss_t is
 // exposed to allow static allocation in the API clients.  Even in this case,
@@ -27,7 +27,7 @@ type X_PyTssT struct {
 	X_isInitialized c.Int
 	X_key           pthread.Key
 }
-type PyTssT = X_PyTssT
+type X_tssT = X_PyTssT
 
 // PY_TIMEOUT_MAX is the highest usable value (in microseconds) of PY_TIMEOUT_T
 // type, and depends on the system threading API.
