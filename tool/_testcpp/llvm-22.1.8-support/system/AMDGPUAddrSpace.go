@@ -3,6 +3,7 @@
 package system
 
 const (
+	// The maximum value for flat, generic, local, private, constant and region.
 	AMDGPUAS_MAX_AMDGPU_ADDRESS = 9
 	// < Address space for flat memory.
 	AMDGPUAS_FLAT_ADDRESS = 0
@@ -32,39 +33,103 @@ const (
 	AMDGPUAS_PARAM_D_ADDRESS = 6
 	// Address space for indirect addressable parameter memory (VTX1).
 	AMDGPUAS_PARAM_I_ADDRESS = 7
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_0 = 8
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_1 = 9
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_2 = 10
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_3 = 11
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_4 = 12
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_5 = 13
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_6 = 14
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_7 = 15
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_8 = 16
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_9 = 17
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_10 = 18
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_11 = 19
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_12 = 20
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_13 = 21
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_14 = 22
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Do not re-order the CONSTANT_BUFFER_* enums.  Several places depend on
+	// this order to be able to dynamically index a constant buffer, for
+	// example:
+	//
+	// ConstantBufferAS = CONSTANT_BUFFER_0 + CBIdx
 	AMDGPUAS_CONSTANT_BUFFER_15 = 23
-	// Address space for indirect addressable parameter memory (VTX1).
+	// Some places use this if the address space can't be determined.
 	AMDGPUAS_UNKNOWN_ADDRESS_SPACE = -1
 )
 const (

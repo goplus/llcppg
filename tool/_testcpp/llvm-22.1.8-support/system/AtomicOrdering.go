@@ -29,12 +29,18 @@ const (
 type AtomicOrdering c.Uint
 
 const (
-	AtomicOrdering_NotAtomic              AtomicOrdering = 0
-	AtomicOrdering_Unordered              AtomicOrdering = 1
-	AtomicOrdering_Monotonic              AtomicOrdering = 2
-	AtomicOrdering_Acquire                AtomicOrdering = 4
-	AtomicOrdering_Release                AtomicOrdering = 5
-	AtomicOrdering_AcquireRelease         AtomicOrdering = 6
+	AtomicOrdering_NotAtomic AtomicOrdering = 0
+	AtomicOrdering_Unordered AtomicOrdering = 1
+	// Equivalent to C++'s relaxed.
+	AtomicOrdering_Monotonic AtomicOrdering = 2
+	// Consume = 3,  // Not specified yet.
+	AtomicOrdering_Acquire AtomicOrdering = 4
+	// Consume = 3,  // Not specified yet.
+	AtomicOrdering_Release AtomicOrdering = 5
+	// Consume = 3,  // Not specified yet.
+	AtomicOrdering_AcquireRelease AtomicOrdering = 6
+	// Consume = 3,  // Not specified yet.
 	AtomicOrdering_SequentiallyConsistent AtomicOrdering = 7
-	AtomicOrdering_LAST                   AtomicOrdering = 7
+	// Consume = 3,  // Not specified yet.
+	AtomicOrdering_LAST AtomicOrdering = 7
 )
