@@ -17,11 +17,11 @@ const CAN_START_THREADS = 1
 // legitimate void* can be cast to uintptr_t and then back to void* again
 // without loss of information.  Similarly for intptr_t, wrt a signed
 // integral type.
-type X_uintptrT = c.UintptrT
-type X_intptrT = c.IntptrT
-type X_ssizeT = c.SsizeT
-type X_hashT = X_ssizeT
-type X_uhashT = c.SizeT
+type UintptrT = c.UintptrT
+type IntptrT = c.IntptrT
+type SsizeT = c.SsizeT
+type HashT = SsizeT
+type UhashT = c.SizeT
 
 // Now PY_SSIZE_T_CLEAN is mandatory. This is just for backward compatibility.
-type X_ssizeCleanT = X_ssizeT
+type SsizeCleanT = SsizeT

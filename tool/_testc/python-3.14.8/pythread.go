@@ -27,7 +27,7 @@ type X_PyTssT struct {
 	X_isInitialized c.Int
 	X_key           pthread.Key
 }
-type X_tssT = X_PyTssT
+type TssT = X_PyTssT
 
 // PY_TIMEOUT_MAX is the highest usable value (in microseconds) of PY_TIMEOUT_T
 // type, and depends on the system threading API.
@@ -36,5 +36,5 @@ type X_tssT = X_PyTssT
 // exposes a higher-level API, with timeouts expressed in seconds and
 // floating-point numbers allowed.
 //
-//go:linkname PY_TIMEOUT_MAX C.PY_TIMEOUT_MAX
-var PY_TIMEOUT_MAX c.LongLong
+//go:linkname TIMEOUT_MAX C.PY_TIMEOUT_MAX
+var TIMEOUT_MAX c.LongLong
