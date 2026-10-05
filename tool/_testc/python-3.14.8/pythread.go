@@ -2,7 +2,11 @@
 
 package py
 
-import "github.com/goplus/lib/c"
+import (
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/pthread"
+	_ "unsafe"
+)
 
 type PyLockStatus c.Uint
 
@@ -13,4 +17,11 @@ const (
 )
 
 type PyThreadTypeLock uintptr
+type X_PyTssT struct {
+	X_isInitialized c.Int
+	X_key           pthread.Key
+}
 type PyTssT = X_PyTssT
+
+//go:linkname PY_TIMEOUT_MAX C.PY_TIMEOUT_MAX
+var PY_TIMEOUT_MAX c.LongLong

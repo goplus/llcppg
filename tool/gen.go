@@ -173,7 +173,19 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 	}
 	defer DisposeSources(files)
 
-	groupSubdir := cfg.GroupSubdir
+	groupSubdirBy := groupSubdirByNone
+	switch cfg.GroupSubdirBy {
+	case "dir":
+		groupSubdirBy = groupSubdirByDir
+	case "fname":
+		groupSubdirBy = groupSubdirByFname
+	case "":
+		if cfg.GroupSubdir {
+			groupSubdirBy = groupSubdirByDir
+		}
+	default:
+		log.Println("[WARN] unknown GroupSubdirBy value:", cfg.GroupSubdirBy)
+	}
 	srcFilePrefix := dir + string(os.PathSeparator)
 	if pkgName == "" {
 		pkgName = path.Base(cfg.Name)
@@ -216,7 +228,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 			return
 		},
 		GoFileOf: func(headerFile string) (fname string, ok bool) {
-			return goFileOf(headerFile, srcFilePrefix, groupSubdir)
+			return goFileOf(headerFile, srcFilePrefix, groupSubdirBy)
 		},
 	})
 	return
@@ -232,16 +244,27 @@ func listHeaderFiles(selFiles []string, headerDir string) (topHeaders []string) 
 	return
 }
 
-func goFileOf(at, srcFilePrefix string, groupSubdir bool) (fname string, ok bool) {
+const (
+	groupSubdirByNone = iota
+	groupSubdirByDir
+	groupSubdirByFname
+)
+
+func goFileOf(at, srcFilePrefix string, groupSubdirBy int) (fname string, ok bool) {
 	const pathSep = string(os.PathSeparator)
 	const goFileExt = ".go"
 	fname, ok = strings.CutPrefix(at, srcFilePrefix)
 	if ok {
-		if groupSubdir {
+		switch groupSubdirBy {
+		case groupSubdirByDir:
 			if pos := strings.Index(fname, pathSep); pos > 0 {
 				fname = fname[:pos]
 			}
-		} else {
+		case groupSubdirByFname:
+			if pos := strings.LastIndex(fname, pathSep); pos >= 0 {
+				fname = fname[pos+1:]
+			}
+		default:
 			fname = strings.ReplaceAll(fname, pathSep, "-")
 		}
 		if pos := strings.LastIndex(fname, "."); pos > 0 {
