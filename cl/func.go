@@ -153,8 +153,11 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 		nameInPkg = fnName
 	} else {
 		if typRecv != nil {
-			if existMember(typRecv, fnName) {
+			if isField, exists := existMember(typRecv, fnName); exists {
 				newName := ctx.funcName(name, obj.order(), "", typCName, true, true)
+				if newName == fnName && isField {
+					newName = "Get" + fnName
+				}
 				log.Printf("==> member %s.%s already exists, rename to %s\n", typName, fnName, newName)
 				fnName = newName
 			}
@@ -192,20 +195,20 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	}
 }
 
-func existMember(typ *types.Named, name string) bool {
+func existMember(typ *types.Named, name string) (isField bool, exists bool) {
 	for i := range typ.NumMethods() {
 		if typ.Method(i).Name() == name {
-			return true
+			return false, true
 		}
 	}
 	if s, ok := typ.Underlying().(*types.Struct); ok {
 		for i := range s.NumFields() {
 			if s.Field(i).Name() == name {
-				return true
+				return true, true
 			}
 		}
 	}
-	return false
+	return false, false
 }
 
 const (
