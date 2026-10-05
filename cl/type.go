@@ -244,11 +244,73 @@ func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret t
 	if o, ok := scope.lookupTypeObj(name); ok { // typeParams
 		return o.Type(), true
 	}
+	if t, ok := templateInstType(ctx, typ, name, feats, scope); ok {
+		return t, true
+	}
 	cName := cTypeName(typ)
 	if o, ok := ctx.getTypeObj(cName, feats); ok {
 		return o.Type(), true
 	}
 	return
+}
+
+// templateInstType resolves an unexposed template-id type (a class template or
+// an alias template specialization, e.g. "Base<T, int>") to the instantiated Go
+// type. It returns false if typ is not such a type or cannot be resolved.
+func templateInstType(ctx *pkgCtx, typ lc.Type, spelling string, feats *int, scope *scopeCtx) (ret types.Type, found bool) {
+	n := int(typ.NumTemplateArguments())
+	pos := strings.IndexByte(spelling, '<')
+	if n <= 0 || pos <= 0 {
+		return
+	}
+	name := strings.TrimSpace(spelling[:pos])
+	var tf int
+	o, ok := ctx.getTypeObj(cNameWithNS(name, cNS(typ.Declaration())), &tf)
+	if !ok {
+		if o, ok = ctx.getTypeObj(name, &tf); !ok {
+			return
+		}
+	}
+	var tparams *types.TypeParamList
+	switch t := o.Type().(type) {
+	case *types.Named:
+		if t.TypeArgs().Len() > 0 {
+			return
+		}
+		tparams = t.TypeParams()
+	case *types.Alias:
+		if t.TypeArgs().Len() > 0 {
+			return
+		}
+		tparams = t.TypeParams()
+	default:
+		return
+	}
+	if tparams.Len() != n {
+		return
+	}
+	targs := make([]types.Type, n)
+	for i := range n {
+		arg := typ.TemplateArgumentAs(c.Uint(i))
+		var af int
+		switch arg.Kind {
+		case lc.Type_Invalid:
+			return
+		case lc.Type_Void:
+			targs[i] = ctx.basicTyp(cVoid)
+		default:
+			targs[i] = toTypeEx(ctx, ctx.pkg.Types, arg, flagIsTypeDef, &af, scope)
+			if af&featAllIgnore != 0 {
+				return
+			}
+		}
+	}
+	inst, err := types.Instantiate(ctx.typeCtx(), o.Type(), targs, false)
+	if err != nil {
+		return
+	}
+	*feats |= tf
+	return inst, true
 }
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int) *types.Signature {
