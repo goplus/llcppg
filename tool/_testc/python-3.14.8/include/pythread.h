@@ -9,11 +9,11 @@ extern "C" {
 
 /* Return status codes for Python lock acquisition.  Chosen for maximum
  * backwards compatibility, ie failure -> 0, success -> 1.  */
-typedef enum PyLockStatus {
+typedef enum Py_Lock_Status {
     PY_LOCK_FAILURE = 0,
     PY_LOCK_ACQUIRED = 1,
     PY_LOCK_INTR
-} PyLockStatus;
+} Py_Lock_Status;
 
 typedef struct _Py_tss_t Py_tss_t;  /* opaque */
 
