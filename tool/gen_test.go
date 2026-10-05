@@ -292,11 +292,11 @@ var langExts = [...]string{
 }
 
 func TestClang(t *testing.T) {
-	testFromDir(t, "", "./_testc", false)
+	testFromDir(t, "", "./_testc/clang-c-22.1.8", false)
 }
 
 func TestSingleC(t *testing.T) {
-	testFromDir(t, "", "./_testc", true)
+	testFromDir(t, "", "./_testc/clang-c-22.1.8", true)
 }
 
 func TestCpp_LLVMSystem(t *testing.T) {
