@@ -15,4 +15,6 @@
 #define MASK2 (~FALSE)
 #define TWO   (THREE * TRUE + -TRUE)
 
+#define THREE 3
+
 typedef char BOOL, *PBOOL;
