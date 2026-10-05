@@ -126,6 +126,9 @@ func (p *pkgCtx) localName(cName string, public bool) string {
 }
 
 func (p *pkgCtx) fieldName(name string, public bool) string {
+	if name == "" {
+		return "_"
+	}
 	return p.localName(name, public)
 }
 
