@@ -10,6 +10,6 @@ type X_IteratorAlias[_Category any, _Tp any, _Distance any, _Pointer any, _Refer
 type X_IteratorBase[_Derived any, _Category any, _Tp any, _Distance any, _Pointer any, _Reference any] = Iterator[_Category, _Tp, _Distance, _Pointer, _Reference]
 type OutputIteratorTag = c.Int
 type BackInsertIterator[_Container any] struct {
-	Iterator
+	X_IteratorBase[BackInsertIterator[_Container], OutputIteratorTag, c.Void, c.Void, c.Void, c.Void]
 	container *_Container
 }
