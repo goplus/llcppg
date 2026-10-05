@@ -18,6 +18,7 @@ package cl
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -115,11 +116,17 @@ func (p *pkgCtx) globalName(name string, trimPrefixs []string) string {
 	if v, ok := p.rename[name]; ok {
 		return v // special case
 	}
-	return p.cstyleToGo(rmPrefix(name, trimPrefixs), true)
+	name, underscoreStart := rmPrefixAndUnderscoreStart(name, trimPrefixs)
+	return p.cstyleToGo(name, underscoreStart, true)
+}
+
+func (p *pkgCtx) localName(cName string, public bool) string {
+	name, underscoreStart := checkUnderscoreStart(cName)
+	return p.cstyleToGo(name, underscoreStart, public)
 }
 
 func (p *pkgCtx) fieldName(name string, public bool) string {
-	return p.cstyleToGo(name, public)
+	return p.localName(name, public)
 }
 
 func (p *pkgCtx) macroName(name string) string {
@@ -131,7 +138,7 @@ func (p *pkgCtx) enumvalName(name, ns string) string {
 		return p.globalName(name, p.enumPrefix)
 	}
 	ns = p.globalName(ns, p.nsPrefix)
-	name = p.cstyleToGo(name, false)
+	name = p.localName(name, false)
 	if ns != "" {
 		name = ns + "_" + name
 	}
@@ -145,28 +152,29 @@ func (p *pkgCtx) varName(cName string) string {
 	if v, ok := p.rename[cName]; ok {
 		return v // special case
 	}
-	cName = rmPrefix(cName, p.nsPrefix)
-	cName = rmPrefix(cName, p.varPrefix)
-	return p.cstyleToGo(cName, true)
+	name := rmPrefix(cName, p.nsPrefix)
+	name, underscoreStart := rmPrefixAndUnderscoreStart(name, p.varPrefix)
+	return p.cstyleToGo(name, underscoreStart, true)
 }
 
 func (p *pkgCtx) typeName(cName string, _ bool) string {
 	if v, ok := p.rename[cName]; ok {
 		return v // special case
 	}
-	cName = rmPrefix(cName, p.nsPrefix)
-	cName = rmPrefix(cName, p.typePrefix)
-	cName = rmSuffix(cName, p.typeSuffix)
-	return p.cstyleToGo(cName, true)
+	name := rmPrefix(cName, p.nsPrefix)
+	name, underscoreStart := rmPrefixAndUnderscoreStart(name, p.typePrefix)
+	name = rmSuffix(name, p.typeSuffix)
+	return p.cstyleToGo(name, underscoreStart, true)
 }
 
-func (p *pkgCtx) funcName(name string, order int, typName, typCName string, global, _ bool) string {
-	if v, ok := p.rename[name]; ok {
+func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, global, _ bool) string {
+	if v, ok := p.rename[cName]; ok {
 		return v // special case
 	}
-	name = rmPrefix(name, p.nsPrefix)
+	name := rmPrefix(cName, p.nsPrefix)
+	underscoreStart := false
 	if global {
-		name = rmPrefix(name, p.fnPrefix)
+		name, underscoreStart = rmPrefixAndUnderscoreStart(name, p.fnPrefix)
 		if typCName != "" {
 			// remove typCName prefix & suffix
 			if before, ok := strings.CutSuffix(name, typCName); ok {
@@ -178,11 +186,11 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 			}
 		}
 	} else {
-		// don't remove type name suffix for a method
-		typName = ""
+		name, underscoreStart = checkUnderscoreStart(name)
+		typName = "" // don't remove type name suffix for a method
 	}
-	if !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
-		name = p.cstyleToGo(name, true)
+	if underscoreStart || !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
+		name = p.cstyleToGo(name, underscoreStart, true)
 		if typName != "" {
 			var typSuffix []string
 			if v, ok := p.typeAbbr[typName]; ok { // Go type name => abbreviated name
@@ -216,30 +224,22 @@ func (p *pkgCtx) funcName(name string, order int, typName, typCName string, glob
 	return name
 }
 
-func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
+func (p *pkgCtx) cstyleToGo(name string, underscoreStart, public bool) string {
 	rename := p.rename
-	parts, hasNS := cNameSplit(cName)
+	parts, hasNS := cNameSplit(name)
 	if p.shouldKeepCStyle(parts, hasNS) {
-		if parts[0] == "" && public {
-			return "X" + cName
-		}
-		return cName
+		return goNameOf(name, underscoreStart, public)
 	}
 	lastEndWithUpper := false
 	for i := 0; i < len(parts); i++ {
 		part := parts[i]
 		if part == "" {
-			if i == 0 && public {
-				parts[i] = "X_"
-				i++ // skip next part
-			} else {
-				parts[i] = "_"
-			}
+			parts[i] = "_"
 			continue
 		}
 		if v, ok := rename[part]; ok && v != "" {
 			part = v
-		} else if i > 0 || public {
+		} else if i > 0 || public && !underscoreStart {
 			if c := part[0]; 'a' <= c && c <= 'z' {
 				c -= 'a' - 'A'
 				part = string(c) + part[1:]
@@ -253,7 +253,8 @@ func (p *pkgCtx) cstyleToGo(cName string, public bool) string {
 		lastEndWithUpper = endWithUpper
 		parts[i] = part
 	}
-	return strings.Join(parts, "")
+	log.Println("==> cstyleToGo:", name, parts, underscoreStart, public)
+	return goNameOf(strings.Join(parts, ""), underscoreStart, public)
 }
 
 func (p *pkgCtx) shouldKeepCStyle(parts []string, hasNS bool) bool {
@@ -290,6 +291,16 @@ func isAnyUpperEnd(parts []string) bool {
 	return false
 }
 
+func goNameOf(name string, underscoreStart, public bool) string {
+	if underscoreStart {
+		if public {
+			return "X_" + name
+		}
+		return "_" + name
+	}
+	return name
+}
+
 func cutMethodPrefix(name, objName string) string {
 	name = cutPrefix(name, objName)
 	name = cutPrefix(name, "Get")
@@ -304,6 +315,21 @@ func cutPrefix(name, prefix string) string {
 		}
 	}
 	return name
+}
+
+func rmPrefixAndUnderscoreStart(cName string, prefix []string) (name string, underscoreStart bool) {
+	name, underscoreStart = checkUnderscoreStart(cName)
+	name = rmPrefix(name, prefix)
+	return
+}
+
+func checkUnderscoreStart(cName string) (name string, underscoreStart bool) {
+	name = cName
+	if len(name) > 0 && name[0] == '_' {
+		name = name[1:]
+		underscoreStart = true
+	}
+	return
 }
 
 func rmPrefix(name string, prefix []string) string {

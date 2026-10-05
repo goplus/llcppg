@@ -23,11 +23,11 @@ type ThreadTypeLock uintptr
 // When Py_LIMITED_API is not defined, the type layout of Py_tss_t is
 // exposed to allow static allocation in the API clients.  Even in this case,
 // you must handle TSS keys through API functions due to compatibility.
-type X_PyTssT struct {
+type X_tssT struct {
 	X_isInitialized c.Int
 	X_key           pthread.Key
 }
-type TssT = X_PyTssT
+type TssT = X_tssT
 
 // PY_TIMEOUT_MAX is the highest usable value (in microseconds) of PY_TIMEOUT_T
 // type, and depends on the system threading API.
