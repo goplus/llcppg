@@ -76,10 +76,11 @@ func varHasInitExpr(ctx *pkgCtx, v clang.Cursor) (hasInitExpr bool) {
 			lc.Cursor_CXXStaticCastExpr:
 			hasInitExpr = true
 			return clang.Break
-		case lc.Cursor_TypeRef, lc.Cursor_UnaryExpr:
+		case lc.Cursor_TypeRef, lc.Cursor_UnaryExpr, lc.Cursor_ParmDecl,
+			lc.Cursor_IntegerLiteral:
 		default:
 			if lc.Cursor_FirstAttr > decl.Kind || decl.Kind > lc.Cursor_LastAttr {
-				ctx.panicf(v, "varHasInitExpr: unknown kind - %v", decl.Kind)
+				ctx.panicf(decl, "varHasInitExpr: unknown kind - %v", decl.Kind)
 			}
 		}
 		return clang.Continue
