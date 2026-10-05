@@ -56,13 +56,18 @@ func LoadConf(filename string) (conf Config, err error) {
 
 // -----------------------------------------------------------------------------
 
-func isSignleLevel(relDir string) bool {
+// isSingleLevel checks if the given relative directory is a single-level directory
+// (i.e., it does not contain any subdirectories).
+func isSingleLevel(relDir string) bool {
 	relDir = strings.TrimPrefix(relDir, "./")
 	return strings.IndexByte(relDir, '/') < 0
 }
 
-// TestFromDir runs testFunc for each subdirectory of relDir. If sel is not empty, only
-// subdirectories whose path contains sel will be tested.
+// TestFromDir runs the provided test function for each subdirectory of the specified
+// relative directory. If sel is not empty, only the subdirectory matching sel will be
+// tested. If relDir is a single-level directory, all its immediate subdirectories will
+// be considered. If relDir is not a single-level directory, only the specified directory
+// itself will be tested.
 func TestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, pkgDir string)) {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -70,7 +75,7 @@ func TestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, p
 	}
 	dir = path.Join(dir, relDir)
 	var fis []os.DirEntry
-	if isSignleLevel(relDir) {
+	if isSingleLevel(relDir) {
 		fis, err = os.ReadDir(dir)
 		if err != nil {
 			t.Fatal("ReadDir failed:", err)
