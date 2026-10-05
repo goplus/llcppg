@@ -7,8 +7,10 @@
 *.dll
 *.so
 *.dylib
-*.DS_Store
 *.txt
+
+*.DS_Store
+_out/
 
 _temp/
 _c2go/

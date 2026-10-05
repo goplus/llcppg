@@ -20,10 +20,12 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/goplus/llcppg/cl"
+	"github.com/qiniu/x/http/fs"
 )
 
 // -----------------------------------------------------------------------------
@@ -54,17 +56,35 @@ func LoadConf(filename string) (conf Config, err error) {
 
 // -----------------------------------------------------------------------------
 
-// TestFromDir runs testFunc for each subdirectory of relDir. If sel is not empty, only
-// subdirectories whose path contains sel will be tested.
+// isSingleLevel checks if the given relative directory is a single-level directory
+// (i.e., it does not contain any subdirectories).
+func isSingleLevel(relDir string) bool {
+	relDir = strings.TrimPrefix(relDir, "./")
+	return strings.IndexByte(relDir, '/') < 0
+}
+
+// TestFromDir runs the provided test function for each subdirectory of the specified
+// relative directory. If sel is not empty, only the subdirectory matching sel will be
+// tested. If relDir is a single-level directory, all its immediate subdirectories will
+// be considered. If relDir is not a single-level directory, only the specified directory
+// itself will be tested.
 func TestFromDir(t *testing.T, sel, relDir string, testFunc func(t *testing.T, pkgDir string)) {
 	dir, err := os.Getwd()
 	if err != nil {
 		t.Fatal("Getwd failed:", err)
 	}
 	dir = path.Join(dir, relDir)
-	fis, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatal("ReadDir failed:", err)
+	var fis []os.DirEntry
+	if isSingleLevel(relDir) {
+		fis, err = os.ReadDir(dir)
+		if err != nil {
+			t.Fatal("ReadDir failed:", err)
+		}
+	} else {
+		base, fname := filepath.Split(dir)
+		fi := fs.NewDirInfo(fname)
+		fis = []os.DirEntry{fs.DirEntry{FileInfo: fi}}
+		dir = strings.TrimSuffix(base, string(os.PathSeparator))
 	}
 	for _, fi := range fis {
 		if !fi.IsDir() {
