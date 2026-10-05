@@ -13,8 +13,4 @@ const (
 )
 
 type PyThreadTypeLock uintptr
-type X_PyTssT struct {
-	X_isInitialized c1.Int
-	X_key           pthread.Key
-}
 type PyTssT = X_PyTssT
