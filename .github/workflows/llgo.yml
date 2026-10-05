@@ -6,11 +6,8 @@ name: LLGo
 on:
   push:
     branches:
-      - "**"
-      - "!dependabot/**"
-      - "!xgopilot/**"
-      - "!fennoai/**"
-      - "!goplus/fennoai/**"
+      - "main"
+      - "dev"
   pull_request:
     branches: [ "**" ]
 

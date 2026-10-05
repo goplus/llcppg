@@ -291,7 +291,7 @@ var langExts = [...]string{
 	cl.LanguageCXX: ".cpp",
 }
 
-func TestC(t *testing.T) {
+func TestClang(t *testing.T) {
 	testFromDir(t, "", "./_testc", false)
 }
 
