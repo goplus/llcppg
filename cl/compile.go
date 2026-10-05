@@ -23,6 +23,7 @@ import (
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 const (
@@ -286,6 +287,14 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 		clang.VisitChildren(f.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			if pkgOf != nil {
 				at := clang.PresumedFile(decl.Location())
+				switch decl.Kind {
+				case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
+					if decl.IsCursorDefinition() == 0 {
+						if definition := decl.Definition(); definition.IsNull() == 0 {
+							at = clang.PresumedFile(definition.Location())
+						}
+					}
+				}
 				if _, ok := lastSeen[at]; ok {
 					return clang.Continue // already loaded
 				}

@@ -3,10 +3,15 @@
 package py
 
 import (
-	c1 "github.com/goplus/lib/c"
+	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/pthread"
 	_ "unsafe"
 )
 
+type X_PyTssT struct {
+	X_isInitialized c.Int
+	X_key           pthread.Key
+}
+
 //go:linkname PY_TIMEOUT_MAX C.PY_TIMEOUT_MAX
-var PY_TIMEOUT_MAX c1.LongLong
+var PY_TIMEOUT_MAX c.LongLong
