@@ -59,11 +59,12 @@ func toLineComments(raw string) []*ast.Comment {
 	switch {
 	case strings.HasPrefix(raw, "/*"):
 		body := strings.TrimPrefix(raw, "/*")
+		body = strings.TrimPrefix(body, "!")
 		body = strings.TrimSuffix(body, "*/")
 		for _, line := range strings.Split(body, "\n") {
 			line = strings.TrimSpace(line)
 			// Drop a Doxygen/Javadoc-style leading "*" decoration.
-			if line == "*" {
+			if strings.Trim(line, "*") == "" {
 				line = ""
 			} else if s, ok := strings.CutPrefix(line, "* "); ok {
 				line = s
