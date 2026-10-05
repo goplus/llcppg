@@ -73,9 +73,13 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 	}
 	if len(tokens) > 1 {
 		if v, ok := evalConstExpr(ctx, tu, tokens[1:]); ok {
+			if oldv, ok := ctx.macroVals[origName]; ok {
+				if oldv == v {
+					return // allow redefinition with the same value
+				}
+			}
 			pkg := ctx.pkg
 			pkgTypes := pkg.Types
-			ctx.macroVals[origName] = v
 			name := ctx.macroName(origName)
 			defs := pkg.NewConstDefs(pkgTypes.Scope())
 			if doc := ctx.docCommentGroup(decl); doc != nil {
@@ -85,6 +89,7 @@ func loadMacro(ctx *pkgCtx, decl clang.Cursor) {
 				cb.Val(v)
 				return 1
 			}, 0, goNodePos(ctx, decl), nil, name)
+			ctx.macroVals[origName] = v
 		}
 	}
 }
