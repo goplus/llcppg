@@ -167,7 +167,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		}
 	}
 
-	files, err := parseSources(index, topHeaders, incDirs, cfg.Language, cfg.KeepDoc)
+	files, err := ParseSources(index, topHeaders, incDirs, cfg.Language)
 	if err != nil {
 		return
 	}
@@ -350,14 +350,8 @@ func ParseFlags(includeDirs []string, lang string) []string {
 // ParseSources parses the given source files and returns the translation units corresponding
 // to those files.
 func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) ([]cl.Source, error) {
-	return parseSources(index, headerFiles, includeDirs, lang, false)
-}
-
-func parseSources(index clang.Index, headerFiles, includeDirs []string, lang string, keepDoc bool) ([]cl.Source, error) {
 	flags := ParseFlags(includeDirs, lang)
-	if keepDoc {
-		flags = append(flags, "-fparse-all-comments")
-	}
+	flags = append(flags, "-fparse-all-comments")
 	files := make([]cl.Source, len(headerFiles))
 	for i, headerFile := range headerFiles {
 		tu, e := index.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)
