@@ -283,7 +283,6 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 
 	case lc.Cursor_FieldDecl:
 		var fldType types.Type
-		var anonymous bool
 		var ft = decl.Type()
 		if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 {
 			switch ft.Kind {
@@ -298,9 +297,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 			default:
 				ctx.panicf(ftd, "unknown anonymous field type (%d: %s)", ft.Kind, clang.String(ft))
 			}
-			anonymous = true
-		}
-		if !anonymous {
+		} else {
 			if fldType = toTypeEx(ctx, pkg, ft, flagIsVarDef, feats, this.scope()); *feats&featAllIgnore != 0 {
 				return
 			}

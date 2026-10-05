@@ -60,9 +60,6 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
 			typDecl = newEnumType(ctx, decl, cName, goName)
 			ctx.typdecls[cName] = typDecl
 		}
-		if doc := ctx.docCommentGroup(decl); doc != nil {
-			typDecl.defs.SetComments(doc)
-		}
 	}
 
 	if decl.IsCursorDefinition() == 0 {
@@ -104,10 +101,11 @@ func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
 
 	var enumType types.Type
 	if typDecl.defs != nil {
+		if doc := ctx.docCommentGroup(decl); doc != nil {
+			typDecl.defs.SetComments(doc)
+		}
 		enumType = typDecl.Type()
 	} else {
-		// For an anonymous enum there is no type to carry the doc, so attach the
-		// enum's doc comment to the generated const block instead.
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			defs.SetComments(doc)
 		}
