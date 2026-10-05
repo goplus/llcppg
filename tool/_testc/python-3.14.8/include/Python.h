@@ -71,7 +71,7 @@
 // Include Python header files
 #include "pyport.h"
 #include "pymacro.h"
-// #include "pythread.h"
+#include "pythread.h"
 
 // Restore warning filter
 #ifdef _MSC_VER

@@ -34,11 +34,6 @@ import (
 	"github.com/qiniu/x/test"
 )
 
-func init() {
-	cl.SetDebug(cl.DbgFlagAll)
-	tool.SetDebug(tool.DbgFlagAll)
-}
-
 func testDiff(t *testing.T, dir string, outfname string, b *bytes.Buffer, exp any) {
 	if expected, ok := exp.(string); ok {
 		result := b.String()
@@ -292,11 +287,20 @@ var langExts = [...]string{
 }
 
 func TestClang(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagAll)
+	tool.SetDebug(tool.DbgFlagAll)
+	defer cl.SetDebug(0)
+	defer tool.SetDebug(0)
+
 	testFromDir(t, "", "./_testc/clang-c-22.1.8", false)
 }
 
 func TestSingleC(t *testing.T) {
 	testFromDir(t, "", "./_testc/clang-c-22.1.8", true)
+}
+
+func TestPython(t *testing.T) {
+	testFromDir(t, "", "./_testc/python-3.14.8", false)
 }
 
 func TestCpp_LLVMSystem(t *testing.T) {
