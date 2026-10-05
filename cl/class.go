@@ -283,19 +283,21 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 
 	case lc.Cursor_FieldDecl:
 		var fldType types.Type
-		var anonymous bool
 		var ft = decl.Type()
-		if ft.Kind == lc.Type_Record {
-			if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 {
+		if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 {
+			switch ft.Kind {
+			case lc.Type_Record:
 				if ftd.Kind == lc.Cursor_UnionDecl {
 					fldType = emitUnion(ctx, ftd, ctx.nextAnonName())
 				} else {
 					fldType = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
 				}
-				anonymous = true
+			case lc.Type_Enum:
+				fldType = emitEnum(ctx, ftd, ctx.nextAnonName())
+			default:
+				ctx.panicf(ftd, "unknown anonymous field type (%d: %s)", ft.Kind, clang.String(ft))
 			}
-		}
-		if !anonymous {
+		} else {
 			if fldType = toTypeEx(ctx, pkg, ft, flagIsVarDef, feats, this.scope()); *feats&featAllIgnore != 0 {
 				return
 			}

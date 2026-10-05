@@ -60,6 +60,14 @@ func cNameSplit(cName string) (parts []string, hasNS bool) {
 	}
 }
 
+func cTypeName(typ lc.Type) string {
+	return cNameOf(typ.Declaration())
+}
+
+func cBaseName(decl clang.Cursor) string {
+	return trimTypeTag(clang.String(decl))
+}
+
 func cNameWithNS(name, ns string) string {
 	if ns == "" {
 		return name
@@ -94,12 +102,11 @@ func cNS(decl clang.Cursor) (ns string) {
 	}
 }
 
-func cBaseName(decl clang.Cursor) string {
-	return trimTypeTag(clang.String(decl))
-}
-
-func cTypeName(typ lc.Type) string {
-	return cNameOf(typ.Declaration())
+func (p *pkgCtx) cNS(decl clang.Cursor) (ns string) {
+	if p.lang != LanguageC {
+		ns = cNS(decl) // C doesn't have namespaces
+	}
+	return
 }
 
 // -----------------------------------------------------------------------------
