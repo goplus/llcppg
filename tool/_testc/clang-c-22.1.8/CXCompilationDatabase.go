@@ -11,7 +11,9 @@ import (
 type CompilationDatabase_Error c.Uint
 
 const (
-	CompilationDatabase_NoError            CompilationDatabase_Error = 0
+	// No error occurred
+	CompilationDatabase_NoError CompilationDatabase_Error = 0
+	// Database can not be loaded
 	CompilationDatabase_CanNotLoadDatabase CompilationDatabase_Error = 1
 )
 
