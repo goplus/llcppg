@@ -18,6 +18,7 @@ package cl
 
 import (
 	"go/types"
+	"sort"
 	"strconv"
 	"unsafe"
 
@@ -240,6 +241,24 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	
+	// If this struct has bit-fields, we need to track member offsets for proper ordering
+	var membersByOffset []memberWithOffset
+	if hasBitFields(cls) {
+		// Collect all members (regular and bit-fields) with their offsets
+		clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
+			if decl.Kind == lc.Cursor_FieldDecl {
+				byteOff := decl.OffsetOfField() / 8
+				isBitfield := decl.FieldDeclBitWidth() >= 0
+				membersByOffset = append(membersByOffset, memberWithOffset{
+					byteOffset: byteOff,
+					cursor:     decl,
+					isBitfield: isBitfield,
+				})
+			}
+			return clang.Continue
+		})
+	}
+	
 	// Load regular members using the existing logic
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadClassMember(ctx, pkgTypes, this, goName, decl, feats)
@@ -262,9 +281,8 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 			storageFields = append(storageFields, storageField)
 		}
 		
-		// Reorder fields to place bit-field storage at the correct positions
-		// This ensures the struct layout matches the C ABI
-		this.fields = reorderFieldsWithBitFields(this.fields, storageFields, storages)
+		// Reorder fields based on member offsets
+		this.fields = reorderFieldsWithBitFieldsByOffset(ctx, this.fields, storageFields, membersByOffset, cls)
 	}
 	
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
@@ -292,16 +310,105 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 	})
 }
 
-// reorderFieldsWithBitFields reorders struct fields to place bit-field storage
-// fields at the correct positions based on their byte offsets.
-func reorderFieldsWithBitFields(regularFields []*types.Var, storageFields []*types.Var, storages []*bitFieldStorage) []*types.Var {
-	if len(storageFields) == 0 {
+// memberWithOffset tracks a C struct member with its byte offset
+type memberWithOffset struct {
+	byteOffset int64
+	cursor     clang.Cursor
+	isBitfield bool
+}
+
+// reorderFieldsWithBitFieldsByOffset reorders struct fields to match the C struct layout
+// by placing fields and storage at their actual byte offsets
+func reorderFieldsWithBitFieldsByOffset(ctx *pkgCtx, regularFields []*types.Var, storageFields []*types.Var, membersByOffset []memberWithOffset, cls clang.Cursor) []*types.Var {
+	if len(storageFields) == 0 || len(membersByOffset) == 0 {
 		return regularFields
 	}
 	
-	// For now, just append storage fields at the beginning
-	// A more sophisticated implementation would interleave them based on byte offsets
-	result := append(storageFields, regularFields...)
+	// Build maps for quick lookup
+	fieldByGoName := make(map[string]*types.Var)
+	fieldByteOffsets := make(map[string]int64)  // Go name -> byte offset in C struct
+	
+	for _, field := range regularFields {
+		fieldByGoName[field.Name()] = field
+	}
+	
+	// For each regular field, find its byte offset in the C struct
+	for _, member := range membersByOffset {
+		if !member.isBitfield {
+			origName := clang.String(member.cursor)
+			goName := ctx.fieldName(origName, isPublic(member.cursor))
+			fieldByteOffsets[goName] = member.byteOffset
+		}
+	}
+	
+	// Build a map from storage index to storage field and its byte offset
+	storageByIndex := make(map[int]*types.Var)
+	storageOffsets := make(map[int]int64)
+	
+	for i, field := range storageFields {
+		storageByIndex[i] = field
+		// Storage offset is at the position of the first bit-field in that run
+		// We need to find this from the bitFieldMembers in the bitFieldStorage
+		// For now, we'll use a simple approach: extract from the field name pattern
+		storageOffsets[i] = -1  // Will be determined below
+	}
+	
+	// Get bit-field storage info from the class context
+	var storages []*bitFieldStorage
+	if hasBitFields(cls) {
+		runs := collectBitFieldMembers(ctx, ctx.pkg.Types, cls)
+		storages, _ = groupBitFieldStorage(runs)
+		for _, storage := range storages {
+			storageOffsets[storage.index] = storage.byteOffset
+		}
+	}
+	
+	// Build a combined list of items (regular fields + storage) with their byte offsets
+	type itemWithOffset struct {
+		offset int64
+		field  *types.Var
+		isStorage bool
+	}
+	
+	var items []itemWithOffset
+	
+	// Add regular fields with their offsets
+	for goName, field := range fieldByGoName {
+		if byteOff, ok := fieldByteOffsets[goName]; ok {
+			items = append(items, itemWithOffset{
+				offset: byteOff,
+				field:  field,
+				isStorage: false,
+			})
+		}
+	}
+	
+	// Add storage fields with their offsets
+	for idx, field := range storageByIndex {
+		if byteOff, ok := storageOffsets[idx]; ok && byteOff >= 0 {
+			items = append(items, itemWithOffset{
+				offset: byteOff,
+				field:  field,
+				isStorage: true,
+			})
+		}
+	}
+	
+	// Sort items by byte offset
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].offset != items[j].offset {
+			return items[i].offset < items[j].offset
+		}
+		// If same offset, storage fields come before regular fields
+		return items[i].isStorage && !items[j].isStorage
+	})
+	
+	// Build the result
+	result := make([]*types.Var, 0, len(items))
+	for _, item := range items {
+		result = append(result, item.field)
+	}
+	
 	return result
 }
 

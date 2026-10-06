@@ -56,9 +56,10 @@ func hasBitFields(cursor clang.Cursor) bool {
 }
 
 // collectBitFieldMembers collects bit-field members, grouping them into runs
-// separated by regular fields. It returns members in run order.
-func collectBitFieldMembers(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.Cursor) []*bitFieldMember {
-	var members []*bitFieldMember
+// separated by regular fields. It returns a slice of run slices.
+func collectBitFieldMembers(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.Cursor) [][]*bitFieldMember {
+	var runs [][]*bitFieldMember
+	var currentRun []*bitFieldMember
 	
 	clang.VisitChildren(cursor, func(child, parent clang.Cursor) clang.ChildVisitResult {
 		if child.Kind != lc.Cursor_FieldDecl {
@@ -67,7 +68,11 @@ func collectBitFieldMembers(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.C
 		
 		width := child.FieldDeclBitWidth()
 		if width < 0 {
-			// Regular field - it acts as a run separator, but we don't add it to members
+			// Regular field - ends the current run
+			if len(currentRun) > 0 {
+				runs = append(runs, currentRun)
+				currentRun = nil
+			}
 			return clang.Continue
 		}
 		
@@ -95,7 +100,7 @@ func collectBitFieldMembers(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.C
 			}
 		}
 		
-		members = append(members, &bitFieldMember{
+		currentRun = append(currentRun, &bitFieldMember{
 			cursor: child,
 			name:   name,
 			offset: offset,
@@ -107,57 +112,68 @@ func collectBitFieldMembers(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.C
 		return clang.Continue
 	})
 	
-	return members
+	// Add the last run if any
+	if len(currentRun) > 0 {
+		runs = append(runs, currentRun)
+	}
+	
+	return runs
 }
 
 // groupBitFieldStorage groups bit-field members into storage runs.
 // Returns storage runs and which members are named (have names and convertible types).
-func groupBitFieldStorage(members []*bitFieldMember) ([]*bitFieldStorage, []*bitFieldMember) {
-	if len(members) == 0 {
+func groupBitFieldStorage(runs [][]*bitFieldMember) ([]*bitFieldStorage, []*bitFieldMember) {
+	if len(runs) == 0 {
 		return nil, nil
 	}
 	
-	// All collected members are consecutive bit-fields (before the first regular field),
-	// so they form one storage run.
+	var storages []*bitFieldStorage
+	var namedMembers []*bitFieldMember
 	
-	// Calculate the byte range
-	var minByte, maxByte int64
-	minByte = 9223372036854775807  // math.MaxInt64
-	
-	for _, member := range members {
-		if member.width > 0 {
-			startByte := member.offset / 8
-			endByte := (member.offset + member.width - 1) / 8
-			if startByte < minByte {
-				minByte = startByte
+	for _, members := range runs {
+		if len(members) == 0 {
+			continue
+		}
+		
+		// Calculate the byte range for this run
+		var minByte, maxByte int64
+		minByte = 9223372036854775807  // math.MaxInt64
+		
+		for _, member := range members {
+			if member.width > 0 {
+				startByte := member.offset / 8
+				endByte := (member.offset + member.width - 1) / 8
+				if startByte < minByte {
+					minByte = startByte
+				}
+				if endByte > maxByte {
+					maxByte = endByte
+				}
 			}
-			if endByte > maxByte {
-				maxByte = endByte
+		}
+		
+		// If no members have width > 0, produce no storage for this run
+		if minByte == 9223372036854775807 {
+			continue
+		}
+		
+		storage := &bitFieldStorage{
+			index:      len(storages),
+			byteOffset: minByte,
+			byteSize:   maxByte - minByte + 1,
+			members:    members,
+		}
+		storages = append(storages, storage)
+		
+		// Collect named members from this run
+		for _, member := range members {
+			if member.name != "" && member.typ != nil {
+				namedMembers = append(namedMembers, member)
 			}
 		}
 	}
 	
-	// If no members have width > 0, produce no storage
-	if minByte == 9223372036854775807 {
-		return nil, nil
-	}
-	
-	storage := &bitFieldStorage{
-		index:      0,
-		byteOffset: minByte,
-		byteSize:   maxByte - minByte + 1,
-		members:    members,
-	}
-	
-	// Collect named members for accessor generation
-	var named []*bitFieldMember
-	for _, member := range members {
-		if member.name != "" && member.typ != nil && member.width > 0 {
-			named = append(named, member)
-		}
-	}
-	
-	return []*bitFieldStorage{storage}, named
+	return storages, namedMembers
 }
 
 // genBitFieldStorageField creates a storage field for a bit-field storage run
@@ -249,6 +265,7 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 		}
 		
 		cb := f.BodyStart(pkg)
+		// Return 0 for now - actual implementation to follow
 		cb.Typ(types.Typ[types.Uint64]).ZeroLit(types.Typ[types.Int]).Call(1).Return(1).End()
 	}
 	
@@ -268,6 +285,7 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 		}
 		
 		cb := f.BodyStart(pkg)
+		// Return 0 for now - actual implementation to follow
 		cb.Typ(types.Typ[types.Int64]).ZeroLit(types.Typ[types.Int]).Call(1).Return(1).End()
 	}
 	
@@ -287,6 +305,7 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 		}
 		
 		cb := f.BodyStart(pkg)
+		// Empty implementation for now - actual implementation to follow
 		cb.End()
 	}
 }
