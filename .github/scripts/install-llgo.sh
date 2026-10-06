@@ -26,6 +26,9 @@ SUDO=""
 if [ "$(id -u)" -ne 0 ]; then SUDO="sudo"; fi
 
 install_llvm_linux() {
+  source "$REPO_ROOT/.github/scripts/preserve-extra-ca.sh"
+  preserve_extra_ca "$SUDO"
+
   if [ -x "/usr/lib/llvm-$LLVM_VERSION/bin/llvm-config" ]; then
     log "LLVM $LLVM_VERSION already installed"
   else
