@@ -2337,7 +2337,7 @@ type IndexOptions struct {
 	ExcludeDeclarationsFromPCH          c.Uint
 	DisplayDiagnostics                  c.Uint
 	StorePreamblesInMemory              c.Uint
-	X                                   c.Uint
+	_                                   c.Uint
 	PreambleStoragePath                 *c.Char
 	InvocationEmissionPath              *c.Char
 }

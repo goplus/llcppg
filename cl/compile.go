@@ -177,6 +177,11 @@ type Config struct {
 	// llcppg will stop after printing errors `FailFast` times.
 	FailFast int
 
+	// ForceCamelCase converts capitalized, underscore-joined names to camel case (optional),
+	// except names whose final segment is all-uppercase (acronyms/macros), which are kept
+	// as-is.
+	ForceCamelCase bool
+
 	// LoadLibcPubFile specifies whether to load the pubFile for libc package (optional).
 	LoadLibcPubFile bool
 
@@ -241,8 +246,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, lang: conf.Language, failFast: conf.FailFast,
-		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName,
-		cflags: conf.CFlags, wrapFileHeader: conf.WrapFileHeader,
+		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName, cflags: conf.CFlags,
+		wrapFileHeader: conf.WrapFileHeader, forceCamelCase: conf.ForceCamelCase,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
 		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
 		typeAlias: conf.TypeAlias, typeAliasCache: make(map[string]types.Type),

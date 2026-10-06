@@ -9,8 +9,8 @@ import (
 
 // Version helpers. These are primarily macros, but have exported equivalents.
 //
-//go:linkname Py_PACK_FULL_VERSION C.Py_PACK_FULL_VERSION
-func Py_PACK_FULL_VERSION(x c.Int, y c.Int, z c.Int, level c.Int, serial c.Int) c.Uint32T
+//go:linkname PACK_FULL_VERSION C.Py_PACK_FULL_VERSION
+func PACK_FULL_VERSION(x c.Int, y c.Int, z c.Int, level c.Int, serial c.Int) c.Uint32T
 
-//go:linkname Py_PACK_VERSION C.Py_PACK_VERSION
-func Py_PACK_VERSION(x c.Int, y c.Int) c.Uint32T
+//go:linkname PACK_VERSION C.Py_PACK_VERSION
+func PACK_VERSION(x c.Int, y c.Int) c.Uint32T
