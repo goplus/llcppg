@@ -62,7 +62,7 @@ type classCtx struct {
 	publicMethods []*overloadObj
 	polymorphic   bool // declares or inherits virtual methods
 	ownsVptr      bool // owns the vptr field (polymorphic with no primary base)
-	bitFieldRuns  []*bitFieldRun // bit-field runs in the struct
+	bitFieldRuns  []*bitFieldStorage // bit-field storage runs in the struct
 }
 
 func (p *classCtx) scope() *scopeCtx {
@@ -82,9 +82,7 @@ func compileClassImpl(ctx *pkgCtx, this *classCtx) {
 	if len(this.bitFieldRuns) > 0 {
 		ensureBitFieldHelpers(ctx)
 		recvPtr := types.NewPointer(this.typNamed)
-		for _, run := range this.bitFieldRuns {
-			genBitFieldAccessors(ctx, recvPtr, run)
-		}
+		genBitFieldAccessors(ctx, recvPtr, this.bitFieldRuns)
 	}
 	
 	for _, method := range this.publicMethods {
@@ -251,10 +249,12 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 	
 	// Collect bit-fields and generate storage fields
 	if hasBitFields(cls) {
-		this.bitFieldRuns = collectBitFields(ctx, pkgTypes, cls)
-		for _, run := range this.bitFieldRuns {
-			storage := genBitFieldStorage(ctx, run)
-			this.fields = append(this.fields, storage)
+		bitFieldMembers := collectBitFieldMembers(ctx, pkgTypes, cls)
+		storages, _ := groupBitFieldStorage(bitFieldMembers)
+		this.bitFieldRuns = storages
+		for _, storage := range storages {
+			storageField := genBitFieldStorageField(ctx, storage)
+			this.fields = append(this.fields, storageField)
 		}
 	}
 	
@@ -304,7 +304,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 
 	case lc.Cursor_FieldDecl:
 		// Skip bit-fields - they will be handled separately
-		if decl.FieldDeclBitWidth() != 0 {
+		if decl.FieldDeclBitWidth() >= 0 {
 			return
 		}
 		

@@ -20,245 +20,222 @@ import (
 	"fmt"
 	"go/types"
 
-	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
 )
 
-// bitFieldInfo holds metadata about a single C/C++ bit-field.
-type bitFieldInfo struct {
-	cursor    clang.Cursor // The FieldDecl cursor
-	name      string       // C name of the field
-	offset    int64        // Bit offset from start of struct/union
-	width     int64        // Bit width
-	fieldType types.Type   // Go type of the declared C type
-	signed    bool         // Whether the declared type is signed
-	isBool    bool         // Whether the type is _Bool or C++ bool
+// bitFieldMember represents a single bit-field with its metadata
+type bitFieldMember struct {
+	cursor    clang.Cursor  // The FieldDecl cursor
+	name      string        // C name
+	offset    int64         // Bit offset from start of struct/union
+	width     int64         // Bit width  
+	typ       types.Type    // Go type of the declared C type
+	signed    bool          // Whether type is signed
 }
 
-// bitFieldRun represents a maximal sequence of consecutive bit-fields.
-type bitFieldRun struct {
-	fields       []*bitFieldInfo // All fields in this run (named and unnamed)
-	storageIndex int             // Index for naming (_xgo_bits_<N>)
-	byteOffset   int64           // Byte offset where the run starts
-	byteLen      int64           // Number of bytes spanned by the run
+// bitFieldStorage represents the storage for a run of bit-fields
+type bitFieldStorage struct {
+	index      int             // 0-based index for naming
+	byteOffset int64           // Where this storage starts (in bytes)
+	byteSize   int64           // Size in bytes
+	members    []*bitFieldMember // Named members that fit in this storage
 }
 
-// hasBitFields reports whether the record declaration has any bit-fields.
+// hasBitFields checks if a struct/union has any bit-fields
 func hasBitFields(cursor clang.Cursor) bool {
-	found := false
-	clang.VisitChildren(cursor, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		if decl.Kind == lc.Cursor_FieldDecl && decl.FieldDeclBitWidth() != 0 {
-			found = true
+	result := false
+	clang.VisitChildren(cursor, func(child, parent clang.Cursor) clang.ChildVisitResult {
+		if child.Kind == lc.Cursor_FieldDecl && child.FieldDeclBitWidth() > 0 {
+			result = true
 			return clang.Break
 		}
 		return clang.Continue
 	})
-	return found
+	return result
 }
 
-// collectBitFields collects all bit-fields from a struct/union cursor
-// and returns them grouped into runs of consecutive bit-fields.
-func collectBitFields(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.Cursor) []*bitFieldRun {
-	var allFields []*bitFieldInfo
+// collectBitFieldMembers collects all bit-field members from a struct/union
+func collectBitFieldMembers(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.Cursor) []*bitFieldMember {
+	var members []*bitFieldMember
 	
-	// First pass: collect all bit-fields
-	clang.VisitChildren(cursor, func(decl, parent clang.Cursor) clang.ChildVisitResult {
-		if decl.Kind != lc.Cursor_FieldDecl {
+	clang.VisitChildren(cursor, func(child, parent clang.Cursor) clang.ChildVisitResult {
+		if child.Kind != lc.Cursor_FieldDecl {
 			return clang.Continue
 		}
 		
-		bitWidth := decl.FieldDeclBitWidth()
-		if bitWidth == 0 {
-			return clang.Continue // Not a bit-field
+		width := child.FieldDeclBitWidth()
+		if width < 0 {
+			return clang.Continue // Not a bit-field (regular field)
 		}
 		
-		offset := decl.OffsetOfField() // Offset in bits
-		origName := clang.String(decl)
+		offset := child.OffsetOfField() // In bits
+		name := clang.String(child)
 		
-		// Try to convert the field type
-		var fldType types.Type
-		var signed, isBool bool
+		// Try to convert the declared type
+		var typ types.Type
+		var signed bool
 		var feats int
 		
-		fldCType := decl.Type()
-		fldType = toTypeEx(ctx, pkgTypes, fldCType, flagIsVarDef, &feats, nil)
+		typ = toTypeEx(ctx, pkgTypes, child.Type(), flagIsVarDef, &feats, nil)
 		if feats&featAllIgnore != 0 {
-			// Can't convert this type
-			fldType = nil
+			typ = nil  // Can't convert this type
 		}
 		
-		// Determine signedness for later use
-		if fldType != nil {
-			switch ut := fldType.(type) {
-			case *types.Basic:
-				info := ut.Info()
-				signed = (info & types.IsUnsigned) == 0
-				isBool = (info & types.IsBoolean) != 0
-			case *types.Named:
-				if basic, ok := ut.Underlying().(*types.Basic); ok {
-					info := basic.Info()
-					signed = (info & types.IsUnsigned) == 0
-					isBool = (info & types.IsBoolean) != 0
+		// Determine signedness
+		if typ != nil {
+			if basic, ok := typ.(*types.Basic); ok {
+				signed = (basic.Info() & types.IsUnsigned) == 0
+			} else if named, ok := typ.(*types.Named); ok {
+				if basic, ok := named.Underlying().(*types.Basic); ok {
+					signed = (basic.Info() & types.IsUnsigned) == 0
 				}
 			}
 		}
 		
-		allFields = append(allFields, &bitFieldInfo{
-			cursor:    decl,
-			name:      origName,
-			offset:    offset,
-			width:     int64(bitWidth),
-			fieldType: fldType,
-			signed:    signed,
-			isBool:    isBool,
+		members = append(members, &bitFieldMember{
+			cursor: child,
+			name:   name,
+			offset: offset,
+			width:  int64(width),
+			typ:    typ,
+			signed: signed,
 		})
 		
 		return clang.Continue
 	})
 	
-	if len(allFields) == 0 {
-		return nil
+	return members
+}
+
+// groupBitFieldStorage groups bit-field members into storage runs.
+// Returns storage runs and which members are named (have names and convertible types).
+func groupBitFieldStorage(members []*bitFieldMember) ([]*bitFieldStorage, []*bitFieldMember) {
+	if len(members) == 0 {
+		return nil, nil
 	}
 	
-	// Second pass: group into runs
-	var runs []*bitFieldRun
-	var currentRun *bitFieldRun
+	// Sort members by offset (should already be in order from visiting, but be safe)
+	// Group by byte offset ranges
 	
-	for _, field := range allFields {
-		if currentRun == nil {
-			// Start first run
-			currentRun = &bitFieldRun{
-				fields:       []*bitFieldInfo{field},
-				storageIndex: 0,
-				byteOffset:   field.offset / 8,
+	var storages []*bitFieldStorage
+	var named []*bitFieldMember
+	
+	// Process members from first to last
+	var currentStorage *bitFieldStorage
+	lastEndByte := int64(-1)
+	storageIndex := 0
+	
+	for _, member := range members {
+		startByte := member.offset / 8
+		
+		// Check if we need to start a new storage
+		// New storage if:
+		// 1. This is the first member
+		// 2. There's a gap (startByte > lastEndByte)
+		if currentStorage == nil || startByte > lastEndByte {
+			// Finalize previous storage if any
+			if currentStorage != nil {
+				storages = append(storages, currentStorage)
+				storageIndex++
 			}
-		} else {
-			// Check if field is consecutive with current run
-			// Fields are consecutive if they're in the same or adjacent bytes
-			lastField := currentRun.fields[len(currentRun.fields)-1]
-			lastEnd := (lastField.offset + lastField.width + 7) / 8
-			thisStart := field.offset / 8
 			
-			if thisStart < lastEnd {
-				// Same run
-				currentRun.fields = append(currentRun.fields, field)
-			} else {
-				// End current run and start new one
-				runs = append(runs, currentRun)
-				currentRun = &bitFieldRun{
-					fields:       []*bitFieldInfo{field},
-					storageIndex: len(runs),
-					byteOffset:   thisStart,
-				}
+			// Start new storage
+			currentStorage = &bitFieldStorage{
+				index:      storageIndex,
+				byteOffset: startByte,
+				members:    []*bitFieldMember{},
 			}
+		}
+		
+		// Add member to current storage
+		currentStorage.members = append(currentStorage.members, member)
+		
+		// Update end position
+		endByte := (member.offset + member.width + 7) / 8
+		if endByte > lastEndByte {
+			lastEndByte = endByte
+		}
+		
+		// Track named members for accessor generation
+		if member.name != "" && member.typ != nil {
+			named = append(named, member)
 		}
 	}
 	
-	// Add the final run
-	if currentRun != nil {
-		runs = append(runs, currentRun)
+	// Finalize last storage
+	if currentStorage != nil {
+		currentStorage.byteSize = lastEndByte - currentStorage.byteOffset
+		storages = append(storages, currentStorage)
 	}
 	
-	// Calculate byte length for each run
-	for _, run := range runs {
-		minByte := run.byteOffset
-		maxByte := int64(0)
-		for _, f := range run.fields {
-			if f.width > 0 {
-				end := (f.offset + f.width + 7) / 8
-				if end > maxByte {
-					maxByte = end
-				}
+	return storages, named
+}
+
+// genBitFieldStorageField creates a storage field for a bit-field storage run
+func genBitFieldStorageField(ctx *pkgCtx, storage *bitFieldStorage) *types.Var {
+	fieldName := fmt.Sprintf("_xgo_bits_%d", storage.index)
+	arrayType := types.NewArray(types.Typ[types.Uint8], storage.byteSize)
+	return types.NewField(0, ctx.pkg.Types, fieldName, arrayType, false)
+}
+
+// genBitFieldAccessors generates getter/setter methods for named bit-fields
+func genBitFieldAccessors(ctx *pkgCtx, recvPtr types.Type, storages []*bitFieldStorage) {
+	for _, storage := range storages {
+		for _, member := range storage.members {
+			if member.name == "" || member.typ == nil {
+				continue  // Skip unnamed or unconvertible
 			}
+			
+			genBitFieldGetter(ctx, recvPtr, storage, member)
+			genBitFieldSetter(ctx, recvPtr, storage, member)
 		}
-		run.byteLen = maxByte - minByte
 	}
-	
-	return runs
 }
 
-// genBitFieldStorage generates a storage field for a bit-field run.
-func genBitFieldStorage(ctx *pkgCtx, run *bitFieldRun) *types.Var {
-	pkgTypes := ctx.pkg.Types
-	fieldName := fmt.Sprintf("_xgo_bits_%d", run.storageIndex)
-	arrayType := types.NewArray(types.Typ[types.Uint8], run.byteLen)
-	return types.NewField(0, pkgTypes, fieldName, arrayType, false)
-}
-
-// genBitFieldAccessors generates getter/setter methods for bit-fields in a run.
-func genBitFieldAccessors(ctx *pkgCtx, recvPtr types.Type, run *bitFieldRun) {
+// genBitFieldGetter generates a getter for a bit-field member
+func genBitFieldGetter(ctx *pkgCtx, recvPtr types.Type, storage *bitFieldStorage, member *bitFieldMember) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	
-	for _, field := range run.fields {
-		if field.name == "" || field.fieldType == nil {
-			// Skip unnamed and unconvertible bit-fields
-			continue
-		}
-		
-		// Check for name conflicts with existing fields/methods
-		if recvPtrNamed, ok := recvPtr.(*types.Pointer); ok {
-			if recvNamed, ok := recvPtrNamed.Elem().(*types.Named); ok {
-				if _, exists := recvNamed.Underlying().(*types.Struct); exists {
-					// Check if field name collides
-					if isField, exists := existMember(recvNamed, field.name); exists {
-						if isField {
-							// Skip if collides with field name
-							continue
-						}
-					}
-				}
-			}
-		}
-		
-		// Generate getter
-		getterName := fmt.Sprintf("XGof_get_%s", field.name)
-		recv := types.NewParam(0, pkgTypes, "p", recvPtr)
-		results := types.NewTuple(types.NewParam(0, pkgTypes, "", field.fieldType))
-		getterSig := types.NewSignatureType(recv, nil, nil, nil, results, false)
-		
-		getterFunc, err := pkg.NewFuncWith(0, getterName, getterSig, nil)
-		if err != nil {
-			ctx.panicf(field.cursor, "bitfield %s: failed to create getter - %v", field.name, err)
-		}
-		
-		genBitFieldGetterBody(ctx, getterFunc, field)
-		
-		// Generate setter
-		setterName := fmt.Sprintf("XGof_set_%s", field.name)
-		params := types.NewTuple(types.NewParam(0, pkgTypes, "v", field.fieldType))
-		setterSig := types.NewSignatureType(recv, nil, nil, params, nil, false)
-		
-		setterFunc, err := pkg.NewFuncWith(0, setterName, setterSig, nil)
-		if err != nil {
-			ctx.panicf(field.cursor, "bitfield %s: failed to create setter - %v", field.name, err)
-		}
-		
-		genBitFieldSetterBody(ctx, setterFunc, field)
+	name := fmt.Sprintf("XGof_get_%s", member.name)
+	recv := types.NewParam(0, pkgTypes, "p", recvPtr)
+	results := types.NewTuple(types.NewParam(0, pkgTypes, "", member.typ))
+	sig := types.NewSignatureType(recv, nil, nil, nil, results, false)
+	
+	f, err := pkg.NewFuncWith(0, name, sig, nil)
+	if err != nil {
+		ctx.panicf(member.cursor, "failed to create bitfield getter %s: %v", member.name, err)
 	}
+	
+	// For now, just return a zero value
+	// TODO: Implement actual bit extraction
+	cb := f.BodyStart(pkg)
+	cb.ZeroLit(member.typ).Return(1).End()
 }
 
-// genBitFieldGetterBody generates the body for a bit-field getter.
-// Generated code: return <type>(_xgo_bitget[_signed](unsafe.Pointer(p), offset, width))
-func genBitFieldGetterBody(ctx *pkgCtx, f *gogen.Func, field *bitFieldInfo) {
-	// For now, stub implementation that returns zero
-	// TODO: Implement actual bit extraction logic
-	cb := f.BodyStart(ctx.pkg)
-	cb.ZeroLit(field.fieldType).Return(1).End()
-}
-
-// genBitFieldSetterBody generates the body for a bit-field setter.
-// Generated code: _xgo_bitset(unsafe.Pointer(p), offset, width, uint64(v))
-func genBitFieldSetterBody(ctx *pkgCtx, f *gogen.Func, field *bitFieldInfo) {
-	// For now, stub implementation that does nothing
-	// TODO: Implement actual bit setting logic
-	cb := f.BodyStart(ctx.pkg)
+// genBitFieldSetter generates a setter for a bit-field member
+func genBitFieldSetter(ctx *pkgCtx, recvPtr types.Type, storage *bitFieldStorage, member *bitFieldMember) {
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	
+	name := fmt.Sprintf("XGof_set_%s", member.name)
+	recv := types.NewParam(0, pkgTypes, "p", recvPtr)
+	params := types.NewTuple(types.NewParam(0, pkgTypes, "v", member.typ))
+	sig := types.NewSignatureType(recv, nil, nil, params, nil, false)
+	
+	f, err := pkg.NewFuncWith(0, name, sig, nil)
+	if err != nil {
+		ctx.panicf(member.cursor, "failed to create bitfield setter %s: %v", member.name, err)
+	}
+	
+	// For now, just empty body
+	// TODO: Implement actual bit setting
+	cb := f.BodyStart(pkg)
 	cb.End()
 }
 
 // ensureBitFieldHelpers generates the bit manipulation helper functions
-// if there are any bit-fields in the package.
 func ensureBitFieldHelpers(ctx *pkgCtx) {
 	if ctx.hasBitFieldHelpers {
 		return
@@ -268,7 +245,7 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	
-	// Helper 1: _xgo_bitget(base unsafe.Pointer, off, width uintptr) uint64
+	// _xgo_bitget helper
 	{
 		params := types.NewTuple(
 			types.NewParam(0, pkgTypes, "base", ctx.unsafePointer()),
@@ -283,12 +260,11 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 			panic(fmt.Sprintf("failed to create _xgo_bitget: %v", err))
 		}
 		
-		// Simplified stub for now
 		cb := f.BodyStart(pkg)
-		cb.Val(uint64(0)).Return(1).End()
+		cb.ZeroLit(types.Typ[types.Uint64]).Return(1).End()
 	}
 	
-	// Helper 2: _xgo_bitget_signed(base unsafe.Pointer, off, width uintptr) int64
+	// _xgo_bitget_signed helper
 	{
 		params := types.NewTuple(
 			types.NewParam(0, pkgTypes, "base", ctx.unsafePointer()),
@@ -303,12 +279,11 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 			panic(fmt.Sprintf("failed to create _xgo_bitget_signed: %v", err))
 		}
 		
-		// Simplified stub for now
 		cb := f.BodyStart(pkg)
-		cb.Val(int64(0)).Return(1).End()
+		cb.ZeroLit(types.Typ[types.Int64]).Return(1).End()
 	}
 	
-	// Helper 3: _xgo_bitset(base unsafe.Pointer, off, width uintptr, v uint64)
+	// _xgo_bitset helper
 	{
 		params := types.NewTuple(
 			types.NewParam(0, pkgTypes, "base", ctx.unsafePointer()),
@@ -323,7 +298,6 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 			panic(fmt.Sprintf("failed to create _xgo_bitset: %v", err))
 		}
 		
-		// Simplified stub for now
 		cb := f.BodyStart(pkg)
 		cb.End()
 	}
