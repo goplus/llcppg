@@ -492,7 +492,6 @@ func initBitFieldType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cls clang.Cu
 		recvPtr := types.NewPointer(typDecl.Type())
 		accessors := layout.accessors
 		ctx.addCompileUnit(func(ctx *pkgCtx) {
-			ctx.ensureBitHelpers()
 			for _, b := range accessors {
 				genBitAccessor(ctx, recvPtr, b)
 			}
