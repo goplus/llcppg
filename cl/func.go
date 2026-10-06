@@ -146,6 +146,18 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 					} else {
 						clsName = typName
 					}
+					// When the function resolves to a logical class distinct from
+					// the physical receiver type (for example PyList_GetItem
+					// resolves to List while its receiver is the base class
+					// Object), emit the method on the logical class - which embeds
+					// the base - and generate the As<Class> conversion method on
+					// the base class. See logical.go.
+					if cls != "" && cls != typName {
+						logical := ctx.logicalClassOf(fn, cls, typRecv)
+						recv = types.NewParam(recv.Pos(), pkgTypes, recv.Name(), types.NewPointer(logical))
+						typRecv = logical
+						typName = cls
+					}
 				}
 			}
 		}

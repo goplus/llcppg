@@ -5,7 +5,7 @@ package py
 import (
 	"github.com/goplus/lib/c"
 	"github.com/goplus/lib/c/pthread"
-	_ "unsafe"
+	"unsafe"
 )
 
 // Return status codes for Python lock acquisition.  Chosen for maximum
@@ -41,9 +41,30 @@ func (self *Object) IsTrue() c.Int {
 	return 0
 }
 
-// llgo:link (*Object).Item C.PyList_GetItem
-func (self *Object) Item(index *Object) *Object {
-	return self
+type List struct {
+	Object
+}
+
+func (o *Object) AsList() *List {
+	return (*List)(unsafe.Pointer(o))
+}
+
+// llgo:link (*List).Item C.PyList_GetItem
+func (self *List) Item(index *Object) *Object {
+	return nil
+}
+
+type Dict struct {
+	Object
+}
+
+func (o *Object) AsDict() *Dict {
+	return (*Dict)(unsafe.Pointer(o))
+}
+
+// llgo:link (*Dict).Item C.PyDict_GetItem
+func (self *Dict) Item(index *Object) *Object {
+	return nil
 }
 
 // PY_TIMEOUT_MAX is the highest usable value (in microseconds) of PY_TIMEOUT_T

@@ -26,6 +26,8 @@ PyAPI_FUNC(int) PyObject_IsTrue(PyObject *x);
 
 PyAPI_FUNC(PyObject *) PyList_GetItem(PyObject *x, PyObject *index);
 
+PyAPI_FUNC(PyObject *) PyDict_GetItem(PyObject *x, PyObject *index);
+
 #ifndef Py_LIMITED_API
 #  define Py_CPYTHON_PYTHREAD_H
 #  include "cpython/pythread.h"

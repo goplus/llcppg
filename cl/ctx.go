@@ -155,6 +155,8 @@ type pkgCtx struct {
 	lastSeen  map[string]none         // last seen include file set (loaded include files)
 	thisSeen  map[string]none         // include file set seen in this translation unit
 
+	logicals map[string]*logicalClass // logical Go class name => logical class info
+
 	loads    []compileUnit
 	compiles []compileUnit
 	pubs     []Entry
