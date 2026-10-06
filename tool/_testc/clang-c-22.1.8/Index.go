@@ -2470,6 +2470,8 @@ type InclusionVisitor = func(_llcppg_param1 File, _llcppg_param2 *SourceLocation
 
 // Evaluation result of a cursor
 type EvalResult uintptr
+
+// llgo:type C
 type CursorAndRangeVisitor struct {
 	Context unsafe.Pointer
 	Visit   func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 Cursor, _llcppg_param3 SourceRange) VisitorResult
@@ -2605,6 +2607,8 @@ type IdxEntityRefInfo struct {
 
 // A group of callbacks used by #clang_indexSourceFile and
 // #clang_indexTranslationUnit.
+//
+// llgo:type C
 type IndexerCallbacks struct {
 	AbortQuery             func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) c.Int
 	Diagnostic             func(_llcppg_param1 ClientData, _llcppg_param2 DiagnosticSet, _llcppg_param3 unsafe.Pointer)
