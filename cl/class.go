@@ -230,6 +230,20 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
+
+	// A record that declares bit-fields cannot be laid out field-by-field in the
+	// usual way: several bit-fields share bytes, so each run is stored as a byte
+	// array that preserves the C size, alignment and member offsets, and every
+	// named bit-field is exposed through an XGof_get_/XGof_set_ accessor pair
+	// (see bitfield.go and issue goplus/llcppg#770). This path handles plain
+	// C-style records (no bases, not polymorphic, no type params); anything more
+	// complex falls through to the ordinary conversion below.
+	if len(tparams) == 0 && !isPolymorphic(cls) && !hasBaseOrNestedField(cls) && hasBitField(cls) {
+		if initBitFieldType(ctx, typDecl, this, cls) {
+			return
+		}
+	}
+
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadClassMember(ctx, pkgTypes, this, goName, decl, feats)
 		return clang.Continue

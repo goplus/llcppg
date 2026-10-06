@@ -164,6 +164,8 @@ type pkgCtx struct {
 	forceCamelCase bool
 	stdRecvName    bool
 	keepDoc        bool
+
+	bitHelpersEmitted bool // whether the _xgo_bitget/_xgo_bitset helpers are emitted
 }
 
 func (p *pkgCtx) ignoref(feats int, decl clang.Cursor, format string, args ...any) {
