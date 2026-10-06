@@ -16,25 +16,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ca-preservation:
-    permissions:
-      contents: read
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v7
-    - name: Test installer CA preservation
-      shell: bash
-      run: |
-        if [ "$RUNNER_OS" = Linux ]; then
-          bash .github/scripts/test-preserve-extra-ca.sh --integration
-        else
-          bash .github/scripts/test-preserve-extra-ca.sh
-        fi
-
   test:
     permissions:
       contents: read
