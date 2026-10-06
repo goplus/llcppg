@@ -18,7 +18,6 @@ package cl
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -256,7 +255,6 @@ func (p *pkgCtx) cstyleToGo(name string, underscoreStart, public bool) string {
 		lastEndWithUpper = endWithUpper
 		parts[i] = part
 	}
-	log.Println("==> cstyleToGo:", name, parts, underscoreStart, public)
 	return goNameOf(strings.Join(parts, ""), underscoreStart, public)
 }
 
