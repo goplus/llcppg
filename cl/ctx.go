@@ -51,7 +51,7 @@ func goNode(ctx *pkgCtx, v clang.Cursor) ast.Node {
 	var file clang.File
 	var pos, end c.Uint
 	rg := v.Extent()
-	rg.Start().Spelling(&file, nil, nil, &pos)
+	rg.Start().Expansion(&file, nil, nil, &pos)
 	if file == clang.InvalidFile {
 		return nil
 	}
@@ -155,7 +155,7 @@ type pkgCtx struct {
 	lastSeen  map[string]none         // last seen include file set (loaded include files)
 	thisSeen  map[string]none         // include file set seen in this translation unit
 
-	logicals map[string]*logicalClass // logical Go class name => logical class info
+	logicals map[string]*types.Named // logical Go class name => logical class type
 
 	loads    []compileUnit
 	compiles []compileUnit

@@ -18,6 +18,17 @@ const (
 	LOCK_INTR     LockStatus = 2
 )
 
+type MemAllocatorDomain c.Uint
+
+const (
+	// PyMem_RawMalloc(), PyMem_RawRealloc() and PyMem_RawFree()
+	PYMEM_DOMAIN_RAW MemAllocatorDomain = 0
+	// PyMem_Malloc(), PyMem_Realloc() and PyMem_Free()
+	PYMEM_DOMAIN_MEM MemAllocatorDomain = 1
+	// PyObject_Malloc(), PyObject_Realloc() and PyObject_Free()
+	PYMEM_DOMAIN_OBJ MemAllocatorDomain = 2
+)
+
 type ThreadTypeLock uintptr
 
 // When Py_LIMITED_API is not defined, the type layout of Py_tss_t is
@@ -28,21 +39,31 @@ type X_tssT struct {
 	X_key           pthread.Key
 }
 type TssT = X_tssT
-type Object struct {
+type X_object struct {
+}
+type Object = X_object
+type MemAllocatorEx struct {
+	Ctx     unsafe.Pointer
+	Malloc  func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.SizeT) unsafe.Pointer
+	Calloc  func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.SizeT, _llcppg_param3 c.SizeT) unsafe.Pointer
+	Realloc func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 unsafe.Pointer, _llcppg_param3 c.SizeT) unsafe.Pointer
+	Free    func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 unsafe.Pointer)
 }
 
 // Test if an object is the True singleton, the same as "x is True" in Python.
 //
-//go:linkname IsTrue C.Py_IsTrue
-func IsTrue(x *Object) c.Int
-
-// llgo:link (*Object).IsTrue C.PyObject_IsTrue
+// llgo:link (*Object).IsTrue C.Py_IsTrue
 func (self *Object) IsTrue() c.Int {
 	return 0
 }
 
+// llgo:link (*Object).ObjectIsTrue C.PyObject_IsTrue
+func (self *Object) ObjectIsTrue() c.Int {
+	return 0
+}
+
 type List struct {
-	Object
+	X_object
 }
 
 func (self *Object) AsList() *List {
@@ -59,7 +80,7 @@ func (self *List) SetItem(index *Object, value *Object) {
 }
 
 type Dict struct {
-	Object
+	X_object
 }
 
 func (self *Object) AsDict() *Dict {
@@ -69,6 +90,15 @@ func (self *Object) AsDict() *Dict {
 // llgo:link (*Dict).Item C.PyDict_GetItem
 func (self *Dict) Item(index *Object) *Object {
 	return nil
+}
+
+//go:linkname Import C.PyImport_Import
+func Import(name *Object) *Object
+
+// Get the memory block allocator of the specified domain.
+//
+// llgo:link MemAllocatorDomain.MemGetAllocator C.PyMem_GetAllocator
+func (self MemAllocatorDomain) MemGetAllocator(allocator *MemAllocatorEx) {
 }
 
 // PY_TIMEOUT_MAX is the highest usable value (in microseconds) of PY_TIMEOUT_T

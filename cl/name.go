@@ -243,7 +243,7 @@ func (p *pkgCtx) typeName(cName string, _ bool) string {
 	}
 	name := rmPrefix(cName, p.nsPrefix)
 	name, underscoreStart := rmPrefixAndUnderscoreStart(name, p.typePrefix)
-	name = rmSuffix(name, p.typeSuffix)
+	name = cutSuffixes(name, p.typeSuffix)
 	return p.cstyleToGo(name, underscoreStart, true)
 }
 
@@ -303,10 +303,10 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 					panic(fmt.Errorf("invalid TypeAbbr for %q: %v", typName, v))
 				}
 			} else {
-				typName = rmSuffix(typName, p.typeAbbrSuffix)
+				typName = cutSuffixes(typName, p.typeAbbrSuffix)
 				typSuffix = []string{typName}
 			}
-			name = rmSuffix(name, typSuffix)
+			name = cutSuffixes(name, typSuffix)
 			name = cutMethodPrefix(name, typName)
 		}
 	}
@@ -408,6 +408,18 @@ func cutPrefix(name, prefix string) string {
 	return name
 }
 
+func cutSuffixes(name string, suffix []string) string {
+	for _, sfx := range suffix {
+		if strings.HasSuffix(name, sfx) {
+			if name == sfx {
+				return name
+			}
+			return name[:len(name)-len(sfx)]
+		}
+	}
+	return name
+}
+
 func rmPrefixAndUnderscoreStart(cName string, prefix []string) (name string, underscoreStart bool) {
 	name, underscoreStart = checkUnderscoreStart(cName)
 	name = rmPrefix(name, prefix)
@@ -427,15 +439,6 @@ func rmPrefix(name string, prefix []string) string {
 	for _, pfx := range prefix {
 		if strings.HasPrefix(name, pfx) {
 			return name[len(pfx):]
-		}
-	}
-	return name
-}
-
-func rmSuffix(name string, suffix []string) string {
-	for _, sfx := range suffix {
-		if strings.HasSuffix(name, sfx) {
-			return name[:len(name)-len(sfx)]
 		}
 	}
 	return name

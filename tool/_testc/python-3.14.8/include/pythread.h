@@ -17,7 +17,9 @@ typedef enum Py_Lock_Status {
 
 typedef struct _Py_tss_t Py_tss_t;  /* opaque */
 
-typedef struct PyObject {} PyObject;
+struct _object {};
+
+typedef struct _object PyObject;
 
 // Test if an object is the True singleton, the same as "x is True" in Python.
 PyAPI_FUNC(int) Py_IsTrue(PyObject *x);
@@ -28,6 +30,40 @@ PyAPI_FUNC(PyObject *) PyList_GetItem(PyObject *x, PyObject *index);
 PyAPI_FUNC(void) PyList_SetItem(PyObject *x, PyObject *index, PyObject *value);
 
 PyAPI_FUNC(PyObject *) PyDict_GetItem(PyObject *x, PyObject *index);
+
+PyAPI_FUNC(PyObject *) PyImport_Import(PyObject *name);
+
+typedef enum {
+    /* PyMem_RawMalloc(), PyMem_RawRealloc() and PyMem_RawFree() */
+    PYMEM_DOMAIN_RAW,
+
+    /* PyMem_Malloc(), PyMem_Realloc() and PyMem_Free() */
+    PYMEM_DOMAIN_MEM,
+
+    /* PyObject_Malloc(), PyObject_Realloc() and PyObject_Free() */
+    PYMEM_DOMAIN_OBJ
+} PyMemAllocatorDomain;
+
+typedef struct {
+    /* user context passed as the first argument to the 4 functions */
+    void *ctx;
+
+    /* allocate a memory block */
+    void* (*malloc) (void *ctx, size_t size);
+
+    /* allocate a memory block initialized by zeros */
+    void* (*calloc) (void *ctx, size_t nelem, size_t elsize);
+
+    /* allocate or resize a memory block */
+    void* (*realloc) (void *ctx, void *ptr, size_t new_size);
+
+    /* release a memory block */
+    void (*free) (void *ctx, void *ptr);
+} PyMemAllocatorEx;
+
+/* Get the memory block allocator of the specified domain. */
+PyAPI_FUNC(void) PyMem_GetAllocator(PyMemAllocatorDomain domain,
+                                    PyMemAllocatorEx *allocator);
 
 #ifndef Py_LIMITED_API
 #  define Py_CPYTHON_PYTHREAD_H
