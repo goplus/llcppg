@@ -41,6 +41,11 @@ func (self *Object) IsTrue() c.Int {
 	return 0
 }
 
+// llgo:link (*Object).Item C.PyList_GetItem
+func (self *Object) Item(index *Object) *Object {
+	return self
+}
+
 // PY_TIMEOUT_MAX is the highest usable value (in microseconds) of PY_TIMEOUT_T
 // type, and depends on the system threading API.
 //
