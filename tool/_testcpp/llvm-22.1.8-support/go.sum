@@ -1,8 +1,8 @@
 github.com/goplus/lib v0.5.11 h1:1KZ6pLcc4Ef6EZVk4A/LtKIi1/zQ4g9f+TEdHkdpfhg=
 github.com/goplus/lib v0.5.11/go.mod h1:t4Cgs4QYbPzpI1RnYRA0iXWTgUFUuE09TrE2PvuU0VM=
-github.com/llarhub/libcxx v0.1.1 h1:pq/qd3sgtDsima+rrgwOEHYGd/YnyePe6p86rHFD+Xs=
-github.com/llarhub/libcxx v0.1.1/go.mod h1:5ANUOJMknbqPXhwxbXnLLA8NbHHyfYWUVQNCPiz04f8=
+github.com/llarhub/libcxx v0.1.4 h1:gVuGctWEErS5NQdruFGifxNOVly2vAk+M6REu/m4zv4=
+github.com/llarhub/libcxx v0.1.4/go.mod h1:Lnv6LsKYHOJd7TZBXs6xsNuI49t7Agc0SA1n72sD9ok=
 github.com/llarhub/llvm-c v0.2.0 h1:KXSm+1A9AjyxOcVTtZnlgvWDaWwBySMR27xSouaOaGg=
 github.com/llarhub/llvm-c v0.2.0/go.mod h1:5Z6A6u+TghfHdA82zNAhYZHlUkzra7YdUJWc8q3IoJ4=
-github.com/qiniu/x v1.19.0 h1:n3htd4pDtVHMWOnbDaB1QxfjAU4/bPTlasQdZRAU9Mw=
-github.com/qiniu/x v1.19.0/go.mod h1:Sx3Wy+0GI9OsX4a53mYj6A0o7mHJ94PUvraqGYb4EIs=
+github.com/qiniu/x v1.19.1 h1:Z6ZALlHMrZw/AImYjYnYKMXemasVdUF2o7riwm9TZTs=
+github.com/qiniu/x v1.19.1/go.mod h1:Sx3Wy+0GI9OsX4a53mYj6A0o7mHJ94PUvraqGYb4EIs=
