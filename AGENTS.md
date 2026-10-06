@@ -52,7 +52,7 @@ dependency setup. CI tests both entrypoints (`.github/workflows/llgo.yml`).
 During this draft's validation, use the candidate from
 [setup-llgo #51](https://github.com/xgo-dev/setup-llgo/pull/51), pinned to the same
 commit as CI below. Follow its
-[local installation guide](https://github.com/cpunion/setup-llgo/blob/46658437168f2b817fea2e56c88ecdd61f29cc4f/README.md#local-development-and-agents);
+[local installation guide](https://github.com/cpunion/setup-llgo/blob/66efbc5bac45a7810acc79717e8bee5ac62f8e77/README.md#local-development-and-agents);
 the entrypoint is `scripts/install.sh`.
 For released LLGo and platform package-manager instructions, see the
 [upstream LLGo README](https://raw.githubusercontent.com/xgo-dev/llgo/refs/heads/main/README.md).
@@ -66,7 +66,7 @@ first. The installer then selects the exact Go 1.27.0 toolchain.
 
    ```bash
    git clone https://github.com/cpunion/setup-llgo.git ../setup-llgo
-   git -C ../setup-llgo checkout --detach 46658437168f2b817fea2e56c88ecdd61f29cc4f
+   git -C ../setup-llgo checkout --detach 66efbc5bac45a7810acc79717e8bee5ac62f8e77
    LLGO_VERSION=main GO_VERSION=1.27.0 LLVM_VERSION=22 bash ../setup-llgo/scripts/install.sh
    ```
 

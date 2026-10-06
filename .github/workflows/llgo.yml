@@ -35,7 +35,7 @@ jobs:
     - uses: actions/checkout@v7
     - name: Setup llgo
       if: matrix.installer == 'action'
-      uses: cpunion/setup-llgo@46658437168f2b817fea2e56c88ecdd61f29cc4f
+      uses: cpunion/setup-llgo@66efbc5bac45a7810acc79717e8bee5ac62f8e77
       with:
         llvm-version: ${{ matrix.llvm }}
         llgo-version: ${{ matrix.llgo }}
@@ -46,7 +46,7 @@ jobs:
       uses: actions/checkout@v7
       with:
         repository: cpunion/setup-llgo
-        ref: 46658437168f2b817fea2e56c88ecdd61f29cc4f
+        ref: 66efbc5bac45a7810acc79717e8bee5ac62f8e77
         path: .setup-llgo
         persist-credentials: false
     - name: Provide the standalone installer's Go launcher
