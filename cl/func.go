@@ -148,7 +148,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 					// the base - and generate the As<Class> conversion method on
 					// the base class. See logical.go.
 					if cls != "" && cls != typName {
-						if logical, ok := ctx.logicalClassOf(fn, cls, typRecv); ok {
+						if logical, ok := ctx.logicalClassOf(fn, cls, typRecv, recv); ok {
 							recv = types.NewParam(recv.Pos(), pkgTypes, recv.Name(), types.NewPointer(logical))
 							typRecv = logical
 							typName = cls

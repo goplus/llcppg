@@ -60,12 +60,12 @@ const asMethodPrefix = "As"
 // If a package-level type with the same name already exists (generated from the
 // headers or provided through TypeAlias), it is reused instead of generating a
 // second one, and the As<Class> conversion is still added when it is missing.
-func (p *pkgCtx) logicalClassOf(decl clang.Cursor, goName string, base *types.Named) (*types.Named, bool) {
+func (p *pkgCtx) logicalClassOf(decl clang.Cursor, goName string, baseTy *types.Named, baseRecv *types.Var) (*types.Named, bool) {
 	if lc, ok := p.logicals[goName]; ok {
 		return lc, lc != nil
 	}
 
-	named, ok := p.newLogicalType(decl, goName, base)
+	named, ok := p.newLogicalType(decl, goName, baseTy)
 	p.logicals[goName] = named
 	if !ok {
 		return nil, false
@@ -76,7 +76,7 @@ func (p *pkgCtx) logicalClassOf(decl clang.Cursor, goName string, base *types.Na
 	// existing package-level type was reused, so a reused type still gets its
 	// As<Class> conversion; genAsMethod itself keeps any pre-existing method of
 	// that name and reports a diagnostic.
-	p.genAsMethod(decl, named, base)
+	p.genAsMethod(decl, named, baseTy, baseRecv)
 	return named, true
 }
 
@@ -101,20 +101,18 @@ func (p *pkgCtx) newLogicalType(decl clang.Cursor, goName string, base *types.Na
 // The conversion only reinterprets the pointer; it does not call into C and does
 // not check the object's real type. If a method of the same name already exists
 // on the base class, the existing method is kept and a diagnostic is reported.
-func (p *pkgCtx) genAsMethod(decl clang.Cursor, named, base *types.Named) {
+func (p *pkgCtx) genAsMethod(decl clang.Cursor, named, baseTy *types.Named, baseRecv *types.Var) {
 	name := asMethodPrefix + named.Obj().Name()
-	if pos, _, exists := findMember(base, name); exists {
+	if pos, _, exists := findMember(baseTy, name); exists {
 		p.errorf(decl, "%s redeclared in this block\n\t%v: other declaration of %s", name, p.position(pos), name)
 		return
 	}
 
 	pkg := p.pkg
 	pkgTypes := pkg.Types
-	recvType := types.NewPointer(base)
 	retType := types.NewPointer(named)
-	recv := types.NewParam(goNodePos(p, decl), pkgTypes, c2goMethodRecvName, recvType)
 	results := types.NewTuple(types.NewParam(token.NoPos, pkgTypes, "", retType))
-	sig := types.NewSignatureType(recv, nil, nil, nil, results, false)
+	sig := types.NewSignatureType(baseRecv, nil, nil, nil, results, false)
 
 	f, err := pkg.NewFuncWith(goNodePos(p, decl), name, sig, nil)
 	if err != nil {
@@ -123,7 +121,7 @@ func (p *pkgCtx) genAsMethod(decl clang.Cursor, named, base *types.Named) {
 	cb := f.BodyStart(pkg)
 	// return (*List)(unsafe.Pointer(self))
 	cb.Typ(retType).
-		Typ(p.unsafePointer()).Val(recv).
+		Typ(p.unsafePointer()).Val(baseRecv).
 		Call(1).
 		Call(1).
 		Return(1).End()

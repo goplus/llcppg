@@ -28,8 +28,9 @@ type X_tssT struct {
 	X_key           pthread.Key
 }
 type TssT = X_tssT
-type Object struct {
+type X_object struct {
 }
+type Object = X_object
 
 // Test if an object is the True singleton, the same as "x is True" in Python.
 //
@@ -42,7 +43,7 @@ func (self *Object) IsTrue() c.Int {
 }
 
 type List struct {
-	Object
+	X_object
 }
 
 func (self *Object) AsList() *List {
@@ -59,7 +60,7 @@ func (self *List) SetItem(index *Object, value *Object) {
 }
 
 type Dict struct {
-	Object
+	X_object
 }
 
 func (self *Object) AsDict() *Dict {
