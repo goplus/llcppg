@@ -28,6 +28,18 @@ type X_tssT struct {
 	X_key           pthread.Key
 }
 type TssT = X_tssT
+type Object struct {
+}
+
+// Test if an object is the True singleton, the same as "x is True" in Python.
+//
+//go:linkname IsTrue C.Py_IsTrue
+func IsTrue(x *Object) c.Int
+
+// llgo:link (*Object).IsTrue C.PyObject_IsTrue
+func (self *Object) IsTrue() c.Int {
+	return 0
+}
 
 // PY_TIMEOUT_MAX is the highest usable value (in microseconds) of PY_TIMEOUT_T
 // type, and depends on the system threading API.

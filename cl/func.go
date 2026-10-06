@@ -128,27 +128,35 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 
 	var recv *types.Var
 	var typRecv *types.Named // if tryToMethod succeeded, this is the recv
-	var typName, typCName string
+	var typName, typCName, clsName string
 	var nameInPkg string
 	if this == nil {
 		if ctx.lang == LanguageC {
 			// try to method for C global functions
-			params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
-			if typRecv != nil {
-				recvCType := fn.Argument(0).Type()
-				if recvCType.Kind == lc.Type_Pointer {
-					recvCType = recvCType.Pointee()
+			if cls, mayClass := ctx.methodCheck(cName); mayClass {
+				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
+				if typRecv != nil {
+					recvCType := fn.Argument(0).Type()
+					if recvCType.Kind == lc.Type_Pointer {
+						recvCType = recvCType.Pointee()
+					}
+					typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
+					if cls != "" {
+						clsName = cls
+					} else {
+						clsName = typName
+					}
 				}
-				typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
 			}
 		}
 	} else {
 		typNamed := this.typNamed
 		recv = types.NewParam(goNodePos(ctx, fn), pkgTypes, "this", types.NewPointer(typNamed))
 		typName = typNamed.Obj().Name()
+		clsName = typName
 	}
 
-	fnName := ctx.funcName(name, obj.order(), typName, typCName, this == nil, true)
+	fnName := ctx.funcName(name, obj.order(), clsName, typCName, this == nil, true)
 
 	if recv == nil {
 		nameInPkg = fnName

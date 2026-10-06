@@ -17,6 +17,13 @@ typedef enum Py_Lock_Status {
 
 typedef struct _Py_tss_t Py_tss_t;  /* opaque */
 
+struct PyObject {};
+
+// Test if an object is the True singleton, the same as "x is True" in Python.
+PyAPI_FUNC(int) Py_IsTrue(PyObject *x);
+
+PyAPI_FUNC(int) PyObject_IsTrue(PyObject *x);
+
 #ifndef Py_LIMITED_API
 #  define Py_CPYTHON_PYTHREAD_H
 #  include "cpython/pythread.h"

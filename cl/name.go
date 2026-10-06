@@ -92,7 +92,9 @@ func (p *mthdCheck) check(name string) (cls string, ok bool) {
 		match[i] = name[:pos]
 		name = name[pos+len(p):]
 	}
-	return matchResult(p.result, match, n), true
+	cls = matchResult(p.result, match, n)
+	ok = cls != ""
+	return
 }
 
 func matchResult(result string, match []string, n int) string {
@@ -102,8 +104,8 @@ func matchResult(result string, match []string, n int) string {
 			if i+1 < len(result) {
 				i++
 				c := result[i]
-				if c >= '0' && c <= '9' {
-					if index := int(c - '0'); index < len(match) {
+				if c >= '1' && c <= '9' {
+					if index := int(c - '1'); index < len(match) {
 						b = append(b, match[index]...)
 						continue
 					}
@@ -245,9 +247,12 @@ func (p *pkgCtx) typeName(cName string, _ bool) string {
 	return p.cstyleToGo(name, underscoreStart, true)
 }
 
-func (p *pkgCtx) methodCheck(name string) (cls string, ok bool) {
+func (p *pkgCtx) methodCheck(cName string) (cls string, mayClass bool) {
+	if len(p.mthdCheck) == 0 {
+		return "", true
+	}
 	for _, m := range p.mthdCheck {
-		if cls, ok = m.check(name); ok {
+		if cls, mayClass = m.check(cName); mayClass {
 			return
 		}
 	}
