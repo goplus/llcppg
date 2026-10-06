@@ -8,6 +8,7 @@ import (
 	"unsafe"
 )
 
+const XGoPackage = "clang/Index"
 const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
 
 // Describes the type of the comment AST node (\c CXComment).  A comment

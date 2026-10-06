@@ -2,4 +2,5 @@
 
 package clang
 
+const XGoPackage = true
 const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
