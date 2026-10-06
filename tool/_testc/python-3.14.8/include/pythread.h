@@ -17,7 +17,7 @@ typedef enum Py_Lock_Status {
 
 typedef struct _Py_tss_t Py_tss_t;  /* opaque */
 
-struct PyObject {};
+typedef struct PyObject {} PyObject;
 
 // Test if an object is the True singleton, the same as "x is True" in Python.
 PyAPI_FUNC(int) Py_IsTrue(PyObject *x);
@@ -25,6 +25,7 @@ PyAPI_FUNC(int) Py_IsTrue(PyObject *x);
 PyAPI_FUNC(int) PyObject_IsTrue(PyObject *x);
 
 PyAPI_FUNC(PyObject *) PyList_GetItem(PyObject *x, PyObject *index);
+PyAPI_FUNC(void) PyList_SetItem(PyObject *x, PyObject *index, PyObject *value);
 
 PyAPI_FUNC(PyObject *) PyDict_GetItem(PyObject *x, PyObject *index);
 

@@ -105,7 +105,7 @@ func (p *pkgCtx) newLogicalType(decl clang.Cursor, goName string, base *types.Na
 
 // genAsMethod emits the conversion method on the base class, for example
 //
-//	func (o *Object) AsList() *List { return (*List)(unsafe.Pointer(o)) }
+//	func (self *Object) AsList() *List { return (*List)(unsafe.Pointer(self)) }
 //
 // The conversion only reinterprets the pointer; it does not call into C and does
 // not check the object's real type. If a method of the same name already exists
@@ -121,7 +121,7 @@ func (p *pkgCtx) genAsMethod(decl clang.Cursor, lc *logicalClass) {
 	pkgTypes := pkg.Types
 	recvType := types.NewPointer(lc.base)
 	retType := types.NewPointer(lc.named)
-	recv := types.NewParam(goNodePos(p, decl), pkgTypes, "o", recvType)
+	recv := types.NewParam(goNodePos(p, decl), pkgTypes, c2goMethodRecvName, recvType)
 	results := types.NewTuple(types.NewParam(token.NoPos, pkgTypes, "", retType))
 	sig := types.NewSignatureType(recv, nil, nil, nil, results, false)
 
@@ -130,9 +130,9 @@ func (p *pkgCtx) genAsMethod(decl clang.Cursor, lc *logicalClass) {
 		p.panicf(decl, "logical class %s: genAsMethod failed - %v", lc.named.Obj().Name(), err)
 	}
 	cb := f.BodyStart(pkg)
-	// return (*List)(unsafe.Pointer(o))
+	// return (*List)(unsafe.Pointer(self))
 	cb.Typ(retType).
-		Typ(p.unsafePointer()).VarVal("o").
+		Typ(p.unsafePointer()).Val(recv).
 		Call(1).
 		Call(1).
 		Return(1).End()
