@@ -17,7 +17,9 @@ typedef enum Py_Lock_Status {
 
 typedef struct _Py_tss_t Py_tss_t;  /* opaque */
 
-struct _object {};
+struct _object {
+    Py_ssize_t ob_refcnt;
+};
 
 typedef struct _object PyObject;
 
@@ -26,8 +28,18 @@ PyAPI_FUNC(int) Py_IsTrue(PyObject *x);
 
 PyAPI_FUNC(int) PyObject_IsTrue(PyObject *x);
 
+typedef struct {
+    struct _object ob_base;
+    Py_ssize_t ob_size;
+} PyListObject;
+
 PyAPI_FUNC(PyObject *) PyList_GetItem(PyObject *x, PyObject *index);
 PyAPI_FUNC(void) PyList_SetItem(PyObject *x, PyObject *index, PyObject *value);
+
+typedef struct {
+    struct _object ob_base;
+    Py_ssize_t ma_used;
+} PyDictObject;
 
 PyAPI_FUNC(PyObject *) PyDict_GetItem(PyObject *x, PyObject *index);
 

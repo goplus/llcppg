@@ -216,7 +216,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	if conf == nil {
 		conf = &Config{}
 	}
-	methodCheck, err := newMethodChecks(conf.MethodCheck)
+	methodCheck, err := newMatchers("MethodCheck", conf.MethodCheck)
 	if err != nil {
 		return
 	}
@@ -266,7 +266,6 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), ovobjs: make(map[string]*overloadObj),
 		macroVals: make(map[string]any), types: make(map[string]typeObj),
-		logicals: make(map[string]*types.Named),
 		lastSeen: make(map[string]none), impPkgs: make(map[string]none),
 	}
 
