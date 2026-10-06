@@ -55,7 +55,7 @@ func goNode(ctx *pkgCtx, v clang.Cursor) ast.Node {
 	if file == clang.InvalidFile {
 		return nil
 	}
-	rg.End().Spelling(nil, nil, nil, &end)
+	rg.End().Expansion(nil, nil, nil, &end)
 	base := ctx.getFileBase(v, file)
 	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
 }
@@ -63,7 +63,7 @@ func goNode(ctx *pkgCtx, v clang.Cursor) ast.Node {
 func goNodePos(ctx *pkgCtx, v clang.Cursor) token.Pos {
 	var file clang.File
 	var pos c.Uint
-	v.Extent().Start().Spelling(&file, nil, nil, &pos)
+	v.Extent().Start().Expansion(&file, nil, nil, &pos)
 	if file == clang.InvalidFile {
 		return token.NoPos
 	}
@@ -158,6 +158,7 @@ type pkgCtx struct {
 	compiles []compileUnit
 	pubs     []Entry
 
+	errCnt   int
 	failFast int
 	anonSeq  int
 
@@ -166,47 +167,46 @@ type pkgCtx struct {
 	keepDoc        bool
 }
 
+func (p *pkgCtx) checkFailFast() {
+	p.failFast--
+	if p.failFast == 0 {
+		os.Exit(1)
+	}
+}
+
 func (p *pkgCtx) ignoref(feats int, decl clang.Cursor, format string, args ...any) {
 	if feats&featQuietIgnore == 0 || debugQuietIgnore {
 		p.logf(decl, format, args...)
-		p.failFast--
-		if p.failFast == 0 {
-			os.Exit(1)
-		}
+		p.checkFailFast()
 	}
 }
 
 func (p *pkgCtx) logf(decl clang.Cursor, format string, args ...any) {
-	switch decl.Kind {
-	case lc.Cursor_FunctionDecl, lc.Cursor_FunctionTemplate, lc.Cursor_CXXMethod,
-		lc.Cursor_Constructor, lc.Cursor_Destructor:
-		var hasUnexposedAttr bool
-		var firstNotUnexposed clang.Cursor
-		clang.VisitChildren(decl, func(cur, parent clang.Cursor) clang.ChildVisitResult {
-			switch cur.Kind {
-			case lc.Cursor_UnexposedAttr:
-				hasUnexposedAttr = true
-				return clang.Continue
-			default:
-				firstNotUnexposed = cur
-				return clang.Break
-			}
-		})
-		if hasUnexposedAttr {
-			decl = firstNotUnexposed
-		}
-	}
-	pos := p.fset.Position(goNodePos(p, decl))
+	pos := p.nodePosition(decl)
 	log.Printf("%s: %s", pos, fmt.Sprintf(format, args...))
 }
 
 func (p *pkgCtx) panicf(decl clang.Cursor, format string, args ...any) {
-	pos := p.fset.Position(goNodePos(p, decl))
+	pos := p.nodePosition(decl)
 	log.Panicf("%s: %s", pos, fmt.Sprintf(format, args...))
+}
+
+func (p *pkgCtx) errorf(decl clang.Cursor, format string, args ...any) {
+	p.errCnt++
+	p.logf(decl, format, args...)
+	p.checkFailFast()
 }
 
 func (p *pkgCtx) logtf(typ lc.Type, format string, args ...any) {
 	p.logf(typ.Declaration(), format, args...)
+}
+
+func (p *pkgCtx) nodePosition(decl clang.Cursor) token.Position {
+	return p.position(goNodePos(p, decl))
+}
+
+func (p *pkgCtx) position(pos token.Pos) token.Position {
+	return p.fset.Position(pos)
 }
 
 func (p *pkgCtx) getFileBase(c clang.Cursor, file clang.File) int {
