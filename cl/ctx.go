@@ -120,7 +120,7 @@ type pkgCtx struct {
 
 	typeAbbrSuffix []string
 
-	mthdCheck   []*matcher
+	mthdCheck   matcher
 	nsPrefix    []string
 	fnPrefix    []string
 	varPrefix   []string

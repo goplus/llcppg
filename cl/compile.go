@@ -216,7 +216,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	if conf == nil {
 		conf = &Config{}
 	}
-	methodCheck, err := newMatchers("MethodCheck", conf.MethodCheck)
+	methodCheck, err := newMatcher("MethodCheck", conf.MethodCheck)
 	if err != nil {
 		return
 	}

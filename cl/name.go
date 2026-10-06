@@ -44,13 +44,13 @@ func objUSR(decl clang.Cursor) string {
 
 // -----------------------------------------------------------------------------
 
-type matcher struct {
+type rule struct {
 	prefix  string
 	pattern []string
 	result  string
 }
 
-func newMatcher(name, expr string) (*matcher, error) {
+func newRule(name, expr string) (*rule, error) {
 	pos := strings.IndexByte(expr, ':')
 	if pos < 0 {
 		return nil, fmt.Errorf("invalid %s: %s", name, expr)
@@ -58,26 +58,14 @@ func newMatcher(name, expr string) (*matcher, error) {
 	pattern := strings.TrimSpace(expr[:pos])
 	parts := strings.Split(pattern, "*")
 	result := strings.TrimSpace(expr[pos+1:])
-	return &matcher{
+	return &rule{
 		prefix:  parts[0],
 		pattern: parts[1:],
 		result:  result,
 	}, nil
 }
 
-func newMatchers(name string, exprs []string) ([]*matcher, error) {
-	ret := make([]*matcher, len(exprs))
-	for i, c := range exprs {
-		m, err := newMatcher(name, c)
-		if err != nil {
-			return nil, err
-		}
-		ret[i] = m
-	}
-	return ret, nil
-}
-
-func (p *matcher) match(source string, matchFull bool) (ret string, matched bool) {
+func (p *rule) match(source string, matchFull bool) (ret string, matched bool) {
 	source, ok := strings.CutPrefix(source, p.prefix)
 	if !ok {
 		return
@@ -121,8 +109,22 @@ func matchResult(result string, match []string, n int) string {
 	return string(b)
 }
 
-func match(source string, matches []*matcher, matchFull bool) (ret string, matched bool) {
-	for _, m := range matches {
+type matcher []*rule
+
+func newMatcher(name string, exprs []string) (matcher, error) {
+	ret := make(matcher, len(exprs))
+	for i, c := range exprs {
+		m, err := newRule(name, c)
+		if err != nil {
+			return nil, err
+		}
+		ret[i] = m
+	}
+	return ret, nil
+}
+
+func (p matcher) match(source string, matchFull bool) (ret string, matched bool) {
+	for _, m := range p {
 		if r, ok := m.match(source, matchFull); ok {
 			return r, true
 		}
@@ -262,7 +264,7 @@ func (p *pkgCtx) methodCheck(pkgTypes *types.Package, cName string) (cls string,
 	if len(p.mthdCheck) == 0 {
 		return "", nil, true // allow tryToMethod
 	}
-	cls, mayClass = match(cName, p.mthdCheck, false)
+	cls, mayClass = p.mthdCheck.match(cName, false)
 	if cls != "" {
 		obj = pkgTypes.Scope().Lookup(cls)
 	}
