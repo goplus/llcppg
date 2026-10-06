@@ -133,6 +133,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	if this == nil {
 		if ctx.lang == LanguageC {
 			// try to method for C global functions
+			oldParams := params
 			params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
 			if typRecv != nil {
 				recvCType := fn.Argument(0).Type()
@@ -150,7 +151,9 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 					// the base class. See logical.go.
 					if cls, mayClass := ctx.methodCheck(cName); mayClass {
 						if cls != "" && cls != typName {
-							if logical, ok := ctx.logicalClassOf(fn, cls, typRecv, recv); ok {
+							if contains(cls, ctx.nonClasses) {
+								params, recv, typName, typCName = oldParams, nil, "", ""
+							} else if logical, ok := ctx.logicalClassOf(fn, cls, typRecv, recv); ok {
 								recv = types.NewParam(recv.Pos(), pkgTypes, recv.Name(), types.NewPointer(logical))
 								typRecv = logical
 								typName = cls

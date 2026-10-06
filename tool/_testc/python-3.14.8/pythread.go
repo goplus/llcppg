@@ -92,18 +92,8 @@ func (self *Dict) Item(index *Object) *Object {
 	return nil
 }
 
-type Import struct {
-	X_object
-}
-
-func (self *Object) AsImport() *Import {
-	return (*Import)(unsafe.Pointer(self))
-}
-
-// llgo:link (*Import).Import C.PyImport_Import
-func (self *Import) Import() *Object {
-	return nil
-}
+//go:linkname Import C.PyImport_Import
+func Import(name *Object) *Object
 
 // Get the memory block allocator of the specified domain.
 //
