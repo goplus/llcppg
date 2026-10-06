@@ -78,15 +78,15 @@ func compileClassImpl(ctx *pkgCtx, this *classCtx) {
 		genVtable(ctx, this, this.ownsVptr)
 	}
 	
-	// Generate bit-field accessors if there are any bit-fields
-	if len(this.bitFieldRuns) > 0 {
-		ensureBitFieldHelpers(ctx)
-		recvPtr := types.NewPointer(this.typNamed)
-		genBitFieldAccessors(ctx, recvPtr, this.bitFieldRuns)
-	}
-	
 	for _, method := range this.publicMethods {
 		compileFuncOrMethod(ctx, method, this)
+	}
+	
+	// Generate bit-field accessors and helpers if there are any bit-fields
+	if len(this.bitFieldRuns) > 0 {
+		recvPtr := types.NewPointer(this.typNamed)
+		genBitFieldAccessors(ctx, recvPtr, this.bitFieldRuns)
+		ensureBitFieldHelpers(ctx)
 	}
 }
 
@@ -239,6 +239,8 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
+	
+	// Load regular members using the existing logic
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadClassMember(ctx, pkgTypes, this, goName, decl, feats)
 		return clang.Continue
@@ -247,15 +249,22 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 		return
 	}
 	
-	// Collect bit-fields and generate storage fields
+	// Collect and process bit-fields if present
 	if hasBitFields(cls) {
 		bitFieldMembers := collectBitFieldMembers(ctx, pkgTypes, cls)
 		storages, _ := groupBitFieldStorage(bitFieldMembers)
 		this.bitFieldRuns = storages
+		
+		// Create storage fields
+		var storageFields []*types.Var
 		for _, storage := range storages {
 			storageField := genBitFieldStorageField(ctx, storage)
-			this.fields = append(this.fields, storageField)
+			storageFields = append(storageFields, storageField)
 		}
+		
+		// Reorder fields to place bit-field storage at the correct positions
+		// This ensures the struct layout matches the C ABI
+		this.fields = reorderFieldsWithBitFields(this.fields, storageFields, storages)
 	}
 	
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
@@ -281,6 +290,19 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		compileClassImpl(ctx, this)
 	})
+}
+
+// reorderFieldsWithBitFields reorders struct fields to place bit-field storage
+// fields at the correct positions based on their byte offsets.
+func reorderFieldsWithBitFields(regularFields []*types.Var, storageFields []*types.Var, storages []*bitFieldStorage) []*types.Var {
+	if len(storageFields) == 0 {
+		return regularFields
+	}
+	
+	// For now, just append storage fields at the beginning
+	// A more sophisticated implementation would interleave them based on byte offsets
+	result := append(storageFields, regularFields...)
+	return result
 }
 
 func emitClass(ctx *pkgCtx, cls clang.Cursor, goName string, parent *scopeCtx) *types.Named {

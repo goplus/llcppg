@@ -32,12 +32,11 @@ func (p *Packet) XGof_get_level() c.Uint {
 }
 func (p *Packet) XGof_set_level(v c.Uint) {
 }
-
-func _xgo_bitget(base unsafe.Pointer, off, width uintptr) uint64 {
+func _xgo_bitget(base unsafe.Pointer, off uintptr, width uintptr) uint64 {
 	return uint64(0)
 }
-func _xgo_bitget_signed(base unsafe.Pointer, off, width uintptr) int64 {
+func _xgo_bitget_signed(base unsafe.Pointer, off uintptr, width uintptr) int64 {
 	return int64(0)
 }
-func _xgo_bitset(base unsafe.Pointer, off, width uintptr, v uint64) {
+func _xgo_bitset(base unsafe.Pointer, off uintptr, width uintptr, v uint64) {
 }

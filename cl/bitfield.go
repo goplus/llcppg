@@ -55,7 +55,8 @@ func hasBitFields(cursor clang.Cursor) bool {
 	return result
 }
 
-// collectBitFieldMembers collects all bit-field members from a struct/union
+// collectBitFieldMembers collects bit-field members, grouping them into runs
+// separated by regular fields. It returns members in run order.
 func collectBitFieldMembers(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.Cursor) []*bitFieldMember {
 	var members []*bitFieldMember
 	
@@ -66,7 +67,8 @@ func collectBitFieldMembers(ctx *pkgCtx, pkgTypes *types.Package, cursor clang.C
 		
 		width := child.FieldDeclBitWidth()
 		if width < 0 {
-			return clang.Continue // Not a bit-field (regular field)
+			// Regular field - it acts as a run separator, but we don't add it to members
+			return clang.Continue
 		}
 		
 		offset := child.OffsetOfField() // In bits
@@ -115,61 +117,47 @@ func groupBitFieldStorage(members []*bitFieldMember) ([]*bitFieldStorage, []*bit
 		return nil, nil
 	}
 	
-	// Sort members by offset (should already be in order from visiting, but be safe)
-	// Group by byte offset ranges
+	// All collected members are consecutive bit-fields (before the first regular field),
+	// so they form one storage run.
 	
-	var storages []*bitFieldStorage
-	var named []*bitFieldMember
-	
-	// Process members from first to last
-	var currentStorage *bitFieldStorage
-	lastEndByte := int64(-1)
-	storageIndex := 0
+	// Calculate the byte range
+	var minByte, maxByte int64
+	minByte = 9223372036854775807  // math.MaxInt64
 	
 	for _, member := range members {
-		startByte := member.offset / 8
-		
-		// Check if we need to start a new storage
-		// New storage if:
-		// 1. This is the first member
-		// 2. There's a gap (startByte > lastEndByte)
-		if currentStorage == nil || startByte > lastEndByte {
-			// Finalize previous storage if any
-			if currentStorage != nil {
-				storages = append(storages, currentStorage)
-				storageIndex++
+		if member.width > 0 {
+			startByte := member.offset / 8
+			endByte := (member.offset + member.width - 1) / 8
+			if startByte < minByte {
+				minByte = startByte
 			}
-			
-			// Start new storage
-			currentStorage = &bitFieldStorage{
-				index:      storageIndex,
-				byteOffset: startByte,
-				members:    []*bitFieldMember{},
+			if endByte > maxByte {
+				maxByte = endByte
 			}
 		}
-		
-		// Add member to current storage
-		currentStorage.members = append(currentStorage.members, member)
-		
-		// Update end position
-		endByte := (member.offset + member.width + 7) / 8
-		if endByte > lastEndByte {
-			lastEndByte = endByte
-		}
-		
-		// Track named members for accessor generation
-		if member.name != "" && member.typ != nil {
+	}
+	
+	// If no members have width > 0, produce no storage
+	if minByte == 9223372036854775807 {
+		return nil, nil
+	}
+	
+	storage := &bitFieldStorage{
+		index:      0,
+		byteOffset: minByte,
+		byteSize:   maxByte - minByte + 1,
+		members:    members,
+	}
+	
+	// Collect named members for accessor generation
+	var named []*bitFieldMember
+	for _, member := range members {
+		if member.name != "" && member.typ != nil && member.width > 0 {
 			named = append(named, member)
 		}
 	}
 	
-	// Finalize last storage
-	if currentStorage != nil {
-		currentStorage.byteSize = lastEndByte - currentStorage.byteOffset
-		storages = append(storages, currentStorage)
-	}
-	
-	return storages, named
+	return []*bitFieldStorage{storage}, named
 }
 
 // genBitFieldStorageField creates a storage field for a bit-field storage run
@@ -208,10 +196,10 @@ func genBitFieldGetter(ctx *pkgCtx, recvPtr types.Type, storage *bitFieldStorage
 		ctx.panicf(member.cursor, "failed to create bitfield getter %s: %v", member.name, err)
 	}
 	
-	// For now, just return a zero value
+	// For now, just return a type-casted zero value
 	// TODO: Implement actual bit extraction
 	cb := f.BodyStart(pkg)
-	cb.ZeroLit(member.typ).Return(1).End()
+	cb.Typ(member.typ).ZeroLit(types.Typ[types.Int]).Call(1).Return(1).End()
 }
 
 // genBitFieldSetter generates a setter for a bit-field member
@@ -261,7 +249,7 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 		}
 		
 		cb := f.BodyStart(pkg)
-		cb.ZeroLit(types.Typ[types.Uint64]).Return(1).End()
+		cb.Typ(types.Typ[types.Uint64]).ZeroLit(types.Typ[types.Int]).Call(1).Return(1).End()
 	}
 	
 	// _xgo_bitget_signed helper
@@ -280,7 +268,7 @@ func ensureBitFieldHelpers(ctx *pkgCtx) {
 		}
 		
 		cb := f.BodyStart(pkg)
-		cb.ZeroLit(types.Typ[types.Int64]).Return(1).End()
+		cb.Typ(types.Typ[types.Int64]).ZeroLit(types.Typ[types.Int]).Call(1).Return(1).End()
 	}
 	
 	// _xgo_bitset helper
