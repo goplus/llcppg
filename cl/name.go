@@ -43,6 +43,84 @@ func objUSR(decl clang.Cursor) string {
 
 // -----------------------------------------------------------------------------
 
+type mthdCheck struct {
+	prefix  string
+	pattern []string
+	result  string
+}
+
+func newMethodCheck(check string) (*mthdCheck, error) {
+	pos := strings.IndexByte(check, ':')
+	if pos < 0 {
+		return nil, fmt.Errorf("invalid MethodCheck: %s", check)
+	}
+	pattern := strings.TrimSpace(check[:pos])
+	parts := strings.Split(pattern, "*")
+	result := strings.TrimSpace(check[pos+1:])
+	return &mthdCheck{
+		prefix:  parts[0],
+		pattern: parts[1:],
+		result:  result,
+	}, nil
+}
+
+func newMethodChecks(check []string) ([]*mthdCheck, error) {
+	ret := make([]*mthdCheck, len(check))
+	for i, c := range check {
+		m, err := newMethodCheck(c)
+		if err != nil {
+			return nil, err
+		}
+		ret[i] = m
+	}
+	return ret, nil
+}
+
+func (p *mthdCheck) check(name string) (cls string, ok bool) {
+	name, ok = strings.CutPrefix(name, p.prefix)
+	if !ok {
+		return
+	}
+	n := 0
+	match := make([]string, len(p.pattern))
+	for i, p := range p.pattern {
+		pos := strings.Index(name, p)
+		if pos < 0 {
+			return
+		}
+		n += pos
+		match[i] = name[:pos]
+		name = name[pos+len(p):]
+	}
+	cls = matchResult(p.result, match, n)
+	ok = cls != ""
+	return
+}
+
+func matchResult(result string, match []string, n int) string {
+	b := make([]byte, 0, len(result)+n)
+	for i := 0; i < len(result); i++ {
+		if result[i] == '$' {
+			if i+1 < len(result) {
+				i++
+				c := result[i]
+				if c >= '1' && c <= '9' {
+					if index := int(c - '1'); index < len(match) {
+						b = append(b, match[index]...)
+						continue
+					}
+				}
+				b = append(b, '$', c)
+				continue
+			}
+		}
+		b = append(b, result[i])
+	}
+	return string(b)
+}
+
+// -----------------------------------------------------------------------------
+
 func cNameSplit(cName string) (parts []string, hasNS bool) {
 	for {
 		pos := strings.IndexAny(cName, "_:")
@@ -167,6 +245,18 @@ func (p *pkgCtx) typeName(cName string, _ bool) string {
 	name, underscoreStart := rmPrefixAndUnderscoreStart(name, p.typePrefix)
 	name = rmSuffix(name, p.typeSuffix)
 	return p.cstyleToGo(name, underscoreStart, true)
+}
+
+func (p *pkgCtx) methodCheck(cName string) (cls string, mayClass bool) {
+	if len(p.mthdCheck) == 0 {
+		return "", true
+	}
+	for _, m := range p.mthdCheck {
+		if cls, mayClass = m.check(cName); mayClass {
+			return
+		}
+	}
+	return
 }
 
 func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, global, _ bool) string {

@@ -199,6 +199,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		Class:           cfg.Class,
 		NonClass:        cfg.NonClass,
 		NSPrefix:        cfg.NSPrefix,
+		MethodCheck:     cfg.MethodCheck,
 		FuncPrefix:      cfg.FuncPrefix,
 		VarPrefix:       cfg.VarPrefix,
 		EnumPrefix:      cfg.EnumPrefix,
