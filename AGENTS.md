@@ -38,61 +38,66 @@ the most critical; changes to either must be tested with `llgo test`.
 | `tool/pputil/` | Preprocessor utilities (header listing, include resolution) used by `tool`. |
 | `cmd/llcppg/` | Main `llcppg` command-line entry point. |
 | `clang/` | Higher-level clang helpers (based on package `github.com/llarhub/clang-c`). |
-| `.github/` | CI workflow (`workflows/llgo.yml`) and `scripts/install-llgo.sh`, which installs Go, LLVM and llgo (used by both CI and agents). |
+| `.github/` | CI workflow (`workflows/llgo.yml`) validates the setup-llgo action and its standalone installer. |
 
 ## Build and test
 
 ### Install the llgo toolchain
 
 **Installing llgo is a required, supported step. "I cannot install llgo" is not
-an acceptable reason to skip `llgo test`.** Do not build llgo by hand or use
-`setup-llgo` outside CI; run the repository's install script, which is also what
-CI runs (`.github/workflows/llgo.yml`), so it stays tested.
+an acceptable reason to skip `llgo test`.** Use setup-llgo's standalone installer
+for local/agent work; it shares the action's version resolver, source builder and
+dependency setup. CI tests both entrypoints (`.github/workflows/llgo.yml`).
 
-Prerequisites: Linux (Ubuntu/Debian with `apt`) or macOS (Homebrew), `git`,
-`curl`, network access, and `sudo` (or root) on Linux. Any `go` on `PATH` is
-enough to start; the script obtains the exact Go version from `go.mod`
-(currently Go 1.27.0).
+During this draft's validation, use the candidate from
+[setup-llgo #51](https://github.com/xgo-dev/setup-llgo/pull/51), pinned to the same
+commit as CI below. Follow its
+[local installation guide](https://github.com/cpunion/setup-llgo/blob/46658437168f2b817fea2e56c88ecdd61f29cc4f/README.md#local-development-and-agents);
+the entrypoint is `scripts/install.sh`.
+For released LLGo and platform package-manager instructions, see the
+[upstream LLGo README](https://raw.githubusercontent.com/xgo-dev/llgo/refs/heads/main/README.md).
 
-1. Install (idempotent, ~1-5 minutes; safe to re-run):
+Prerequisites: Linux (Ubuntu/Debian with `apt`) or macOS (Homebrew), Bash, Git,
+Node.js 20+, an existing Go 1.21+ launcher, network access, and `sudo` (or root)
+on Linux. If Go or Node is absent, install it with the platform package manager
+first. The installer then selects the exact Go 1.27.0 toolchain.
 
-   ```bash
-   .github/scripts/install-llgo.sh
-   ```
-
-   Pinned versions (what CI uses): LLVM `22`, llgo `main`, Go from `go.mod`.
-   To pick others, set env vars, e.g.
-   `LLGO_REF=<branch|tag|commit> LLVM_VERSION=22 .github/scripts/install-llgo.sh`
-   (see the header of the script for all options).
-
-2. Activate it in your shell using the `export` lines the script prints at the
-   end (they must be re-run in every new shell). Typical Linux values:
+1. Check out the candidate into a new sibling directory, then install:
 
    ```bash
-   export PATH="$HOME/.llgo/bin:/usr/lib/llvm-22/bin:$PATH"
-   export GOTOOLCHAIN=local
-   export LLGO_ROOT="$HOME/.llgo-src"
+   git clone https://github.com/cpunion/setup-llgo.git ../setup-llgo
+   git -C ../setup-llgo checkout --detach 46658437168f2b817fea2e56c88ecdd61f29cc4f
+   LLGO_VERSION=main GO_VERSION=1.27.0 LLVM_VERSION=22 bash ../setup-llgo/scripts/install.sh
    ```
 
-   The printed `PATH` also contains the Go 1.27 `bin` directory; it **must**
-   come before any older `go` (see failure modes below).
+   Reuse that installer checkout on subsequent invocations; do not reset another
+   user's checkout. `LLGO_VERSION` accepts a branch, tag, or commit. Each install
+   owns a new directory under `~/.cache/setup-llgo` by default, without changing
+   shell profiles. No `npm install` is needed.
+
+2. Run the exact `source .../env.sh` command printed at the end, and repeat it
+   in each new shell. It sets `LLGO_ROOT`, `GOTOOLCHAIN=local` and `PATH`, with
+   the selected Go/LLVM/LLGo executables before older installations. Do not use
+   the old `~/.llgo/bin` or `~/.llgo-src` paths for this installer.
 
 3. Confirm success:
 
    ```bash
-   llgo version                      # prints "llgo v1.0.x ... linux/amd64"
-   llgo test ./tool/pputil/...       # prints "ok  github.com/goplus/llcppg/tool/pputil"
+   GOTOOLCHAIN=local go version     # must report go1.27.0
+   llvm-config --version           # must report LLVM 22.x
+   llgo version
+   llgo test ./tool/pputil/...
    ```
 
 Common failure modes:
 
 - `go: unknown GOEXPERIMENT dwarf5`: an older `go` (e.g. 1.24) is first on
-  `PATH`. Put the Go 1.27 `bin` dir printed by the script first, and set
-  `GOTOOLCHAIN=local`.
+  `PATH`. Source the generated `env.sh` to activate the actual Go 1.27 binary
+  with `GOTOOLCHAIN=local`.
 - `llvm-config`/`clang` not found or wrong version: add
   `/usr/lib/llvm-22/bin` (Linux) or `$(brew --prefix llvm@22)/bin` (macOS) to
   `PATH`.
-- `llgo: command not found`: re-run the `export PATH=...` line from step 2.
+- `llgo: command not found`: source the generated `env.sh` from step 2.
 - apt/brew/network errors: re-run the script; it is idempotent.
 - Link errors with missing symbols: you ran plain `go test`; use `llgo test`.
 
