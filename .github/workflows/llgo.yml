@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   test:
+    timeout-minutes: 25
     permissions:
       contents: read
     strategy:
@@ -27,17 +28,45 @@ jobs:
         llvm: [22]
         llgo: [main]
         go: [1.27]
+        installer: [action, standalone]
       fail-fast: false
     runs-on: ${{matrix.os}}
     steps:
     - uses: actions/checkout@v7
     - name: Setup llgo
+      if: matrix.installer == 'action'
+      uses: cpunion/setup-llgo@6676861b76e6095866319e6c267d3809baa3cbfe
+      with:
+        llvm-version: ${{ matrix.llvm }}
+        llgo-version: ${{ matrix.llgo }}
+        go-version: ${{ matrix.go }}
+
+    - name: Checkout the same standalone installer
+      if: matrix.installer == 'standalone'
+      uses: actions/checkout@v7
+      with:
+        repository: cpunion/setup-llgo
+        ref: 6676861b76e6095866319e6c267d3809baa3cbfe
+        path: .setup-llgo
+        persist-credentials: false
+    - name: Setup llgo without the action
+      if: matrix.installer == 'standalone'
       shell: bash
       env:
         LLVM_VERSION: ${{ matrix.llvm }}
-        LLGO_REF: ${{ matrix.llgo }}
+        LLGO_VERSION: ${{ matrix.llgo }}
         GO_VERSION: ${{ matrix.go }}.0
-      run: .github/scripts/install-llgo.sh
+        GH_TOKEN: ${{ github.token }}
+      run: bash .setup-llgo/scripts/install.sh
+
+    - name: Check the active toolchain and HTTPS after installation
+      shell: bash
+      run: |
+        GOTOOLCHAIN=local go version
+        llvm-config --version
+        llgo version
+        git ls-remote https://github.com/xgo-dev/llgo HEAD
+        curl --fail --silent --show-error --head https://github.com
 
     - name: Test with coverage
       shell: bash
