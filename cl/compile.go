@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"fmt"
 	"go/token"
 	"go/types"
 	"maps"
@@ -146,6 +147,9 @@ type Config struct {
 	// Go const names (optional).
 	MacroPrefix []string
 
+	// Logical-Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/945.
+	MethodCheck []string
+
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
 	// generating Go function names (optional).
 	FuncPrefix []string
@@ -212,6 +216,10 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	if conf == nil {
 		conf = &Config{}
 	}
+	methodCheck, err := newMethodChecks(conf.MethodCheck)
+	if err != nil {
+		return
+	}
 	confGox := &gogen.Config{
 		Fset:            conf.Fset,
 		Importer:        conf.Importer,
@@ -249,8 +257,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName, cflags: conf.CFlags,
 		wrapFileHeader: conf.WrapFileHeader, forceCamelCase: conf.ForceCamelCase,
 		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
-		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
 		typeAlias: conf.TypeAlias, typeAliasCache: make(map[string]types.Type),
+		mthdCheck: methodCheck, typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
 		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix, rename: rename,
 		nsPrefix: conf.NSPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
 		nsIgnore: conf.NSIgnore, macroIgnore: conf.MacroIgnore, typeIgnore: conf.TypeIgnore,
@@ -273,6 +281,10 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
 	ret.Public = ctx.pubs
+
+	if ctx.errCnt > 0 {
+		err = fmt.Errorf("compilation failed with %d errors", ctx.errCnt)
+	}
 	return
 }
 
