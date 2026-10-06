@@ -54,13 +54,11 @@ type MemAllocatorEx struct {
 
 // Test if an object is the True singleton, the same as "x is True" in Python.
 //
-// llgo:link (*Object).IsTrue C.Py_IsTrue
-func (self *Object) IsTrue() c.Int {
-	return 0
-}
+//go:linkname IsTrue C.Py_IsTrue
+func IsTrue(x *Object) c.Int
 
-// llgo:link (*Object).ObjectIsTrue C.PyObject_IsTrue
-func (self *Object) ObjectIsTrue() c.Int {
+// llgo:link (*Object).IsTrue C.PyObject_IsTrue
+func (self *Object) IsTrue() c.Int {
 	return 0
 }
 

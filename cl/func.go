@@ -132,32 +132,30 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	var nameInPkg string
 	if this == nil {
 		if ctx.lang == LanguageC {
-			// try to method for C global functions
-			oldParams := params
-			params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
-			if typRecv != nil {
-				recvCType := fn.Argument(0).Type()
-				isPtr := recvCType.Kind == lc.Type_Pointer
-				if isPtr {
-					recvCType = recvCType.Pointee()
-				}
-				typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
-				if isPtr {
+			if cls, mayClass := ctx.methodCheck(cName); mayClass {
+				// try to method for C global functions
+				oldParams := params
+				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
+				if typRecv != nil {
+					recvCType := fn.Argument(0).Type()
+					isPtr := recvCType.Kind == lc.Type_Pointer
+					if isPtr {
+						recvCType = recvCType.Pointee()
+					}
+					typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
 					// When the function resolves to a logical class distinct from
 					// the physical receiver type (for example PyList_GetItem
 					// resolves to List while its receiver is the base class
 					// Object), emit the method on the logical class - which embeds
 					// the base - and generate the As<Class> conversion method on
 					// the base class. See logical.go.
-					if cls, mayClass := ctx.methodCheck(cName); mayClass {
-						if cls != "" && cls != typName {
-							if contains(cls, ctx.nonClasses) {
-								params, recv, typName, typCName = oldParams, nil, "", ""
-							} else if logical, ok := ctx.logicalClassOf(fn, cls, typRecv, recv); ok {
-								recv = types.NewParam(recv.Pos(), pkgTypes, recv.Name(), types.NewPointer(logical))
-								typRecv = logical
-								typName = cls
-							}
+					if isPtr && cls != "" && cls != typName {
+						if contains(cls, ctx.nonClasses) {
+							params, recv, typName, typCName = oldParams, nil, "", ""
+						} else if logical, ok := ctx.logicalClassOf(fn, cls, typRecv, recv); ok {
+							recv = types.NewParam(recv.Pos(), pkgTypes, recv.Name(), types.NewPointer(logical))
+							typRecv = logical
+							typName = cls
 						}
 					}
 				}
