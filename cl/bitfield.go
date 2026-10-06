@@ -48,8 +48,9 @@ import (
 // Reserved names used by the generated bit-field storage. The "_xgo_" prefix
 // keeps them unexported so they never collide with a C-derived exported member.
 const (
-	bitsFieldPrefix = "_xgo_bits_" // "_xgo_bits_<N>" run storage field
-	bitAlignName    = "_xgo_align" // "_xgo_align [0]uintW" alignment marker
+	bitsFieldPrefix = "_xgo_bits_"  // "_xgo_bits_<N>" run storage field
+	bitAlignName    = "_xgo_align"  // "_xgo_align [0]uintW" alignment marker
+	bitOpaqueName   = "_xgo_opaque" // "_xgo_opaque [S]uint8" opaque storage
 )
 
 // bitAccessor describes one named bit-field that is eligible for a getter/setter
@@ -71,8 +72,8 @@ type bitAccessor struct {
 // that are eligible for accessors.
 //
 // accessors carries the exact offset/width/signedness of each named bit-field.
-// This increment emits only the layout (part 1 of the proposal); the
-// getter/setter accessors (part 2) build directly on this list.
+// The getter/setter accessors (emitted in bitfield_accessor.go) build directly
+// on this list.
 type bitLayout struct {
 	fields    []*types.Var
 	accessors []bitAccessor
@@ -119,9 +120,12 @@ type member struct {
 // planBitFieldLayout converts the members of a bit-field-bearing record into Go
 // fields that preserve the C layout, following section 2 of the proposal.
 //
-// toGoType converts a member's declared C type to its Go type T (the caller
-// supplies it so this file stays independent of the type-conversion flags).
-func planBitFieldLayout(ctx *pkgCtx, pos token.Pos, decl clang.Cursor, toGoType func(lc.Type) types.Type) bitLayout {
+// toGoType converts a member's declared C type to its Go type T, returning
+// ok=false when the type is unsupported/ignored (the caller supplies it so this
+// file stays independent of the type-conversion flags). A member with an
+// unsupported type cannot be laid out field-by-field, so the record falls back
+// to opaque storage.
+func planBitFieldLayout(ctx *pkgCtx, pos token.Pos, decl clang.Cursor, toGoType func(lc.Type) (types.Type, bool)) bitLayout {
 	pkgTypes := ctx.pkg.Types
 	typ := decl.Type()
 	out := bitLayout{
@@ -139,11 +143,17 @@ func planBitFieldLayout(ctx *pkgCtx, pos token.Pos, decl clang.Cursor, toGoType 
 
 	var members []member
 	packed := false
+	unsupported := false
 	clang.VisitChildren(decl, func(m, parent clang.Cursor) clang.ChildVisitResult {
 		if m.Kind != lc.Cursor_FieldDecl {
 			return clang.Continue
 		}
 		mt := m.Type()
+		goType, ok := toGoType(mt)
+		if !ok {
+			unsupported = true
+			return clang.Break
+		}
 		if m.IsBitField() != 0 {
 			off := int64(m.OffsetOfField())
 			if off < 0 {
@@ -154,7 +164,7 @@ func planBitFieldLayout(ctx *pkgCtx, pos token.Pos, decl clang.Cursor, toGoType 
 			members = append(members, member{
 				decl:   m,
 				name:   clang.String(m),
-				goType: toGoType(mt),
+				goType: goType,
 				isBit:  true,
 				off:    off,
 				width:  int64(m.FieldDeclBitWidth()),
@@ -169,12 +179,16 @@ func planBitFieldLayout(ctx *pkgCtx, pos token.Pos, decl clang.Cursor, toGoType 
 			members = append(members, member{
 				decl:   m,
 				name:   ctx.fieldName(clang.String(m), isPublic(m)),
-				goType: toGoType(mt),
+				goType: goType,
 				off:    off / 8,
 			})
 		}
 		return clang.Continue
 	})
+	if unsupported {
+		out.opaque, out.reason = true, "a member has an unsupported type"
+		return out
+	}
 	if packed {
 		out.opaque, out.reason = true, "a member is not byte-aligned or has no known offset (packed struct or incomplete member)"
 		return out
@@ -259,6 +273,14 @@ func planBitFieldLayout(ctx *pkgCtx, pos token.Pos, decl clang.Cursor, toGoType 
 				if b.width == 0 || b.name == "" {
 					continue // zero-width or unnamed: padding, no accessor
 				}
+				if b.width > 64 {
+					// The generated accessors move the value through uint64/int64,
+					// so a bit-field wider than 64 bits (e.g. __int128 : 100) would
+					// silently truncate. Keep its bits in the run storage but emit
+					// no accessor.
+					ctx.logf(b.decl, "[WARN] bit-field %q width %d > 64: no accessor", b.name, b.width)
+					continue
+				}
 				accessors = append(accessors, bitAccessor{
 					decl:   b.decl,
 					name:   b.name,
@@ -284,9 +306,15 @@ func planBitFieldLayout(ctx *pkgCtx, pos token.Pos, decl clang.Cursor, toGoType 
 		fields = append([]*types.Var{marker}, fields...)
 	}
 
-	// Append trailing padding so the Go size matches sizeof(S).
+	// Append trailing padding so the Go size matches sizeof(S). If the Go struct
+	// is already larger than S (its own alignment/tail-padding rounding diverged
+	// from C, e.g. for an over-aligned record), the field-by-field form cannot
+	// preserve the size, so fall back to opaque storage.
 	if used := goStructSize(fields, sizes); used < out.size {
 		fields = append(fields, padField(pkgTypes, pos, out.size-used))
+	} else if used > out.size {
+		out.opaque, out.reason = true, fmt.Sprintf("Go layout size %d exceeds sizeof %d", used, out.size)
+		return out
 	}
 
 	out.fields = fields
@@ -428,8 +456,10 @@ func initBitFieldType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cls clang.Cu
 	pkg := ctx.pkg
 	pos := goNodePos(ctx, cls)
 
-	toGoType := func(t lc.Type) types.Type {
-		return toType(ctx, pkg.Types, t, flagIsVarDef, this.scope())
+	toGoType := func(t lc.Type) (types.Type, bool) {
+		var feats int
+		ret := toTypeEx(ctx, pkg.Types, t, flagIsVarDef, &feats, this.scope())
+		return ret, feats&featAllIgnore == 0
 	}
 	layout := planBitFieldLayout(ctx, pos, cls, toGoType)
 	if layout.size <= 0 {
@@ -438,7 +468,7 @@ func initBitFieldType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cls clang.Cu
 
 	if layout.opaque {
 		ctx.logf(cls, "[WARN] bit-field record laid out as opaque storage: %s", layout.reason)
-		typDecl.InitType(pkg, opaqueBitStruct(ctx.pkg.Types, pos, layout))
+		typDecl.InitType(pkg, opaqueBitStruct(ctx, pos, cls, layout))
 		return true
 	}
 
@@ -482,10 +512,14 @@ func initBitFieldType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cls clang.Cu
 // opaqueBitStruct builds the fallback storage for a record whose layout cannot
 // be represented field-by-field: an "_xgo_align [0]uintW" marker followed by an
 // "_xgo_opaque [S]uint8" byte array of the record's exact size.
-func opaqueBitStruct(pkg *types.Package, pos token.Pos, layout bitLayout) *types.Struct {
+func opaqueBitStruct(ctx *pkgCtx, pos token.Pos, cls clang.Cursor, layout bitLayout) *types.Struct {
+	pkg := ctx.pkg.Types
 	var fields []*types.Var
-	elem, _ := alignElem(layout.align)
+	elem, warn := alignElem(layout.align)
+	if warn {
+		ctx.logf(cls, "[WARN] bit-field struct alignment %d > 8 is not fully representable", layout.align)
+	}
 	fields = append(fields, types.NewField(pos, pkg, bitAlignName, types.NewArray(elem, 0), false))
-	fields = append(fields, types.NewField(pos, pkg, "_xgo_opaque", types.NewArray(types.Typ[types.Uint8], layout.size), false))
+	fields = append(fields, types.NewField(pos, pkg, bitOpaqueName, types.NewArray(types.Typ[types.Uint8], layout.size), false))
 	return types.NewStruct(fields, nil)
 }
