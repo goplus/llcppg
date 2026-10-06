@@ -8,9 +8,11 @@ import (
 	"clang/CXString"
 	"clang/cstdlib"
 	"github.com/goplus/lib/c"
+	"github.com/qiniu/x/bitfield"
 	"unsafe"
 )
 
+const XGoPackage = true
 const LLGoPackage = "link: -L$(llvm-config --libdir) -lclang; -lclang"
 const CINDEX_VERSION_MAJOR = 0
 const CINDEX_VERSION_MINOR = 64
@@ -2507,10 +2509,7 @@ type IndexOptions struct {
 	Size                                c.Uint
 	ThreadBackgroundPriorityForIndexing uint8
 	ThreadBackgroundPriorityForEditing  uint8
-	ExcludeDeclarationsFromPCH          c.Uint
-	DisplayDiagnostics                  c.Uint
-	StorePreamblesInMemory              c.Uint
-	_                                   c.Uint
+	_xgo_bits_0                         [2]uint8
 	PreambleStoragePath                 *c.Char
 	InvocationEmissionPath              *c.Char
 }
@@ -2860,6 +2859,36 @@ func CreateIndex(excludeDeclarationsFromPCH c.Int, displayDiagnostics c.Int) Ind
 //
 // llgo:link Index.Dispose C.clang_disposeIndex
 func (index Index) Dispose() {
+}
+
+// unsigned int ExcludeDeclarationsFromPCH : 1
+func (p *IndexOptions) XGof_get_ExcludeDeclarationsFromPCH() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 48, 1))
+}
+
+// unsigned int ExcludeDeclarationsFromPCH : 1
+func (p *IndexOptions) XGof_set_ExcludeDeclarationsFromPCH(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 48, 1, uint64(v))
+}
+
+// unsigned int DisplayDiagnostics : 1
+func (p *IndexOptions) XGof_get_DisplayDiagnostics() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 49, 1))
+}
+
+// unsigned int DisplayDiagnostics : 1
+func (p *IndexOptions) XGof_set_DisplayDiagnostics(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 49, 1, uint64(v))
+}
+
+// unsigned int StorePreamblesInMemory : 1
+func (p *IndexOptions) XGof_get_StorePreamblesInMemory() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 50, 1))
+}
+
+// unsigned int StorePreamblesInMemory : 1
+func (p *IndexOptions) XGof_set_StorePreamblesInMemory(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 50, 1, uint64(v))
 }
 
 // Provides a shared context for creating translation units.
