@@ -62,6 +62,7 @@ type classCtx struct {
 	publicMethods []*overloadObj
 	polymorphic   bool // declares or inherits virtual methods
 	ownsVptr      bool // owns the vptr field (polymorphic with no primary base)
+	bitFieldRuns  []*bitFieldRun // bit-field runs in the struct
 }
 
 func (p *classCtx) scope() *scopeCtx {
@@ -76,6 +77,16 @@ func compileClassImpl(ctx *pkgCtx, this *classCtx) {
 		// names match the generated method names.
 		genVtable(ctx, this, this.ownsVptr)
 	}
+	
+	// Generate bit-field accessors if there are any bit-fields
+	if len(this.bitFieldRuns) > 0 {
+		ensureBitFieldHelpers(ctx)
+		recvPtr := types.NewPointer(this.typNamed)
+		for _, run := range this.bitFieldRuns {
+			genBitFieldAccessors(ctx, recvPtr, run)
+		}
+	}
+	
 	for _, method := range this.publicMethods {
 		compileFuncOrMethod(ctx, method, this)
 	}
@@ -237,6 +248,16 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 	if *feats&featAllIgnore != 0 {
 		return
 	}
+	
+	// Collect bit-fields and generate storage fields
+	if hasBitFields(cls) {
+		this.bitFieldRuns = collectBitFields(ctx, pkgTypes, cls)
+		for _, run := range this.bitFieldRuns {
+			storage := genBitFieldStorage(ctx, run)
+			this.fields = append(this.fields, storage)
+		}
+	}
+	
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
 	// polymorphic class shares its vptr with its primary base (the first
 	// non-virtual *polymorphic* direct base in declaration order); that base is
@@ -282,6 +303,11 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		// noop: have been preloaded in newClassCtx
 
 	case lc.Cursor_FieldDecl:
+		// Skip bit-fields - they will be handled separately
+		if decl.FieldDeclBitWidth() != 0 {
+			return
+		}
+		
 		var fldType types.Type
 		var ft = decl.Type()
 		if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 {

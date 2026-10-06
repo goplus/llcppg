@@ -161,9 +161,10 @@ type pkgCtx struct {
 	failFast int
 	anonSeq  int
 
-	forceCamelCase bool
-	stdRecvName    bool
-	keepDoc        bool
+	forceCamelCase      bool
+	stdRecvName         bool
+	keepDoc             bool
+	hasBitFieldHelpers  bool // whether bit-field helpers have been generated
 }
 
 func (p *pkgCtx) ignoref(feats int, decl clang.Cursor, format string, args ...any) {
