@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"go/token"
 	"go/types"
 	"log"
 	"strconv"
@@ -153,10 +154,15 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 		nameInPkg = fnName
 	} else {
 		if typRecv != nil {
-			if isField, exists := existMember(typRecv, fnName); exists {
+			if pos, isField, exists := findMember(typRecv, fnName); exists {
 				newName := ctx.funcName(name, obj.order(), "", typCName, true, true)
-				if newName == fnName && isField {
-					newName = "Get" + fnName
+				if newName == fnName {
+					if isField {
+						newName = "Get" + fnName
+					} else {
+						ctx.errorf(fn, "%s redeclared in this block\n\t%v: other declaration of %s", fnName, ctx.position(pos), fnName)
+						return
+					}
 				}
 				log.Printf("==> member %s.%s already exists, rename to %s\n", typName, fnName, newName)
 				fnName = newName
@@ -195,20 +201,22 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	}
 }
 
-func existMember(typ *types.Named, name string) (isField bool, exists bool) {
+func findMember(typ *types.Named, name string) (pos token.Pos, isField bool, exists bool) {
 	for i := range typ.NumMethods() {
-		if typ.Method(i).Name() == name {
-			return false, true
+		m := typ.Method(i)
+		if m.Name() == name {
+			return m.Pos(), false, true
 		}
 	}
 	if s, ok := typ.Underlying().(*types.Struct); ok {
 		for i := range s.NumFields() {
-			if s.Field(i).Name() == name {
-				return true, true
+			f := s.Field(i)
+			if f.Name() == name {
+				return f.Pos(), true, true
 			}
 		}
 	}
-	return false, false
+	return token.NoPos, false, false
 }
 
 const (
