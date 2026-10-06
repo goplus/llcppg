@@ -40,8 +40,17 @@ type X_tssT struct {
 }
 type TssT = X_tssT
 type X_object struct {
+	ObRefcnt SsizeT
 }
 type Object = X_object
+type ListObject struct {
+	ObBase X_object
+	ObSize SsizeT
+}
+type DictObject struct {
+	ObBase X_object
+	MaUsed SsizeT
+}
 
 // llgo:type C
 type MemAllocatorEx struct {
@@ -62,33 +71,17 @@ func (self *Object) IsTrue() c.Int {
 	return 0
 }
 
-type List struct {
-	X_object
-}
-
-func (self *Object) AsList() *List {
-	return (*List)(unsafe.Pointer(self))
-}
-
-// llgo:link (*List).Item C.PyList_GetItem
-func (self *List) Item(index *Object) *Object {
+// llgo:link (*ListObject).ListGetItem C.PyList_GetItem
+func (self *ListObject) ListGetItem(index *Object) *Object {
 	return nil
 }
 
-// llgo:link (*List).SetItem C.PyList_SetItem
-func (self *List) SetItem(index *Object, value *Object) {
+// llgo:link (*ListObject).ListSetItem C.PyList_SetItem
+func (self *ListObject) ListSetItem(index *Object, value *Object) {
 }
 
-type Dict struct {
-	X_object
-}
-
-func (self *Object) AsDict() *Dict {
-	return (*Dict)(unsafe.Pointer(self))
-}
-
-// llgo:link (*Dict).Item C.PyDict_GetItem
-func (self *Dict) Item(index *Object) *Object {
+// llgo:link (*DictObject).DictGetItem C.PyDict_GetItem
+func (self *DictObject) DictGetItem(index *Object) *Object {
 	return nil
 }
 
@@ -97,9 +90,8 @@ func Import(name *Object) *Object
 
 // Get the memory block allocator of the specified domain.
 //
-// llgo:link MemAllocatorDomain.MemGetAllocator C.PyMem_GetAllocator
-func (self MemAllocatorDomain) MemGetAllocator(allocator *MemAllocatorEx) {
-}
+//go:linkname MemGetAllocator C.PyMem_GetAllocator
+func MemGetAllocator(domain MemAllocatorDomain, allocator *MemAllocatorEx)
 
 // PY_TIMEOUT_MAX is the highest usable value (in microseconds) of PY_TIMEOUT_T
 // type, and depends on the system threading API.

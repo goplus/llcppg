@@ -120,7 +120,7 @@ type pkgCtx struct {
 
 	typeAbbrSuffix []string
 
-	mthdCheck   []*mthdCheck
+	mthdCheck   []*matcher
 	nsPrefix    []string
 	fnPrefix    []string
 	varPrefix   []string
@@ -154,8 +154,6 @@ type pkgCtx struct {
 	impPkgs   map[string]none         // imported package path set
 	lastSeen  map[string]none         // last seen include file set (loaded include files)
 	thisSeen  map[string]none         // include file set seen in this translation unit
-
-	logicals map[string]*types.Named // logical Go class name => logical class type
 
 	loads    []compileUnit
 	compiles []compileUnit

@@ -18,6 +18,7 @@ package cl
 
 import (
 	"fmt"
+	"go/types"
 	"strconv"
 	"strings"
 
@@ -43,31 +44,31 @@ func objUSR(decl clang.Cursor) string {
 
 // -----------------------------------------------------------------------------
 
-type mthdCheck struct {
+type matcher struct {
 	prefix  string
 	pattern []string
 	result  string
 }
 
-func newMethodCheck(check string) (*mthdCheck, error) {
-	pos := strings.IndexByte(check, ':')
+func newMatcher(name, expr string) (*matcher, error) {
+	pos := strings.IndexByte(expr, ':')
 	if pos < 0 {
-		return nil, fmt.Errorf("invalid MethodCheck: %s", check)
+		return nil, fmt.Errorf("invalid %s: %s", name, expr)
 	}
-	pattern := strings.TrimSpace(check[:pos])
+	pattern := strings.TrimSpace(expr[:pos])
 	parts := strings.Split(pattern, "*")
-	result := strings.TrimSpace(check[pos+1:])
-	return &mthdCheck{
+	result := strings.TrimSpace(expr[pos+1:])
+	return &matcher{
 		prefix:  parts[0],
 		pattern: parts[1:],
 		result:  result,
 	}, nil
 }
 
-func newMethodChecks(check []string) ([]*mthdCheck, error) {
-	ret := make([]*mthdCheck, len(check))
-	for i, c := range check {
-		m, err := newMethodCheck(c)
+func newMatchers(name string, exprs []string) ([]*matcher, error) {
+	ret := make([]*matcher, len(exprs))
+	for i, c := range exprs {
+		m, err := newMatcher(name, c)
 		if err != nil {
 			return nil, err
 		}
@@ -76,25 +77,26 @@ func newMethodChecks(check []string) ([]*mthdCheck, error) {
 	return ret, nil
 }
 
-func (p *mthdCheck) check(name string) (cls string, ok bool) {
-	name, ok = strings.CutPrefix(name, p.prefix)
+func (p *matcher) match(source string, matchFull bool) (ret string, matched bool) {
+	source, ok := strings.CutPrefix(source, p.prefix)
 	if !ok {
 		return
 	}
 	n := 0
 	match := make([]string, len(p.pattern))
 	for i, p := range p.pattern {
-		pos := strings.Index(name, p)
+		pos := strings.Index(source, p)
 		if pos < 0 {
 			return
 		}
 		n += pos
-		match[i] = name[:pos]
-		name = name[pos+len(p):]
+		match[i] = source[:pos]
+		source = source[pos+len(p):]
 	}
-	cls = matchResult(p.result, match, n)
-	ok = cls != ""
-	return
+	if matchFull && source != "" {
+		return
+	}
+	return matchResult(p.result, match, n), true
 }
 
 func matchResult(result string, match []string, n int) string {
@@ -117,6 +119,15 @@ func matchResult(result string, match []string, n int) string {
 		b = append(b, result[i])
 	}
 	return string(b)
+}
+
+func match(source string, matches []*matcher, matchFull bool) (ret string, matched bool) {
+	for _, m := range matches {
+		if r, ok := m.match(source, matchFull); ok {
+			return r, true
+		}
+	}
+	return "", false
 }
 
 // -----------------------------------------------------------------------------
@@ -247,15 +258,15 @@ func (p *pkgCtx) typeName(cName string, _ bool) string {
 	return p.cstyleToGo(name, underscoreStart, true)
 }
 
-func (p *pkgCtx) methodCheck(cName string) (cls string, mayClass bool) {
+func (p *pkgCtx) methodCheck(pkgTypes *types.Package, cName string) (cls string, obj types.Object, mayClass bool) {
 	if len(p.mthdCheck) == 0 {
-		return "", true
+		return "", nil, true // allow tryToMethod
 	}
-	for _, m := range p.mthdCheck {
-		if cls, mayClass = m.check(cName); mayClass {
-			return
-		}
+	cls, mayClass = match(cName, p.mthdCheck, false)
+	if cls != "" {
+		obj = pkgTypes.Scope().Lookup(cls)
 	}
+	mayClass = obj != nil
 	return
 }
 

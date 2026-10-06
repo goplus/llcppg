@@ -132,9 +132,8 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	var nameInPkg string
 	if this == nil {
 		if ctx.lang == LanguageC {
-			if cls, mayClass := ctx.methodCheck(cName); mayClass {
+			if cls, obj, mayClass := ctx.methodCheck(pkgTypes, cName); mayClass {
 				// try to method for C global functions
-				oldParams := params
 				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
 				if typRecv != nil {
 					recvCType := fn.Argument(0).Type()
@@ -143,18 +142,10 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 						recvCType = recvCType.Pointee()
 					}
 					typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
-					// When the function resolves to a logical class distinct from
-					// the physical receiver type (for example PyList_GetItem
-					// resolves to List while its receiver is the base class
-					// Object), emit the method on the logical class - which embeds
-					// the base - and generate the As<Class> conversion method on
-					// the base class. See logical.go.
 					if isPtr && cls != "" && cls != typName {
-						if contains(cls, ctx.nonClasses) {
-							params, recv, typName, typCName = oldParams, nil, "", ""
-						} else if logical, ok := ctx.logicalClassOf(fn, cls, typRecv, recv); ok {
-							recv = types.NewParam(recv.Pos(), pkgTypes, recv.Name(), types.NewPointer(logical))
-							typRecv = logical
+						if t := obj.Type(); isTypeFromBase(t, typRecv) {
+							recv = types.NewParam(recv.Pos(), pkgTypes, recv.Name(), types.NewPointer(t))
+							typRecv = types.Unalias(t).(*types.Named)
 							typName = cls
 						}
 					}
@@ -220,6 +211,20 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	}
 }
 
+func isTypeFromBase(t types.Type, base *types.Named) bool {
+	if t, ok := types.Unalias(t).(*types.Named); ok {
+		if t == base {
+			return true
+		}
+		if s, ok := t.Underlying().(*types.Struct); ok {
+			if s.NumFields() > 0 {
+				return isTypeFromBase(s.Field(0).Type(), base)
+			}
+		}
+	}
+	return false
+}
+
 func findMember(typ *types.Named, name string) (pos token.Pos, isField bool, exists bool) {
 	for i := range typ.NumMethods() {
 		m := typ.Method(i)
@@ -247,7 +252,7 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 		first := params[0]
 		t := first.Type()
 		if len(params) == 2 && params[1].Type() == t {
-			// don't convert to method if the first two params have the same type
+			// don't convert to method if the two params have the same type
 			return params, nil, nil, ""
 		}
 		tPtr, isPtr := t.(*types.Pointer)
