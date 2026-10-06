@@ -128,7 +128,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 
 	var recv *types.Var
 	var typRecv *types.Named // if tryToMethod succeeded, this is the recv
-	var typName, typCName, clsName string
+	var typName, typCName string
 	var nameInPkg string
 	if this == nil {
 		if ctx.lang == LanguageC {
@@ -141,11 +141,6 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 						recvCType = recvCType.Pointee()
 					}
 					typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
-					if cls != "" {
-						clsName = cls
-					} else {
-						clsName = typName
-					}
 					// When the function resolves to a logical class distinct from
 					// the physical receiver type (for example PyList_GetItem
 					// resolves to List while its receiver is the base class
@@ -165,10 +160,9 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 		typNamed := this.typNamed
 		recv = types.NewParam(goNodePos(ctx, fn), pkgTypes, "this", types.NewPointer(typNamed))
 		typName = typNamed.Obj().Name()
-		clsName = typName
 	}
 
-	fnName := ctx.funcName(name, obj.order(), clsName, typCName, this == nil, true)
+	fnName := ctx.funcName(name, obj.order(), typName, typCName, this == nil, true)
 
 	if recv == nil {
 		nameInPkg = fnName

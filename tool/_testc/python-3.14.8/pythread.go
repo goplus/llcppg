@@ -45,8 +45,8 @@ type List struct {
 	Object
 }
 
-func (o *Object) AsList() *List {
-	return (*List)(unsafe.Pointer(o))
+func (self *Object) AsList() *List {
+	return (*List)(unsafe.Pointer(self))
 }
 
 // llgo:link (*List).Item C.PyList_GetItem
@@ -54,12 +54,16 @@ func (self *List) Item(index *Object) *Object {
 	return nil
 }
 
+// llgo:link (*List).SetItem C.PyList_SetItem
+func (self *List) SetItem(index *Object, value *Object) {
+}
+
 type Dict struct {
 	Object
 }
 
-func (o *Object) AsDict() *Dict {
-	return (*Dict)(unsafe.Pointer(o))
+func (self *Object) AsDict() *Dict {
+	return (*Dict)(unsafe.Pointer(self))
 }
 
 // llgo:link (*Dict).Item C.PyDict_GetItem
