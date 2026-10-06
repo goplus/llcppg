@@ -49,6 +49,12 @@ jobs:
         ref: 6676861b76e6095866319e6c267d3809baa3cbfe
         path: .setup-llgo
         persist-credentials: false
+    - name: Provide the standalone installer's Go launcher
+      if: matrix.installer == 'standalone'
+      uses: actions/setup-go@v7
+      with:
+        go-version: '1.24'
+        cache: false
     - name: Setup llgo without the action
       if: matrix.installer == 'standalone'
       shell: bash
