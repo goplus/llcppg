@@ -44,3 +44,13 @@ jobs:
       run: |
         llgo test -v -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./...
         go tool cover -func=coverage.txt | tail -1
+
+    - name: Upload coverage to Codecov
+      if: ${{ github.repository == 'goplus/llcppg' && !cancelled() && hashFiles('coverage.txt') != '' }}
+      uses: codecov/codecov-action@v7
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: coverage.txt
+        flags: llgo-tests
+        disable_search: true
+        fail_ci_if_error: true
