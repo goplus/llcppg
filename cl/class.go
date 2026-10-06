@@ -251,6 +251,15 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, goName string
 	if *feats&featAllIgnore != 0 {
 		return
 	}
+	// A record that holds a callback (function pointer) field must carry the
+	// "// llgo:type C" directive so those callbacks use the C calling
+	// convention, mirroring how function-pointer typedefs are handled (see
+	// defineTypedef). featHasCallback is set by toTypeEx while visiting the
+	// members above, so it is only known now; upgrade the doc-only comment set
+	// at the top of this function to the directive form.
+	if *feats&featHasCallback != 0 {
+		typDecl.defs.SetComments(ctx.directiveTypeC(cls, true))
+	}
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
 	// polymorphic class shares its vptr with its primary base (the first
 	// non-virtual *polymorphic* direct base in declaration order); that base is

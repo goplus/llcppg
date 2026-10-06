@@ -42,6 +42,8 @@ type TssT = X_tssT
 type X_object struct {
 }
 type Object = X_object
+
+// llgo:type C
 type MemAllocatorEx struct {
 	Ctx     unsafe.Pointer
 	Malloc  func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.SizeT) unsafe.Pointer
