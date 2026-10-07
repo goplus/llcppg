@@ -193,11 +193,12 @@ func (p *pkgCtx) methodCheck(pkgTypes *types.Package, cName string) (cls string,
 	if len(p.mthdCheck) == 0 {
 		return "", nil, true // allow tryToMethod
 	}
-	cls, mayClass = p.mthdCheck.match(cName, false)
-	if cls != "" {
-		obj = pkgTypes.Scope().Lookup(cls)
+	classes, _ := p.mthdCheck.matchList(cName, false)
+	for _, class := range classes {
+		if o := pkgTypes.Scope().Lookup(class); o != nil {
+			return class, o, true
+		}
 	}
-	mayClass = obj != nil
 	return
 }
 

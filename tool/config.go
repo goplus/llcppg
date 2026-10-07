@@ -135,7 +135,7 @@ type Config struct {
 	// quietly ignore functions with no mangled symbol
 	NoManglingIgnore bool `json:"NoManglingIgnore"`
 
-	// treats sub-directory files as a single file. Deprecated: use GroupSubdirBy instead.
+	// treats sub-directory files as a single file.
 	// Deprecated: use GroupSubdirBy instead.
 	GroupSubdir bool `json:"GroupSubdir"`
 
