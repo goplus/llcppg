@@ -298,14 +298,15 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 		}
 		switch t := t.(type) {
 		case *types.Named:
-			if t.Obj().Pkg() == pkgTypes {
-				if ctx.stdRecvName {
-					first = types.NewParam(first.Pos(), pkgTypes, c2goMethodRecvName, first.Type())
-				}
-				return params[1:], first, t, t.Obj().Name()
+			if nonClass(ctx, pkgTypes, t.Obj()) {
+				break
 			}
+			if ctx.stdRecvName {
+				first = types.NewParam(first.Pos(), pkgTypes, c2goMethodRecvName, first.Type())
+			}
+			return params[1:], first, t, t.Obj().Name()
 		case *types.Alias:
-			if t.Obj().Pkg() != pkgTypes {
+			if nonClass(ctx, pkgTypes, t.Obj()) {
 				break
 			}
 			ta := types.Unalias(t)
@@ -323,6 +324,13 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 		}
 	}
 	return params, nil, nil, ""
+}
+
+func nonClass(ctx *pkgCtx, pkgTypes *types.Package, tn *types.TypeName) bool {
+	if tn.Pkg() != pkgTypes {
+		return true
+	}
+	return contains(tn.Name(), ctx.nonClasses)
 }
 
 func newParams(ctx *pkgCtx, pkg *types.Package, fn clang.Cursor, feats *int, scope *scopeCtx) (params []*types.Var, variadic bool) {
