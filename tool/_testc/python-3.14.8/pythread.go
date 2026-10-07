@@ -43,6 +43,10 @@ type X_object struct {
 	ObRefcnt SsizeT
 }
 type Object = X_object
+type ByteArrayObject struct {
+	ObBase X_object
+	ObSize SsizeT
+}
 type ListObject struct {
 	ObBase X_object
 	ObSize SsizeT
@@ -71,17 +75,22 @@ func (self *Object) IsTrue() c.Int {
 	return 0
 }
 
-// llgo:link (*ListObject).ListGetItem C.PyList_GetItem
-func (self *ListObject) ListGetItem(index *Object) *Object {
+// llgo:link (*ByteArrayObject).FromObject C.PyByteArray_FromObject
+func (self *ByteArrayObject) FromObject() *Object {
 	return nil
 }
 
-// llgo:link (*ListObject).ListSetItem C.PyList_SetItem
-func (self *ListObject) ListSetItem(index *Object, value *Object) {
+// llgo:link (*ListObject).Item C.PyList_GetItem
+func (self *ListObject) Item(index *Object) *Object {
+	return nil
 }
 
-// llgo:link (*DictObject).DictGetItem C.PyDict_GetItem
-func (self *DictObject) DictGetItem(index *Object) *Object {
+// llgo:link (*ListObject).SetItem C.PyList_SetItem
+func (self *ListObject) SetItem(index *Object, value *Object) {
+}
+
+// llgo:link (*DictObject).Item C.PyDict_GetItem
+func (self *DictObject) Item(index *Object) *Object {
 	return nil
 }
 

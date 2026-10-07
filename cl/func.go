@@ -187,7 +187,8 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	sig := types.NewSignatureType(recv, nil, nil, types.NewTuple(params...), results, variadic)
 	f, err := pkg.NewFuncWith(goNodePos(ctx, fn), fnName, sig, nil)
 	if err != nil {
-		panic(err)
+		ctx.errorf(fn, "%v", err)
+		return
 	}
 
 	if recv == nil {

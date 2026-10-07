@@ -31,6 +31,13 @@ PyAPI_FUNC(int) PyObject_IsTrue(PyObject *x);
 typedef struct {
     struct _object ob_base;
     Py_ssize_t ob_size;
+} PyByteArrayObject;
+
+PyAPI_FUNC(PyObject *) PyByteArray_FromObject(PyObject *o);
+
+typedef struct {
+    struct _object ob_base;
+    Py_ssize_t ob_size;
 } PyListObject;
 
 PyAPI_FUNC(PyObject *) PyList_GetItem(PyObject *x, PyObject *index);
