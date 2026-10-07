@@ -164,7 +164,10 @@ type Config struct {
 	// Class specifies a list of C/C++ typedef names to be treated as classes (optional).
 	Class []string
 
-	// NonClass specifies a list of C/C++ typedef names to be treated as non-classes (optional).
+	// 1) for typedef: NonClass specifies a list of C/C++ typedef names to be treated
+	//    as non-classes.
+	// 2) for global function to method: NonClass specifies a list of Go type names to
+	//    be treated as non-classes.
 	NonClass []string
 
 	// DefaultGoFile specifies default file name (optional).

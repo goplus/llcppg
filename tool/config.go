@@ -27,40 +27,121 @@ import (
 
 // -----------------------------------------------------------------------------
 
+// Config represents the configuration for the llcppg tool.
 type Config struct {
-	Name             string            `json:"Name"`             // required, sub package name should start with '/'
-	Language         string            `json:"Language"`         // c, c++, etc. required
-	Dir              string            `json:"Dir"`              // dir or dir/... (recursive), required
-	Files            []string          `json:"Files"`            // selected header files relative to Dir; overrides auto-discovery, optional.
-	Stdlib           string            `json:"Stdlib"`           // C stdlib include dir, optional
-	LLGoPackage      string            `json:"LLGoPackage"`      // optional
-	CFlags           string            `json:"CFlags"`           // optional
-	Deps             []string          `json:"Deps"`             // dependencies (module paths), optional
-	Class            []string          `json:"Class"`            // typedef names to be treated as classes
-	NonClass         []string          `json:"NonClass"`         // typedef names to be treated as non-classes
-	NSPrefix         []string          `json:"NSPrefix"`         // C/C++ namespace prefix to remove
-	NewCheck         []string          `json:"NewCheck"`         // Type Creator Detection (optional). See https://github.com/xgo-dev/llcppg/issues/960.
-	MethodCheck      []string          `json:"MethodCheck"`      // Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/955.
-	FuncPrefix       []string          `json:"FuncPrefix"`       // C/C++ function name prefix to remove
-	VarPrefix        []string          `json:"VarPrefix"`        // C/C++ variable name prefix to remove
-	EnumPrefix       []string          `json:"EnumPrefix"`       // C/C++ enum value prefix to remove
-	MacroPrefix      []string          `json:"MacroPrefix"`      // C/C++ macro name prefix to remove
-	TypePrefix       []string          `json:"TypePrefix"`       // C/C++ type name prefix to remove
-	TypeSuffix       []string          `json:"TypeSuffix"`       // C/C++ type name suffix to remove
-	TypeAbbr         []string          `json:"TypeAbbr"`         // Go type name to its abbr(s), used in function names (https://github.com/xgo-dev/llcppg/issues/958)
-	Rename           map[string]string `json:"Rename"`           // renaming of C/C++ names to Go names
-	TypeAlias        map[string]string `json:"TypeAlias"`        // C/C++ type name to a Go type name in pkgPath.Name format (pkgPath can be empty if Name is in current package), optional
-	TypeIgnore       []string          `json:"TypeIgnore"`       // C/C++ type names to ignore
-	FuncIgnore       []string          `json:"FuncIgnore"`       // C/C++ function names to ignore
-	MacroIgnore      []string          `json:"MacroIgnore"`      // C/C++ macro names to ignore
-	NSIgnore         []string          `json:"NSIgnore"`         // C/C++ namespaces to ignore
-	Pkgs             []string          `json:"Pkgs"`             // sub-packages to generate, optional
-	FailFast         int               `json:"FailFast"`         // exit on first N errors, optional
-	ForceCamelCase   bool              `json:"ForceCamelCase"`   // convert capitalized, underscore-joined names to camel case, except names whose final segment is all-uppercase (acronyms/macros), which are kept as-is.
-	IgnoreInline     bool              `json:"IgnoreInline"`     // quietly ignore inline functions
-	NoManglingIgnore bool              `json:"NoManglingIgnore"` // quietly ignore functions with no mangled symbol
-	GroupSubdir      bool              `json:"GroupSubdir"`      // treats sub-directory files as a single file. Deprecated: use GroupSubdirBy instead.
-	GroupSubdirBy    string            `json:"GroupSubdirBy"`    // criterion to group sub-directory files by, e.g., "dir" or "fname". `GroupSubdir = true` is equivalent to `GroupSubdirBy = "dir"`.
+	// Package Name (required). Sub-package name should start with '/'.
+	Name string `json:"Name"`
+
+	// Language (required). c, c++, etc.
+	Language string `json:"Language"`
+
+	// dir or dir/... (recursive), required
+	Dir string `json:"Dir"`
+
+	// selected header files relative to Dir; overrides auto-discovery, optional.
+	Files []string `json:"Files"`
+
+	// C stdlib include dir, optional
+	Stdlib string `json:"Stdlib"`
+
+	// LLGoPackage specifies the value of the LLGoPackage constant in the generated
+	// Go package (optional).
+	LLGoPackage string `json:"LLGoPackage"`
+
+	// CFlags specifies the compiler flags to be used when compiling the wrapper file.
+	// If not specified, llcppg will skip wrapping inline functions/methods.
+	CFlags string `json:"CFlags"`
+
+	// dependencies (module paths), optional
+	Deps []string `json:"Deps"`
+
+	// Class specifies a list of C/C++ typedef names to be treated as classes (optional).
+	Class []string `json:"Class"`
+
+	// 1) for typedef: NonClass specifies a list of C/C++ typedef names to be treated
+	//    as non-classes.
+	// 2) for global function to method: NonClass specifies a list of Go type names to
+	//    be treated as non-classes.
+	NonClass []string `json:"NonClass"`
+
+	// NSPrefix specifies the prefix to remove from C/C++ namespace names when generating
+	// Go package names (optional).
+	NSPrefix []string `json:"NSPrefix"` // C/C++ namespace prefix to remove
+
+	// Type Creator Detection (optional). See https://github.com/xgo-dev/llcppg/issues/960.
+	NewCheck []string `json:"NewCheck"`
+
+	// Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/955.
+	MethodCheck []string `json:"MethodCheck"`
+
+	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
+	// generating Go function names (optional).
+	FuncPrefix []string `json:"FuncPrefix"`
+
+	// VarPrefix specifies the prefix to remove from C/C++ global variable names when
+	// generating Go variable names (optional).
+	VarPrefix []string `json:"VarPrefix"`
+
+	// EnumPrefix specifies the prefix to remove from C/C++ enum value names when generating
+	// Go const names (optional).
+	EnumPrefix []string `json:"EnumPrefix"`
+
+	// MacroPrefix specifies the prefix to remove from C/C++ macro names when generating
+	// Go const names (optional).
+	MacroPrefix []string `json:"MacroPrefix"`
+
+	// TypePrefix/TypeSuffix specifies the prefix/suffix to remove from C/C++ type names
+	// when generating Go type names (optional).
+	TypePrefix []string `json:"TypePrefix"`
+	TypeSuffix []string `json:"TypeSuffix"`
+
+	// TypeAbbr specifies abbreviated name for Go type names and will be used in function
+	// names (optional). See https://github.com/xgo-dev/llcppg/issues/958.
+	TypeAbbr []string `json:"TypeAbbr"`
+
+	// Rename specifies a mapping of C/C++ names to Go names (optional). If a name is present
+	// in the map, it will be renamed to the corresponding Go name.
+	Rename map[string]string `json:"Rename"`
+
+	// TypeAlias specifies a mapping of C/C++ type names to a Go type name in pkgPath.Name
+	// format (pkgPath can be empty if Name is in current package), optional.
+	TypeAlias map[string]string `json:"TypeAlias"`
+
+	// TypeIgnore specifies a list of C/C++ type names to be ignored (optional).
+	TypeIgnore []string `json:"TypeIgnore"`
+
+	// FuncIgnore specifies a list of C/C++ function names to be ignored (optional).
+	FuncIgnore []string `json:"FuncIgnore"`
+
+	// MacroIgnore specifies a list of C/C++ macro names to be ignored (optional).
+	MacroIgnore []string `json:"MacroIgnore"`
+
+	// NSIgnore specifies a list of C/C++ namespaces to be ignored (optional).
+	NSIgnore []string `json:"NSIgnore"`
+
+	// Sub-packages to generate, optional
+	Pkgs []string `json:"Pkgs"`
+
+	// exit on first N errors, optional
+	FailFast int `json:"FailFast"`
+
+	// convert capitalized, underscore-joined names to camel case, except names whose final
+	// segment is all-uppercase (acronyms/macros), which are kept as-is.
+	ForceCamelCase bool `json:"ForceCamelCase"`
+
+	// quietly ignore inline functions
+	IgnoreInline bool `json:"IgnoreInline"`
+
+	// quietly ignore functions with no mangled symbol
+	NoManglingIgnore bool `json:"NoManglingIgnore"`
+
+	// treats sub-directory files as a single file. Deprecated: use GroupSubdirBy instead.
+	// Deprecated: use GroupSubdirBy instead.
+	GroupSubdir bool `json:"GroupSubdir"`
+
+	// criterion to group sub-directory files by, e.g., "dir" or "fname". `GroupSubdir = true`
+	// is equivalent to `GroupSubdirBy = "dir"`.
+	GroupSubdirBy string `json:"GroupSubdirBy"`
 }
 
 // -----------------------------------------------------------------------------
