@@ -137,6 +137,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 				if creator != "" {
 					if newResults, ok := tryNewResults(pkgTypes, obj, results); ok {
 						results = newResults
+						creator = ctx.cstyleToGo(creator, false, true)
 						if mayMethod {
 							params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
 							if typRecv != nil {
