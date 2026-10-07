@@ -126,13 +126,29 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 		return
 	}
 
+	var fnName string
 	var recv *types.Var
 	var typRecv *types.Named // if tryToMethod succeeded, this is the recv
 	var typName, typCName string
 	var nameInPkg string
 	if this == nil {
 		if ctx.lang == LanguageC {
-			if cls, obj, mayClass := ctx.methodCheck(pkgTypes, cName); mayClass {
+			if creator, obj, mayMethod, mayCreator := ctx.creatorCheck(pkgTypes, cName); mayCreator {
+				if creator != "" {
+					if newResults, ok := tryNewResults(pkgTypes, obj, results); ok {
+						results = newResults
+						if mayMethod {
+							params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
+							if typRecv != nil {
+								fnName = creator
+								typRecv = nil // skip redeclaration check
+							}
+						} else {
+							fnName = creator
+						}
+					}
+				}
+			} else if cls, obj, mayClass := ctx.methodCheck(pkgTypes, cName); mayClass {
 				// try to method for C global functions
 				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
 				if typRecv != nil {
@@ -158,7 +174,9 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 		typName = typNamed.Obj().Name()
 	}
 
-	fnName := ctx.funcName(name, obj.order(), typName, typCName, this == nil, true)
+	if fnName == "" {
+		fnName = ctx.funcName(name, obj.order(), typName, typCName, this == nil, true)
+	}
 
 	if recv == nil {
 		nameInPkg = fnName
@@ -187,7 +205,8 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 	sig := types.NewSignatureType(recv, nil, nil, types.NewTuple(params...), results, variadic)
 	f, err := pkg.NewFuncWith(goNodePos(ctx, fn), fnName, sig, nil)
 	if err != nil {
-		panic(err)
+		ctx.errorf(fn, "%v", err)
+		return
 	}
 
 	if recv == nil {
@@ -241,6 +260,23 @@ func findMember(typ *types.Named, name string) (pos token.Pos, isField bool, exi
 		}
 	}
 	return token.NoPos, false, false
+}
+
+func tryNewResults(pkgTypes *types.Package, obj types.Object, results *types.Tuple) (ret *types.Tuple, mayResult bool) {
+	if obj == nil || results.Len() != 1 {
+		return
+	}
+	realRet, ok := types.Unalias(results.At(0).Type()).(*types.Pointer)
+	if !ok {
+		return
+	}
+	if base, ok := types.Unalias(realRet.Elem()).(*types.Named); ok {
+		if t := obj.Type(); isTypeFromBase(t, base) {
+			result := types.NewParam(token.NoPos, pkgTypes, "", types.NewPointer(t))
+			return types.NewTuple(result), true
+		}
+	}
+	return
 }
 
 const (

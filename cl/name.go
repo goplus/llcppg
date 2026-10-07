@@ -169,6 +169,26 @@ func (p *pkgCtx) typeName(cName string, _ bool) string {
 	return p.cstyleToGo(name, underscoreStart, true)
 }
 
+// mayCreator sets true even if cls is not found, indicating that a creator might exist.
+func (p *pkgCtx) creatorCheck(pkgTypes *types.Package, cName string) (creator string, obj types.Object, mayMethod, mayCreator bool) {
+	rule, mayCreator := p.newCheck.match(cName, true)
+	if !mayCreator {
+		return
+	}
+	pos := strings.IndexByte(rule, ' ')
+	if pos <= 0 {
+		return
+	}
+	scope := pkgTypes.Scope()
+	cls := rule[:pos]
+	obj = scope.Lookup(cls)
+	if obj != nil {
+		creator = strings.TrimLeft(rule[pos+1:], " \t")
+		creator, mayMethod = strings.CutPrefix(creator, ".")
+	}
+	return
+}
+
 func (p *pkgCtx) methodCheck(pkgTypes *types.Package, cName string) (cls string, obj types.Object, mayClass bool) {
 	if len(p.mthdCheck) == 0 {
 		return "", nil, true // allow tryToMethod
