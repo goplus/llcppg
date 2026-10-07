@@ -118,9 +118,8 @@ type pkgCtx struct {
 
 	wrapFileHeader string
 
-	typeAbbrSuffix []string
-
 	mthdCheck   matcher
+	typeAbbr    matcher // Go type name => abbreviated name(s), used in function names
 	nsPrefix    []string
 	fnPrefix    []string
 	varPrefix   []string
@@ -130,7 +129,6 @@ type pkgCtx struct {
 	typeSuffix  []string
 	classes     []string          // typedef names to be treated as classes
 	nonClasses  []string          // typedef names to be treated as non-classes
-	typeAbbr    map[string]any    // Go type name => abbreviated name(s), used in function names
 	rename      map[string]string // C/C++ name => Go name
 	typeAlias   map[string]string // C/C++ type name => Go name
 	typeIgnore  []string          // C/C++ type names to be ignored

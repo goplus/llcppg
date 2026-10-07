@@ -39,15 +39,14 @@ type Config struct {
 	Class            []string          `json:"Class"`            // typedef names to be treated as classes
 	NonClass         []string          `json:"NonClass"`         // typedef names to be treated as non-classes
 	NSPrefix         []string          `json:"NSPrefix"`         // C/C++ namespace prefix to remove
-	MethodCheck      []string          `json:"MethodCheck"`      // C/C++ method check list
+	MethodCheck      []string          `json:"MethodCheck"`      // C/C++ method check list (https://github.com/xgo-dev/llcppg/issues/955)
 	FuncPrefix       []string          `json:"FuncPrefix"`       // C/C++ function name prefix to remove
 	VarPrefix        []string          `json:"VarPrefix"`        // C/C++ variable name prefix to remove
 	EnumPrefix       []string          `json:"EnumPrefix"`       // C/C++ enum value prefix to remove
 	MacroPrefix      []string          `json:"MacroPrefix"`      // C/C++ macro name prefix to remove
 	TypePrefix       []string          `json:"TypePrefix"`       // C/C++ type name prefix to remove
 	TypeSuffix       []string          `json:"TypeSuffix"`       // C/C++ type name suffix to remove
-	TypeAbbrSuffix   []string          `json:"TypeAbbrSuffix"`   // Go type abbr suffix to remove, only valid for types that are not present in TypeAbbr
-	TypeAbbr         map[string]any    `json:"TypeAbbr"`         // Go type name to its abbr(s), used in function names
+	TypeAbbr         []string          `json:"TypeAbbr"`         // Go type name to its abbr(s), used in function names (https://github.com/xgo-dev/llcppg/issues/958)
 	Rename           map[string]string `json:"Rename"`           // renaming of C/C++ names to Go names
 	TypeAlias        map[string]string `json:"TypeAlias"`        // C/C++ type name to a Go type name in pkgPath.Name format (pkgPath can be empty if Name is in current package), optional
 	TypeIgnore       []string          `json:"TypeIgnore"`       // C/C++ type names to ignore

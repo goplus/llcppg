@@ -127,13 +127,9 @@ type Config struct {
 	// format (pkgPath can be empty if Name is in current package), optional.
 	TypeAlias map[string]string
 
-	// TypeAbbr specifies a mapping of Go type name to its abbreviated name(s). The abbreviated
-	// name(s) can be a name or name list. They will be used in function names (optional).
-	TypeAbbr map[string]any
-
-	// TypeAbbrSuffix specifies the suffix to remove from Go type name when generating function
-	// names. It is only valid for types that are not present in TypeAbbr (optional).
-	TypeAbbrSuffix []string
+	// TypeAbbr specifies abbreviated name for Go type names and will be used in function
+	// names (optional). See https://github.com/xgo-dev/llcppg/issues/958.
+	TypeAbbr []string
 
 	// TypePrefix/TypeSuffix specifies the prefix/suffix to remove from C/C++ type names
 	// when generating Go type names (optional).
@@ -147,7 +143,7 @@ type Config struct {
 	// Go const names (optional).
 	MacroPrefix []string
 
-	// Logical-Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/945.
+	// Logical-Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/955.
 	MethodCheck []string
 
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
@@ -220,6 +216,10 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	if err != nil {
 		return
 	}
+	typeAbbr, err := newMatcher("TypeAbbr", conf.TypeAbbr)
+	if err != nil {
+		return
+	}
 	confGox := &gogen.Config{
 		Fset:            conf.Fset,
 		Importer:        conf.Importer,
@@ -256,8 +256,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		llgo: llgo, fset: pkg.Fset, lang: conf.Language, failFast: conf.FailFast,
 		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName, cflags: conf.CFlags,
 		wrapFileHeader: conf.WrapFileHeader, forceCamelCase: conf.ForceCamelCase,
-		typeAbbr: conf.TypeAbbr, typeAbbrSuffix: conf.TypeAbbrSuffix,
-		typeAlias: conf.TypeAlias, typeAliasCache: make(map[string]types.Type),
+		typeAbbr: typeAbbr, typeAlias: conf.TypeAlias, typeAliasCache: make(map[string]types.Type),
 		mthdCheck: methodCheck, typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
 		fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix, rename: rename,
 		nsPrefix: conf.NSPrefix, macroPrefix: conf.MacroPrefix, varPrefix: conf.VarPrefix,
