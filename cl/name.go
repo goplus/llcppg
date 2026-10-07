@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"fmt"
 	"go/types"
 	"strconv"
 	"strings"
@@ -40,94 +39,6 @@ func (p *pkgCtx) nextAnonName() string {
 
 func objUSR(decl clang.Cursor) string {
 	return clang.USR(decl)
-}
-
-// -----------------------------------------------------------------------------
-
-type matcher struct {
-	prefix  string
-	pattern []string
-	result  string
-}
-
-func newMatcher(name, expr string) (*matcher, error) {
-	pos := strings.IndexByte(expr, ':')
-	if pos < 0 {
-		return nil, fmt.Errorf("invalid %s: %s", name, expr)
-	}
-	pattern := strings.TrimSpace(expr[:pos])
-	parts := strings.Split(pattern, "*")
-	result := strings.TrimSpace(expr[pos+1:])
-	return &matcher{
-		prefix:  parts[0],
-		pattern: parts[1:],
-		result:  result,
-	}, nil
-}
-
-func newMatchers(name string, exprs []string) ([]*matcher, error) {
-	ret := make([]*matcher, len(exprs))
-	for i, c := range exprs {
-		m, err := newMatcher(name, c)
-		if err != nil {
-			return nil, err
-		}
-		ret[i] = m
-	}
-	return ret, nil
-}
-
-func (p *matcher) match(source string, matchFull bool) (ret string, matched bool) {
-	source, ok := strings.CutPrefix(source, p.prefix)
-	if !ok {
-		return
-	}
-	n := 0
-	match := make([]string, len(p.pattern))
-	for i, p := range p.pattern {
-		pos := strings.Index(source, p)
-		if pos < 0 {
-			return
-		}
-		n += pos
-		match[i] = source[:pos]
-		source = source[pos+len(p):]
-	}
-	if matchFull && source != "" {
-		return
-	}
-	return matchResult(p.result, match, n), true
-}
-
-func matchResult(result string, match []string, n int) string {
-	b := make([]byte, 0, len(result)+n)
-	for i := 0; i < len(result); i++ {
-		if result[i] == '$' {
-			if i+1 < len(result) {
-				i++
-				c := result[i]
-				if c >= '1' && c <= '9' {
-					if index := int(c - '1'); index < len(match) {
-						b = append(b, match[index]...)
-						continue
-					}
-				}
-				b = append(b, '$', c)
-				continue
-			}
-		}
-		b = append(b, result[i])
-	}
-	return string(b)
-}
-
-func match(source string, matches []*matcher, matchFull bool) (ret string, matched bool) {
-	for _, m := range matches {
-		if r, ok := m.match(source, matchFull); ok {
-			return r, true
-		}
-	}
-	return "", false
 }
 
 // -----------------------------------------------------------------------------
@@ -262,7 +173,7 @@ func (p *pkgCtx) methodCheck(pkgTypes *types.Package, cName string) (cls string,
 	if len(p.mthdCheck) == 0 {
 		return "", nil, true // allow tryToMethod
 	}
-	cls, mayClass = match(cName, p.mthdCheck, false)
+	cls, mayClass = p.mthdCheck.match(cName, false)
 	if cls != "" {
 		obj = pkgTypes.Scope().Lookup(cls)
 	}
@@ -296,25 +207,10 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 		name = p.cstyleToGo(name, underscoreStart, true)
 		if typName != "" {
 			var typSuffix []string
-			if v, ok := p.typeAbbr[typName]; ok { // Go type name => abbreviated name
-				switch v := v.(type) {
-				case string:
-					typName = v
-					typSuffix = []string{v}
-				case []any:
-					if n := len(v); n > 0 {
-						abbrs := make([]string, n)
-						for i, v := range v {
-							abbrs[i] = v.(string)
-						}
-						typName = abbrs[n-1]
-						typSuffix = abbrs
-					}
-				default:
-					panic(fmt.Errorf("invalid TypeAbbr for %q: %v", typName, v))
-				}
+			if abbrs, _ := p.typeAbbr.matchList(typName, true); len(abbrs) > 0 {
+				typName = abbrs[len(abbrs)-1]
+				typSuffix = abbrs
 			} else {
-				typName = cutSuffixes(typName, p.typeAbbrSuffix)
 				typSuffix = []string{typName}
 			}
 			name = cutSuffixes(name, typSuffix)
