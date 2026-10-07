@@ -118,6 +118,7 @@ type pkgCtx struct {
 
 	wrapFileHeader string
 
+	newCheck    matcher
 	mthdCheck   matcher
 	typeAbbr    matcher // Go type name => abbreviated name(s), used in function names
 	nsPrefix    []string

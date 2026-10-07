@@ -39,7 +39,8 @@ type Config struct {
 	Class            []string          `json:"Class"`            // typedef names to be treated as classes
 	NonClass         []string          `json:"NonClass"`         // typedef names to be treated as non-classes
 	NSPrefix         []string          `json:"NSPrefix"`         // C/C++ namespace prefix to remove
-	MethodCheck      []string          `json:"MethodCheck"`      // C/C++ method check list (https://github.com/xgo-dev/llcppg/issues/955)
+	NewCheck         []string          `json:"NewCheck"`         // Type Creator Detection (optional). See https://github.com/xgo-dev/llcppg/issues/960.
+	MethodCheck      []string          `json:"MethodCheck"`      // Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/955.
 	FuncPrefix       []string          `json:"FuncPrefix"`       // C/C++ function name prefix to remove
 	VarPrefix        []string          `json:"VarPrefix"`        // C/C++ variable name prefix to remove
 	EnumPrefix       []string          `json:"EnumPrefix"`       // C/C++ enum value prefix to remove

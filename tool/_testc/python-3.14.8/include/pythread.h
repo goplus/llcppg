@@ -33,6 +33,7 @@ typedef struct {
     Py_ssize_t ob_size;
 } PyByteArrayObject;
 
+PyAPI_FUNC(PyObject *) PyByteArray_New();
 PyAPI_FUNC(PyObject *) PyByteArray_FromObject(PyObject *o);
 
 typedef struct {

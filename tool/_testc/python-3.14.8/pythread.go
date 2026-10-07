@@ -75,8 +75,11 @@ func (self *Object) IsTrue() c.Int {
 	return 0
 }
 
-// llgo:link (*ByteArrayObject).FromObject C.PyByteArray_FromObject
-func (self *ByteArrayObject) FromObject() *Object {
+//go:linkname NewByteArray C.PyByteArray_New
+func NewByteArray() *ByteArrayObject
+
+// llgo:link (*Object).AsByteArray C.PyByteArray_FromObject
+func (self *Object) AsByteArray() *ByteArrayObject {
 	return nil
 }
 
