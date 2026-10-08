@@ -18,6 +18,7 @@ package cl
 
 import (
 	"go/token"
+	"log"
 	"strconv"
 	"strings"
 
@@ -58,6 +59,7 @@ var opPrecs = map[token.Token]int{
 
 func parseExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token, needRParen bool) (v any, left []lc.Token, ok bool) {
 	v, left, ok = parseOperand(ctx, tu, tokens)
+	log.Println("==> parseOperand", v, ok)
 	if !ok {
 		return
 	}
@@ -66,6 +68,7 @@ func parseExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token, needRPa
 	var ops = []operand{{val: v, tok: token.ILLEGAL, prec: -1}}
 	for len(left) > 0 {
 		tok, _, left, ok = scanToken(tu, left)
+		log.Println("==> scanToken", tok, ok)
 		if !ok {
 			return
 		}
@@ -122,9 +125,14 @@ func calc(ops []operand, nlast, prec int) (n int, ok bool) {
 			case token.XOR:
 				a ^= b
 			case token.REM:
+				if b == 0 {
+					// integer divide by zero
+					return 0, false
+				}
 				a %= b
 			default:
-				panic("parseExpr: unknown op")
+				// parseExpr: unknown op
+				return 0, false
 			}
 			ops[n-1].val = a
 		}
@@ -147,8 +155,8 @@ func mathOp(op token.Token, a, b any) (any, bool) {
 				return a * b, true
 			case token.QUO:
 				if b == 0 {
-					// TODO(xsw):
-					panic("integer divide by zero")
+					// integer divide by zero
+					return nil, false
 				}
 				return a / b, true
 			}
@@ -216,7 +224,7 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v a
 		default:
 			ok = false
 		}
-	case token.XOR: // ~
+	case token.TILDE: // ~
 		v, left, ok = parseOperand(ctx, tu, left)
 		if !ok {
 			return
@@ -248,7 +256,8 @@ var c2goOps = map[string]token.Token{
 	">>": token.SHR,
 
 	"&": token.AND,
-	"~": token.XOR,
+	"~": token.TILDE,
+	"^": token.XOR,
 	"|": token.OR,
 }
 
