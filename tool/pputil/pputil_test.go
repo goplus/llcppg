@@ -20,7 +20,11 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/goplus/llcppg/cl/cltest"
+	"github.com/qiniu/x/test"
 )
 
 func scanAll(src string) []Include {
@@ -215,4 +219,44 @@ func TestListIncludesError(t *testing.T) {
 	if err == nil {
 		t.Error("expected error for missing file, got nil")
 	}
+}
+
+func TestListFiles(t *testing.T) {
+	files := ListFiles("./_testth/basic", false)
+	for f, e := range files {
+		t.Log(f, e)
+		break
+	}
+}
+
+func testTopHeaders(t *testing.T, dir string) {
+	topHeaders, err := TopHeaders(dir, true, true, []string{"./_include"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	topHeaderList := strings.Join(topHeaders, "\n")
+	exp, _ := os.ReadFile(dir + "/out.expect")
+	if test.Diff(t, dir+"/out.expect.txt", []byte(topHeaderList), exp) {
+		t.Error(dir, ": unexpect result")
+	}
+}
+
+func TestTopHeaders(t *testing.T) {
+	cltest.TestFromDir(t, "", "./_testth", testTopHeaders)
+}
+
+func TestErrTopHeaders(t *testing.T) {
+	_, err := TopHeaders("./unknown-dir", true, true, nil)
+	if err == nil {
+		t.Fatal("TestErrTopHeaders: expected error for unknown directory, got nil")
+	}
+}
+
+func TestErr_calcHeaderDeps(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic for unknown directory, got nil")
+		}
+	}()
+	calcHeaderDeps(map[string]bool{"unkown.h": true}, "./unknown-dir", nil)
 }

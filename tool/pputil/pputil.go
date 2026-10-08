@@ -58,6 +58,46 @@ func ListFiles(dir string, recursive bool) iter.Seq2[FileEntry, error] {
 	}
 }
 
+// FilterFunc defines a function type used to filter files in a directory.
+type FilterFunc func(FileEntry) bool
+
+// ListFilterFiles returns a sequence of files in the specified directory that
+// satisfy the filter function. If recursive is true, it includes files in
+// subdirectories as well.
+func ListFilterFiles(headerDir string, recursive bool, filter FilterFunc) iter.Seq2[FileEntry, error] {
+	return func(yield func(FileEntry, error) bool) {
+		for file, e := range ListFiles(headerDir, recursive) {
+			if e != nil || filter(file) {
+				if !yield(file, e) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// FilterPublicHeaderFile is a filter function that returns true if the given
+// file is a public header file (i.e., it does not start with an underscore and
+// has a header file extension).
+func FilterPublicHeaderFile(file FileEntry) bool {
+	name := file.Name()
+	if name[0] != '_' {
+		return IsHeaderFile(file.Path)
+	}
+	return false
+}
+
+// IsHeaderFile checks if the given file name has a header file extension.
+func IsHeaderFile(name string) bool {
+	ext := filepath.Ext(name)
+	switch ext {
+	case ".h", ".hpp", ".hh", ".hxx":
+		return true
+	default:
+		return false
+	}
+}
+
 // -----------------------------------------------------------------------------
 
 // Include represents a C/C++ include directive.
@@ -133,27 +173,13 @@ func calcHeaderDeps(headerFiles map[string]bool, headerDir string, includeDirs [
 
 func collectHeaders(headerDir string, recursive bool) (headerFiles map[string]bool, err error) {
 	headerFiles = make(map[string]bool)
-	for file, e := range ListFiles(headerDir, recursive) {
+	for file, e := range ListFilterFiles(headerDir, recursive, FilterPublicHeaderFile) {
 		if e != nil {
 			return nil, e
 		}
-		name := file.Name()
-		if name[0] != '_' && IsHeaderFile(name) {
-			headerFiles[file.Path] = false
-		}
+		headerFiles[file.Path] = false
 	}
 	return
-}
-
-// IsHeaderFile checks if the given file name has a header file extension.
-func IsHeaderFile(name string) bool {
-	ext := filepath.Ext(name)
-	switch ext {
-	case ".h", ".hpp", ".hh", ".hxx":
-		return true
-	default:
-		return false
-	}
 }
 
 // TopHeaders returns the top-level header files in the specified directory.
