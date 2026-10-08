@@ -18,7 +18,6 @@ package cl
 
 import (
 	"go/token"
-	"log"
 	"strconv"
 	"strings"
 
@@ -59,7 +58,6 @@ var opPrecs = map[token.Token]int{
 
 func parseExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token, needRParen bool) (v any, left []lc.Token, ok bool) {
 	v, left, ok = parseOperand(ctx, tu, tokens)
-	log.Println("==> parseOperand", v, ok)
 	if !ok {
 		return
 	}
@@ -68,7 +66,6 @@ func parseExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token, needRPa
 	var ops = []operand{{val: v, tok: token.ILLEGAL, prec: -1}}
 	for len(left) > 0 {
 		tok, _, left, ok = scanToken(tu, left)
-		log.Println("==> scanToken", tok, ok)
 		if !ok {
 			return
 		}
