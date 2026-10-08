@@ -271,6 +271,9 @@ func templateInstType(ctx *pkgCtx, typ lc.Type, spelling string, feats *int, sco
 			return
 		}
 	}
+	if tf == featTyIgnore {
+		return tyIgnore, true
+	}
 	var tparams *types.TypeParamList
 	switch t := o.Type().(type) {
 	case *types.Named:
