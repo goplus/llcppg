@@ -128,8 +128,7 @@ func calc(ops []operand, nlast, prec int) (n int, ok bool) {
 				}
 				a %= b
 			default:
-				// parseExpr: unknown op
-				return 0, false
+				panic("unreachable: unknown op")
 			}
 			ops[n-1].val = a
 		}

@@ -19,8 +19,11 @@
 
 #define QUO_ZERO (1 / 0)
 #define REM_ZERO (1 % 0)
-#define MATH_OP  (1 + 2 * 3 - 4.0 / 2)
+#define MATH_OP  (1 + 2 % 4 * 3 / 1 - 4.0 / 2)
 #define BIT_OP   ((1 << 2 >> 2) ^ 2 | 0 & 1)
+
+#define ERR_BIT_OP (2.0 & 1.0)
+#define ERR_TILDE  ~ERR_BIT_OP
 
 #define ERROR    ('*' % 3.24)
 #define QUESTION 1 ? 2
