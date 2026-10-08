@@ -9,7 +9,7 @@
 #define FALSE 0
 
 #define THREE (TRUE + 2)
-#define FVAL  (TRUE * 3.14)
+#define FVAL  (TRUE * 3.14 + 0.0)
 
 #define MASK  (~FALSE)
 #define MASK2 (~FALSE)
