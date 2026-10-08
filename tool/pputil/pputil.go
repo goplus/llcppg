@@ -64,9 +64,9 @@ type FilterFunc func(FileEntry) bool
 // ListFilterFiles returns a sequence of files in the specified directory that
 // satisfy the filter function. If recursive is true, it includes files in
 // subdirectories as well.
-func ListFilterFiles(headerDir string, recursive bool, filter FilterFunc) iter.Seq2[FileEntry, error] {
+func ListFilterFiles(dir string, recursive bool, filter FilterFunc) iter.Seq2[FileEntry, error] {
 	return func(yield func(FileEntry, error) bool) {
-		for file, e := range ListFiles(headerDir, recursive) {
+		for file, e := range ListFiles(dir, recursive) {
 			if e != nil || filter(file) {
 				if !yield(file, e) {
 					return
