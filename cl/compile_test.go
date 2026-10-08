@@ -35,7 +35,6 @@ import (
 
 func init() {
 	log.SetFlags(0)
-	cl.SetDebug(cl.DbgFlagAll)
 }
 
 // -----------------------------------------------------------------------------
@@ -147,6 +146,9 @@ var langExts = [...]string{
 }
 
 func TestC(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagAll)
+	defer cl.SetDebug(0)
+
 	testFromDir(t, "", "./_testc", cl.LanguageC)
 }
 

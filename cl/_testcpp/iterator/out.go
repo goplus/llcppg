@@ -13,3 +13,8 @@ type BackInsertIterator[_Container any] struct {
 	X__IteratorBase[BackInsertIterator[_Container], OutputIteratorTag, c.Void, c.Void, c.Void, c.Void]
 	container *_Container
 }
+type IteratorTraits[_Ip any] struct {
+}
+type ReverseIterator[_Iter any] struct {
+	current _Iter
+}

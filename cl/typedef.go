@@ -166,6 +166,7 @@ func typeParamsAndInstantiate(ctx *pkgCtx, t types.Type) (tparams []*types.TypeP
 	return
 }
 
+// alias = void (ignore this type, as an empty class)
 // alias = .StdBasicString[byte, c.Void, c.Void]
 // alias = .Iterator
 // alias = [_Derived, _Category, _Tp, _Distance, _Pointer, _Reference] = .Iterator[_Category, _Tp, _Distance, _Pointer, _Reference]
@@ -196,6 +197,10 @@ func (p *pkgCtx) aliasType(name, alias string) (ret types.Type, found bool) {
 	}
 	obj, ok := p.goNamedTypeObj(alias, scope)
 	if !ok {
+		if alias == "void" {
+			p.types[name] = typeObj{nil, featTyIgnore}
+			return tyIgnore, true
+		}
 		return
 	}
 	ret = obj.Type()

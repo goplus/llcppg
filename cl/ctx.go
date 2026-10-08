@@ -91,9 +91,11 @@ type compileUnit struct {
 	at *gogen.File
 }
 
+const featTyIgnore = 0x8000
+
 type typeObj struct {
 	*types.TypeName
-	feats int
+	feats int // if feats == featTyIgnore, this type is tyIgnore
 }
 
 type typDecl struct {
@@ -397,6 +399,10 @@ func (p *pkgCtx) goTypeParams(typParams string) []*types.TypeParam {
 	}
 	return ret
 }
+
+var (
+	tyIgnore = types.Typ[types.UntypedNil]
+)
 
 func (p *pkgCtx) typeAliasOf(name string) (ret types.Type, found bool) {
 	if t, ok := p.typeAliasCache[name]; ok {
