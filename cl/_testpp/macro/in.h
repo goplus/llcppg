@@ -25,6 +25,8 @@
 #define ERR_BIT_OP (2.0 & 1.0)
 #define ERR_TILDE  ~ERR_BIT_OP
 
+#define PANIC_BITOP (1 << -1)
+
 #define ERROR    ('*' % 3.24)
 #define QUESTION 1 ? 2
 #define TILDE    1 ~ 2

@@ -28,6 +28,9 @@ import (
 // -----------------------------------------------------------------------------
 
 func evalConstExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v any, ok bool) {
+	defer func() {
+		recover()
+	}()
 	v, _, ok = parseExpr(ctx, tu, tokens, false)
 	return
 }
@@ -128,7 +131,7 @@ func calc(ops []operand, nlast, prec int) (n int, ok bool) {
 				}
 				a %= b
 			default:
-				panic("unreachable: unknown op")
+				panic("calc: unknown op")
 			}
 			ops[n-1].val = a
 		}
