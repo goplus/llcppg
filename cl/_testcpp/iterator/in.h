@@ -1,3 +1,18 @@
+typedef unsigned long size_t;
+
+void* operator new(size_t __sz);
+
+void operator delete(void* __p);
+void operator delete(void* __p, const char* __s);
+void operator delete(void* __p, size_t __sz);
+
+void* operator new[](size_t __sz);
+void* operator new[](size_t __sz, const char* __s);
+
+void operator delete[](void* __p);
+void operator delete[](void* __p, const char* __s);
+void operator delete[](void* __p, size_t __sz);
+
 template <class _Category, class _Tp, class _Distance, class _Pointer = _Tp*, class _Reference = _Tp&>
 struct iterator {
   typedef _Tp value_type;

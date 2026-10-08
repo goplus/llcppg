@@ -37,7 +37,11 @@ const operatorPrefix = "operator"
 func isOperator(baseName string) bool {
 	if len(baseName) > len(operatorPrefix) && strings.HasPrefix(baseName, operatorPrefix) {
 		c := baseName[len(operatorPrefix)]
-		return !ctype.Is(ctype.CSYMBOL_FIRST_CHAR, rune(c))
+		return !ctype.Is(ctype.CSYMBOL_FIRST_CHAR|ctype.SPACE_BAR, rune(c))
+	}
+	switch baseName {
+	case "new", "delete", "new[]", "delete[]":
+		return true
 	}
 	return false
 }
