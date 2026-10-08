@@ -25,7 +25,7 @@ import (
 
 func scanAll(src string) []Include {
 	var got []Include
-	scanIncludes([]byte(src), func(inc Include) bool {
+	doScanIncludes([]byte(src), func(inc Include) bool {
 		got = append(got, inc)
 		return true
 	})
@@ -170,7 +170,7 @@ func TestScanIncludes(t *testing.T) {
 func TestScanIncludesEarlyStop(t *testing.T) {
 	src := "#include \"a.h\"\n#include \"b.h\"\n#include \"c.h\"\n"
 	var got []Include
-	scanIncludes([]byte(src), func(inc Include) bool {
+	doScanIncludes([]byte(src), func(inc Include) bool {
 		got = append(got, inc)
 		return len(got) < 2 // stop after two
 	})
@@ -193,12 +193,12 @@ func TestLoadIncludes(t *testing.T) {
 	if err := os.WriteFile(file, []byte(src), 0644); err != nil {
 		t.Fatal(err)
 	}
-	includes, err := LoadIncludes(file)
+	b, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
 	var got []Include
-	for inc := range includes {
+	for inc := range ScanIncludes(b) {
 		got = append(got, inc)
 	}
 	want := []Include{
@@ -210,8 +210,8 @@ func TestLoadIncludes(t *testing.T) {
 	}
 }
 
-func TestLoadIncludesError(t *testing.T) {
-	_, err := LoadIncludes(filepath.Join(t.TempDir(), "does-not-exist.h"))
+func TestListIncludesError(t *testing.T) {
+	_, err := ListIncludes(filepath.Join(t.TempDir(), "does-not-exist.h"), nil)
 	if err == nil {
 		t.Error("expected error for missing file, got nil")
 	}
