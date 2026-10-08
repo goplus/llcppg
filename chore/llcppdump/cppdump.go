@@ -23,7 +23,6 @@ import (
 	"path/filepath"
 
 	"github.com/goplus/llcppg/clang"
-	"github.com/goplus/llcppg/tool"
 )
 
 func main() {
@@ -49,5 +48,5 @@ func main() {
 	}
 	defer u.Dispose()
 
-	tool.Dump(u.Cursor(), "", filepath.Dir(filename))
+	Dump(u.Cursor(), "", filepath.Dir(filename))
 }
