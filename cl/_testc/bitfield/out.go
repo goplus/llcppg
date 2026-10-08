@@ -2,7 +2,7 @@ package foo
 
 import (
 	"github.com/goplus/lib/c"
-	"github.com/qiniu/x/bitfield"
+	"github.com/goplus/lib/c/bitfield"
 	"unsafe"
 )
 

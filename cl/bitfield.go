@@ -653,7 +653,7 @@ func pushBoolToUint64(ctx *pkgCtx, cb *gogen.CodeBuilder) {
 }
 
 func (p *pkgCtx) bitfieldRef(name string) types.Object {
-	return p.pkg.Import("github.com/qiniu/x/bitfield").Ref(name)
+	return p.pkg.Import("github.com/goplus/lib/c/bitfield").Ref(name)
 }
 
 // bitDocComment builds a doc-only comment group holding a single "// text" line
