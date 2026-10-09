@@ -174,7 +174,7 @@ func sanitizeSegment(seg string) string {
 //     MODULE_NAME substituted in c/go.mod and c/llcppg.cfg;
 //  4. switches to the main branch (creating it only if it does not already
 //     exist) and commits the template's main-branch files, with MODULE_NAME
-//     substituted in go.mod;
+//     substituted in go.mod and the standard badges inserted into README.md;
 //  5. leaves main checked out and reports what was done.
 //
 // It never pushes, adds or modifies remotes, or changes git configuration.
@@ -208,7 +208,7 @@ func Init(dir, module string, opts *Config) error {
 
 	// Step 3: create, populate, and commit the c branch. c is the first branch;
 	// on a freshly cloned, empty repository it is created on the unborn HEAD.
-	if err := setupBranch(dir, tmplDir, branchC, module, false, out); err != nil {
+	if err := setupBranch(dir, tmplDir, branchC, module, false, out, opts.stderr()); err != nil {
 		return err
 	}
 
@@ -216,7 +216,7 @@ func Init(dir, module string, opts *Config) error {
 	// default branch) and populate and commit it. If main does not exist it is
 	// created as an orphan so the C-side and Go-side files never share history
 	// or mix (see the proposal's open question #1).
-	if err := setupBranch(dir, tmplDir, branchMain, module, true, out); err != nil {
+	if err := setupBranch(dir, tmplDir, branchMain, module, true, out, opts.stderr()); err != nil {
 		return err
 	}
 
@@ -258,7 +258,7 @@ func moduleName(dir, module string) (string, error) {
 // files, and commits the result. When orphan is true the branch is created as a
 // fresh root with no parent and no inherited files, so the two branches never
 // mix content.
-func setupBranch(dir, tmplDir, branch, module string, orphan bool, out io.Writer) error {
+func setupBranch(dir, tmplDir, branch, module string, orphan bool, out, errOut io.Writer) error {
 	fmt.Fprintf(out, "llcppg: setting up the %q branch...\n", branch)
 	if err := checkoutNewBranch(dir, branch, orphan); err != nil {
 		return err
@@ -268,6 +268,13 @@ func setupBranch(dir, tmplDir, branch, module string, orphan bool, out io.Writer
 	}
 	if err := substitute(dir, branch, module); err != nil {
 		return err
+	}
+	// On the main branch, add the standard badges to the README (if any) so the
+	// change lands in the same commit as the rest of the main-branch files. This
+	// step is cosmetic and never fails the command; it warns on errOut and leaves
+	// the README unchanged when it cannot proceed.
+	if branch == branchMain {
+		addReadmeBadges(dir, module, errOut)
 	}
 	msg := fmt.Sprintf("init: add llcppg template (%s branch) for %s", branch, module)
 	return commitAll(dir, msg)
