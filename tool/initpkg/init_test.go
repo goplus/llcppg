@@ -81,11 +81,12 @@ func newTemplateRepo(t *testing.T) string {
 	runGit(t, src, "add", "-A")
 	runGit(t, src, "commit", "-q", "-m", "template main")
 
-	// c branch content: an orphan branch so c and main files never mix.
+	// c branch content: an orphan branch so c and main files never mix. The
+	// C-side go.mod and llcppg.cfg live under the c/ directory.
 	runGit(t, src, "checkout", "-q", "--orphan", branchC)
 	runGit(t, src, "rm", "-rf", "-q", ".")
-	writeTestFile(t, src, "go.mod", "module "+Placeholder+"\n\ngo 1.27.0\n")
-	writeTestFile(t, src, "llcppg.cfg", `{"Name":"`+Placeholder+`"}`+"\n")
+	writeTestFile(t, src, "c/go.mod", "module "+Placeholder+"\n\ngo 1.27.0\n")
+	writeTestFile(t, src, "c/llcppg.cfg", `{"Name":"`+Placeholder+`"}`+"\n")
 	writeTestFile(t, src, "nested/header.h", "// header for "+Placeholder+"\n")
 	runGit(t, src, "add", "-A")
 	runGit(t, src, "commit", "-q", "-m", "template c")
@@ -167,11 +168,13 @@ func TestInit_HappyPath(t *testing.T) {
 		}
 	}
 
-	// go.mod on both branches has the module name and no placeholder.
+	// go.mod has the module name and no placeholder on each branch: at the root
+	// on main, and under c/ on the c branch.
+	goModOnBranch := map[string]string{branchC: "c/go.mod", branchMain: "go.mod"}
 	for _, b := range []string{branchC, branchMain} {
-		content, ok := fileOnBranch(t, target, b, "go.mod")
+		content, ok := fileOnBranch(t, target, b, goModOnBranch[b])
 		if !ok {
-			t.Fatalf("go.mod missing on branch %q", b)
+			t.Fatalf("%s missing on branch %q", goModOnBranch[b], b)
 		}
 		if strings.Contains(content, Placeholder) {
 			t.Errorf("branch %q go.mod still contains %q:\n%s", b, Placeholder, content)
@@ -181,13 +184,13 @@ func TestInit_HappyPath(t *testing.T) {
 		}
 	}
 
-	// llcppg.cfg on c has the module name and no placeholder.
-	cfg, ok := fileOnBranch(t, target, branchC, "llcppg.cfg")
+	// c/llcppg.cfg on c has the module name and no placeholder.
+	cfg, ok := fileOnBranch(t, target, branchC, "c/llcppg.cfg")
 	if !ok {
-		t.Fatal("llcppg.cfg missing on c branch")
+		t.Fatal("c/llcppg.cfg missing on c branch")
 	}
 	if strings.Contains(cfg, Placeholder) || !strings.Contains(cfg, "cjson") {
-		t.Errorf("c llcppg.cfg not substituted: %q", cfg)
+		t.Errorf("c/llcppg.cfg not substituted: %q", cfg)
 	}
 
 	// A nested template file came through on c.
@@ -294,11 +297,12 @@ func TestInit_DerivesModuleNameFromDir(t *testing.T) {
 	if !strings.Contains(stdout, `using module name "cjson"`) {
 		t.Errorf("expected the inferred module name to be reported, got: %q", stdout)
 	}
-	// go.mod on both branches uses the inferred name.
+	// go.mod on each branch uses the inferred name: root on main, c/ on c.
+	goModOnBranch := map[string]string{branchC: "c/go.mod", branchMain: "go.mod"}
 	for _, b := range []string{branchC, branchMain} {
-		content, ok := fileOnBranch(t, target, b, "go.mod")
+		content, ok := fileOnBranch(t, target, b, goModOnBranch[b])
 		if !ok {
-			t.Fatalf("go.mod missing on branch %q", b)
+			t.Fatalf("%s missing on branch %q", goModOnBranch[b], b)
 		}
 		if strings.Contains(content, Placeholder) || !strings.Contains(content, "module cjson") {
 			t.Errorf("branch %q go.mod not substituted with the inferred name:\n%s", b, content)
@@ -478,7 +482,7 @@ func TestInit_BrokenCacheIsReclone(t *testing.T) {
 }
 
 func TestInit_MissingTemplateFileReportsTemplateError(t *testing.T) {
-	// Build a template whose c branch lacks the required llcppg.cfg.
+	// Build a template whose c branch lacks the required c/llcppg.cfg.
 	src := t.TempDir()
 	runGit(t, src, "init", "-q", "-b", branchMain)
 	writeTestFile(t, src, "go.mod", "module "+Placeholder+"\n")
@@ -486,7 +490,7 @@ func TestInit_MissingTemplateFileReportsTemplateError(t *testing.T) {
 	runGit(t, src, "commit", "-q", "-m", "main")
 	runGit(t, src, "checkout", "-q", "--orphan", branchC)
 	runGit(t, src, "rm", "-rf", "-q", ".")
-	writeTestFile(t, src, "go.mod", "module "+Placeholder+"\n") // no llcppg.cfg
+	writeTestFile(t, src, "c/go.mod", "module "+Placeholder+"\n") // no c/llcppg.cfg
 	runGit(t, src, "add", "-A")
 	runGit(t, src, "commit", "-q", "-m", "c")
 	runGit(t, src, "checkout", "-q", branchMain)
@@ -500,7 +504,7 @@ func TestInit_MissingTemplateFileReportsTemplateError(t *testing.T) {
 	target := newEmptyTarget(t)
 	_, _, err := runInit(t, target, "cjson", &Config{TemplateURL: "file://" + bare, CacheDir: t.TempDir()})
 	if err == nil || !strings.Contains(err.Error(), "template error") {
-		t.Fatalf("expected a template error for missing llcppg.cfg, got: %v", err)
+		t.Fatalf("expected a template error for missing c/llcppg.cfg, got: %v", err)
 	}
 }
 

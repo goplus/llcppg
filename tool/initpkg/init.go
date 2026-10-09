@@ -45,10 +45,12 @@ const (
 )
 
 // substituteFiles maps each branch to the files on it whose Placeholder
-// occurrences are rewritten with the module name. Every listed file must exist
-// in the template branch; a missing one is reported as a template error.
+// occurrences are rewritten with the module name, as repository-relative paths.
+// On the c branch these live under the c/ directory (c/go.mod, c/llcppg.cfg);
+// on main the go.mod is at the root. Every listed file must exist in the
+// template branch; a missing one is reported as a template error.
 var substituteFiles = map[string][]string{
-	branchC:    {"go.mod", "llcppg.cfg"},
+	branchC:    {"c/go.mod", "c/llcppg.cfg"},
 	branchMain: {"go.mod"},
 }
 
@@ -169,7 +171,7 @@ func sanitizeSegment(seg string) string {
 //  2. prepares the template in the cache (clone on first use, update otherwise,
 //     falling back to the cached copy when offline);
 //  3. creates and commits a c branch with the template's c-branch files, with
-//     MODULE_NAME substituted in go.mod and llcppg.cfg;
+//     MODULE_NAME substituted in c/go.mod and c/llcppg.cfg;
 //  4. creates and commits a main branch with the template's main-branch files,
 //     with MODULE_NAME substituted in go.mod;
 //  5. leaves main checked out and reports what was done.
