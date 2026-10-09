@@ -56,7 +56,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 
 	underlying := decl.TypedefDeclUnderlyingType()
 	if debugCompileDecl {
-		ctx.logf(decl, "typedef %ss: %s", cName, clang.String(underlying))
+		ctx.logf(decl, "typedef %s: %s", cName, clang.String(underlying))
 	}
 
 	feats := 0

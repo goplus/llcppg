@@ -26,10 +26,6 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// badgeOrg is the GitHub organization that owns the binding repositories. It is
-// fixed text in the badge URLs, matching the template repository's organization.
-const badgeOrg = "llarhub"
-
 // badgeRepo returns the repository name used in the badge URLs for module. The
 // binding repositories under badgeOrg are flat (a single name, e.g. "cjson"),
 // but a module path validated by gomodule.CheckImportPath may legitimately have
@@ -48,7 +44,7 @@ func badgeRepo(module string) string {
 // badgeMarker uses it verbatim as the idempotency marker, so the two can never
 // drift apart (see TestBadgeMarkerMatchesBadgeLines).
 func godocBadgeImageURL(module string) string {
-	return fmt.Sprintf("https://pkg.go.dev/badge/github.com/%s/%s.svg", badgeOrg, badgeRepo(module))
+	return fmt.Sprintf("https://pkg.go.dev/badge/github.com/llarhub/%s.svg", badgeRepo(module))
 }
 
 // badgeLines returns the four standard badge lines for module, in order: GoDoc,
@@ -58,8 +54,8 @@ func godocBadgeImageURL(module string) string {
 func badgeLines(module string) []string {
 	repo := badgeRepo(module)
 	return []string{
-		fmt.Sprintf("[![GoDoc](%s)](https://pkg.go.dev/github.com/%s/%s)", godocBadgeImageURL(module), badgeOrg, repo),
-		fmt.Sprintf("[![GitHub release](https://img.shields.io/github/v/tag/%s/%s.svg?label=release)](https://github.com/%s/%s/releases)", badgeOrg, repo, badgeOrg, repo),
+		fmt.Sprintf("[![GoDoc](%s)](https://pkg.go.dev/github.com/llarhub/%s)", godocBadgeImageURL(module), repo),
+		fmt.Sprintf("[![GitHub release](https://img.shields.io/github/v/tag/llarhub/%s.svg?label=release)](https://github.com/llarhub/%s/releases)", repo, repo),
 		"[![LLGo](https://img.shields.io/badge/powered_by-LLGo-green.svg)](https://github.com/xgo-dev/llgo)",
 		"[![XGo](https://img.shields.io/badge/project-XGo-blue.svg)](https://github.com/goplus/xgo)",
 	}
