@@ -9,7 +9,7 @@
 #define FALSE 0
 
 #define THREE (TRUE + 2)
-#define FVAL  (TRUE * 3.14)
+#define FVAL  (TRUE * 3.14 + 0.0)
 
 #define MASK  (~FALSE)
 #define MASK2 (~FALSE)
@@ -22,7 +22,7 @@
 #define MATH_OP  (1 + 2 % 4 * 3 / 1 - 4.0 / 2)
 #define BIT_OP   ((1 << 2 >> 2) ^ 2 | 0 & 1)
 
-#define ERR_BIT_OP (2.0 & 1.0)
+#define ERR_BIT_OP (=2.0 & 1.0)
 #define ERR_TILDE  ~ERR_BIT_OP
 
 #define PANIC_BITOP (1 << -1)
