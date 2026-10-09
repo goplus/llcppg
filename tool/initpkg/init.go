@@ -172,8 +172,9 @@ func sanitizeSegment(seg string) string {
 //     falling back to the cached copy when offline);
 //  3. creates and commits a c branch with the template's c-branch files, with
 //     MODULE_NAME substituted in c/go.mod and c/llcppg.cfg;
-//  4. creates and commits a main branch with the template's main-branch files,
-//     with MODULE_NAME substituted in go.mod;
+//  4. switches to the main branch (creating it only if it does not already
+//     exist) and commits the template's main-branch files, with MODULE_NAME
+//     substituted in go.mod;
 //  5. leaves main checked out and reports what was done.
 //
 // It never pushes, adds or modifies remotes, or changes git configuration.
@@ -211,9 +212,10 @@ func Init(dir, module string, opts *Config) error {
 		return err
 	}
 
-	// Step 4: create, populate, and commit the main branch. main is created as
-	// an orphan so the C-side and Go-side files never share history or mix (see
-	// the proposal's open question #1).
+	// Step 4: switch to main (a freshly cloned repository already has it as its
+	// default branch) and populate and commit it. If main does not exist it is
+	// created as an orphan so the C-side and Go-side files never share history
+	// or mix (see the proposal's open question #1).
 	if err := setupBranch(dir, tmplDir, branchMain, module, true, out); err != nil {
 		return err
 	}

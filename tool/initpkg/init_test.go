@@ -111,6 +111,20 @@ func newEmptyTarget(t *testing.T) string {
 	return dir
 }
 
+// newClonedTarget creates a repo that already has a committed main branch,
+// mirroring a repository just cloned from a remote whose default branch is
+// main. It returns the dir and the initial commit sha on main.
+func newClonedTarget(t *testing.T) (string, string) {
+	t.Helper()
+	dir := t.TempDir()
+	runGit(t, dir, "init", "-q", "-b", branchMain)
+	writeTestFile(t, dir, "README.md", "# cloned repo\n")
+	runGit(t, dir, "add", "-A")
+	runGit(t, dir, "commit", "-q", "-m", "initial")
+	sha := strings.TrimSpace(mustGit(t, dir, "rev-parse", "HEAD"))
+	return dir, sha
+}
+
 // runInit invokes Init with the test identity in the process environment so the
 // git commits it makes succeed.
 func runInit(t *testing.T, dir, module string, opts *Config) (string, string, error) {
@@ -196,6 +210,44 @@ func TestInit_HappyPath(t *testing.T) {
 	// A nested template file came through on c.
 	if _, ok := fileOnBranch(t, target, branchC, "nested/header.h"); !ok {
 		t.Error("nested/header.h missing on c branch")
+	}
+}
+
+// TestInit_ExistingMainBranch covers the realistic case: a repository cloned
+// from a remote whose default branch is main already has a committed main
+// branch. init must switch to it (not try to recreate it, which used to fail
+// with "a branch named 'main' already exists") and lay the template on top.
+func TestInit_ExistingMainBranch(t *testing.T) {
+	tmpl := newTemplateRepo(t)
+	cache := t.TempDir()
+	target, initialSha := newClonedTarget(t)
+
+	_, _, err := runInit(t, target, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache})
+	if err != nil {
+		t.Fatalf("Init on a repo with an existing main branch: %v", err)
+	}
+
+	// main is checked out and both branches exist.
+	if got := strings.TrimSpace(mustGit(t, target, "rev-parse", "--abbrev-ref", "HEAD")); got != branchMain {
+		t.Fatalf("HEAD = %q, want %q", got, branchMain)
+	}
+	if exists, _ := branchCExists(target); !exists {
+		t.Error("c branch was not created")
+	}
+
+	// The existing main was switched to, not recreated: its initial commit is
+	// still an ancestor and the new template commit sits on top of it.
+	if _, err := gitOutput(target, "merge-base", "--is-ancestor", initialSha, branchMain); err != nil {
+		t.Errorf("initial main commit %s is no longer an ancestor of main (main was recreated, not switched to): %v", initialSha, err)
+	}
+
+	// The template's main-branch go.mod is present and substituted.
+	content, ok := fileOnBranch(t, target, branchMain, "go.mod")
+	if !ok {
+		t.Fatal("go.mod missing on main after init")
+	}
+	if strings.Contains(content, Placeholder) || !strings.Contains(content, "module cjson") {
+		t.Errorf("main go.mod not substituted:\n%s", content)
 	}
 }
 
