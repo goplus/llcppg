@@ -275,18 +275,76 @@ func TestInit_NotAGitRepo(t *testing.T) {
 	}
 }
 
-func TestInit_EmptyModuleName(t *testing.T) {
+func TestInit_DerivesModuleNameFromDir(t *testing.T) {
+	tmpl := newTemplateRepo(t)
+	cache := t.TempDir()
+
+	// A target whose directory base name is a valid module name. Passing an
+	// empty (here, all-whitespace) module name must infer it from that name.
+	target := filepath.Join(t.TempDir(), "cjson")
+	if err := os.MkdirAll(target, 0755); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, target, "init", "-q", "-b", branchMain)
+
+	stdout, _, err := runInit(t, target, "   ", &Options{TemplateURL: tmpl, CacheDir: cache})
+	if err != nil {
+		t.Fatalf("Init with inferred module name: %v", err)
+	}
+	if !strings.Contains(stdout, `using module name "cjson"`) {
+		t.Errorf("expected the inferred module name to be reported, got: %q", stdout)
+	}
+	// go.mod on both branches uses the inferred name.
+	for _, b := range []string{branchC, branchMain} {
+		content, ok := fileOnBranch(t, target, b, "go.mod")
+		if !ok {
+			t.Fatalf("go.mod missing on branch %q", b)
+		}
+		if strings.Contains(content, Placeholder) || !strings.Contains(content, "module cjson") {
+			t.Errorf("branch %q go.mod not substituted with the inferred name:\n%s", b, content)
+		}
+	}
+}
+
+func TestInit_InferredNameInvalidReportsError(t *testing.T) {
+	tmpl := newTemplateRepo(t)
+	cache := t.TempDir()
+
+	// A directory name that cannot serve as a module path (contains a space).
+	target := filepath.Join(t.TempDir(), "bad name")
+	if err := os.MkdirAll(target, 0755); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, target, "init", "-q", "-b", branchMain)
+
+	_, _, err := runInit(t, target, "", &Options{TemplateURL: tmpl, CacheDir: cache})
+	if err == nil {
+		t.Fatal("expected an error for an un-usable inferred module name, got nil")
+	}
+	if !strings.Contains(err.Error(), "pass the module name explicitly") {
+		t.Errorf("unexpected error: %v", err)
+	}
+	// The refusal happens before the cache is touched.
+	entries, _ := os.ReadDir(cache)
+	if len(entries) != 0 {
+		t.Errorf("cache was touched on refused run: %v", entries)
+	}
+}
+
+func TestInit_InvalidExplicitModuleName(t *testing.T) {
+	tmpl := newTemplateRepo(t)
 	target := newEmptyTarget(t)
-	_, _, err := runInit(t, target, "   ", &Options{TemplateURL: "unused", CacheDir: t.TempDir()})
-	if err == nil || !strings.Contains(err.Error(), "module name must not be empty") {
-		t.Fatalf("expected empty-module error, got %v", err)
+
+	_, _, err := runInit(t, target, "bad name", &Options{TemplateURL: tmpl, CacheDir: t.TempDir()})
+	if err == nil || !strings.Contains(err.Error(), "invalid module name") {
+		t.Fatalf("expected an invalid-module-name error, got %v", err)
 	}
 }
 
 func TestInit_CacheClonedThenUpdatedInPlace(t *testing.T) {
 	tmpl := newTemplateRepo(t)
 	cache := t.TempDir()
-	tmplCacheDir := filepath.Join(cache, "templates", "llarhub", ".llcppg")
+	tmplCacheDir := templateCacheDir(cache, tmpl)
 
 	// First run clones into the cache.
 	target1 := newEmptyTarget(t)
@@ -330,7 +388,7 @@ func TestInit_CacheClonedThenUpdatedInPlace(t *testing.T) {
 func TestInit_LocalCacheModificationsDoNotLeak(t *testing.T) {
 	tmpl := newTemplateRepo(t)
 	cache := t.TempDir()
-	tmplCacheDir := filepath.Join(cache, "templates", "llarhub", ".llcppg")
+	tmplCacheDir := templateCacheDir(cache, tmpl)
 
 	// Populate the cache via a first run.
 	target1 := newEmptyTarget(t)
@@ -398,7 +456,7 @@ func TestInit_OfflineEmptyCacheFails(t *testing.T) {
 func TestInit_BrokenCacheIsReclone(t *testing.T) {
 	tmpl := newTemplateRepo(t)
 	cache := t.TempDir()
-	tmplCacheDir := filepath.Join(cache, "templates", "llarhub", ".llcppg")
+	tmplCacheDir := templateCacheDir(cache, tmpl)
 
 	// Simulate an interrupted clone: a directory that exists but is not a valid
 	// git repo.

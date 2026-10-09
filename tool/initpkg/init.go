@@ -20,12 +20,13 @@
 package initpkg
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	gomodule "golang.org/x/mod/module"
 )
 
 // -----------------------------------------------------------------------------
@@ -113,11 +114,80 @@ func CacheDir() (string, error) {
 	return filepath.Join(base, "llcppg"), nil
 }
 
+// templateCacheDir returns the directory under cacheDir that holds the cached
+// clone of templateURL. The subpath is derived from the URL (host, then path
+// segments) so that different template URLs sharing a cache dir never collide
+// and the location is not hardcoded to a single owner/repo. All templates live
+// under a shared "templates" parent.
+func templateCacheDir(cacheDir, templateURL string) string {
+	segs := []string{cacheDir, "templates"}
+	segs = append(segs, urlCacheSegments(templateURL)...)
+	return filepath.Join(segs...)
+}
+
+// urlCacheSegments splits a git URL into sanitized path segments (host and path
+// components) suitable for use as a cache subpath. It handles the common forms
+// (https://host/owner/repo, scp-like git@host:owner/repo, and file:// URLs)
+// without pulling in a full URL parser, and falls back to a single sanitized
+// segment for anything it does not recognize so the result is always usable.
+func urlCacheSegments(templateURL string) []string {
+	s := templateURL
+	// Strip a scheme (scheme://...) or an scp-like user@host: prefix.
+	if i := strings.Index(s, "://"); i >= 0 {
+		s = s[i+len("://"):]
+		if at := strings.Index(s, "@"); at >= 0 && at < strings.IndexAny(s+"/", "/") {
+			s = s[at+1:]
+		}
+	} else if at := strings.Index(s, "@"); at >= 0 {
+		// scp-like syntax git@host:owner/repo -> host/owner/repo.
+		s = s[at+1:]
+		s = strings.Replace(s, ":", "/", 1)
+	}
+	s = strings.TrimSuffix(s, ".git")
+	var segs []string
+	for _, part := range strings.FieldsFunc(s, func(r rune) bool { return r == '/' }) {
+		if clean := sanitizeSegment(part); clean != "" {
+			segs = append(segs, clean)
+		}
+	}
+	if len(segs) == 0 {
+		return []string{"template"}
+	}
+	return segs
+}
+
+// sanitizeSegment keeps a path segment safe to use as a directory name: it drops
+// any path separators or traversal and replaces characters that are awkward on
+// common filesystems, so a crafted URL can never escape the cache directory.
+func sanitizeSegment(seg string) string {
+	seg = strings.TrimSpace(seg)
+	if seg == "" || seg == "." || seg == ".." {
+		return ""
+	}
+	var b strings.Builder
+	for _, r := range seg {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9',
+			r == '-', r == '_', r == '.':
+			b.WriteRune(r)
+		default:
+			b.WriteByte('_')
+		}
+	}
+	out := b.String()
+	// A leading dot is legal and intentional (e.g. the ".llcppg" repo).
+	if out == "." || out == ".." {
+		return ""
+	}
+	return out
+}
+
 // Init bootstraps a new binding repository from the template, in the current
 // repository rooted at dir. It:
 //
-//  1. validates the environment (dir is a git repo, no existing c branch, no
-//     existing go.mod);
+//  1. determines the module name (the given module, or the current directory's
+//     name when module is empty) and validates the environment (dir is a git
+//     repo, no existing c branch, no existing go.mod);
 //  2. prepares the template in the cache (clone on first use, update otherwise,
 //     falling back to the cached copy when offline);
 //  3. creates and commits a c branch with the template's c-branch files, with
@@ -131,48 +201,77 @@ func Init(dir, module string, opts *Options) error {
 	if opts == nil {
 		opts = &Options{}
 	}
-	module = strings.TrimSpace(module)
-	if module == "" {
-		return errors.New("llcppg: cannot init: module name must not be empty")
-	}
 
-	// Step 1: validate the environment up front, before touching the cache or
-	// writing any file, so a refused run leaves everything exactly as it was.
+	// Step 1: determine the module name and validate the environment up front,
+	// before touching the cache or writing any file, so a refused run leaves
+	// everything exactly as it was.
+	module, err := moduleName(dir, module)
+	if err != nil {
+		return err
+	}
 	if err := checkEnvironment(dir); err != nil {
 		return err
 	}
+
+	out := opts.stdout()
+	// Report the module name before making any change, so the user sees which
+	// name is in effect whether they passed it or it was inferred.
+	fmt.Fprintf(out, "llcppg: using module name %q\n", module)
 
 	// Step 2: prepare the cached template.
 	cacheDir, err := opts.cacheDir()
 	if err != nil {
 		return err
 	}
-	tmplDir := filepath.Join(cacheDir, "templates", "llarhub", ".llcppg")
+	tmplDir := templateCacheDir(cacheDir, opts.templateURL())
 	if err := prepareTemplate(tmplDir, opts.templateURL(), opts.stderr()); err != nil {
 		return err
 	}
 
-	out := opts.stdout()
-
-	// Steps 3-6: create, populate, and commit the c branch. c is the first
-	// branch; on a freshly cloned, empty repository it is created on the unborn
-	// HEAD.
+	// Step 3: create, populate, and commit the c branch. c is the first branch;
+	// on a freshly cloned, empty repository it is created on the unborn HEAD.
 	if err := setupBranch(dir, tmplDir, branchC, module, false, out); err != nil {
 		return err
 	}
 
-	// Steps 7-10: create, populate, and commit the main branch. main is created
-	// as an orphan so the C-side and Go-side files never share history or mix
-	// (see the proposal's open question #1).
+	// Step 4: create, populate, and commit the main branch. main is created as
+	// an orphan so the C-side and Go-side files never share history or mix (see
+	// the proposal's open question #1).
 	if err := setupBranch(dir, tmplDir, branchMain, module, true, out); err != nil {
 		return err
 	}
 
-	// Step 11: report. main is left checked out by setupBranch above.
+	// Step 5: report. main is left checked out by setupBranch above.
 	fmt.Fprintf(out, "\nllcppg: initialized %q with the %q and %q branches.\n", module, branchC, branchMain)
 	fmt.Fprintln(out, "Nothing has been pushed. Review the result, then push with:")
 	fmt.Fprintf(out, "\n    git push -u origin %s %s\n", branchC, branchMain)
 	return nil
+}
+
+// moduleName resolves the module name to use. A non-empty module (after
+// trimming surrounding spaces) is used as given; an empty module is inferred
+// from the last element of dir's absolute path, matching the directory a
+// freshly cloned project sits in. Either way the result must be a valid module
+// path; an inferred name that is not (for example a directory name with spaces)
+// is rejected with a message asking the user to pass the name explicitly.
+func moduleName(dir, module string) (string, error) {
+	module = strings.TrimSpace(module)
+	inferred := false
+	if module == "" {
+		abs, err := filepath.Abs(dir)
+		if err != nil {
+			return "", err
+		}
+		module = filepath.Base(abs)
+		inferred = true
+	}
+	if err := gomodule.CheckImportPath(module); err != nil {
+		if inferred {
+			return "", fmt.Errorf("llcppg: cannot init: cannot use the current directory name %q as a module name (%v); pass the module name explicitly: llcppg -init <module-name>", module, err)
+		}
+		return "", fmt.Errorf("llcppg: cannot init: invalid module name %q: %v", module, err)
+	}
+	return module, nil
 }
 
 // setupBranch creates branch (checking it out), copies the template branch's

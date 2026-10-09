@@ -93,12 +93,19 @@ func branchCExists(dir string) (bool, error) {
 // -----------------------------------------------------------------------------
 
 // prepareTemplate ensures a usable clone of templateURL exists at tmplDir and
-// its c and main branches match the remote. On first use it clones; on later
-// use it fetches and resets the branches. If the directory exists but is not a
-// valid clone it is removed and re-cloned. When the network is unavailable but
-// a cached copy exists, it warns and continues with the cached copy; with no
-// cached copy and a failed clone, it returns an error.
+// its c and main branches match the remote. On first use it makes a blobless
+// partial clone (file contents are fetched on demand by the later `git
+// archive`, so full history is never downloaded); on later use it fetches and
+// resets the branches. If the directory exists but is not a valid clone it is
+// removed and re-cloned. When the network is unavailable but a cached copy
+// exists, it warns and continues with the cached copy; with no cached copy and
+// a failed clone, it returns an error.
 func prepareTemplate(tmplDir, templateURL string, stderr io.Writer) error {
+	if strings.HasPrefix(templateURL, "-") {
+		// Defense in depth: a URL that looks like an option could be
+		// interpreted by git as a flag rather than a repository.
+		return fmt.Errorf("llcppg: cannot init: invalid template URL %q: must not start with %q", templateURL, "-")
+	}
 	if !isGitRepoRoot(tmplDir) {
 		// A leftover directory that is not a valid clone (e.g. an interrupted
 		// clone) is discarded so the fresh clone can proceed.
@@ -110,7 +117,12 @@ func prepareTemplate(tmplDir, templateURL string, stderr io.Writer) error {
 		if err := os.MkdirAll(filepath.Dir(tmplDir), 0755); err != nil {
 			return err
 		}
-		if _, err := gitOutput("", "clone", "--quiet", templateURL, tmplDir); err != nil {
+		// A blobless partial clone of all branches: only the two branch tips are
+		// ever read (via `git archive`), so file blobs are fetched on demand and
+		// full history is skipped, keeping the first-run cost small even as the
+		// template grows. `--` guards against a URL that begins with a dash being
+		// parsed as an option.
+		if _, err := gitOutput("", "clone", "--quiet", "--filter=blob:none", "--no-single-branch", "--", templateURL, tmplDir); err != nil {
 			return fmt.Errorf("llcppg: cannot init: template %q is unavailable: %w", templateURL, err)
 		}
 		return verifyTemplateBranches(tmplDir)
@@ -225,8 +237,8 @@ func commitAll(dir, message string) error {
 // -----------------------------------------------------------------------------
 
 // gitOutput runs git with the given args. When dir is non-empty the command is
-// run with `-C dir`. It returns the trimmed combined-safe stdout, or an error
-// that includes git's stderr.
+// run with `-C dir`. It returns git's raw (untrimmed) stdout, or an error that
+// includes git's stderr. Callers that compare the output trim it themselves.
 func gitOutput(dir string, args ...string) (string, error) {
 	if dir != "" {
 		args = append([]string{"-C", dir}, args...)
