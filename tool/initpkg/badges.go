@@ -30,13 +30,36 @@ import (
 // fixed text in the badge URLs, matching the template repository's organization.
 const badgeOrg = "llarhub"
 
+// badgeRepo returns the repository name used in the badge URLs for module. The
+// binding repositories under badgeOrg are flat (a single name, e.g. "cjson"),
+// but a module path validated by gomodule.CheckImportPath may legitimately have
+// several slash-separated elements (e.g. "foo/bar"). The badges target the repo,
+// so only the last path element is used; a single-element module name is
+// returned unchanged.
+func badgeRepo(module string) string {
+	if i := strings.LastIndexByte(module, '/'); i >= 0 {
+		return module[i+1:]
+	}
+	return module
+}
+
+// godocBadgeImageURL is the GoDoc badge image URL for module. It is the single
+// source of truth for that URL: badgeLines embeds it in the GoDoc badge line and
+// badgeMarker uses it verbatim as the idempotency marker, so the two can never
+// drift apart (see TestBadgeMarkerMatchesBadgeLines).
+func godocBadgeImageURL(module string) string {
+	return fmt.Sprintf("https://pkg.go.dev/badge/github.com/%s/%s.svg", badgeOrg, badgeRepo(module))
+}
+
 // badgeLines returns the four standard badge lines for module, in order: GoDoc,
-// release, LLGo, and XGo. The module name is filled into the GoDoc and release
-// badges (two uses each); the LLGo and XGo badges are fixed text.
+// release, LLGo, and XGo. The repository name derived from module (its last path
+// element, see badgeRepo) fills the GoDoc and release badges; the LLGo and XGo
+// badges are fixed text.
 func badgeLines(module string) []string {
+	repo := badgeRepo(module)
 	return []string{
-		fmt.Sprintf("[![GoDoc](https://pkg.go.dev/badge/github.com/%s/%s.svg)](https://pkg.go.dev/github.com/%s/%s)", badgeOrg, module, badgeOrg, module),
-		fmt.Sprintf("[![GitHub release](https://img.shields.io/github/v/tag/%s/%s.svg?label=release)](https://github.com/%s/%s/releases)", badgeOrg, module, badgeOrg, module),
+		fmt.Sprintf("[![GoDoc](%s)](https://pkg.go.dev/github.com/%s/%s)", godocBadgeImageURL(module), badgeOrg, repo),
+		fmt.Sprintf("[![GitHub release](https://img.shields.io/github/v/tag/%s/%s.svg?label=release)](https://github.com/%s/%s/releases)", badgeOrg, repo, badgeOrg, repo),
 		"[![LLGo](https://img.shields.io/badge/powered_by-LLGo-green.svg)](https://github.com/xgo-dev/llgo)",
 		"[![XGo](https://img.shields.io/badge/project-XGo-blue.svg)](https://github.com/goplus/xgo)",
 	}
@@ -44,9 +67,11 @@ func badgeLines(module string) []string {
 
 // badgeMarker is the substring whose presence means the badges are already in
 // the README (for example because the template already carries them), so the
-// block must not be inserted a second time.
+// block must not be inserted a second time. It reuses the exact GoDoc badge
+// image URL that badgeLines emits, so editing that URL cannot silently break the
+// "already present" check.
 func badgeMarker(module string) string {
-	return fmt.Sprintf("https://pkg.go.dev/badge/github.com/%s/%s.svg", badgeOrg, module)
+	return godocBadgeImageURL(module)
 }
 
 // addReadmeBadges inserts the four standard badges after the title of the
@@ -210,7 +235,11 @@ func splitLines(content string) []readmeLine {
 // <h1> tag) is not detected.
 func findTitleLine(lines []readmeLine) (int, bool) {
 	i := 0
-	// Skip a YAML front matter block only when it is the very first line.
+	// Skip a YAML front matter block only when it is the very first line and it
+	// is actually closed by a matching "---". When there is no closing delimiter
+	// the opening "---" is not front matter (it may be a thematic break, or just
+	// ordinary text), so leave i at 0 and let the normal scan handle it rather
+	// than treating the whole rest of the file as skipped front matter.
 	if len(lines) > 0 && strings.TrimRight(lines[0].text, " \t") == "---" {
 		for j := 1; j < len(lines); j++ {
 			if strings.TrimRight(lines[j].text, " \t") == "---" {
@@ -268,9 +297,10 @@ func hasSetextTitleText(lines []readmeLine, underlineIdx int) bool {
 }
 
 // isATXLevel1 reports whether text is an ATX level-1 heading: up to three
-// leading spaces, a single '#', then either end-of-line or a space (an optional
-// closing run of '#' is allowed, as in "# Title #"). "##" or deeper is not a
-// level-1 heading.
+// leading spaces, a single '#', then either end-of-line or a space or tab. The
+// rest of the line (including any closing run of '#', as in "# Title #") is
+// treated as opaque title text and not parsed. "##" or deeper is not a level-1
+// heading.
 func isATXLevel1(text string) bool {
 	s := text
 	spaces := 0
@@ -314,10 +344,14 @@ func isSetextUnderline(text string, c byte) bool {
 	return true
 }
 
-// fenceDelimiter reports whether text opens or closes a fenced code block and,
-// if so, which marker it uses ('`' or '~'). A fence is at least three identical
-// marker characters with up to three leading spaces; an info string after the
-// run (as in "```go") is allowed on an opening fence.
+// fenceDelimiter reports whether text is a fenced-code-block delimiter and, if
+// so, which marker it uses ('`' or '~'). A delimiter is at least three identical
+// marker characters with up to three leading spaces; any trailing text (such as
+// an info string like "```go") is ignored. The check is deliberately lenient and
+// does not distinguish an opening fence from a closing one or enforce CommonMark's
+// closing-fence rules (same-or-greater length, no info string); findTitleLine
+// only needs to toggle in and out of fenced regions so a '#' or setext underline
+// inside a code block is not mistaken for a heading.
 func fenceDelimiter(text string) (byte, bool) {
 	s := text
 	spaces := 0

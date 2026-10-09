@@ -158,6 +158,24 @@ func TestInsertBadges_FrontMatterBeforeTitle(t *testing.T) {
 	}
 }
 
+func TestInsertBadges_UnterminatedFrontMatter(t *testing.T) {
+	// A leading "---" with no closing delimiter is not valid front matter, so the
+	// rest of the file is treated as ordinary content: a "# ..." heading after it
+	// is still found as the title rather than being swallowed as skipped block.
+	in := "---\n# cjson\n\nText.\n"
+	out, ok := insertBadges(in, "cjson")
+	if !ok {
+		t.Fatal("a heading after an unterminated '---' should still be found")
+	}
+	if !strings.Contains(out, "# cjson\n\n[![GoDoc]") {
+		t.Errorf("badges not placed at the heading after an unterminated '---':\n%q", out)
+	}
+	// The leading "---" is preserved as-is.
+	if !strings.HasPrefix(out, "---\n# cjson\n") {
+		t.Errorf("leading '---' was altered:\n%q", out)
+	}
+}
+
 func TestInsertBadges_HTMLCommentBeforeTitle(t *testing.T) {
 	in := "<!-- a comment -->\n\n# cjson\n\nText.\n"
 	out, ok := insertBadges(in, "cjson")
@@ -279,6 +297,47 @@ func TestInsertBadges_ModuleNameInEveryBadgeURL(t *testing.T) {
 	if !strings.Contains(out, "https://github.com/xgo-dev/llgo") ||
 		!strings.Contains(out, "https://github.com/goplus/xgo") {
 		t.Errorf("fixed LLGo/XGo badge URLs missing:\n%s", out)
+	}
+}
+
+// TestBadgeMarkerMatchesBadgeLines locks the invariant that the idempotency
+// marker is a substring of the GoDoc badge line it is meant to detect. Both are
+// derived from godocBadgeImageURL, so this guards against a future edit that
+// changes one without the other and silently breaks the "already present" check.
+func TestBadgeMarkerMatchesBadgeLines(t *testing.T) {
+	for _, module := range []string{"cjson", "zlib", "foo/bar"} {
+		marker := badgeMarker(module)
+		godoc := badgeLines(module)[0]
+		if !strings.Contains(godoc, marker) {
+			t.Errorf("badgeMarker(%q)=%q is not a substring of the GoDoc badge line %q", module, marker, godoc)
+		}
+	}
+}
+
+// TestBadgeURLsUseLastModuleSegment verifies that a multi-segment module name
+// uses only its last path element in the badge URLs (the binding repos under the
+// org are flat), and that the marker matches that same repo name.
+func TestBadgeURLsUseLastModuleSegment(t *testing.T) {
+	out, ok := insertBadges("# bar\n\nText.\n", "foo/bar")
+	if !ok {
+		t.Fatal("expected a title to be found")
+	}
+	// Only the last segment ("bar") appears in the badge URLs, never "foo/bar".
+	for _, want := range []string{
+		"https://pkg.go.dev/badge/github.com/llarhub/bar.svg",
+		"https://pkg.go.dev/github.com/llarhub/bar",
+		"https://img.shields.io/github/v/tag/llarhub/bar.svg?label=release",
+		"https://github.com/llarhub/bar/releases",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("expected URL %q in badges:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "llarhub/foo/bar") {
+		t.Errorf("the full multi-segment module path leaked into a badge URL:\n%s", out)
+	}
+	if marker := badgeMarker("foo/bar"); !strings.Contains(out, marker) {
+		t.Errorf("badgeMarker(%q)=%q not found in the inserted badges:\n%s", "foo/bar", marker, out)
 	}
 }
 
