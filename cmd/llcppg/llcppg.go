@@ -26,18 +26,36 @@ import (
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
 	"github.com/goplus/llcppg/tool"
+	"github.com/goplus/llcppg/tool/initpkg"
 )
 
 var (
-	verbose = flag.Bool("v", false, "enable verbose output")
-	debug   = flag.Bool("debug", false, "enable debug output")
+	verbose  = flag.Bool("v", false, "enable verbose output")
+	debug    = flag.Bool("debug", false, "enable debug output")
+	initRepo = flag.Bool("init", false, "bootstrap a new binding repository from the template; the module name is taken from the optional argument, or inferred from the current directory name")
 )
 
 func main() {
 	flag.Parse()
+
+	if *initRepo {
+		// The module name is optional: `llcppg -init <module-name>` uses the
+		// given name, `llcppg -init` infers it from the current directory.
+		module := ""
+		if args := flag.Args(); len(args) > 0 {
+			module = args[0]
+		}
+		if err := initpkg.Init(".", module, nil); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	args := flag.Args()
 	if len(args) < 1 {
 		fmt.Println("usage: llcppg [-v -debug] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
+		fmt.Println("       llcppg -init [<module-name>]")
 		return
 	}
 	destDir := args[0]
