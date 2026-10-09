@@ -180,12 +180,13 @@ func loadDecl(ctx *pkgCtx, scope *scopeCtx, decl clang.Cursor) {
 		})
 	case lc.Cursor_LinkageSpec: // extern "C" { ... }
 		loadLinkageSpec(ctx, scope, decl)
-	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:
+	case lc.Cursor_MacroExpansion, lc.Cursor_StaticAssert,
+		lc.Cursor_UsingDeclaration, lc.Cursor_UsingDirective:
 		// noop
 	case lc.Cursor_FunctionTemplate:
 		// TODO(xsw):
 	case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
-		preloadTemplateClass(ctx, scope, decl)
+		preloadTemplateClass(ctx, scope, decl, true)
 	case lc.Cursor_UnexposedDecl, lc.Cursor_UnexposedAttr:
 		// noop
 	default:
@@ -275,6 +276,9 @@ func newClassCtx(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) *classCtx {
 			if isNew {
 				this.publicMethods = append(this.publicMethods, fn)
 			}
+
+		case lc.Cursor_ClassTemplate, lc.Cursor_ClassTemplatePartialSpecialization:
+			preloadTemplateClass(ctx, this.scope(), decl, false)
 		}
 		return clang.Continue
 	})
@@ -297,10 +301,10 @@ func preloadClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
 	})
 }
 
-func preloadTemplateClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
+func preloadTemplateClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor, global bool) {
 	cName := cNameOf(cls)
 	obj, isNew := scope.addOverloadObj(ctx, cName, cls)
-	if isNew {
+	if isNew && global {
 		ctx.addLoadUnit(func(ctx *pkgCtx) {
 			this := newClassCtx(ctx, obj.decl, scope)
 			loadTemplateClass(ctx, cName, this, obj)
