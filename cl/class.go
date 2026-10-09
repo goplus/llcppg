@@ -499,8 +499,8 @@ func baseClass(ctx *pkgCtx, this *classCtx, decl clang.Cursor, feats *int) (typ 
 		typ, found = namedType(ctx, t, feats)
 		if found {
 			name = goNamedTypeName(typ)
+			return
 		}
-		return
 	case lc.Type_Unexposed:
 		typ, found = unexposedType(ctx, t, feats, this.scope())
 		if found {
