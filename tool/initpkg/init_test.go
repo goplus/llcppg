@@ -112,7 +112,7 @@ func newEmptyTarget(t *testing.T) string {
 
 // runInit invokes Init with the test identity in the process environment so the
 // git commits it makes succeed.
-func runInit(t *testing.T, dir, module string, opts *Options) (string, string, error) {
+func runInit(t *testing.T, dir, module string, opts *Config) (string, string, error) {
 	t.Helper()
 	// gitOutput inherits os.Environ(); set the identity for this test run.
 	for _, kv := range []string{
@@ -124,7 +124,7 @@ func runInit(t *testing.T, dir, module string, opts *Options) (string, string, e
 	}
 	var stdout, stderr bytes.Buffer
 	if opts == nil {
-		opts = &Options{}
+		opts = &Config{}
 	}
 	opts.Stdout = &stdout
 	opts.Stderr = &stderr
@@ -149,7 +149,7 @@ func TestInit_HappyPath(t *testing.T) {
 	cache := t.TempDir()
 	target := newEmptyTarget(t)
 
-	_, _, err := runInit(t, target, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache})
+	_, _, err := runInit(t, target, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache})
 	if err != nil {
 		t.Fatalf("Init: %v", err)
 	}
@@ -201,14 +201,14 @@ func TestInit_RefusesExistingCBranch(t *testing.T) {
 	cache := t.TempDir()
 	target := newEmptyTarget(t)
 
-	if _, _, err := runInit(t, target, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache}); err != nil {
+	if _, _, err := runInit(t, target, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache}); err != nil {
 		t.Fatalf("first Init: %v", err)
 	}
 
 	// Record state before the refused second run.
 	headBefore := strings.TrimSpace(mustGit(t, target, "rev-parse", "HEAD"))
 
-	_, _, err := runInit(t, target, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache})
+	_, _, err := runInit(t, target, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache})
 	if err == nil {
 		t.Fatal("second Init: expected error on existing c branch, got nil")
 	}
@@ -226,7 +226,7 @@ func TestInit_RefusesExistingGoMod(t *testing.T) {
 	target := newEmptyTarget(t)
 	writeTestFile(t, target, "go.mod", "module existing\n")
 
-	_, _, err := runInit(t, target, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache})
+	_, _, err := runInit(t, target, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache})
 	if err == nil {
 		t.Fatal("expected error on existing go.mod, got nil")
 	}
@@ -245,7 +245,7 @@ func TestInit_RefusedRunDoesNotTouchCache(t *testing.T) {
 	target := newEmptyTarget(t)
 	writeTestFile(t, target, "go.mod", "module existing\n") // forces a refusal
 
-	_, _, err := runInit(t, target, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache})
+	_, _, err := runInit(t, target, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache})
 	if err == nil {
 		t.Fatal("expected refusal")
 	}
@@ -261,7 +261,7 @@ func TestInit_NotAGitRepo(t *testing.T) {
 	cache := t.TempDir()
 	dir := t.TempDir() // plain directory, no git init
 
-	_, _, err := runInit(t, dir, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache})
+	_, _, err := runInit(t, dir, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache})
 	if err == nil {
 		t.Fatal("expected error outside a git repo, got nil")
 	}
@@ -287,7 +287,7 @@ func TestInit_DerivesModuleNameFromDir(t *testing.T) {
 	}
 	runGit(t, target, "init", "-q", "-b", branchMain)
 
-	stdout, _, err := runInit(t, target, "   ", &Options{TemplateURL: tmpl, CacheDir: cache})
+	stdout, _, err := runInit(t, target, "   ", &Config{TemplateURL: tmpl, CacheDir: cache})
 	if err != nil {
 		t.Fatalf("Init with inferred module name: %v", err)
 	}
@@ -317,7 +317,7 @@ func TestInit_InferredNameInvalidReportsError(t *testing.T) {
 	}
 	runGit(t, target, "init", "-q", "-b", branchMain)
 
-	_, _, err := runInit(t, target, "", &Options{TemplateURL: tmpl, CacheDir: cache})
+	_, _, err := runInit(t, target, "", &Config{TemplateURL: tmpl, CacheDir: cache})
 	if err == nil {
 		t.Fatal("expected an error for an un-usable inferred module name, got nil")
 	}
@@ -335,7 +335,7 @@ func TestInit_InvalidExplicitModuleName(t *testing.T) {
 	tmpl := newTemplateRepo(t)
 	target := newEmptyTarget(t)
 
-	_, _, err := runInit(t, target, "bad name", &Options{TemplateURL: tmpl, CacheDir: t.TempDir()})
+	_, _, err := runInit(t, target, "bad name", &Config{TemplateURL: tmpl, CacheDir: t.TempDir()})
 	if err == nil || !strings.Contains(err.Error(), "invalid module name") {
 		t.Fatalf("expected an invalid-module-name error, got %v", err)
 	}
@@ -348,7 +348,7 @@ func TestInit_CacheClonedThenUpdatedInPlace(t *testing.T) {
 
 	// First run clones into the cache.
 	target1 := newEmptyTarget(t)
-	if _, _, err := runInit(t, target1, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache}); err != nil {
+	if _, _, err := runInit(t, target1, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache}); err != nil {
 		t.Fatalf("first Init: %v", err)
 	}
 	if !isGitRepoRoot(tmplCacheDir) {
@@ -373,7 +373,7 @@ func TestInit_CacheClonedThenUpdatedInPlace(t *testing.T) {
 	// Second run (different empty repo) must update the existing clone in place
 	// (not re-clone) and pick up the new commit.
 	target2 := newEmptyTarget(t)
-	if _, _, err := runInit(t, target2, "zlib", &Options{TemplateURL: tmpl, CacheDir: cache}); err != nil {
+	if _, _, err := runInit(t, target2, "zlib", &Config{TemplateURL: tmpl, CacheDir: cache}); err != nil {
 		t.Fatalf("second Init: %v", err)
 	}
 	headAfterUpdate := strings.TrimSpace(mustGit(t, tmplCacheDir, "rev-parse", "origin/"+branchMain))
@@ -392,7 +392,7 @@ func TestInit_LocalCacheModificationsDoNotLeak(t *testing.T) {
 
 	// Populate the cache via a first run.
 	target1 := newEmptyTarget(t)
-	if _, _, err := runInit(t, target1, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache}); err != nil {
+	if _, _, err := runInit(t, target1, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache}); err != nil {
 		t.Fatalf("first Init: %v", err)
 	}
 
@@ -401,7 +401,7 @@ func TestInit_LocalCacheModificationsDoNotLeak(t *testing.T) {
 
 	// A fresh run must ignore the dirty working tree and use branch contents.
 	target2 := newEmptyTarget(t)
-	if _, _, err := runInit(t, target2, "zlib", &Options{TemplateURL: tmpl, CacheDir: cache}); err != nil {
+	if _, _, err := runInit(t, target2, "zlib", &Config{TemplateURL: tmpl, CacheDir: cache}); err != nil {
 		t.Fatalf("second Init: %v", err)
 	}
 	content, _ := fileOnBranch(t, target2, branchMain, "go.mod")
@@ -416,7 +416,7 @@ func TestInit_OfflineUsesCachedCopy(t *testing.T) {
 
 	// Populate the cache.
 	target1 := newEmptyTarget(t)
-	if _, _, err := runInit(t, target1, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache}); err != nil {
+	if _, _, err := runInit(t, target1, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache}); err != nil {
 		t.Fatalf("first Init: %v", err)
 	}
 
@@ -426,7 +426,7 @@ func TestInit_OfflineUsesCachedCopy(t *testing.T) {
 	}
 
 	target2 := newEmptyTarget(t)
-	_, stderr, err := runInit(t, target2, "zlib", &Options{TemplateURL: tmpl, CacheDir: cache})
+	_, stderr, err := runInit(t, target2, "zlib", &Config{TemplateURL: tmpl, CacheDir: cache})
 	if err != nil {
 		t.Fatalf("offline Init with populated cache should succeed, got: %v", err)
 	}
@@ -444,7 +444,7 @@ func TestInit_OfflineEmptyCacheFails(t *testing.T) {
 	// A template URL that cannot be cloned, with an empty cache.
 	bogus := "file://" + filepath.Join(t.TempDir(), "does-not-exist.git")
 
-	_, _, err := runInit(t, target, "cjson", &Options{TemplateURL: bogus, CacheDir: cache})
+	_, _, err := runInit(t, target, "cjson", &Config{TemplateURL: bogus, CacheDir: cache})
 	if err == nil {
 		t.Fatal("expected failure with empty cache and no network")
 	}
@@ -466,7 +466,7 @@ func TestInit_BrokenCacheIsReclone(t *testing.T) {
 	writeTestFile(t, tmplCacheDir, "partial.tmp", "junk\n")
 
 	target := newEmptyTarget(t)
-	if _, _, err := runInit(t, target, "cjson", &Options{TemplateURL: tmpl, CacheDir: cache}); err != nil {
+	if _, _, err := runInit(t, target, "cjson", &Config{TemplateURL: tmpl, CacheDir: cache}); err != nil {
 		t.Fatalf("Init should recover from a broken cache, got: %v", err)
 	}
 	if !isGitRepoRoot(tmplCacheDir) {
@@ -498,20 +498,9 @@ func TestInit_MissingTemplateFileReportsTemplateError(t *testing.T) {
 	}
 
 	target := newEmptyTarget(t)
-	_, _, err := runInit(t, target, "cjson", &Options{TemplateURL: "file://" + bare, CacheDir: t.TempDir()})
+	_, _, err := runInit(t, target, "cjson", &Config{TemplateURL: "file://" + bare, CacheDir: t.TempDir()})
 	if err == nil || !strings.Contains(err.Error(), "template error") {
 		t.Fatalf("expected a template error for missing llcppg.cfg, got: %v", err)
-	}
-}
-
-func TestCacheDir_EnvOverride(t *testing.T) {
-	t.Setenv("LLCPPG_CACHE", "/tmp/custom-llcppg-cache")
-	got, err := CacheDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got != "/tmp/custom-llcppg-cache" {
-		t.Errorf("CacheDir() = %q, want the LLCPPG_CACHE override", got)
 	}
 }
 

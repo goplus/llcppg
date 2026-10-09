@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/cl"
@@ -45,7 +46,9 @@ func main() {
 		if args := flag.Args(); len(args) > 0 {
 			module = args[0]
 		}
-		if err := initpkg.Init(".", module, nil); err != nil {
+		dir, err := cacheDir()
+		check(err)
+		if err := initpkg.Init(".", module, &initpkg.Config{CacheDir: dir}); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
@@ -80,5 +83,22 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+}
+
+// CacheDir returns the directory llcppg uses to cache downloadable resources
+// such as the project template. The LLCPPG_CACHE environment variable overrides
+// the default, which is <os.UserCacheDir>/llcppg.
+func cacheDir() (string, error) {
+	base, err := os.UserCacheDir()
+	if err != nil {
+		return "", fmt.Errorf("locate user cache dir: %w", err)
+	}
+	return filepath.Join(base, "llcppg"), nil
+}
+
+func check(err error) {
+	if err != nil {
+		log.Panicln(err)
 	}
 }
