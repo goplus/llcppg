@@ -2,6 +2,7 @@
 ignore:
   - "chore/*/*"
   - "clang"
+  - "cl/cltest"
   - "cmd/llcppg"
-  - "tool/dump.go"
+  - "tool/initpkg"
   - "xtool/*/*/*"

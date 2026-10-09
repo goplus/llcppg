@@ -52,15 +52,14 @@ var substituteFiles = map[string][]string{
 	branchMain: {"go.mod"},
 }
 
-// Options configures Init. The zero value uses the public template and the
+// Config configures Init. The zero value uses the public template and the
 // per-user cache directory; tests and advanced callers can override both.
-type Options struct {
+type Config struct {
 	// TemplateURL is the git URL of the template repository. Empty means
 	// DefaultTemplateURL.
 	TemplateURL string
 
-	// CacheDir is the directory that holds the cached template clone. Empty
-	// means the location returned by CacheDir().
+	// CacheDir is the directory that holds the cached template clone. required.
 	CacheDir string
 
 	// Stdout receives the human-readable progress and completion report. Empty
@@ -72,46 +71,25 @@ type Options struct {
 	Stderr io.Writer
 }
 
-func (o *Options) templateURL() string {
+func (o *Config) templateURL() string {
 	if o.TemplateURL != "" {
 		return o.TemplateURL
 	}
 	return DefaultTemplateURL
 }
 
-func (o *Options) cacheDir() (string, error) {
-	if o.CacheDir != "" {
-		return o.CacheDir, nil
-	}
-	return CacheDir()
-}
-
-func (o *Options) stdout() io.Writer {
+func (o *Config) stdout() io.Writer {
 	if o.Stdout != nil {
 		return o.Stdout
 	}
 	return os.Stdout
 }
 
-func (o *Options) stderr() io.Writer {
+func (o *Config) stderr() io.Writer {
 	if o.Stderr != nil {
 		return o.Stderr
 	}
 	return os.Stderr
-}
-
-// CacheDir returns the directory llcppg uses to cache downloadable resources
-// such as the project template. The LLCPPG_CACHE environment variable overrides
-// the default, which is <os.UserCacheDir>/llcppg.
-func CacheDir() (string, error) {
-	if v := os.Getenv("LLCPPG_CACHE"); v != "" {
-		return v, nil
-	}
-	base, err := os.UserCacheDir()
-	if err != nil {
-		return "", fmt.Errorf("locate user cache dir: %w", err)
-	}
-	return filepath.Join(base, "llcppg"), nil
 }
 
 // templateCacheDir returns the directory under cacheDir that holds the cached
@@ -197,9 +175,9 @@ func sanitizeSegment(seg string) string {
 //  5. leaves main checked out and reports what was done.
 //
 // It never pushes, adds or modifies remotes, or changes git configuration.
-func Init(dir, module string, opts *Options) error {
+func Init(dir, module string, opts *Config) error {
 	if opts == nil {
-		opts = &Options{}
+		opts = &Config{}
 	}
 
 	// Step 1: determine the module name and validate the environment up front,
@@ -219,10 +197,7 @@ func Init(dir, module string, opts *Options) error {
 	fmt.Fprintf(out, "llcppg: using module name %q\n", module)
 
 	// Step 2: prepare the cached template.
-	cacheDir, err := opts.cacheDir()
-	if err != nil {
-		return err
-	}
+	cacheDir := opts.CacheDir
 	tmplDir := templateCacheDir(cacheDir, opts.templateURL())
 	if err := prepareTemplate(tmplDir, opts.templateURL(), opts.stderr()); err != nil {
 		return err
