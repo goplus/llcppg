@@ -335,7 +335,8 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 			loadVar(ctx, decl)
 		}
 
-	case lc.Cursor_CXXAccessSpecifier, lc.Cursor_FriendDecl, lc.Cursor_UsingDeclaration:
+	case lc.Cursor_CXXAccessSpecifier, lc.Cursor_FriendDecl,
+		lc.Cursor_StaticAssert, lc.Cursor_UsingDeclaration:
 		// noop
 
 	case lc.Cursor_EnumDecl:
@@ -387,7 +388,7 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		})
 
 	case lc.Cursor_ClassTemplatePartialSpecialization:
-		panic("defining a partial specialization in a class is not supported")
+		// noop
 
 	case lc.Cursor_UnionDecl:
 		switch {
