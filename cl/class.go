@@ -496,10 +496,11 @@ func baseClass(ctx *pkgCtx, this *classCtx, decl clang.Cursor, feats *int) (typ 
 	}
 	switch t.Kind {
 	case lc.Type_Record, lc.Type_Typedef:
-		cName := cTypeName(t)
-		if o, ok := ctx.getTypeObj(cName, feats); ok {
-			return o.Type(), o.Name(), true
+		typ, found = namedType(ctx, t, feats)
+		if found {
+			name = goNamedTypeName(typ)
 		}
+		return
 	case lc.Type_Unexposed:
 		typ, found = unexposedType(ctx, t, feats, this.scope())
 		if found {
@@ -507,7 +508,7 @@ func baseClass(ctx *pkgCtx, this *classCtx, decl clang.Cursor, feats *int) (typ 
 		}
 		return
 	}
-	ctx.panicf(decl, "baseClass %s: unknown base class - %s (%d)", clang.String(decl), clang.String(t), t.Kind)
+	ctx.panicf(decl, "baseClass %s: unknown base class - %s (%d)", cNameOf(decl), clang.String(t), t.Kind)
 	return
 }
 
