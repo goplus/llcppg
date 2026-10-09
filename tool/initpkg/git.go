@@ -90,6 +90,13 @@ func branchCExists(dir string) (bool, error) {
 	return strings.TrimSpace(out) != "", nil
 }
 
+// localBranchExists reports whether a local branch with the given name already
+// exists in dir.
+func localBranchExists(dir, branch string) bool {
+	_, err := gitOutput(dir, "rev-parse", "--verify", "--quiet", "refs/heads/"+branch)
+	return err == nil
+}
+
 // -----------------------------------------------------------------------------
 
 // prepareTemplate ensures a usable clone of templateURL exists at tmplDir and
@@ -195,17 +202,28 @@ func extractBranch(tmplDir, branch, destDir string) error {
 
 // -----------------------------------------------------------------------------
 
-// checkoutNewBranch creates branch in dir and checks it out. On an unborn HEAD
-// (a freshly cloned, empty repository) `git checkout -b` makes branch the first
-// branch to receive a commit.
+// checkoutNewBranch checks branch out in dir, creating it when it does not yet
+// exist. On an unborn HEAD (a freshly cloned, empty repository) `git checkout
+// -b` makes branch the first branch to receive a commit.
 //
-// When orphan is true the branch is created with `git checkout --orphan`, i.e.
-// as a fresh root with no parent commit. The index and working tree are then
-// cleared so none of the previous branch's files carry over; the caller
-// repopulates them from the template. This keeps the c and main branches from
-// ever sharing history or mixing content.
+// When orphan is true and the branch does not exist, it is created with `git
+// checkout --orphan`, i.e. as a fresh root with no parent commit, and the index
+// and working tree are then cleared so none of the previous branch's files
+// carry over; the caller repopulates them from the template. This keeps the c
+// and main branches from ever sharing history or mixing content.
+//
+// When orphan is true and the branch already exists — the common case for main,
+// which a freshly cloned repository already has as its default branch — init
+// switches to it with a plain `git checkout` rather than failing to recreate
+// it. The caller then lays the template files on top and commits.
 func checkoutNewBranch(dir, branch string, orphan bool) error {
 	if orphan {
+		if localBranchExists(dir, branch) {
+			if _, err := gitOutput(dir, "checkout", branch); err != nil {
+				return fmt.Errorf("llcppg: cannot init: switch to branch %q: %w", branch, err)
+			}
+			return nil
+		}
 		if _, err := gitOutput(dir, "checkout", "--orphan", branch); err != nil {
 			return fmt.Errorf("llcppg: cannot init: create branch %q: %w", branch, err)
 		}
