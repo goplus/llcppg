@@ -8,5 +8,5 @@ github.com/llarhub/clang-c v0.9.1 h1:4M3Mx3QouG+JHY1LauoOWfg2nlgyV9+DPEv41zmh2O4
 github.com/llarhub/clang-c v0.9.1/go.mod h1:M7fLmtYCSOU2ULadFIoI8MMQiUr0vnzi2LoTdTv+J2c=
 github.com/qiniu/x v1.19.1 h1:Z6ZALlHMrZw/AImYjYnYKMXemasVdUF2o7riwm9TZTs=
 github.com/qiniu/x v1.19.1/go.mod h1:Sx3Wy+0GI9OsX4a53mYj6A0o7mHJ94PUvraqGYb4EIs=
-golang.org/x/mod v0.40.0 h1:hUv+3cXcdRHz08UmSiOob7sadHig73uo5bkXxQ/tvUs=
-golang.org/x/mod v0.40.0/go.mod h1:0/weTWkPWGBikyTWAX3dkjVztMmBA5hM0DH6BElSupE=
+golang.org/x/mod v0.41.0 h1:qJmnOUb4YB+FsEuM3HcWucdZASCPGhsX6uljO6pog0c=
+golang.org/x/mod v0.41.0/go.mod h1:Ek9pY8RKWXwsWvd3rQiHYtMqkjSUV+s1Rj7j4H5Ur6o=
