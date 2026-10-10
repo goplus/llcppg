@@ -116,6 +116,14 @@ var (
 )
 
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, scope *scopeCtx) types.Type {
+	underlying := typ
+	if underlying.Kind == lc.Type_Elaborated {
+		underlying = underlying.Named()
+	}
+	decl := underlying.Declaration()
+	if decl.Kind == lc.Cursor_UnionDecl && decl.IsAnonymous() != 0 {
+		return emitUnion(ctx, decl, ctx.nextAnonName())
+	}
 	var feats int
 	ret := toTypeEx(ctx, pkg, typ, flags, &feats, scope)
 	if feats&featAllIgnore != 0 {

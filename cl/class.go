@@ -308,14 +308,12 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, goName str
 		var fldType types.Type
 		var ft = decl.Type()
 		if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 {
-			switch ft.Kind {
-			case lc.Type_Record:
-				if ftd.Kind == lc.Cursor_UnionDecl {
-					fldType = emitUnion(ctx, ftd, ctx.nextAnonName())
-				} else {
-					fldType = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
-				}
-			case lc.Type_Enum:
+			switch {
+			case ftd.Kind == lc.Cursor_UnionDecl:
+				fldType = toType(ctx, pkg, ft, flagIsVarDef, this.scope())
+			case ft.Kind == lc.Type_Record:
+				fldType = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
+			case ft.Kind == lc.Type_Enum:
 				fldType = emitEnum(ctx, ftd, ctx.nextAnonName())
 			default:
 				ctx.panicf(ftd, "unknown anonymous field type (%d: %s)", ft.Kind, clang.String(ft))

@@ -99,6 +99,12 @@ func initUnionType(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl) {
 		switch m.Kind {
 		case lc.Cursor_FieldDecl:
 			members = append(members, m)
+		case lc.Cursor_UnionDecl:
+			// In union { union { int x; }; }, x shares the outer storage.
+			// A named member is handled by its FieldDecl instead.
+			if m.IsAnonymousRecordDecl() != 0 {
+				return clang.Recurse
+			}
 		}
 		return clang.Continue
 	})
