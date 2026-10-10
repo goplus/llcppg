@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{.ImportPath}} - llcppg doc</title>
-<!-- godoc's own stylesheet, so the rendered package body matches the
-     familiar godoc / pkg.go.dev layout. -->
-<link rel="stylesheet" href="/godoc/style.css">
 <link rel="stylesheet" href="/static/page.css">
 </head>
 <body>
@@ -28,23 +25,20 @@
 </section>
 {{end}}
 
-<!-- Package body rendered by x/tools/godoc. The #page/.container wrappers and
-     page-title mirror godoc.html so godoc's stylesheet and scripts apply. -->
-<div id="page" class="wide">
+<!-- Package body rendered by internal/godoc. Its markup uses pkg.go.dev's
+     "Documentation-*" classes; the .Documentation wrapper is what those rules
+     in page.css hang off of. -->
+<div id="page">
 <div class="container">
 <h1>Package {{.Name}}</h1>
+<div class="Documentation">
 {{.Body}}
+</div>
 </div>
 </div>
 
 <footer>
   <p class="muted">Served by <code>llcppg -doc</code>. The page re-reads the package on every refresh.</p>
 </footer>
-
-<!-- godoc's scripts drive the collapsible sections and the index. jQuery is
-     required by godocs.js. Without JavaScript the overview and index are shown
-     expanded by default, so the page is still fully readable. -->
-<script src="/godoc/jquery.js"></script>
-<script src="/godoc/godocs.js"></script>
 </body>
 </html>

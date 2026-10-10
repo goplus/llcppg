@@ -17,88 +17,42 @@
 package docserver
 
 import (
-	"bytes"
+	"context"
 	"html/template"
-	"sync"
-	texttemplate "text/template"
 
-	"golang.org/x/tools/godoc"
-	"golang.org/x/tools/godoc/static"
-	"golang.org/x/tools/godoc/vfs/mapfs"
+	"github.com/goplus/llcppg/internal/godoc"
 )
 
 // pageData is the data passed to the page shell template (assets/page.html).
-// The package body itself is rendered by x/tools/godoc so the output matches
-// the familiar pkg.go.dev / godoc layout; this struct only carries the shell
-// metadata and that rendered body.
+// The package body itself is rendered by the vendored internal/godoc package so
+// the output matches the familiar pkg.go.dev layout; this struct only carries
+// the shell metadata and that rendered body.
 type pageData struct {
 	ImportPath  string
 	Name        string
 	Dir         string
 	ParseErrors []string
 
-	// Body is the package documentation rendered by godoc's package template.
+	// Body is the package documentation rendered by internal/godoc.
 	Body template.HTML
 }
 
-// pres is the godoc Presentation used purely for its template FuncMap and node
-// formatting. It is backed by an empty in-memory filesystem because we never
-// use godoc's corpus, indexing, search, or file serving — only its package
-// template and the AST/comment formatting helpers that template needs.
-//
-// Building it is cheap but not free, so it is created once and reused; the
-// Presentation is only read during rendering (template execution), which the
-// http.Server already serializes per request goroutine without sharing it.
-var (
-	presOnce sync.Once
-	pres     *godoc.Presentation
-	pkgTmpl  *texttemplate.Template
-)
-
-func initPres() {
-	corpus := godoc.NewCorpus(mapfs.New(map[string]string{}))
-	pres = godoc.NewPresentation(corpus)
-	// Link declarations and identifiers to their in-page anchors, matching
-	// godoc's own behaviour.
-	pres.DeclLinks = true
-	// godoc's package template is a text/template (not html/template): its
-	// FuncMap helpers such as comment_html and node_html already return escaped,
-	// safe HTML, so parsing it with html/template would double-escape the
-	// output. We mirror godoc's own choice here.
-	pkgTmpl = texttemplate.Must(texttemplate.New("package.html").
-		Funcs(pres.FuncMap()).
-		Parse(static.Files["package.html"]))
-}
-
-// render builds the page-shell data for p, rendering the package body with
-// x/tools/godoc's package template.
+// render builds the page-shell data for p, rendering the package body with the
+// vendored internal/godoc package (a trimmed copy of x/pkgsite's godoc).
 func (p *pkg) render() *pageData {
-	presOnce.Do(initPres)
-
-	dp := p.Doc
-	info := &godoc.PageInfo{
-		Dirname:  p.Dir,
-		FSet:     p.FileSet,
-		PDoc:     dp,
-		Examples: dp.Examples,
-		Notes:    dp.Notes,
-		// AnalysisData and CallGraph must be valid JavaScript literals because
-		// the template emits them into a <script> block. We do not run godoc's
-		// analysis, so render them as JSON null; the "null" string also makes
-		// the template skip the call-graph section.
-		AnalysisData: template.JS("null"),
-		CallGraph:    template.JS("null"),
-	}
-
 	data := &pageData{
-		ImportPath:  dp.ImportPath,
-		Name:        dp.Name,
+		ImportPath:  p.ImportPath,
+		Name:        p.Doc.Name,
 		Dir:         p.Dir,
 		ParseErrors: p.ParseErrors,
 	}
 
-	var buf bytes.Buffer
-	if err := pkgTmpl.Execute(&buf, info); err != nil {
+	// load() already built p.Doc with go/doc; render that directly. We must not
+	// rebuild the doc from the raw ASTs here, because go/doc.NewFromFiles
+	// consumes the files' comment associations, so a second pass would drop all
+	// the doc comments.
+	parts, err := godoc.RenderDoc(context.Background(), p.FileSet, p.Doc)
+	if err != nil {
 		// Rendering the body failed; surface it inside the body rather than
 		// dropping the whole page. The shell (import path, parse errors) is
 		// still useful on its own.
@@ -106,6 +60,10 @@ func (p *pkg) render() *pageData {
 			template.HTMLEscapeString(err.Error()) + "</pre>")
 		return data
 	}
-	data.Body = template.HTML(buf.String())
+
+	// parts.Body is a safehtml.HTML produced by godoc's safe templates; its
+	// String is known to be safe HTML, so promoting it to template.HTML for the
+	// shell template is correct (no double-escaping).
+	data.Body = template.HTML(parts.Body.String())
 	return data
 }

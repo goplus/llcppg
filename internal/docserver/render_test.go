@@ -70,10 +70,37 @@ func TestRenderBodyContainsDeclarations(t *testing.T) {
 	data := renderFixture(t, fixtureSrc, false)
 	body := string(data.Body)
 
-	// godoc's package template renders an index and the exported declarations.
-	for _, want := range []string{"Version", "DefaultName", "DB", "Open", "Close", "Query"} {
+	// The godoc template renders an index and the exported declarations, each
+	// with its own anchor id.
+	for _, want := range []string{
+		`id="Version"`, `id="DefaultName"`, `id="DB"`,
+		`id="Open"`, `id="DB.Close"`, `id="Query"`,
+	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("rendered body missing %q", want)
+		}
+	}
+}
+
+func TestRenderBodyContainsDocComments(t *testing.T) {
+	data := renderFixture(t, fixtureSrc, false)
+	body := string(data.Body)
+
+	// The package overview and the per-symbol doc comments must be rendered,
+	// not just the declarations.
+	if !strings.Contains(body, `id="pkg-overview"`) {
+		t.Error("rendered body missing the package overview section")
+	}
+	for _, want := range []string{
+		"Package sqlite is a tiny fixture package.",
+		"DB is a database handle.",
+		"Open opens a DB.",
+		"Close closes the DB.",
+	} {
+		// Doc prose is rendered inside <p> elements, so a substring match on the
+		// prose is enough; it would be absent if comments were dropped.
+		if !strings.Contains(body, want) {
+			t.Errorf("rendered body missing doc comment %q", want)
 		}
 	}
 }
@@ -96,16 +123,13 @@ func TestRenderEscapesHTML(t *testing.T) {
 	}
 }
 
-func TestRenderValidScriptLiterals(t *testing.T) {
+func TestRenderLinksTypes(t *testing.T) {
 	data := renderFixture(t, fixtureSrc, false)
 	body := string(data.Body)
-	// AnalysisData / CallGraph must be emitted as valid JS (null), never an
-	// empty assignment that would be a syntax error.
-	if strings.Contains(body, "document.ANALYSIS_DATA = ;") {
-		t.Error("ANALYSIS_DATA rendered as an invalid empty assignment")
-	}
-	if !strings.Contains(body, "document.ANALYSIS_DATA = null;") {
-		t.Error("ANALYSIS_DATA should be rendered as null")
+	// godoc links identifiers to their in-page anchors; Open returns *DB, so
+	// its declaration should hyperlink DB to "#DB".
+	if !strings.Contains(body, `href="#DB"`) {
+		t.Error("expected the rendered declarations to link the DB type to #DB")
 	}
 }
 
