@@ -72,7 +72,7 @@ func TestHandlerServesStatic(t *testing.T) {
 	// llcppg's stylesheet, which styles both the shell chrome and the
 	// godoc-rendered body's Documentation-* classes.
 	body := getBody(t, srv.URL+"/static/page.css", http.StatusOK)
-	if !strings.Contains(body, "pkg-header") {
+	if !strings.Contains(body, "parse-errors") {
 		t.Error("shell stylesheet should be served from embedded assets")
 	}
 	if !strings.Contains(body, ".Documentation") {
@@ -88,6 +88,59 @@ func TestHandlerServesStatic(t *testing.T) {
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusNotFound {
 		t.Errorf("GET /godoc/style.css: status = %d, want 404 (no x/tools assets)", resp.StatusCode)
+	}
+}
+
+func TestHandlerServesSource(t *testing.T) {
+	dir := writeDir(t, map[string]string{
+		"a.go": "// Package foo is a fixture.\npackage foo\n\n// Bar does nothing.\nfunc Bar() {}\n",
+	})
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
+	defer srv.Close()
+
+	// The documentation links symbols to /src/<file>#L<line>; that endpoint
+	// must serve the file with per-line anchors so the fragment resolves.
+	body := getBody(t, srv.URL+"/src/a.go", http.StatusOK)
+	if !strings.Contains(body, "func Bar() {}") {
+		t.Error("source view should contain the file's text")
+	}
+	if !strings.Contains(body, `id="L5"`) {
+		t.Error("source view should carry a per-line anchor the #L fragment targets")
+	}
+
+	// Raw source text must be HTML-escaped, not emitted as markup.
+	escDir := writeDir(t, map[string]string{"b.go": "package foo\n\nvar X = \"<b>\"\n"})
+	esrv := httptest.NewServer(newHandler(escDir, false, nil, nil))
+	defer esrv.Close()
+	ebody := getBody(t, esrv.URL+"/src/b.go", http.StatusOK)
+	if strings.Contains(ebody, `"<b>"`) || !strings.Contains(ebody, "&lt;b&gt;") {
+		t.Error("source view must HTML-escape the file contents")
+	}
+}
+
+func TestHandlerSourceRejectsBadPaths(t *testing.T) {
+	dir := writeDir(t, map[string]string{
+		"a.go":      "package foo\n",
+		"notes.txt": "secret\n",
+	})
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
+	defer srv.Close()
+
+	// Only .go files directly in the package directory are served; a non-.go
+	// file, a nested path, and a bare prefix all 404.
+	for _, p := range []string{
+		"/src/notes.txt",
+		"/src/sub/x.go",
+		"/src/",
+	} {
+		resp, err := http.Get(srv.URL + p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusNotFound {
+			t.Errorf("GET %s: status = %d, want 404", p, resp.StatusCode)
+		}
 	}
 }
 

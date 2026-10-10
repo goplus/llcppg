@@ -9,9 +9,11 @@
 // reduced to just what llcppg's local documentation server needs: build a
 // Package from already-parsed *ast.File values and render it to HTML. The
 // pkgsite original additionally encodes/decodes ASTs for database storage and
-// extracts module/version/source metadata; none of that applies to llcppg,
-// which renders a single, freshly generated package straight from disk, so the
-// codec, symbol extraction, and source-linking machinery are omitted.
+// extracts module/version metadata; none of that applies to llcppg, which
+// renders a single, freshly generated package straight from disk, so the codec
+// and symbol extraction are omitted. Source linking is kept (see
+// RenderDocLinked): the docserver serves the package source locally, so symbol
+// and "View Source" links can point back at it.
 //
 // This code (and the HTML templates under dochtml/doc) is BSD-licensed Go
 // Authors code; see the LICENSE file in this directory.

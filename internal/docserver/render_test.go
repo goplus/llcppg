@@ -133,6 +133,54 @@ func TestRenderLinksTypes(t *testing.T) {
 	}
 }
 
+func TestRenderLinksSymbolsToSource(t *testing.T) {
+	data := renderFixture(t, fixtureSrc, false)
+	body := string(data.Body)
+
+	// Exported declarations' names link to their source line via /src/<file>#L.
+	// Open is defined on line 15 of the fixture, so its header name links there.
+	for _, want := range []string{
+		`href="/src/sqlite.go#L`, // symbol-name links in headers
+		`>View Source</a>`,       // the "View Source" link above const/var decls
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("rendered body missing source link %q", want)
+		}
+	}
+	// The specific line for Open ("func Open...") is line 14 in fixtureSrc
+	// (the func keyword, not the preceding doc comment).
+	if !strings.Contains(body, `href="/src/sqlite.go#L14"`) {
+		t.Errorf("expected Open to link to its source line L14; body:\n%s", body)
+	}
+}
+
+func TestRenderHasNoRedundantHeader(t *testing.T) {
+	dir := writeDir(t, map[string]string{"sqlite.go": fixtureSrc})
+	p, err := load(dir, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The rendered page body no longer carries the "read from <dir>" /
+	// "import ..." shell header; the godoc body supplies the package title.
+	page := renderPage(t, p)
+	for _, unwanted := range []string{"pkg-header", "read from"} {
+		if strings.Contains(page, unwanted) {
+			t.Errorf("page should not contain the redundant header fragment %q", unwanted)
+		}
+	}
+}
+
+// renderPage executes the page shell template against p and returns the HTML, so
+// tests can assert on the full page (shell + body), not only the godoc body.
+func renderPage(t *testing.T, p *pkg) string {
+	t.Helper()
+	var sb strings.Builder
+	if err := pageTemplate.Execute(&sb, p.render(false)); err != nil {
+		t.Fatal(err)
+	}
+	return sb.String()
+}
+
 func TestRenderNoPackageComment(t *testing.T) {
 	data := renderFixture(t, "package nocomment\n\nfunc F() {}\n", false)
 	if data.Name != "nocomment" {

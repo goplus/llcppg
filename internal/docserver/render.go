@@ -59,7 +59,10 @@ func (p *pkg) render(liveReload bool) *pageData {
 	// rebuild the doc from the raw ASTs here, because go/doc.NewFromFiles
 	// consumes the files' comment associations, so a second pass would drop all
 	// the doc comments.
-	parts, err := godoc.RenderDoc(context.Background(), p.FileSet, p.Doc)
+	parts, err := godoc.RenderDocLinked(context.Background(), p.FileSet, p.Doc, godoc.LinkOptions{
+		SourceLinkFunc: p.sourceLinkFunc(),
+		FileLinkFunc:   p.fileLinkFunc(),
+	})
 	if err != nil {
 		// Rendering the body failed; surface it inside the body rather than
 		// dropping the whole page. The shell (import path, parse errors) is

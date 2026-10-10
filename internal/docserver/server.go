@@ -53,6 +53,11 @@ func newHandler(dir string, allDecls bool, b *broker, done <-chan struct{}) http
 	static, _ := fs.Sub(assets, "assets")
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(static))))
 
+	// Serve the package source so symbol and "View Source" links from the
+	// documentation can jump to the exact line of a declaration. Only .go files
+	// in dir are served (see serveSource); package code is never executed.
+	mux.HandleFunc(srcURLPrefix, serveSource(dir))
+
 	liveReload := b != nil
 	if liveReload {
 		mux.HandleFunc("/_events", b.serveEvents(keepAlivePeriod, done))
