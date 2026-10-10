@@ -36,14 +36,6 @@ code, pre {
 
 /* -- shell chrome ------------------------------------------------------- */
 
-.pkg-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--color-border);
-}
-.pkg-title { font-size: 1.5rem; font-weight: 600; }
-.pkg-title .kw { color: var(--color-text-subtle); font-weight: 400; }
-.pkg-path, .pkg-dir { color: var(--color-text-subtle); font-size: 0.9rem; }
-
 .parse-errors {
   margin: 1rem 1.5rem;
   padding: 0.5rem 1rem;
@@ -54,6 +46,35 @@ code, pre {
 .parse-errors h2 { margin-top: 0.25rem; }
 
 .render-error { color: #b00020; white-space: pre-wrap; }
+
+/* "View Source" link above a declaration, and the symbol-name link in a
+ * declaration header, both produced by the vendored godoc source_link helper
+ * when the docserver supplies a source URL. */
+.Documentation-declarationLink { font-size: 0.8125rem; }
+.Documentation-source { color: var(--color-link); }
+
+/* -- source view (/src/<file>) ------------------------------------------ */
+
+.src-title { font-size: 1.25rem; }
+.src-code {
+  background-color: var(--color-bg-accented);
+  border: 1px solid var(--color-border);
+  border-radius: 0.3em;
+  overflow-x: auto;
+  padding: 0.625rem 0;
+  tab-size: 4;
+}
+.src-line { display: block; padding: 0 0.625rem; }
+.src-line:target { background-color: #fff3bf; }
+.src-lineNum {
+  display: inline-block;
+  width: 3rem;
+  margin-right: 1rem;
+  text-align: right;
+  color: var(--color-text-subtle);
+  user-select: none;
+}
+
 
 footer {
   margin: 2rem 1.5rem 3rem;

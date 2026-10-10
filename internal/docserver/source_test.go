@@ -1,0 +1,90 @@
+/*
+ * Copyright (c) 2026 The XGo Authors (xgo.dev). All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package docserver
+
+import (
+	"path/filepath"
+	"testing"
+)
+
+func TestRelSourceFile(t *testing.T) {
+	dir := filepath.FromSlash("/pkg/clang")
+	p := &pkg{Dir: dir}
+
+	ok := []struct{ in, want string }{
+		{filepath.Join(dir, "clang.go"), "clang.go"},
+		{filepath.Join(dir, "a_b.go"), "a_b.go"},
+	}
+	for _, c := range ok {
+		got, valid := p.relSourceFile(c.in)
+		if !valid || got != c.want {
+			t.Errorf("relSourceFile(%q) = (%q, %v), want (%q, true)", c.in, got, valid, c.want)
+		}
+	}
+
+	bad := []string{
+		filepath.Join(dir, "notes.txt"),           // not a .go file
+		filepath.Join(dir, "sub", "x.go"),         // nested, not a direct child
+		filepath.Join(dir, "..", "other", "x.go"), // escapes the package dir
+		dir,               // the directory itself
+		filepath.Dir(dir), // a parent directory
+	}
+	for _, in := range bad {
+		if got, valid := p.relSourceFile(in); valid {
+			t.Errorf("relSourceFile(%q) = (%q, true), want rejected", in, got)
+		}
+	}
+}
+
+func TestSourceLinkFuncNilNode(t *testing.T) {
+	p := &pkg{Dir: filepath.FromSlash("/pkg/clang")}
+	if url := p.sourceLinkFunc()(nil); url != "" {
+		t.Errorf("sourceLinkFunc()(nil) = %q, want empty", url)
+	}
+}
+
+func TestNewSourceData(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want []string // expected per-line text, in order
+	}{
+		{"empty", "", []string{""}},
+		{"newline only", "\n", []string{""}},
+		{"no trailing newline", "a\nb", []string{"a", "b"}},
+		{"trailing newline", "a\nb\n", []string{"a", "b"}},
+		{"crlf lines", "a\r\nb\r\n", []string{"a", "b"}},
+		{"crlf no trailing", "a\r\nb", []string{"a", "b"}},
+		{"blank line in middle", "a\n\nb\n", []string{"a", "", "b"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			sd := newSourceData("x.go", []byte(c.in))
+			if len(sd.Lines) != len(c.want) {
+				t.Fatalf("got %d lines, want %d: %#v", len(sd.Lines), len(c.want), sd.Lines)
+			}
+			for i, want := range c.want {
+				if sd.Lines[i].Num != i+1 {
+					t.Errorf("line %d: Num = %d, want %d", i, sd.Lines[i].Num, i+1)
+				}
+				if sd.Lines[i].Text != want {
+					t.Errorf("line %d: Text = %q, want %q (no stray \\r expected)", i, sd.Lines[i].Text, want)
+				}
+			}
+		})
+	}
+}

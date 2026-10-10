@@ -74,11 +74,12 @@ func (p *Package) DocPackage(importPath string) (_ *doc.Package, err error) {
 
 // Render renders the documentation for the package under importPath.
 //
-// It is a trimmed version of the pkgsite original: there is no source linking,
-// module versioning, or "since version" information, because llcppg serves a
-// single freshly generated package from disk rather than a versioned module
-// from a database. Rendering destroys p's AST; do not call any methods of p
-// after it returns.
+// It is a trimmed version of the pkgsite original: there is no module
+// versioning or "since version" information, because llcppg serves a single
+// freshly generated package from disk rather than a versioned module from a
+// database. Source links are left disabled (RenderDoc's defaults); a caller
+// that can serve the package source should use RenderDocLinked instead.
+// Rendering destroys p's AST; do not call any methods of p after it returns.
 func (p *Package) Render(ctx context.Context, importPath string) (_ *dochtml.Parts, err error) {
 	p.renderCalled = true
 
@@ -89,20 +90,46 @@ func (p *Package) Render(ctx context.Context, importPath string) (_ *dochtml.Par
 	return RenderDoc(ctx, p.Fset, d)
 }
 
-// RenderDoc renders an already-built doc.Package to HTML. It is useful for
-// callers (like llcppg's docserver) that construct the doc.Package themselves
-// with go/doc and only want the pkg.go.dev-style HTML rendering, without
-// handing the raw ASTs to this package. fset must be the file set the package
-// was parsed with.
+// LinkOptions configures how RenderDocLinked turns declarations and files into
+// links back to their source. A nil func (or one returning the empty string)
+// disables the corresponding link, matching RenderDoc's behaviour.
+type LinkOptions struct {
+	// SourceLinkFunc returns the URL to link a declaration's source to, given
+	// the declaration's AST node. Returning "" leaves the symbol unlinked.
+	SourceLinkFunc func(ast.Node) string
+	// FileLinkFunc returns the URL to link a .go file name to. Returning ""
+	// leaves the file unlinked.
+	FileLinkFunc func(file string) string
+}
+
+// RenderDoc renders an already-built doc.Package to HTML with source linking
+// disabled. See RenderDocLinked for the variant that links symbols to their
+// source. fset must be the file set the package was parsed with.
 func RenderDoc(ctx context.Context, fset *token.FileSet, d *doc.Package) (_ *dochtml.Parts, err error) {
-	opts := dochtml.RenderOptions{
-		// No source or file links: llcppg has no remote source URL to point at.
-		FileLinkFunc:     func(string) string { return "" },
-		SourceLinkFunc:   func(ast.Node) string { return "" },
+	return RenderDocLinked(ctx, fset, d, LinkOptions{})
+}
+
+// RenderDocLinked renders an already-built doc.Package to HTML, linking symbols
+// and files to their source via opts. It is useful for callers (like llcppg's
+// docserver) that construct the doc.Package themselves with go/doc and want the
+// pkg.go.dev-style HTML rendering, without handing the raw ASTs to this
+// package. fset must be the file set the package was parsed with.
+func RenderDocLinked(ctx context.Context, fset *token.FileSet, d *doc.Package, opts LinkOptions) (_ *dochtml.Parts, err error) {
+	sourceLink := opts.SourceLinkFunc
+	if sourceLink == nil {
+		sourceLink = func(ast.Node) string { return "" }
+	}
+	fileLink := opts.FileLinkFunc
+	if fileLink == nil {
+		fileLink = func(string) string { return "" }
+	}
+	renderOpts := dochtml.RenderOptions{
+		FileLinkFunc:     fileLink,
+		SourceLinkFunc:   sourceLink,
 		SinceVersionFunc: func(string) string { return "" },
 		Limit:            int64(MaxDocumentationHTML),
 	}
-	parts, err := dochtml.Render(ctx, fset, d, opts)
+	parts, err := dochtml.Render(ctx, fset, d, renderOpts)
 	if errors.Is(err, ErrTooLarge) {
 		return &dochtml.Parts{Body: template.MustParseAndExecuteToHTML(DocTooLargeReplacement)}, nil
 	}

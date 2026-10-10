@@ -33,8 +33,11 @@ var pageTemplate = template.Must(template.ParseFS(assets, "assets/page.html"))
 // newHandler builds the HTTP handler. "GET /" loads and renders the package in
 // dir on every request so edits are picked up without a restart; "GET
 // /static/..." serves llcppg's own assets (the page.css stylesheet and, when
-// live reload is on, live.js). Nothing on the file system is served, and
-// package code is never executed.
+// live reload is on, live.js); "GET /src/..." serves the package source so
+// documentation links can point at it. Nothing else on the file system is
+// served, and package code is never executed. dir is the absolute package
+// directory resolved by load(), so the source handler and the symbol links
+// generated during rendering agree on the same path.
 //
 // When b is non-nil the server is in live-reload mode: it registers the
 // "GET /_events" Server-Sent Events route and the rendered page pulls in the
@@ -52,6 +55,11 @@ func newHandler(dir string, allDecls bool, b *broker, done <-chan struct{}) http
 	// "assets/" prefix; strip the URL "/static/" prefix and re-root onto it.
 	static, _ := fs.Sub(assets, "assets")
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(static))))
+
+	// Serve the package source so symbol and "View Source" links from the
+	// documentation can jump to the exact line of a declaration. Only .go files
+	// in dir are served (see serveSource); package code is never executed.
+	mux.HandleFunc(srcURLPrefix, serveSource(dir))
 
 	liveReload := b != nil
 	if liveReload {

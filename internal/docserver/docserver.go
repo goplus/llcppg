@@ -137,7 +137,10 @@ func Run(ctx context.Context, dir string, opts Options) error {
 		go b.run(w)
 	}
 
-	handler := newHandler(dir, opts.AllDecls, b, ctx.Done())
+	// Pass p.Dir (the absolute directory load() resolved) rather than the raw
+	// dir so the source handler serves files against the same path the symbol
+	// links were generated from, and so it agrees with the file watcher above.
+	handler := newHandler(p.Dir, opts.AllDecls, b, ctx.Done())
 
 	// ReadHeaderTimeout bounds how long a client may take to send request
 	// headers. It is harmless on the loopback default and prevents a trivial

@@ -7,14 +7,6 @@
 <link rel="stylesheet" href="/static/page.css">
 </head>
 <body>
-<header class="pkg-header">
-  <div class="pkg-title">
-    <span class="kw">package</span> {{.Name}}
-  </div>
-  <div class="pkg-path"><code>import "{{.ImportPath}}"</code></div>
-  <div class="pkg-dir">read from <code>{{.Dir}}</code></div>
-</header>
-
 {{if .ParseErrors}}
 <section class="parse-errors">
   <h2>Parse errors</h2>
