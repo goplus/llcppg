@@ -15,17 +15,17 @@
  */
 
 // Package docserver implements `llcppg -doc`: it loads the Go package in a
-// directory, renders its documentation to HTML with golang.org/x/tools/godoc
-// (the same renderer the godoc tool uses), and serves it on the loopback
+// directory, renders its documentation to HTML with the vendored
+// github.com/goplus/llcppg/internal/godoc package (a trimmed copy of
+// golang.org/x/pkgsite's godoc renderer), and serves it on the loopback
 // interface so the author can read a freshly generated binding the way a
 // consumer would.
 //
 // It is deliberately not named "doc" to avoid confusion with the standard
 // library. The package loading and the HTTP server use only the Go standard
-// library; the HTML rendering is delegated to x/tools/godoc so the output
-// matches the familiar godoc / pkg.go.dev layout. Unlike the cl/tool packages
-// it has no cgo/libclang dependency, so it can be built and tested with plain
-// `go`.
+// library; the HTML rendering is delegated to internal/godoc so the output
+// matches the familiar pkg.go.dev layout. Unlike the cl/tool packages it has no
+// cgo/libclang dependency, so it can be built and tested with plain `go`.
 package docserver
 
 import (

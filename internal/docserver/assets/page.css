@@ -1,15 +1,48 @@
-/* Shell chrome for `llcppg -doc`: the header, parse-error banner and footer
- * that wrap the package body rendered by x/tools/godoc. The body itself is
- * styled by godoc's own style.css (served at /godoc/style.css); these rules
- * only cover the small amount of chrome llcppg adds around it. */
+/* Styles for `llcppg -doc`.
+ *
+ * This single stylesheet covers both the shell chrome (header, parse-error
+ * banner, footer) that llcppg adds and the package documentation body rendered
+ * by the vendored internal/godoc package. That body uses the pkg.go.dev
+ * "Documentation-*" class names; pkgsite styles them through a cascade of CSS
+ * custom properties, but llcppg serves no pkgsite assets, so the rules below
+ * resolve those to concrete values for a standalone, readable page. */
+
+:root {
+  --color-text: #1a1a1a;
+  --color-text-subtle: #6b7280;
+  --color-link: #007d9c;
+  --color-border: #d0d7de;
+  --color-bg-accented: #f6f8fa;
+  --color-code-comment: #6a737d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  line-height: 1.5;
+}
+
+a { color: var(--color-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code, pre {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.875rem;
+}
+
+/* -- shell chrome ------------------------------------------------------- */
 
 .pkg-header {
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #d0d7de;
+  border-bottom: 1px solid var(--color-border);
 }
 .pkg-title { font-size: 1.5rem; font-weight: 600; }
-.pkg-title .kw { color: #6b7280; font-weight: 400; }
-.pkg-path, .pkg-dir { color: #6b7280; font-size: 0.9rem; }
+.pkg-title .kw { color: var(--color-text-subtle); font-weight: 400; }
+.pkg-path, .pkg-dir { color: var(--color-text-subtle); font-size: 0.9rem; }
 
 .parse-errors {
   margin: 1rem 1.5rem;
@@ -25,6 +58,89 @@
 footer {
   margin: 2rem 1.5rem 3rem;
   padding-top: 1rem;
-  border-top: 1px solid #d0d7de;
+  border-top: 1px solid var(--color-border);
 }
-.muted { color: #6b7280; }
+.muted { color: var(--color-text-subtle); }
+
+#page { padding: 0 1.5rem; }
+.container { max-width: 60rem; }
+
+/* -- godoc body --------------------------------------------------------- */
+
+.Documentation { display: block; }
+.Documentation p { margin: 1rem 0; }
+.Documentation h2, .Documentation h3 { margin-top: 1.5rem; }
+.Documentation h4 { margin-top: 1.5rem; }
+
+.Documentation ul {
+  line-height: 1.5rem;
+  list-style: none;
+  padding-left: 0;
+}
+.Documentation ul ul { padding-left: 2em; }
+.Documentation .Documentation-bulletList {
+  list-style: disc;
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+.Documentation .Documentation-numberList {
+  list-style: decimal;
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+.Documentation pre {
+  background-color: var(--color-bg-accented);
+  border: 1px solid var(--color-border);
+  border-radius: 0.3em;
+  overflow-x: auto;
+  padding: 0.625rem;
+  tab-size: 4;
+}
+.Documentation pre .comment { color: var(--color-code-comment); }
+
+.Documentation-declaration pre { margin: 0; }
+.Documentation-declaration + .Documentation-declaration { margin-top: 0.625rem; }
+
+.Documentation-indexList { margin: 0; }
+.Documentation-indexDeprecated {
+  color: var(--color-text-subtle);
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.Documentation-overviewHeader,
+.Documentation-indexHeader,
+.Documentation-constantsHeader,
+.Documentation-variablesHeader,
+.Documentation-examplesHeader,
+.Documentation-filesHeader,
+.Documentation-functionHeader,
+.Documentation-typeHeader,
+.Documentation-typeMethodHeader,
+.Documentation-typeFuncHeader {
+  margin-bottom: 0.5rem;
+}
+
+.Documentation-sinceVersion {
+  color: var(--color-text-subtle);
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+.Documentation-empty, .Documentation-emptySection {
+  color: var(--color-text-subtle);
+}
+
+.Documentation-exampleDetails { margin-top: 1rem; }
+.Documentation-exampleDetailsBody pre { margin: 0.5rem 0; }
+.Documentation-exampleOutputContainer { margin-top: 0.5rem; }
+.Documentation-exampleOutputLabel {
+  color: var(--color-text-subtle);
+  display: block;
+  font-size: 0.75rem;
+}
+
+/* The example Share/Format/Run buttons only work with pkgsite's playground
+ * backend, which llcppg does not serve, so hide them to avoid dead controls. */
+.Documentation-exampleButtonsContainer { display: none; }

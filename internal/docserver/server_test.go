@@ -69,20 +69,25 @@ func TestHandlerServesStatic(t *testing.T) {
 	srv := httptest.NewServer(newHandler(dir, false))
 	defer srv.Close()
 
-	// llcppg's own shell stylesheet.
+	// llcppg's stylesheet, which styles both the shell chrome and the
+	// godoc-rendered body's Documentation-* classes.
 	body := getBody(t, srv.URL+"/static/page.css", http.StatusOK)
 	if !strings.Contains(body, "pkg-header") {
 		t.Error("shell stylesheet should be served from embedded assets")
 	}
-
-	// godoc's bundled stylesheet and scripts, served under /godoc/.
-	css := getBody(t, srv.URL+"/godoc/style.css", http.StatusOK)
-	if len(css) == 0 {
-		t.Error("godoc style.css should be served")
+	if !strings.Contains(body, ".Documentation") {
+		t.Error("stylesheet should also style the godoc body (.Documentation)")
 	}
-	js := getBody(t, srv.URL+"/godoc/godocs.js", http.StatusOK)
-	if len(js) == 0 {
-		t.Error("godoc godocs.js should be served")
+
+	// The renderer no longer depends on x/tools/godoc's bundled assets, so the
+	// old /godoc/ path must not be served.
+	resp, err := http.Get(srv.URL + "/godoc/style.css")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("GET /godoc/style.css: status = %d, want 404 (no x/tools assets)", resp.StatusCode)
 	}
 }
 
