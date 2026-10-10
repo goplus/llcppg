@@ -260,10 +260,33 @@
     });
     this.findTreeItems();
     this.updateVisibleTreeitems();
+    // Open the top-level node(s) on load. pkgsite's tree.ts starts fully
+    // collapsed and leans entirely on the scroll-spy to open the active path,
+    // which works because a pkg.go.dev unit page is tall enough that a section
+    // is always at threshold 1.0. llcppg serves a single, often short page, so
+    // the observer may never fire and the sidebar would show only
+    // "Documentation"/"Source Files" with nothing underneath. Expanding just
+    // the top level keeps the section links (Overview/Index/Functions/Types)
+    // always visible while every nested group (Functions, Types, each type)
+    // stays collapsed — "collapsed by default" in the sense the issue asks for.
+    this.expandTopLevelItems();
     this.observeTargets();
     if (this.firstTreeitem) {
       this.firstTreeitem.el.tabIndex = 0;
     }
+  };
+
+  // expandTopLevelItems opens every top-level expandable item (those not nested
+  // in a group, i.e. "Documentation"), revealing its section links. Nested
+  // groups keep the aria-expanded="false" their TreeItem constructor set.
+  TreeNavController.prototype.expandTopLevelItems = function () {
+    for (var i = 0; i < this.treeitems.length; i++) {
+      var ti = this.treeitems[i];
+      if (!ti.isInGroup && ti.isExpandable) {
+        ti.el.setAttribute("aria-expanded", "true");
+      }
+    }
+    this.updateVisibleTreeitems();
   };
 
   TreeNavController.prototype.handleResize = function () {
@@ -276,15 +299,15 @@
   TreeNavController.prototype.observeTargets = function () {
     var self = this;
     this.addObserver(function (treeitem) {
-      // Scroll-spy: reveal and select the item for the section in view, exactly
-      // like pkgsite's tree.ts. expandTreeitem walks up the ancestor chain, so
-      // the in-view section's own groups and the top-level "Documentation" node
-      // open while every other group stays collapsed. On load this opens just
-      // the chain of the first section in view (Overview under Documentation),
-      // which is the "collapsed by default, only the active path open" behaviour
-      // pkg.go.dev shows.
+      // Scroll-spy: reveal and select the item for the section in view. It
+      // expands the in-view section's ancestor chain and selects it, but passes
+      // keepExpanded=true so passive scrolling never collapses groups the user
+      // opened by hand. On pkgsite's tall pages setSelected's accordion collapse
+      // is barely noticeable; on llcppg's compact single page it would slam the
+      // user's open type/func groups shut on every scroll, so scroll-spy only
+      // adds here — collapsing stays an explicit click/keyboard action.
       self.expandTreeitem(treeitem);
-      self.setSelected(treeitem);
+      self.setSelected(treeitem, true);
     });
 
     if (!("IntersectionObserver" in window)) {
@@ -400,16 +423,21 @@
     }
   };
 
-  TreeNavController.prototype.setSelected = function (currentItem) {
-    var expanded = this.el.querySelectorAll('[aria-expanded="true"]');
-    for (var i = 0; i < expanded.length; i++) {
-      var l1 = expanded[i];
-      if (l1 === currentItem.el) {
-        continue;
-      }
-      var sib = l1.nextElementSibling;
-      if (!(sib && sib.contains(currentItem.el))) {
-        l1.setAttribute("aria-expanded", "false");
+  TreeNavController.prototype.setSelected = function (currentItem, keepExpanded) {
+    // keepExpanded is set by the scroll-spy so passive scrolling only highlights
+    // and reveals; the collapse-other-groups accordion runs only for explicit
+    // user toggles (click / Enter / Space), keeping groups the user opened open.
+    if (!keepExpanded) {
+      var expanded = this.el.querySelectorAll('[aria-expanded="true"]');
+      for (var i = 0; i < expanded.length; i++) {
+        var l1 = expanded[i];
+        if (l1 === currentItem.el) {
+          continue;
+        }
+        var sib = l1.nextElementSibling;
+        if (!(sib && sib.contains(currentItem.el))) {
+          l1.setAttribute("aria-expanded", "false");
+        }
       }
     }
     var selected = this.el.querySelectorAll("[aria-selected]");
