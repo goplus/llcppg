@@ -17,7 +17,6 @@
 package cl
 
 import (
-	"go/token"
 	"go/types"
 	"strings"
 
@@ -96,31 +95,38 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 
 	// A C name can be typedef'd more than once across headers, e.g. a forward
 	// typedef "typedef struct _Foo Foo;" in one header and the defining typedef
-	// "typedef struct _Foo { ... } Foo;" in another. Both reach here with the
-	// same cName. Mirror the macro-redefinition rule (see loadMacro): if the two
-	// underlying types match, the later typedef is a harmless redeclaration and
-	// is reused; if they differ, report it as a redeclaration error instead of
-	// emitting a second Go type with the same name. See issue goplus/llcppg#1001.
-	if prev, ok := ctx.typedefs[cName]; ok {
-		if types.Identical(prev.tunder, tunder) {
+	// "typedef struct _Foo { ... } Foo;" in another. Both reach here and both
+	// resolve to goName. The first one is emitted by defineTypedef below, which
+	// inserts goName into the package scope; a later one finds it there. If the
+	// two underlying types match, the later typedef is a harmless redeclaration
+	// and is reused; if they differ, report it as a redeclaration error instead
+	// of emitting a second Go type with the same name. This reuses the existing
+	// scope info rather than keeping a separate map. See issue goplus/llcppg#1001.
+	if o := pkgTypes.Scope().Lookup(goName); o != nil {
+		eunder, _ := ctx.effectiveUnder(cName, tunder)
+		if prev, ok := o.(*types.TypeName); ok && sameTypedef(prev.Type(), eunder) {
 			return // same underlying type, reuse the existing definition
 		}
 		ctx.errorf(decl, "%s redeclared in this block\n\t%v: other declaration of %s",
-			goName, ctx.position(prev.pos), goName)
+			goName, ctx.position(o.Pos()), goName)
 		return
 	}
-	ctx.typedefs[cName] = typedefInfo{tunder: tunder, pos: goNodePos(ctx, decl)}
 
 	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
 }
 
-// typedefInfo records an emitted typedef's resolved underlying type and the
-// position of its declaration, so a later typedef with the same C name can be
-// checked for a matching underlying type (reuse) or a conflicting one (error).
-// See issue goplus/llcppg#1001.
-type typedefInfo struct {
-	tunder types.Type
-	pos    token.Pos
+// sameTypedef reports whether a previously-emitted typedef (whose scope object
+// has type prev) is equivalent to a later typedef that would emit the effective
+// underlying type eunder (see effectiveUnder). defineTypedef emits a typedef
+// either as a type alias (AliasType) whose right-hand side is eunder, or, for a
+// class, as a named type (InitType) whose underlying is eunder's underlying; the
+// two cases are compared accordingly so a harmless redeclaration is reused
+// instead of panicking on a duplicate Go name. See issue goplus/llcppg#1001.
+func sameTypedef(prev, eunder types.Type) bool {
+	if a, ok := prev.(*types.Alias); ok {
+		return types.Identical(types.Unalias(a), eunder)
+	}
+	return types.Identical(prev.Underlying(), eunder.Underlying())
 }
 
 // defineTypedefToTypeParam registers a typedef whose underlying type is a bare
@@ -146,16 +152,7 @@ func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *
 	}
 
 	var isClass bool
-	switch tunder {
-	case ctx.unsafePointer():
-		if !contains(cName, ctx.nonClasses) {
-			tunder, isClass = types.Typ[types.Uintptr], true // unsafe.Pointer => uintptr
-		}
-	case tyVoid:
-		tunder = ctx.basicTyp(cVoid)
-	default:
-		isClass = contains(cName, ctx.classes)
-	}
+	tunder, isClass = ctx.effectiveUnder(cName, tunder)
 
 	node := goNode(ctx, decl)
 	tparams = scope.typeParams(tparams)
@@ -171,6 +168,27 @@ func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *
 
 	ctx.types[cName] = typeObj{obj, 0}
 	ctx.aliasTypeName(cName, goName)
+}
+
+// effectiveUnder maps a typedef's resolved underlying type to the type actually
+// emitted for it: unsafe.Pointer becomes uintptr (as a named type, unless cName
+// is configured as a non-class), void becomes c.Void, and a cName configured as
+// a class is emitted as a named type. The returned isClass reports whether the
+// typedef is emitted as a named type (InitType) rather than a type alias
+// (AliasType). Keeping this in one place lets the redeclaration check in
+// loadTypedef compare against the same effective type defineTypedef emits. See
+// issue goplus/llcppg#1001.
+func (ctx *pkgCtx) effectiveUnder(cName string, tunder types.Type) (types.Type, bool) {
+	switch tunder {
+	case ctx.unsafePointer():
+		if !contains(cName, ctx.nonClasses) {
+			return types.Typ[types.Uintptr], true // unsafe.Pointer => uintptr
+		}
+		return tunder, false
+	case tyVoid:
+		return ctx.basicTyp(cVoid), false
+	}
+	return tunder, contains(cName, ctx.classes)
 }
 
 // -----------------------------------------------------------------------------
