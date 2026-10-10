@@ -17,15 +17,18 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
+	"github.com/goplus/llcppg/internal/docserver"
 	"github.com/goplus/llcppg/tool"
 	"github.com/goplus/llcppg/tool/initpkg"
 )
@@ -34,10 +37,31 @@ var (
 	verbose  = flag.Bool("v", false, "enable verbose output")
 	debug    = flag.Bool("debug", false, "enable debug output")
 	initRepo = flag.Bool("init", false, "bootstrap a new binding repository from the template; the module name is taken from the optional argument, or inferred from the current directory name")
+
+	docMode = flag.Bool("doc", false, "serve the documentation of the Go package in the current directory and open it in a browser")
+	docHTTP = flag.String("http", docserver.DefaultAddr, "listen address for -doc (loopback only unless an explicit non-loopback host is given)")
+	docOpen = flag.Bool("open", true, "launch the default browser for -doc; use -open=false to only print the URL")
+	docAll  = flag.Bool("all", false, "include unexported declarations in -doc")
 )
 
 func main() {
 	flag.Parse()
+
+	// -doc is a mutually exclusive mode: it neither bootstraps a repository
+	// nor converts headers, so combining it with -init (or passing conversion
+	// arguments) is a usage error.
+	if *docMode {
+		if *initRepo {
+			fmt.Fprintln(os.Stderr, "llcppg: -doc cannot be combined with -init")
+			os.Exit(1)
+		}
+		if args := flag.Args(); len(args) > 0 {
+			fmt.Fprintln(os.Stderr, "llcppg: -doc takes no arguments; run it in the directory of the package to document")
+			os.Exit(1)
+		}
+		runDoc()
+		return
+	}
 
 	if *initRepo {
 		// The module name is optional: `llcppg -init <module-name>` uses the
@@ -59,6 +83,7 @@ func main() {
 	if len(args) < 1 {
 		fmt.Println("usage: llcppg [-v -debug] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
 		fmt.Println("       llcppg -init [<module-name>]")
+		fmt.Println("       llcppg -doc [-http addr] [-open=false] [-all]")
 		return
 	}
 	destDir := args[0]
@@ -80,6 +105,25 @@ func main() {
 	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
 	err := Gen(destDir, srcDir, idx, *verbose || *debug)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+// runDoc serves the documentation of the Go package in the current directory
+// (`llcppg -doc`). It blocks until interrupted (SIGINT), then shuts down
+// gracefully. Usage errors (no Go files, more than one package, a bad listen
+// address) are reported and exit non-zero.
+func runDoc() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	err := docserver.Run(ctx, ".", docserver.Options{
+		Addr:        *docHTTP,
+		OpenBrowser: *docOpen,
+		AllDecls:    *docAll,
+	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
