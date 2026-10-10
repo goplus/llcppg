@@ -9,3 +9,12 @@ union OuterUnion {
         short s;
     } inner;
 };
+
+// The inner union determines the outer size and alignment, not the int member.
+union OuterWithLargeInner {
+    int i;
+    union {
+        double d[2];
+        short s;
+    } inner;
+};
