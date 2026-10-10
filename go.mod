@@ -9,4 +9,7 @@ require (
 	github.com/llarhub/clang-c v0.9.1
 	github.com/qiniu/x v1.19.1
 	golang.org/x/mod v0.40.0
+	golang.org/x/tools/godoc v0.1.0-deprecated
 )
+
+require github.com/yuin/goldmark v1.7.13 // indirect

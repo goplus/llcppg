@@ -1,0 +1,30 @@
+/* Shell chrome for `llcppg -doc`: the header, parse-error banner and footer
+ * that wrap the package body rendered by x/tools/godoc. The body itself is
+ * styled by godoc's own style.css (served at /godoc/style.css); these rules
+ * only cover the small amount of chrome llcppg adds around it. */
+
+.pkg-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #d0d7de;
+}
+.pkg-title { font-size: 1.5rem; font-weight: 600; }
+.pkg-title .kw { color: #6b7280; font-weight: 400; }
+.pkg-path, .pkg-dir { color: #6b7280; font-size: 0.9rem; }
+
+.parse-errors {
+  margin: 1rem 1.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #9a6700;
+  border-radius: 6px;
+  color: #9a6700;
+}
+.parse-errors h2 { margin-top: 0.25rem; }
+
+.render-error { color: #b00020; white-space: pre-wrap; }
+
+footer {
+  margin: 2rem 1.5rem 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d0d7de;
+}
+.muted { color: #6b7280; }

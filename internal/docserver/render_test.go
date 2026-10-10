@@ -55,105 +55,66 @@ func renderFixture(t *testing.T, src string, allDecls bool) *pageData {
 	return p.render()
 }
 
-func TestRenderGroupsAndConstructors(t *testing.T) {
+func TestRenderShellMetadata(t *testing.T) {
 	data := renderFixture(t, fixtureSrc, false)
 
 	if data.Name != "sqlite" {
 		t.Errorf("name = %q, want sqlite", data.Name)
 	}
-	if len(data.Consts) != 1 {
-		t.Errorf("consts = %d, want 1", len(data.Consts))
+	if data.Body == "" {
+		t.Fatal("rendered body is empty")
 	}
-	if len(data.Vars) != 1 {
-		t.Errorf("vars = %d, want 1", len(data.Vars))
-	}
+}
 
-	// DB type should carry Open as a constructor and Close as a method; Query
-	// is a free function (not attached to a type).
-	var db *typeDoc
-	for _, td := range data.Types {
-		if td.Name == "DB" {
-			db = td
+func TestRenderBodyContainsDeclarations(t *testing.T) {
+	data := renderFixture(t, fixtureSrc, false)
+	body := string(data.Body)
+
+	// godoc's package template renders an index and the exported declarations.
+	for _, want := range []string{"Version", "DefaultName", "DB", "Open", "Close", "Query"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("rendered body missing %q", want)
 		}
-	}
-	if db == nil {
-		t.Fatal("type DB not found")
-	}
-	if len(db.Funcs) != 1 || db.Funcs[0].Name != "Open" {
-		t.Errorf("DB constructors = %v, want [Open]", funcNames(db.Funcs))
-	}
-	if len(db.Methods) != 1 || db.Methods[0].Name != "Close" {
-		t.Errorf("DB methods = %v, want [Close]", funcNames(db.Methods))
-	}
-	if len(data.Funcs) != 1 || data.Funcs[0].Name != "Query" {
-		t.Errorf("free funcs = %v, want [Query]", funcNames(data.Funcs))
 	}
 }
 
 func TestRenderEscapesHTML(t *testing.T) {
 	data := renderFixture(t, fixtureSrc, false)
-	// The Version doc comment contains "< 4 && > 2"; it must be escaped, not
-	// rendered as raw markup.
-	overviewAndConsts := string(data.Overview)
-	for _, c := range data.Consts {
-		overviewAndConsts += string(c.Doc)
-	}
-	if strings.Contains(overviewAndConsts, "< 4 && > 2") {
+	body := string(data.Body)
+	// The Version doc comment contains "< 4 && > 2"; godoc must escape it, not
+	// emit it as raw markup.
+	if strings.Contains(body, "< 4 && > 2") {
 		t.Error("HTML-special characters were not escaped in the doc comment")
 	}
-	if !strings.Contains(overviewAndConsts, "&lt; 4 &amp;&amp; &gt; 2") {
-		t.Errorf("expected escaped comment text, got: %q", overviewAndConsts)
+	if !strings.Contains(body, "&lt; 4 &amp;&amp; &gt; 2") {
+		t.Error("expected single-escaped comment text in body")
+	}
+	// The godoc markup itself (e.g. <p> tags) must be preserved, not escaped;
+	// double-escaping would turn it into literal &lt;p&gt; text.
+	if strings.Contains(body, "&lt;p&gt;") {
+		t.Error("godoc markup was double-escaped")
 	}
 }
 
-func TestRenderTypeLinking(t *testing.T) {
+func TestRenderValidScriptLiterals(t *testing.T) {
 	data := renderFixture(t, fixtureSrc, false)
-	var db *typeDoc
-	for _, td := range data.Types {
-		if td.Name == "DB" {
-			db = td
-		}
+	body := string(data.Body)
+	// AnalysisData / CallGraph must be emitted as valid JS (null), never an
+	// empty assignment that would be a syntax error.
+	if strings.Contains(body, "document.ANALYSIS_DATA = ;") {
+		t.Error("ANALYSIS_DATA rendered as an invalid empty assignment")
 	}
-	if db == nil {
-		t.Fatal("type DB not found")
-	}
-	// Open's signature returns *DB, which should be linked to the DB anchor.
-	decl := string(db.Funcs[0].Decl)
-	if !strings.Contains(decl, `href="#DB"`) {
-		t.Errorf("Open decl should link DB; got: %q", decl)
-	}
-}
-
-func TestRenderSummary(t *testing.T) {
-	data := renderFixture(t, fixtureSrc, false)
-	s := data.Summary
-	if s.Types != 1 {
-		t.Errorf("summary types = %d, want 1", s.Types)
-	}
-	// Open and Query are exported funcs; Close is a method.
-	if s.Funcs != 2 {
-		t.Errorf("summary funcs = %d, want 2 (Open, Query)", s.Funcs)
-	}
-	if s.Methods != 1 {
-		t.Errorf("summary methods = %d, want 1 (Close)", s.Methods)
-	}
-	// Query has no doc comment -> exactly one undocumented export.
-	if s.Undocumented != 1 {
-		t.Errorf("summary undocumented = %d, want 1 (Query)", s.Undocumented)
+	if !strings.Contains(body, "document.ANALYSIS_DATA = null;") {
+		t.Error("ANALYSIS_DATA should be rendered as null")
 	}
 }
 
 func TestRenderNoPackageComment(t *testing.T) {
 	data := renderFixture(t, "package nocomment\n\nfunc F() {}\n", false)
-	if data.Overview != "" {
-		t.Errorf("expected empty overview for a package with no comment, got %q", data.Overview)
+	if data.Name != "nocomment" {
+		t.Errorf("name = %q, want nocomment", data.Name)
 	}
-}
-
-func funcNames(fs []*funcDoc) []string {
-	var out []string
-	for _, f := range fs {
-		out = append(out, f.Name)
+	if !strings.Contains(string(data.Body), "F") {
+		t.Error("body should still render func F for a package with no comment")
 	}
-	return out
 }

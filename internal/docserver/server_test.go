@@ -69,9 +69,20 @@ func TestHandlerServesStatic(t *testing.T) {
 	srv := httptest.NewServer(newHandler(dir, false))
 	defer srv.Close()
 
-	body := getBody(t, srv.URL+"/static/style.css", http.StatusOK)
-	if !strings.Contains(body, "prefers-color-scheme") {
-		t.Error("stylesheet should be served from embedded assets")
+	// llcppg's own shell stylesheet.
+	body := getBody(t, srv.URL+"/static/page.css", http.StatusOK)
+	if !strings.Contains(body, "pkg-header") {
+		t.Error("shell stylesheet should be served from embedded assets")
+	}
+
+	// godoc's bundled stylesheet and scripts, served under /godoc/.
+	css := getBody(t, srv.URL+"/godoc/style.css", http.StatusOK)
+	if len(css) == 0 {
+		t.Error("godoc style.css should be served")
+	}
+	js := getBody(t, srv.URL+"/godoc/godocs.js", http.StatusOK)
+	if len(js) == 0 {
+		t.Error("godoc godocs.js should be served")
 	}
 }
 
