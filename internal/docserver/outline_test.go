@@ -175,3 +175,51 @@ func TestHandlerServesOutlineScript(t *testing.T) {
 		t.Error("outline.js should be served from embedded assets")
 	}
 }
+
+// TestOutlineScriptHasCollapseBehavior guards that outline.js still carries the
+// collapse/expand wiring ported from pkgsite's tree.ts: items start collapsed
+// (aria-expanded="false"), their child list is marked role="group", and the
+// aria-level the CSS keys off is assigned. Without these the sidebar would be a
+// flat always-open list again, which is exactly the behaviour the issue asked
+// to change.
+func TestOutlineScriptHasCollapseBehavior(t *testing.T) {
+	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
+	defer srv.Close()
+
+	js := getBody(t, srv.URL+"/static/outline.js", http.StatusOK)
+	for _, want := range []string{
+		`"aria-expanded", "false"`, // collapsed by default
+		`"role", "group"`,          // the child list the toggle hides/shows
+		`"aria-owns"`,              // links a toggle to its group, like pkgsite
+		`"aria-level"`,             // drives the pkgsite tree.css styling
+		`"aria-selected", "true"`,  // scroll-spy selection
+	} {
+		if !strings.Contains(js, want) {
+			t.Errorf("outline.js missing collapse/expand marker %q", want)
+		}
+	}
+}
+
+// TestStylesheetHasPkgsiteTreeRules guards that the copied pkgsite tree styling
+// stays in page.css: the top-level entries are bold (font-weight 500, not the
+// old link style), collapsed groups are hidden, and expanded ones are shown via
+// the aria-expanded sibling rule. These are the rules the issue asked to copy
+// from pkgsite.
+func TestStylesheetHasPkgsiteTreeRules(t *testing.T) {
+	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
+	defer srv.Close()
+
+	css := getBody(t, srv.URL+"/static/page.css", http.StatusOK)
+	for _, want := range []string{
+		".go-Tree a + ul {",                               // collapsed groups hidden
+		"a[aria-expanded='true'] + ul[role='group']",      // expanded groups shown
+		"font-weight: 500;",                               // bold top-level entries
+		"a[aria-expanded='true'][aria-level='2']::before", // the rotating toggle
+	} {
+		if !strings.Contains(css, want) {
+			t.Errorf("page.css missing pkgsite tree rule %q", want)
+		}
+	}
+}
