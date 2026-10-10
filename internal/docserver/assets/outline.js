@@ -1,30 +1,3 @@
-// Outline sidebar behaviour for `llcppg -doc`.
-//
-// internal/godoc renders the documentation outline as a nested <ul> tree using
-// pkg.go.dev's class names and #anchors. This script enhances that static tree
-// with the behaviour a reader expects from pkg.go.dev's sidebar, without any
-// build step or network access.
-//
-// It is a faithful vanilla-JS port of pkgsite's
-// static/shared/outline/tree.ts (BSD-licensed, Copyright The Go Authors), which
-// implements the WAI-ARIA Treeview pattern:
-//
-//   - Collapse/expand: every item that has a child <ul> is collapsible and
-//     starts collapsed (aria-expanded="false"); clicking it (or Enter/Space,
-//     ArrowRight/ArrowLeft) toggles its group. The CSS in page.css (also copied
-//     from pkgsite's tree.css) draws the triangle toggles and hides collapsed
-//     groups via `a[aria-expanded='true'] + ul[role='group']`.
-//   - Scroll-spy: an IntersectionObserver watches the body section each item
-//     targets; the item for the section in view is selected (aria-selected) and
-//     its ancestors are expanded so it is revealed.
-//   - Keyboard navigation: arrows/Home/End/typeahead move focus between visible
-//     items with a roving tabindex, matching pkgsite.
-//
-// It also fills the mobile <select> fallback from the same tree so narrow
-// screens get a jump menu instead of the full sidebar.
-//
-// All anchors come from the server-rendered tree, so the markup and the body
-// agree by construction; this script only reads ids, it never invents them.
 (function () {
   "use strict";
 

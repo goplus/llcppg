@@ -1,13 +1,3 @@
-// Live reload for `llcppg -doc`. Served only when the file watcher started; a
-// degraded server (no watcher) omits this script and the /_events route, so the
-// page behaves exactly as it did before live reload existed.
-//
-// The script opens a Server-Sent Events stream to /_events and reloads the
-// whole page when the server reports that a watched .go file changed. It also
-// shows a small corner marker reflecting the connection, and reloads once if it
-// reconnects to a server with a different instance id (a restart), so an open
-// tab recovers on its own after `llcppg -doc` is stopped and started again on
-// the same address.
 (function () {
   "use strict";
 
