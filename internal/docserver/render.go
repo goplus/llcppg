@@ -61,7 +61,6 @@ func (p *pkg) render(liveReload bool) *pageData {
 	// the doc comments.
 	parts, err := godoc.RenderDocLinked(context.Background(), p.FileSet, p.Doc, godoc.LinkOptions{
 		SourceLinkFunc: p.sourceLinkFunc(),
-		FileLinkFunc:   p.fileLinkFunc(),
 	})
 	if err != nil {
 		// Rendering the body failed; surface it inside the body rather than

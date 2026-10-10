@@ -144,6 +144,34 @@ func TestHandlerSourceRejectsBadPaths(t *testing.T) {
 	}
 }
 
+func TestHandlerSourceRejectsOversizeFile(t *testing.T) {
+	dir := writeDir(t, map[string]string{
+		"big.go":   "package foo\n",
+		"small.go": "package foo\n",
+	})
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
+	defer srv.Close()
+
+	// Lower the cap so a tiny file counts as "oversize" without writing a huge
+	// fixture; restore it afterwards.
+	orig := maxSourceFileSize
+	maxSourceFileSize = 1
+	defer func() { maxSourceFileSize = orig }()
+
+	// A file over the limit is declined (404); a file within it still serves.
+	resp, err := http.Get(srv.URL + "/src/big.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("oversize file: status = %d, want 404", resp.StatusCode)
+	}
+
+	maxSourceFileSize = orig
+	getBody(t, srv.URL+"/src/small.go", http.StatusOK)
+}
+
 func TestHandlerLiveRefresh(t *testing.T) {
 	dir := t.TempDir()
 	src := filepath.Join(dir, "a.go")

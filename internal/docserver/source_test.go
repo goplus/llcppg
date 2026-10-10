@@ -56,3 +56,35 @@ func TestSourceLinkFuncNilNode(t *testing.T) {
 		t.Errorf("sourceLinkFunc()(nil) = %q, want empty", url)
 	}
 }
+
+func TestNewSourceData(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want []string // expected per-line text, in order
+	}{
+		{"empty", "", []string{""}},
+		{"newline only", "\n", []string{""}},
+		{"no trailing newline", "a\nb", []string{"a", "b"}},
+		{"trailing newline", "a\nb\n", []string{"a", "b"}},
+		{"crlf lines", "a\r\nb\r\n", []string{"a", "b"}},
+		{"crlf no trailing", "a\r\nb", []string{"a", "b"}},
+		{"blank line in middle", "a\n\nb\n", []string{"a", "", "b"}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			sd := newSourceData("x.go", []byte(c.in))
+			if len(sd.Lines) != len(c.want) {
+				t.Fatalf("got %d lines, want %d: %#v", len(sd.Lines), len(c.want), sd.Lines)
+			}
+			for i, want := range c.want {
+				if sd.Lines[i].Num != i+1 {
+					t.Errorf("line %d: Num = %d, want %d", i, sd.Lines[i].Num, i+1)
+				}
+				if sd.Lines[i].Text != want {
+					t.Errorf("line %d: Text = %q, want %q (no stray \\r expected)", i, sd.Lines[i].Text, want)
+				}
+			}
+		})
+	}
+}

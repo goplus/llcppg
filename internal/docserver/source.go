@@ -34,6 +34,14 @@ import (
 // disk rather than a remote VCS.
 const srcURLPrefix = "/src/"
 
+// maxSourceFileSize bounds how large a file the source view will read into
+// memory and render. llcppg's generated binding files can be large, but the
+// doc path already caps its output (godoc.MaxDocumentationHTML); this gives the
+// /src/ path a comparable guard so a pathologically large file cannot force an
+// unbounded read. A file over the limit is reported as 404, like any file the
+// handler declines to serve. It is a variable so tests can lower it.
+var maxSourceFileSize int64 = 40 << 20 // 40 MiB
+
 // sourceLinkFunc returns a SourceLinkFunc for the package loaded into p: given a
 // declaration's AST node it returns a "/src/<file>#L<line>" URL pointing at the
 // line the declaration starts on. It returns "" (no link) when the node has no
@@ -53,20 +61,6 @@ func (p *pkg) sourceLinkFunc() func(ast.Node) string {
 			return ""
 		}
 		return fmt.Sprintf("%s%s#L%d", srcURLPrefix, pathEscapeSlashes(rel), pos.Line)
-	}
-}
-
-// fileLinkFunc returns a FileLinkFunc for p: given the base name of a package
-// .go file it returns the "/src/<file>" URL that serves it. The name comes from
-// go/doc, which uses the file's base name; it is linked only when the file is
-// one the source handler will serve.
-func (p *pkg) fileLinkFunc() func(string) string {
-	return func(name string) string {
-		rel, ok := p.relSourceFile(filepath.Join(p.Dir, name))
-		if !ok {
-			return ""
-		}
-		return srcURLPrefix + pathEscapeSlashes(rel)
 	}
 }
 
@@ -108,7 +102,9 @@ func pathEscapeSlashes(rel string) string {
 // page whose lines carry "L<n>" anchors, so a "/src/<file>#L<line>" link from
 // the documentation scrolls to the referenced declaration. It reloads the file
 // on every request to match the rest of the server, and only ever serves .go
-// files that live directly in dir.
+// files that live directly in dir. dir must be the same (absolute) directory
+// the links were generated against (see pkg.Dir) so a link and the file it
+// resolves to agree.
 func serveSource(dir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		name := strings.TrimPrefix(req.URL.Path, srcURLPrefix)
@@ -124,7 +120,14 @@ func serveSource(dir string) http.HandlerFunc {
 			http.NotFound(w, req)
 			return
 		}
-		data, err := os.ReadFile(filepath.Join(dir, rel))
+		full := filepath.Join(dir, rel)
+		// Guard against an unbounded read of a pathologically large file before
+		// loading it into memory; an oversized file is treated as not found.
+		if fi, err := os.Stat(full); err != nil || fi.Size() > maxSourceFileSize {
+			http.NotFound(w, req)
+			return
+		}
+		data, err := os.ReadFile(full)
 		if err != nil {
 			http.NotFound(w, req)
 			return
@@ -149,9 +152,12 @@ type sourceLine struct {
 }
 
 func newSourceData(name string, data []byte) *sourceData {
-	// Trim a single trailing newline so a file ending in "\n" does not render a
-	// spurious empty final line.
-	text := strings.TrimSuffix(string(data), "\n")
+	// Normalize CRLF to LF first so Windows-saved files do not leave a trailing
+	// "\r" on every rendered line (and so a final "\r\n" is trimmed cleanly).
+	// Then trim a single trailing newline so a file ending in "\n" does not
+	// render a spurious empty final line.
+	text := strings.ReplaceAll(string(data), "\r\n", "\n")
+	text = strings.TrimSuffix(text, "\n")
 	raw := strings.Split(text, "\n")
 	lines := make([]sourceLine, len(raw))
 	for i, s := range raw {
