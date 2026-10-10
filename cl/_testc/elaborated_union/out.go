@@ -7,24 +7,18 @@ import (
 
 const XGoPackage = true
 
-type A struct {
-	_xgo_union [1]uint32
-}
 type OuterUnion struct {
-	_xgo_union [1]uint32
+	_xgo_union [2]uint64
 }
 
-func (p *A) XGof_ref_a() *c.Int {
-	return (*c.Int)(unsafe.Pointer(p))
-}
-func (p *A) XGof_ref_b() *c.Int {
-	return (*c.Int)(unsafe.Pointer(p))
-}
 func (p *OuterUnion) XGof_ref_i() *c.Int {
 	return (*c.Int)(unsafe.Pointer(p))
 }
 func (p *OuterUnion) XGof_ref_f() *c.Float {
 	return (*c.Float)(unsafe.Pointer(p))
+}
+func (p *OuterUnion) XGof_ref_d() *[2]c.Double {
+	return (*[2]c.Double)(unsafe.Pointer(p))
 }
 
 type _llcppg_anon_0 struct {
