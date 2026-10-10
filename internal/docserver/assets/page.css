@@ -86,6 +86,107 @@ footer {
 #page { padding: 0 1.5rem; }
 .container { max-width: 60rem; }
 
+/* -- two-column layout: outline sidebar + content ----------------------- */
+
+/* On wide screens the outline sits in a sticky left column next to the body;
+ * the whole row collapses to a single column (sidebar as a mobile <select>) at
+ * narrow widths. The grid widths roughly match pkg.go.dev's unit layout. */
+.UnitMain {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+.UnitMain-content { min-width: 0; }
+
+.UnitMain-nav {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+/* The mobile <select> is only shown when the sidebar collapses (see the
+ * media query below); on wide screens the desktop tree is used instead. */
+.UnitMain-navMobile { display: none; }
+.UnitMain-navMobileSelect {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-text);
+  font: inherit;
+}
+
+/* -- outline tree ------------------------------------------------------- */
+
+.go-Tree,
+.go-Tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.go-Tree ul { padding-left: 1rem; }
+.go-Tree li { margin: 0; }
+.go-Tree a {
+  display: block;
+  padding: 0.125rem 0.5rem;
+  border-left: 2px solid transparent;
+  color: var(--color-text);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.go-Tree a:hover {
+  text-decoration: none;
+  background: var(--color-bg-accented);
+}
+.go-Tree a:focus {
+  outline: 2px solid var(--color-link);
+  outline-offset: -2px;
+}
+/* Scroll-spy: outline.js marks the link whose section is in view. */
+.go-Tree a[aria-current="true"] {
+  border-left-color: var(--color-link);
+  color: var(--color-link);
+  font-weight: 600;
+}
+/* The top-level "Documentation" and "Source Files" entries read as headings. */
+.go-Tree > li > a {
+  font-weight: 600;
+  padding-left: 0.25rem;
+}
+
+/* -- Source Files section ----------------------------------------------- */
+
+.UnitFiles { margin-top: 2.5rem; }
+.UnitFiles-title { font-size: 1.25rem; margin-bottom: 0.5rem; }
+.UnitFiles-fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 2;
+}
+.UnitFiles-fileList li { margin: 0.125rem 0; }
+
+/* Collapse to a single column and swap the tree for the <select> on narrow
+ * screens, matching pkg.go.dev's responsive behaviour. */
+@media (max-width: 50rem) {
+  .UnitMain {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  .UnitMain-nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+  .UnitMain-navMobile { display: block; }
+  .UnitMain-navDesktop { display: none; }
+  .UnitFiles-fileList { columns: 1; }
+}
+
 /* -- godoc body --------------------------------------------------------- */
 
 .Documentation { display: block; }

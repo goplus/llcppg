@@ -41,6 +41,39 @@ type pageData struct {
 
 	// Body is the package documentation rendered by internal/godoc.
 	Body template.HTML
+
+	// Outline is the documentation outline (Overview, Index, Constants,
+	// Variables, Functions, Types with their constructors and methods, Notes)
+	// rendered by internal/godoc. It is the same safe HTML dochtml already
+	// produces alongside Body; the page shell drops it into the sidebar tree.
+	// Its anchors (#pkg-overview, #{Type}, #{Type}.{Method}, …) agree with the
+	// ids in Body by construction, because both are rendered from the same
+	// TemplateData.
+	Outline template.HTML
+
+	// SourceFiles lists the Go files go/build selected for the package, each
+	// linking to the existing /src/ source view. It drives both the "Source
+	// Files" sidebar entry and the section at the bottom of the page.
+	SourceFiles []sourceFile
+}
+
+// sourceFile is one entry in the "Source Files" list: the file's base name and
+// the URL of its source view.
+type sourceFile struct {
+	Name string
+	URL  string
+}
+
+// sourceFiles turns the package's selected file names into links to the
+// existing /src/ source view. The names come from go/build (already sorted,
+// _test.go excluded), and each file name is a bare base name validated by the
+// /src/ handler, so the link resolves to exactly the file llcppg read.
+func sourceFiles(names []string) []sourceFile {
+	out := make([]sourceFile, 0, len(names))
+	for _, n := range names {
+		out = append(out, sourceFile{Name: n, URL: srcURLPrefix + pathEscapeSlashes(n)})
+	}
+	return out
 }
 
 // render builds the page-shell data for p, rendering the package body with the
@@ -53,6 +86,7 @@ func (p *pkg) render(liveReload bool) *pageData {
 		Dir:         p.Dir,
 		ParseErrors: p.ParseErrors,
 		LiveReload:  liveReload,
+		SourceFiles: sourceFiles(p.Files),
 	}
 
 	// load() already built p.Doc with go/doc; render that directly. We must not
@@ -73,7 +107,9 @@ func (p *pkg) render(liveReload bool) *pageData {
 
 	// parts.Body is a safehtml.HTML produced by godoc's safe templates; its
 	// String is known to be safe HTML, so promoting it to template.HTML for the
-	// shell template is correct (no double-escaping).
+	// shell template is correct (no double-escaping). parts.Outline is produced
+	// by the same safe templates and gets the same treatment.
 	data.Body = template.HTML(parts.Body.String())
+	data.Outline = template.HTML(parts.Outline.String())
 	return data
 }
