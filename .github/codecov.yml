@@ -4,6 +4,7 @@ ignore:
   - "clang"
   - "cl/cltest"
   - "cmd/llcppg"
-  - "internal/docserver"
+  - "internal/*"
+  - "internal/dochtml/internal/render"
   - "tool/initpkg"
   - "xtool/*/*/*"

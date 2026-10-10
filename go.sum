@@ -1,5 +1,5 @@
-github.com/google/safehtml v0.0.3-0.20211026203422-d6f0e11a5516 h1:pSEdbeokt55L2hwtWo6A2k7u5SG08rmw0LhWEyrdWgk=
-github.com/google/safehtml v0.0.3-0.20211026203422-d6f0e11a5516/go.mod h1:L4KWwDsUJdECRAEpZoBn3O64bQaywRscowZjJAzjHnU=
+github.com/google/safehtml v0.1.1-0.20260610220727-a1fb0ade7257 h1:wThmHLGFvBJPSQEfy9hOsIoQyVR6NDQ+bdFwVW6OB0M=
+github.com/google/safehtml v0.1.1-0.20260610220727-a1fb0ade7257/go.mod h1:ses04bNFagkcb3YeHX2ozsdZyOU/Rh6mqMtwiEoLkmQ=
 github.com/goplus/gogen v1.26.1 h1:RT3ZAnYhvpoLcn7LoKIt2od3ftd7CWl2QN1wNqPjukA=
 github.com/goplus/gogen v1.26.1/go.mod h1:Y7ulYW3wonQ3d9er00b0uGFEV/IUZa6okWJZh892ACQ=
 github.com/goplus/lib v0.6.1 h1:OrHX3lBRsK3u5Vh045bkPvCoYHXhLmEqPCINHT6qA6Y=

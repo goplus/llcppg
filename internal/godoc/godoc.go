@@ -23,7 +23,7 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/goplus/llcppg/internal/godoc/dochtml"
+	"github.com/goplus/llcppg/internal/dochtml"
 )
 
 // ErrTooLarge is returned (wrapped) when rendered documentation exceeds the

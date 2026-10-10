@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/safehtml"
 	"github.com/google/safehtml/template"
-	"github.com/goplus/llcppg/internal/godoc/dochtml/internal/render"
+	"github.com/goplus/llcppg/internal/dochtml/internal/render"
 )
 
 // docTemplates holds the HTML templates that render the package body, outline

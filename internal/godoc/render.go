@@ -14,9 +14,9 @@ import (
 	"strings"
 
 	"github.com/google/safehtml/template"
-	"github.com/goplus/llcppg/internal/godoc/dochtml"
-	"github.com/goplus/llcppg/internal/godoc/importer"
-	"github.com/goplus/llcppg/internal/godoc/internal/derrors"
+	"github.com/goplus/llcppg/internal/derrors"
+	"github.com/goplus/llcppg/internal/dochtml"
+	"github.com/goplus/llcppg/internal/importer"
 )
 
 const (
