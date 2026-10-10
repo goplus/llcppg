@@ -1,12 +1,3 @@
-/* Styles for `llcppg -doc`.
- *
- * This single stylesheet covers both the shell chrome (header, parse-error
- * banner, footer) that llcppg adds and the package documentation body rendered
- * by the vendored internal/godoc package. That body uses the pkg.go.dev
- * "Documentation-*" class names; pkgsite styles them through a cascade of CSS
- * custom properties, but llcppg serves no pkgsite assets, so the rules below
- * resolve those to concrete values for a standalone, readable page. */
-
 :root {
   --color-text: #1a1a1a;
   --color-text-subtle: #6b7280;
