@@ -138,6 +138,20 @@ footer {
 
   display: flex;
   flex-direction: column;
+
+  /* pkgsite strips list bullets and the default left indent from every tree
+   * <ul> through its site-wide reset.css, which llcppg does not vendor. Without
+   * these three lines the root <ul class="go-Tree"> keeps the browser default
+   * list-style: disc and padding-left: 40px, so black bullets appear next to
+   * the top-level "Documentation" / "Source Files" entries. The `.go-Tree ul`
+   * rule below only matches descendant lists, not this root, so reset it here. */
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.go-Tree li {
+  list-style: none;
 }
 
 .go-Tree ul {
@@ -184,6 +198,9 @@ footer {
   font-weight: 500;
   line-height: 2.5rem;
   padding: 0 1rem;
+  /* Top-level entries use the normal text color (not the subtle link color the
+   * base `.go-Tree a` rule applies), matching pkgsite's bold section headers. */
+  color: var(--color-text);
 }
 
 .go-Tree a:focus,

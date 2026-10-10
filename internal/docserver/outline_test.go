@@ -194,6 +194,8 @@ func TestOutlineScriptHasCollapseBehavior(t *testing.T) {
 		`"aria-owns"`,              // links a toggle to its group, like pkgsite
 		`"aria-level"`,             // drives the pkgsite tree.css styling
 		`"aria-selected", "true"`,  // scroll-spy selection
+		`expandTopLevelItems`,      // only the top-level container opens on load
+		`expandAncestorsBelowTop`,  // scroll-spy never auto-opens the whole tree
 	} {
 		if !strings.Contains(js, want) {
 			t.Errorf("outline.js missing collapse/expand marker %q", want)
@@ -220,6 +222,35 @@ func TestStylesheetHasPkgsiteTreeRules(t *testing.T) {
 	} {
 		if !strings.Contains(css, want) {
 			t.Errorf("page.css missing pkgsite tree rule %q", want)
+		}
+	}
+}
+
+// treeRootRE matches the `.go-Tree { ... }` root block in page.css so the test
+// can assert the list reset lives on the root <ul>, not only its descendants.
+var treeRootRE = regexp.MustCompile(`(?s)\.go-Tree\s*\{(.*?)\}`)
+
+// TestStylesheetResetsTreeRoot guards against the black-bullet regression: the
+// root <ul class="go-Tree"> is itself a list element, so without list-style:none
+// and padding-left:0 on the `.go-Tree` *root* rule (pkgsite gets these from its
+// site-wide reset.css, which llcppg does not vendor) the browser draws disc
+// bullets and a 40px indent next to the top-level "Documentation" / "Source
+// Files" entries. The `.go-Tree ul` rule only covers descendant lists, so this
+// has to be on the root block.
+func TestStylesheetResetsTreeRoot(t *testing.T) {
+	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
+	defer srv.Close()
+
+	css := getBody(t, srv.URL+"/static/page.css", http.StatusOK)
+	m := treeRootRE.FindStringSubmatch(css)
+	if m == nil {
+		t.Fatal("page.css has no .go-Tree root rule")
+	}
+	root := m[1]
+	for _, want := range []string{"list-style: none;", "padding-left: 0;"} {
+		if !strings.Contains(root, want) {
+			t.Errorf(".go-Tree root rule missing %q (top-level bullets would return); rule was:\n%s", want, root)
 		}
 	}
 }
