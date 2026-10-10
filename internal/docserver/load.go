@@ -38,6 +38,13 @@ type pkg struct {
 	FileSet    *token.FileSet
 	ImportPath string
 	Dir        string // absolute directory the package was read from
+	// Files holds the base names of the Go files go/build selected for the
+	// current build context, sorted. They back the "Source Files" section and
+	// sidebar entry. Files that failed to parse are still listed, since they are
+	// part of the package the author is debugging; files excluded by build
+	// constraints for the current GOOS/GOARCH are not, consistent with pkgsite
+	// listing the files of the selected build context.
+	Files []string
 	// ParseErrors holds per-file parse errors. They are non-fatal: the page
 	// renders whatever parsed and lists these at the top, because a
 	// half-broken generation result is exactly when the author wants to look.
@@ -117,6 +124,7 @@ func load(dir string, allDecls bool) (*pkg, error) {
 		FileSet:     fset,
 		ImportPath:  importPath,
 		Dir:         absDir,
+		Files:       goFiles,
 		ParseErrors: parseErrors,
 	}, nil
 }

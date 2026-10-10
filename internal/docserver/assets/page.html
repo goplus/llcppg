@@ -17,14 +17,61 @@
 </section>
 {{end}}
 
-<!-- Package body rendered by internal/godoc. Its markup uses pkg.go.dev's
-     "Documentation-*" classes; the .Documentation wrapper is what those rules
-     in page.css hang off of. -->
 <div id="page">
 <div class="container">
 <h1>Package {{.Name}}</h1>
-<div class="Documentation">
+
+<!-- Two-column layout: a sticky outline sidebar on the left and the package
+     body (plus the Source Files section) on the right. The outline is the
+     tree internal/godoc already rendered; outline.js enhances it with
+     scroll-spy highlighting and keyboard navigation, and builds the mobile
+     <select> at narrow widths. The whole UnitMain row collapses to a single
+     column on small screens (see page.css). -->
+<div class="UnitMain">
+  <nav class="UnitMain-nav" aria-label="Outline">
+    <!-- Mobile fallback: outline.js fills this <select> from the tree below
+         and jumps to the chosen anchor. It is hidden on wide screens. -->
+    <div class="UnitMain-navMobile js-mainNavMobile">
+      <label class="UnitMain-navMobileLabel">
+        <select class="UnitMain-navMobileSelect" aria-label="Outline"></select>
+      </label>
+    </div>
+    <div class="UnitMain-navDesktop">
+      <ul class="go-Tree js-tree" role="tree" aria-label="Outline">
+        <li role="none">
+          <a href="#section-documentation" role="treeitem" aria-level="1">Documentation</a>
+          {{.Outline}}
+        </li>
+        {{if .SourceFiles}}
+        <li role="none">
+          <a href="#section-sourcefiles" role="treeitem" aria-level="1">Source Files</a>
+        </li>
+        {{end}}
+      </ul>
+    </div>
+  </nav>
+
+  <article class="UnitMain-content">
+    <!-- Package body rendered by internal/godoc. Its markup uses pkg.go.dev's
+         "Documentation-*" classes; the .Documentation wrapper is what those
+         rules in page.css hang off of. -->
+    <section id="section-documentation">
+      <div class="Documentation js-documentation">
 {{.Body}}
+      </div>
+    </section>
+
+    {{if .SourceFiles}}
+    <section id="section-sourcefiles" class="UnitFiles">
+      <h2 class="UnitFiles-title">Source Files</h2>
+      <ul class="UnitFiles-fileList">
+        {{range .SourceFiles}}
+        <li><a href="{{.URL}}" target="_blank" rel="noopener">{{.Name}}</a></li>
+        {{end}}
+      </ul>
+    </section>
+    {{end}}
+  </article>
 </div>
 </div>
 </div>
@@ -32,6 +79,7 @@
 <footer>
   <p class="muted">Served by <code>llcppg -doc</code>. The page re-reads the package on every refresh.</p>
 </footer>
+<script src="/static/outline.js"></script>
 {{if .LiveReload}}<script src="/static/live.js"></script>{{end}}
 </body>
 </html>

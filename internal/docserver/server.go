@@ -24,7 +24,7 @@ import (
 	"net/http"
 )
 
-//go:embed assets/page.html assets/page.css assets/live.js
+//go:embed assets/page.html assets/page.css assets/live.js assets/outline.js
 var assets embed.FS
 
 // pageTemplate is parsed once from the embedded shell template.
@@ -51,8 +51,8 @@ var pageTemplate = template.Must(template.ParseFS(assets, "assets/page.html"))
 func newHandler(dir string, allDecls bool, b *broker, done <-chan struct{}) http.Handler {
 	mux := http.NewServeMux()
 
-	// Serve llcppg's assets (page.css, live.js). The embed root has an
-	// "assets/" prefix; strip the URL "/static/" prefix and re-root onto it.
+	// Serve llcppg's assets (page.css, outline.js, live.js). The embed root has
+	// an "assets/" prefix; strip the URL "/static/" prefix and re-root onto it.
 	static, _ := fs.Sub(assets, "assets")
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(static))))
 
