@@ -24,7 +24,7 @@ import (
 	"net/http"
 )
 
-//go:embed assets/page.html assets/page.css
+//go:embed assets/page.html assets/page.css assets/live.js
 var assets embed.FS
 
 // pageTemplate is parsed once from the embedded shell template.
@@ -32,15 +32,31 @@ var pageTemplate = template.Must(template.ParseFS(assets, "assets/page.html"))
 
 // newHandler builds the HTTP handler. "GET /" loads and renders the package in
 // dir on every request so edits are picked up without a restart; "GET
-// /static/..." serves llcppg's own assets (the single page.css stylesheet).
-// Nothing on the file system is served, and package code is never executed.
-func newHandler(dir string, allDecls bool) http.Handler {
+// /static/..." serves llcppg's own assets (the page.css stylesheet and, when
+// live reload is on, live.js). Nothing on the file system is served, and
+// package code is never executed.
+//
+// When b is non-nil the server is in live-reload mode: it registers the
+// "GET /_events" Server-Sent Events route and the rendered page pulls in the
+// live-reload client script. When b is nil the server is degraded (the file
+// watcher could not start); /_events is not registered, so it returns 404, and
+// the page carries no live-reload script.
+//
+// done is the server's lifetime signal passed to the event handler so open
+// streams close on shutdown (see broker.serveEvents); it is ignored when b is
+// nil.
+func newHandler(dir string, allDecls bool, b *broker, done <-chan struct{}) http.Handler {
 	mux := http.NewServeMux()
 
-	// Serve llcppg's assets (page.css). The embed root has an "assets/"
-	// prefix; strip the URL "/static/" prefix and re-root onto it.
+	// Serve llcppg's assets (page.css, live.js). The embed root has an
+	// "assets/" prefix; strip the URL "/static/" prefix and re-root onto it.
 	static, _ := fs.Sub(assets, "assets")
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(static))))
+
+	liveReload := b != nil
+	if liveReload {
+		mux.HandleFunc("/_events", b.serveEvents(keepAlivePeriod, done))
+	}
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path != "/" {
@@ -56,7 +72,7 @@ func newHandler(dir string, allDecls bool) http.Handler {
 			return
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if err := pageTemplate.Execute(w, p.render()); err != nil {
+		if err := pageTemplate.Execute(w, p.render(liveReload)); err != nil {
 			// The header may already be written; there is nothing more we can
 			// do except surface the error for diagnosis.
 			fmt.Fprintf(w, "\n<!-- template error: %s -->\n", template.HTMLEscapeString(err.Error()))

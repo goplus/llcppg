@@ -33,18 +33,26 @@ type pageData struct {
 	Dir         string
 	ParseErrors []string
 
+	// LiveReload is true when the server started a file watcher, so the page
+	// should pull in the live-reload client script. A degraded server (no
+	// watcher) leaves it false, and the page is exactly as it was before live
+	// reload existed.
+	LiveReload bool
+
 	// Body is the package documentation rendered by internal/godoc.
 	Body template.HTML
 }
 
 // render builds the page-shell data for p, rendering the package body with the
 // vendored internal/godoc package (a trimmed copy of x/pkgsite's godoc).
-func (p *pkg) render() *pageData {
+// liveReload selects whether the page includes the live-reload client script.
+func (p *pkg) render(liveReload bool) *pageData {
 	data := &pageData{
 		ImportPath:  p.ImportPath,
 		Name:        p.Doc.Name,
 		Dir:         p.Dir,
 		ParseErrors: p.ParseErrors,
+		LiveReload:  liveReload,
 	}
 
 	// load() already built p.Doc with go/doc; render that directly. We must not

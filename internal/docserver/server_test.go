@@ -52,7 +52,7 @@ func TestHandlerServesPackage(t *testing.T) {
 	dir := writeDir(t, map[string]string{
 		"a.go": "// Package foo is a fixture.\npackage foo\n\n// Bar does nothing.\nfunc Bar() {}\n",
 	})
-	srv := httptest.NewServer(newHandler(dir, false))
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
 	defer srv.Close()
 
 	body := getBody(t, srv.URL+"/", http.StatusOK)
@@ -66,7 +66,7 @@ func TestHandlerServesPackage(t *testing.T) {
 
 func TestHandlerServesStatic(t *testing.T) {
 	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
-	srv := httptest.NewServer(newHandler(dir, false))
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
 	defer srv.Close()
 
 	// llcppg's stylesheet, which styles both the shell chrome and the
@@ -97,7 +97,7 @@ func TestHandlerLiveRefresh(t *testing.T) {
 	if err := os.WriteFile(src, []byte("package foo\n\nfunc First() {}\n"), 0644); err != nil {
 		t.Fatal(err)
 	}
-	srv := httptest.NewServer(newHandler(dir, false))
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
 	defer srv.Close()
 
 	body := getBody(t, srv.URL+"/", http.StatusOK)
@@ -120,7 +120,7 @@ func TestHandlerLiveRefresh(t *testing.T) {
 
 func TestHandlerNotFound(t *testing.T) {
 	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
-	srv := httptest.NewServer(newHandler(dir, false))
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
 	defer srv.Close()
 
 	resp, err := http.Get(srv.URL + "/does-not-exist")
