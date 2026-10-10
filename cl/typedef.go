@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"go/token"
 	"go/types"
 	"strings"
 
@@ -93,7 +94,33 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		}
 	}
 
+	// A C name can be typedef'd more than once across headers, e.g. a forward
+	// typedef "typedef struct _Foo Foo;" in one header and the defining typedef
+	// "typedef struct _Foo { ... } Foo;" in another. Both reach here with the
+	// same cName. Mirror the macro-redefinition rule (see loadMacro): if the two
+	// underlying types match, the later typedef is a harmless redeclaration and
+	// is reused; if they differ, report it as a redeclaration error instead of
+	// emitting a second Go type with the same name. See issue goplus/llcppg#1001.
+	if prev, ok := ctx.typedefs[cName]; ok {
+		if types.Identical(prev.tunder, tunder) {
+			return // same underlying type, reuse the existing definition
+		}
+		ctx.errorf(decl, "%s redeclared in this block\n\t%v: other declaration of %s",
+			goName, ctx.position(prev.pos), goName)
+		return
+	}
+	ctx.typedefs[cName] = typedefInfo{tunder: tunder, pos: goNodePos(ctx, decl)}
+
 	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
+}
+
+// typedefInfo records an emitted typedef's resolved underlying type and the
+// position of its declaration, so a later typedef with the same C name can be
+// checked for a matching underlying type (reuse) or a conflicting one (error).
+// See issue goplus/llcppg#1001.
+type typedefInfo struct {
+	tunder types.Type
+	pos    token.Pos
 }
 
 // defineTypedefToTypeParam registers a typedef whose underlying type is a bare

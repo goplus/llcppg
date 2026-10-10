@@ -149,6 +149,7 @@ type pkgCtx struct {
 	fileBases map[clang.File]int // clang.File => base
 
 	macroVals map[string]any          // macroName => value
+	typedefs  map[string]typedefInfo  // c/c++ fullName => emitted typedef info (only local typedefs)
 	ovobjs    map[string]*overloadObj // objUSR => overload object
 	types     map[string]typeObj      // c/c++ fullName => type name object (include external types)
 	typdecls  map[string]typDecl      // c/c++ fullName => type declaration object (only local types)
