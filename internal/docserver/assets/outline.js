@@ -134,7 +134,12 @@
       return;
     }
     if (this.isExpandable) {
-      if (this.isExpanded() && this.isSelected()) {
+      // Toggle purely on the expanded state. pkgsite also requires the item to
+      // be selected before collapsing, but llcppg's scroll-spy re-selects the
+      // in-view section continuously, which would deselect this item between
+      // clicks and make a second click re-expand instead of collapse. Keying the
+      // toggle on isExpanded() alone makes click reliably flip the group.
+      if (this.isExpanded()) {
         this.controller.collapseTreeitem(this);
       } else {
         this.controller.expandTreeitem(this);
@@ -169,7 +174,9 @@
       case " ":
       case "Enter":
         if (this.isExpandable) {
-          if (this.isExpanded() && this.isSelected()) {
+          // Same reliable-toggle rule as handleClick: collapse whenever the
+          // group is open, independent of the scroll-spy's selection.
+          if (this.isExpanded()) {
             this.controller.collapseTreeitem(this);
           } else {
             this.controller.expandTreeitem(this);
@@ -251,10 +258,27 @@
       self.handleResize();
     });
     this.findTreeItems();
+    // Open the top-level containers ("Documentation") once on load so their
+    // section links (Overview, Index, Functions, Types, …) are visible, but
+    // leave every deeper group collapsed. This is the "collapsed by default"
+    // the sidebar wants: compact, with only the section headers showing until
+    // the reader expands a group.
+    this.expandTopLevelItems();
     this.updateVisibleTreeitems();
     this.observeTargets();
     if (this.firstTreeitem) {
       this.firstTreeitem.el.tabIndex = 0;
+    }
+  };
+
+  // expandTopLevelItems expands only the depth-1 containers, revealing the
+  // outline's section links while keeping the nested func/type groups collapsed.
+  TreeNavController.prototype.expandTopLevelItems = function () {
+    for (var i = 0; i < this.treeitems.length; i++) {
+      var ti = this.treeitems[i];
+      if (ti.isExpandable && ti.depth === 1) {
+        ti.el.setAttribute("aria-expanded", "true");
+      }
     }
   };
 
@@ -268,7 +292,12 @@
   TreeNavController.prototype.observeTargets = function () {
     var self = this;
     this.addObserver(function (treeitem) {
-      self.expandTreeitem(treeitem);
+      // Scroll-spy reveals and selects the item for the section in view, but it
+      // must not force the top-level (level 1) "Documentation" node open: doing
+      // so on load expands the whole outline, defeating "collapsed by default".
+      // So expand only the mid-level ancestors (type groups, etc.) and leave the
+      // level-1 container in whatever state the reader last set.
+      self.expandAncestorsBelowTop(treeitem);
       self.setSelected(treeitem);
     });
 
@@ -412,6 +441,22 @@
     var currentItem = treeitem;
     while (currentItem) {
       if (currentItem.isExpandable) {
+        currentItem.el.setAttribute("aria-expanded", "true");
+      }
+      currentItem = currentItem.groupTreeitem;
+    }
+    this.updateVisibleTreeitems();
+  };
+
+  // expandAncestorsBelowTop expands the item and its ancestors like
+  // expandTreeitem, but skips any ancestor at tree depth 1 (the top-level
+  // "Documentation" container). The scroll-spy uses it so that having a section
+  // in view does not auto-open the whole outline on load; the sidebar stays
+  // compact until the reader expands a group themselves.
+  TreeNavController.prototype.expandAncestorsBelowTop = function (treeitem) {
+    var currentItem = treeitem;
+    while (currentItem) {
+      if (currentItem.isExpandable && currentItem.depth > 1) {
         currentItem.el.setAttribute("aria-expanded", "true");
       }
       currentItem = currentItem.groupTreeitem;
