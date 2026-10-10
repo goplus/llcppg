@@ -32,9 +32,9 @@ type fakeWatcher struct {
 	ch chan struct{}
 }
 
-func newFakeWatcher() *fakeWatcher    { return &fakeWatcher{ch: make(chan struct{}, 1)} }
+func newFakeWatcher() *fakeWatcher              { return &fakeWatcher{ch: make(chan struct{}, 1)} }
 func (w *fakeWatcher) Changes() <-chan struct{} { return w.ch }
-func (w *fakeWatcher) fire()          { w.ch <- struct{}{} }
+func (w *fakeWatcher) fire()                    { w.ch <- struct{}{} }
 
 // openStream opens an SSE connection to the handler and returns the response
 // and a buffered reader positioned to read event lines. It fails if the status

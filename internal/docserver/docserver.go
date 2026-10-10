@@ -167,8 +167,10 @@ func Run(ctx context.Context, dir string, opts Options) error {
 	case <-ctx.Done():
 		// Graceful shutdown; a background context keeps Shutdown from being
 		// cancelled by the same signal that triggered it. Open event streams
-		// are closed through their request contexts, and the watcher goroutine
-		// stops when ctx is done, so shutdown does not wait on idle tabs.
+		// are closed through the done channel (ctx.Done(), passed to
+		// serveEvents) rather than their request contexts, which Shutdown does
+		// not cancel; the watcher goroutine stops when ctx is done. So shutdown
+		// does not wait on idle tabs.
 		return srv.Shutdown(context.Background())
 	case err := <-serveErr:
 		if err == http.ErrServerClosed {

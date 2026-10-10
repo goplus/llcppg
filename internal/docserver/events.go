@@ -31,7 +31,7 @@ const maxStreams = 32
 
 // keepAlivePeriod is how often the handler writes an SSE comment line. It keeps
 // proxies and idle-connection timeouts from closing an otherwise silent stream.
-// It is a field on the handler only so tests can shorten it.
+// It is a parameter of serveEvents only so tests can shorten it.
 const keepAlivePeriod = 15 * time.Second
 
 // broker owns the set of connected SSE streams and fans a reload out to all of
@@ -55,8 +55,8 @@ func newBroker(id string) *broker {
 	return &broker{id: id, subs: make(map[chan struct{}]struct{})}
 }
 
-// subscribe registers a new stream and returns its channel together with the
-// current subscriber count after registration. The caller must call
+// subscribe registers a new stream and returns its channel together with a
+// boolean reporting whether registration succeeded. The caller must call
 // unsubscribe when the stream ends. The returned ok is false when the stream
 // cap is already reached, in which case nothing is registered.
 func (b *broker) subscribe() (ch chan struct{}, ok bool) {
