@@ -134,12 +134,12 @@
       return;
     }
     if (this.isExpandable) {
-      // Toggle purely on the expanded state. pkgsite also requires the item to
-      // be selected before collapsing, but llcppg's scroll-spy re-selects the
-      // in-view section continuously, which would deselect this item between
-      // clicks and make a second click re-expand instead of collapse. Keying the
-      // toggle on isExpanded() alone makes click reliably flip the group.
-      if (this.isExpanded()) {
+      // Faithful pkgsite toggle: collapse only when the item is already both
+      // expanded and selected, otherwise expand. Because handleClick ends by
+      // calling setSelected(this), the first click selects+expands and the
+      // second (now selected and expanded) collapses — the two-click open/close
+      // pkg.go.dev uses.
+      if (this.isExpanded() && this.isSelected()) {
         this.controller.collapseTreeitem(this);
       } else {
         this.controller.expandTreeitem(this);
@@ -174,9 +174,10 @@
       case " ":
       case "Enter":
         if (this.isExpandable) {
-          // Same reliable-toggle rule as handleClick: collapse whenever the
-          // group is open, independent of the scroll-spy's selection.
-          if (this.isExpanded()) {
+          // Same faithful toggle rule as handleClick: collapse only when
+          // already expanded and selected, else expand. setSelected below keeps
+          // click and keyboard behaving identically.
+          if (this.isExpanded() && this.isSelected()) {
             this.controller.collapseTreeitem(this);
           } else {
             this.controller.expandTreeitem(this);
@@ -258,27 +259,10 @@
       self.handleResize();
     });
     this.findTreeItems();
-    // Open the top-level containers ("Documentation") once on load so their
-    // section links (Overview, Index, Functions, Types, …) are visible, but
-    // leave every deeper group collapsed. This is the "collapsed by default"
-    // the sidebar wants: compact, with only the section headers showing until
-    // the reader expands a group.
-    this.expandTopLevelItems();
     this.updateVisibleTreeitems();
     this.observeTargets();
     if (this.firstTreeitem) {
       this.firstTreeitem.el.tabIndex = 0;
-    }
-  };
-
-  // expandTopLevelItems expands only the depth-1 containers, revealing the
-  // outline's section links while keeping the nested func/type groups collapsed.
-  TreeNavController.prototype.expandTopLevelItems = function () {
-    for (var i = 0; i < this.treeitems.length; i++) {
-      var ti = this.treeitems[i];
-      if (ti.isExpandable && ti.depth === 1) {
-        ti.el.setAttribute("aria-expanded", "true");
-      }
     }
   };
 
@@ -292,12 +276,14 @@
   TreeNavController.prototype.observeTargets = function () {
     var self = this;
     this.addObserver(function (treeitem) {
-      // Scroll-spy reveals and selects the item for the section in view, but it
-      // must not force the top-level (level 1) "Documentation" node open: doing
-      // so on load expands the whole outline, defeating "collapsed by default".
-      // So expand only the mid-level ancestors (type groups, etc.) and leave the
-      // level-1 container in whatever state the reader last set.
-      self.expandAncestorsBelowTop(treeitem);
+      // Scroll-spy: reveal and select the item for the section in view, exactly
+      // like pkgsite's tree.ts. expandTreeitem walks up the ancestor chain, so
+      // the in-view section's own groups and the top-level "Documentation" node
+      // open while every other group stays collapsed. On load this opens just
+      // the chain of the first section in view (Overview under Documentation),
+      // which is the "collapsed by default, only the active path open" behaviour
+      // pkg.go.dev shows.
+      self.expandTreeitem(treeitem);
       self.setSelected(treeitem);
     });
 
@@ -448,22 +434,6 @@
     this.updateVisibleTreeitems();
   };
 
-  // expandAncestorsBelowTop expands the item and its ancestors like
-  // expandTreeitem, but skips any ancestor at tree depth 1 (the top-level
-  // "Documentation" container). The scroll-spy uses it so that having a section
-  // in view does not auto-open the whole outline on load; the sidebar stays
-  // compact until the reader expands a group themselves.
-  TreeNavController.prototype.expandAncestorsBelowTop = function (treeitem) {
-    var currentItem = treeitem;
-    while (currentItem) {
-      if (currentItem.isExpandable && currentItem.depth > 1) {
-        currentItem.el.setAttribute("aria-expanded", "true");
-      }
-      currentItem = currentItem.groupTreeitem;
-    }
-    this.updateVisibleTreeitems();
-  };
-
   TreeNavController.prototype.expandAllSiblingItems = function (currentItem) {
     for (var i = 0; i < this.treeitems.length; i++) {
       var ti = this.treeitems[i];
@@ -566,28 +536,64 @@
 
   // -- mobile <select> fallback -------------------------------------------
 
-  // Build the mobile jump menu from the same tree, indenting nested entries so
-  // the type/method hierarchy stays readable in a flat <select>. Selecting an
-  // option navigates to its anchor, which also lets the browser scroll to it.
+  // Faithful port of pkgsite's makeSelectNav (static/shared/outline/select.ts):
+  // build a <select> whose options are grouped under an <optgroup> per parent
+  // tree item, so the type/method hierarchy stays readable on narrow screens.
+  // An observer keeps the select synced to the section the scroll-spy marks in
+  // view, and changing the select jumps to that section's anchor.
   var select = document.querySelector(".js-mainNavMobile select");
   if (select) {
-    var placeholder = document.createElement("option");
-    placeholder.textContent = "Outline";
-    placeholder.value = "";
-    select.appendChild(placeholder);
+    var outlineGroup = document.createElement("optgroup");
+    outlineGroup.label = "Outline";
+    select.appendChild(outlineGroup);
 
+    var groupMap = {};
     for (var i = 0; i < controller.treeitems.length; i++) {
       var ti = controller.treeitems[i];
+      if (ti.depth > 4) {
+        continue;
+      }
       var href = ti.el.getAttribute("href");
       if (!href || href.charAt(0) !== "#") {
         continue;
       }
+      var group;
+      if (ti.groupTreeitem) {
+        group = groupMap[ti.groupTreeitem.label];
+        if (!group) {
+          group = document.createElement("optgroup");
+          group.label = ti.groupTreeitem.label;
+          groupMap[ti.groupTreeitem.label] = group;
+          select.appendChild(group);
+        }
+      } else {
+        group = outlineGroup;
+      }
       var opt = document.createElement("option");
-      var indent = new Array(Math.max(0, ti.depth - 1) + 1).join("  ");
-      opt.textContent = indent + ti.label;
+      opt.label = ti.label;
+      opt.textContent = ti.label;
+      // llcppg serves the page at "/" with in-page #anchors, so the option value
+      // is the bare "#id"; selecting it jumps there (pkgsite stores a path
+      // because it navigates between unit pages).
       opt.value = href;
-      select.appendChild(opt);
+      group.appendChild(opt);
     }
+
+    // Keep the select showing the section the scroll-spy has in view, matching
+    // pkgsite's makeSelectNav observer (short 50ms debounce).
+    controller.addObserver(function (treeitem) {
+      var hash = treeitem.el.getAttribute("href");
+      if (!hash) {
+        return;
+      }
+      var opts = select.getElementsByTagName("option");
+      for (var k = 0; k < opts.length; k++) {
+        if (opts[k].value === hash) {
+          select.value = opts[k].value;
+          break;
+        }
+      }
+    }, 50);
 
     select.addEventListener("change", function () {
       if (select.value) {

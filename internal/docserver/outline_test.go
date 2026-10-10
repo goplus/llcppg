@@ -178,10 +178,11 @@ func TestHandlerServesOutlineScript(t *testing.T) {
 
 // TestOutlineScriptHasCollapseBehavior guards that outline.js still carries the
 // collapse/expand wiring ported from pkgsite's tree.ts: items start collapsed
-// (aria-expanded="false"), their child list is marked role="group", and the
-// aria-level the CSS keys off is assigned. Without these the sidebar would be a
-// flat always-open list again, which is exactly the behaviour the issue asked
-// to change.
+// (aria-expanded="false"), their child list is marked role="group", the
+// aria-level the CSS keys off is assigned, and the scroll-spy both selects the
+// in-view item (aria-selected) and expands its ancestor chain (expandTreeitem).
+// Without these the sidebar would be a flat always-open list again, which is
+// exactly the behaviour the issue asked to change.
 func TestOutlineScriptHasCollapseBehavior(t *testing.T) {
 	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
 	srv := httptest.NewServer(newHandler(dir, false, nil, nil))
@@ -189,16 +190,24 @@ func TestOutlineScriptHasCollapseBehavior(t *testing.T) {
 
 	js := getBody(t, srv.URL+"/static/outline.js", http.StatusOK)
 	for _, want := range []string{
-		`"aria-expanded", "false"`, // collapsed by default
-		`"role", "group"`,          // the child list the toggle hides/shows
-		`"aria-owns"`,              // links a toggle to its group, like pkgsite
-		`"aria-level"`,             // drives the pkgsite tree.css styling
-		`"aria-selected", "true"`,  // scroll-spy selection
-		`expandTopLevelItems`,      // only the top-level container opens on load
-		`expandAncestorsBelowTop`,  // scroll-spy never auto-opens the whole tree
+		`"aria-expanded", "false"`,               // collapsed by default
+		`"role", "group"`,                        // the child list the toggle hides/shows
+		`"aria-owns"`,                            // links a toggle to its group, like pkgsite
+		`"aria-level"`,                           // drives the pkgsite tree.css styling
+		`"aria-selected", "true"`,                // scroll-spy selection
+		`self.expandTreeitem(treeitem)`,          // scroll-spy opens the in-view chain
+		`this.isExpanded() && this.isSelected()`, // faithful pkgsite toggle
 	} {
 		if !strings.Contains(js, want) {
 			t.Errorf("outline.js missing collapse/expand marker %q", want)
+		}
+	}
+	// The prior fix added ad-hoc workarounds that diverged from pkgsite's
+	// tree.ts; the faithful port must not reintroduce them. Guarding against the
+	// names keeps a future edit from silently going back to the broken model.
+	for _, gone := range []string{"expandTopLevelItems", "expandAncestorsBelowTop"} {
+		if strings.Contains(js, gone) {
+			t.Errorf("outline.js should not contain the non-pkgsite workaround %q", gone)
 		}
 	}
 }
