@@ -115,6 +115,20 @@ var (
 	NoManglingIgnore = featExplicitIgnore
 )
 
+// toMemberType hoists tagless union member types for both structs and unions.
+// The parent decides whether the result is a stored field or an accessor type.
+func toMemberType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, feats *int, scope *scopeCtx) types.Type {
+	underlying := typ
+	if underlying.Kind == lc.Type_Elaborated {
+		underlying = underlying.Named()
+	}
+	decl := underlying.Declaration()
+	if decl.Kind == lc.Cursor_UnionDecl && decl.IsAnonymous() != 0 {
+		return emitUnion(ctx, decl, ctx.nextAnonName())
+	}
+	return toTypeEx(ctx, pkg, typ, flagIsVarDef, feats, scope)
+}
+
 func toType(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, scope *scopeCtx) types.Type {
 	var feats int
 	ret := toTypeEx(ctx, pkg, typ, flags, &feats, scope)

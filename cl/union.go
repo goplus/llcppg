@@ -99,6 +99,12 @@ func initUnionType(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl) {
 		switch m.Kind {
 		case lc.Cursor_FieldDecl:
 			members = append(members, m)
+		case lc.Cursor_UnionDecl:
+			// In union { union { int x; }; }, x shares the outer storage.
+			// A named member is handled by its FieldDecl instead.
+			if m.IsAnonymousRecordDecl() != 0 {
+				return clang.Recurse
+			}
 		}
 		return clang.Continue
 	})
@@ -219,7 +225,11 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 	pkgTypes := pkg.Types
 	member := clang.String(m)
 
-	fldType := toType(ctx, pkgTypes, m.Type(), flagIsVarDef, nil)
+	var feats int
+	fldType := toMemberType(ctx, pkgTypes, m.Type(), &feats, nil)
+	if feats&featAllIgnore != 0 {
+		panic("unsupported type - " + clang.String(m.Type()))
+	}
 
 	name := unionRefPrefix + member
 	retType := types.NewPointer(fldType)
