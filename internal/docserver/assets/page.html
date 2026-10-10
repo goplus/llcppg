@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.ImportPath}} - llcppg doc</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="pkg-header">
+  <div class="pkg-title">
+    <span class="kw">package</span> {{.Name}}
+  </div>
+  <div class="pkg-path"><code>import "{{.ImportPath}}"</code></div>
+  <div class="pkg-dir">read from <code>{{.Dir}}</code></div>
+</header>
+
+<aside class="summary">
+  <h2>Summary</h2>
+  <ul>
+    <li>{{.Summary.Types}} types</li>
+    <li>{{.Summary.Funcs}} functions</li>
+    <li>{{.Summary.Methods}} methods</li>
+    <li>{{.Summary.Consts}} constants</li>
+    <li>{{.Summary.Vars}} variables</li>
+    <li class="{{if .Summary.Undocumented}}warn{{end}}">{{.Summary.Undocumented}} undocumented</li>
+  </ul>
+</aside>
+
+{{if .ParseErrors}}
+<section class="parse-errors">
+  <h2>Parse errors</h2>
+  <p>Some files could not be fully parsed; the documentation below is built from what parsed.</p>
+  <ul>
+    {{range .ParseErrors}}<li><code>{{.}}</code></li>{{end}}
+  </ul>
+</section>
+{{end}}
+
+<main>
+<section id="overview">
+  <h2>Overview</h2>
+  {{if .Overview}}{{.Overview}}{{else}}<p class="muted">This package has no package comment.</p>{{end}}
+</section>
+
+<nav class="index">
+  <h2>Index</h2>
+  <ul>
+    {{if .Consts}}<li><a href="#constants">Constants</a></li>{{end}}
+    {{if .Vars}}<li><a href="#variables">Variables</a></li>{{end}}
+    {{range .Funcs}}<li><a href="#{{.Anchor}}">func {{.Name}}</a></li>{{end}}
+    {{range .Types}}
+    <li><a href="#{{.Anchor}}">type {{.Name}}</a>
+      {{if or .Funcs .Methods}}
+      <ul>
+        {{range .Funcs}}<li><a href="#{{.Anchor}}">func {{.Name}}</a></li>{{end}}
+        {{range .Methods}}<li><a href="#{{.Anchor}}">func ({{.Recv}}) {{.Name}}</a></li>{{end}}
+      </ul>
+      {{end}}
+    </li>
+    {{end}}
+  </ul>
+</nav>
+
+{{if .Consts}}
+<section id="constants">
+  <h2>Constants</h2>
+  {{range .Consts}}
+  <div class="decl-block"{{if .Anchor}} id="{{.Anchor}}"{{end}}>
+    <pre class="decl">{{.Decl}}</pre>
+    {{.Doc}}
+  </div>
+  {{end}}
+</section>
+{{end}}
+
+{{if .Vars}}
+<section id="variables">
+  <h2>Variables</h2>
+  {{range .Vars}}
+  <div class="decl-block"{{if .Anchor}} id="{{.Anchor}}"{{end}}>
+    <pre class="decl">{{.Decl}}</pre>
+    {{.Doc}}
+  </div>
+  {{end}}
+</section>
+{{end}}
+
+{{if .Funcs}}
+<section id="functions">
+  <h2>Functions</h2>
+  {{range .Funcs}}
+  <div class="decl-block" id="{{.Anchor}}">
+    <h3>func {{.Name}}</h3>
+    <pre class="decl">{{.Decl}}</pre>
+    {{.Doc}}
+  </div>
+  {{end}}
+</section>
+{{end}}
+
+{{if .Types}}
+<section id="types">
+  <h2>Types</h2>
+  {{range .Types}}
+  <div class="type-block" id="{{.Anchor}}">
+    <h3>type {{.Name}}</h3>
+    <pre class="decl">{{.Decl}}</pre>
+    {{.Doc}}
+
+    {{range .Consts}}
+    <div class="decl-block"{{if .Anchor}} id="{{.Anchor}}"{{end}}>
+      <pre class="decl">{{.Decl}}</pre>
+      {{.Doc}}
+    </div>
+    {{end}}
+    {{range .Vars}}
+    <div class="decl-block"{{if .Anchor}} id="{{.Anchor}}"{{end}}>
+      <pre class="decl">{{.Decl}}</pre>
+      {{.Doc}}
+    </div>
+    {{end}}
+
+    {{range .Funcs}}
+    <div class="decl-block" id="{{.Anchor}}">
+      <h4>func {{.Name}}</h4>
+      <pre class="decl">{{.Decl}}</pre>
+      {{.Doc}}
+    </div>
+    {{end}}
+    {{range .Methods}}
+    <div class="decl-block" id="{{.Anchor}}">
+      <h4>func ({{.Recv}}) {{.Name}}</h4>
+      <pre class="decl">{{.Decl}}</pre>
+      {{.Doc}}
+    </div>
+    {{end}}
+  </div>
+  {{end}}
+</section>
+{{end}}
+
+{{if .Imports}}
+<section id="imports">
+  <h2>Imports</h2>
+  <ul class="imports">
+    {{range .Imports}}<li><code>{{.}}</code></li>{{end}}
+  </ul>
+</section>
+{{end}}
+</main>
+
+<footer>
+  <p class="muted">Served by <code>llcppg -doc</code>. The page re-reads the package on every refresh.</p>
+</footer>
+</body>
+</html>
