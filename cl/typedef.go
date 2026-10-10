@@ -104,7 +104,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	// scope info rather than keeping a separate map. See issue goplus/llcppg#1001.
 	if o := pkgTypes.Scope().Lookup(goName); o != nil {
 		eunder, _ := ctx.effectiveUnder(cName, tunder)
-		if prev, ok := o.(*types.TypeName); ok && sameTypedef(prev.Type(), eunder) {
+		if prev, ok := o.(*types.TypeName); ok && types.Identical(prev.Type(), eunder) {
 			return // same underlying type, reuse the existing definition
 		}
 		ctx.errorf(decl, "%s redeclared in this block\n\t%v: other declaration of %s",
@@ -113,20 +113,6 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	}
 
 	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
-}
-
-// sameTypedef reports whether a previously-emitted typedef (whose scope object
-// has type prev) is equivalent to a later typedef that would emit the effective
-// underlying type eunder (see effectiveUnder). defineTypedef emits a typedef
-// either as a type alias (AliasType) whose right-hand side is eunder, or, for a
-// class, as a named type (InitType) whose underlying is eunder's underlying; the
-// two cases are compared accordingly so a harmless redeclaration is reused
-// instead of panicking on a duplicate Go name. See issue goplus/llcppg#1001.
-func sameTypedef(prev, eunder types.Type) bool {
-	if a, ok := prev.(*types.Alias); ok {
-		return types.Identical(types.Unalias(a), eunder)
-	}
-	return types.Identical(prev.Underlying(), eunder.Underlying())
 }
 
 // defineTypedefToTypeParam registers a typedef whose underlying type is a bare
