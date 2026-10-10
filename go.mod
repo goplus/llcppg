@@ -3,6 +3,7 @@ module github.com/goplus/llcppg
 go 1.27.0 // llgo 1.0
 
 require (
+	github.com/fsnotify/fsnotify v1.10.1
 	github.com/google/safehtml v0.1.1-0.20260610220727-a1fb0ade7257
 	github.com/goplus/gogen v1.26.1
 	github.com/goplus/lib v0.6.1
@@ -12,3 +13,5 @@ require (
 	golang.org/x/mod v0.41.0
 	golang.org/x/text v0.42.0
 )
+
+require golang.org/x/sys v0.13.0 // indirect

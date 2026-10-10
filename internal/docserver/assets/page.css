@@ -144,3 +144,23 @@ footer {
 /* The example Share/Format/Run buttons only work with pkgsite's playground
  * backend, which llcppg does not serve, so hide them to avoid dead controls. */
 .Documentation-exampleButtonsContainer { display: none; }
+
+/* Live-reload status marker, added by live.js only when the file watcher is
+ * running. It sits unobtrusively in the corner so a stale page (server gone)
+ * is not mistaken for a fresh one. */
+#llcppg-live {
+  position: fixed;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  z-index: 1000;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #fff;
+  background: var(--color-text-subtle);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+#llcppg-live[data-state="live"] { background: #2da44e; }
+#llcppg-live[data-state="disconnected"] { background: #cf222e; }

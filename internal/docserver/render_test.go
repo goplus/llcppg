@@ -52,7 +52,7 @@ func renderFixture(t *testing.T, src string, allDecls bool) *pageData {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return p.render()
+	return p.render(false)
 }
 
 func TestRenderShellMetadata(t *testing.T) {

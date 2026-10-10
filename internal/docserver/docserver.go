@@ -122,7 +122,22 @@ func Run(ctx context.Context, dir string, opts Options) error {
 	}
 
 	url := "http://" + ln.Addr().String()
-	handler := newHandler(dir, opts.AllDecls)
+
+	// Start the file watcher for live reload. If it cannot be created (for
+	// example the OS inotify limit is reached), we fall back to a degraded
+	// server with no live reload: b stays nil, the page carries no client
+	// script and /_events is not registered. The documentation itself never
+	// depends on the watcher.
+	var b *broker
+	w, werr := NewWatcher(ctx, p.Dir, defaultQuiet)
+	if werr != nil {
+		fmt.Fprintf(opts.stderr(), "llcppg: warning: live reload disabled: %v\n", werr)
+	} else {
+		b = newBroker(instanceID())
+		go b.run(w)
+	}
+
+	handler := newHandler(dir, opts.AllDecls, b, ctx.Done())
 
 	// ReadHeaderTimeout bounds how long a client may take to send request
 	// headers. It is harmless on the loopback default and prevents a trivial
@@ -132,6 +147,9 @@ func Run(ctx context.Context, dir string, opts Options) error {
 	// Report the URL before launching the browser so the author always has it,
 	// even if the launch fails or there is no browser (SSH, container, CI).
 	fmt.Fprintf(opts.stdout(), "llcppg: serving documentation for %s at %s\n", p.ImportPath, url)
+	if b != nil {
+		fmt.Fprintf(opts.stdout(), "llcppg: watching *.go in %s (live reload on)\n", p.Dir)
+	}
 
 	if opts.OpenBrowser {
 		if err := openBrowser(url); err != nil {
@@ -148,7 +166,9 @@ func Run(ctx context.Context, dir string, opts Options) error {
 	select {
 	case <-ctx.Done():
 		// Graceful shutdown; a background context keeps Shutdown from being
-		// cancelled by the same signal that triggered it.
+		// cancelled by the same signal that triggered it. Open event streams
+		// are closed through their request contexts, and the watcher goroutine
+		// stops when ctx is done, so shutdown does not wait on idle tabs.
 		return srv.Shutdown(context.Background())
 	case err := <-serveErr:
 		if err == http.ErrServerClosed {
@@ -156,6 +176,16 @@ func Run(ctx context.Context, dir string, opts Options) error {
 		}
 		return err
 	}
+}
+
+// instanceID returns a short identifier that is stable for the life of this
+// process and (with very high probability) differs from a previous run on the
+// same address. It is sent in the SSE hello message so a reconnecting page can
+// tell a brief network blip (same id, do nothing) from a server restart
+// (different id, reload once). Start time plus the process id is enough: it
+// does not need to be unpredictable, only different across restarts.
+func instanceID() string {
+	return fmt.Sprintf("%d-%d", time.Now().UnixNano(), os.Getpid())
 }
 
 // hostOf returns the host part of a "host:port" address, or the whole string
