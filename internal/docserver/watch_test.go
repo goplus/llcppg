@@ -158,14 +158,22 @@ func TestWatcherBurst(t *testing.T) {
 
 // TestWatcherMergesCloseWrites writes twice with a gap shorter than the quiet
 // period; the two writes must merge into one change.
+//
+// The file is created before the watcher starts so both writes are plain
+// modifications of an already-watched file. On macOS (kqueue) a create is
+// delivered via a directory re-scan and the per-file watch is only registered
+// afterwards, so a create-then-modify pair can surface as two events spaced
+// further apart than the quiet period and split into two changes; starting from
+// an existing file keeps this test about the debounce merging, not that race.
 func TestWatcherMergesCloseWrites(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "a.go")
+	writeFile(t, path, "package foo\n")
 	w := newTestWatcher(t, dir)
 
-	writeFile(t, path, "package foo\n")
-	time.Sleep(testQuiet / 3)
 	writeFile(t, path, "package foo\n\nfunc Bar() {}\n")
+	time.Sleep(testQuiet / 3)
+	writeFile(t, path, "package foo\n\nfunc Baz() {}\n")
 	expectChange(t, w)
 }
 
