@@ -225,11 +225,7 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 	pkgTypes := pkg.Types
 	member := clang.String(m)
 
-	var feats int
-	fldType := toMemberType(ctx, pkgTypes, m.Type(), &feats, nil)
-	if feats&featAllIgnore != 0 {
-		panic("unsupported type - " + clang.String(m.Type()))
-	}
+	fldType := toType(ctx, pkgTypes, m.Type(), flagIsVarDef, nil)
 
 	name := unionRefPrefix + member
 	retType := types.NewPointer(fldType)
