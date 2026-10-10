@@ -25,9 +25,12 @@ import (
 	"time"
 )
 
-// testQuiet is a short quiet period for tests: long enough to coalesce a burst
-// reliably, short enough to keep the tests fast.
-const testQuiet = 30 * time.Millisecond
+// testQuiet is the quiet period used by the tests. It matches the production
+// defaultQuiet (100ms): long enough that even a loaded CI runner delivers a
+// burst's file-system events to the debouncer well within one window (macOS
+// kqueue delivers a directory write via a re-scan whose latency is not under
+// the test's control), short enough to keep the tests fast.
+const testQuiet = 100 * time.Millisecond
 
 // newTestWatcher starts a watcher on dir with the test quiet period and
 // discards its stderr warnings. It stops when the returned cancel is called
@@ -156,8 +159,8 @@ func TestWatcherBurst(t *testing.T) {
 	}
 }
 
-// TestWatcherMergesCloseWrites writes twice with a gap shorter than the quiet
-// period; the two writes must merge into one change.
+// TestWatcherMergesCloseWrites writes twice in quick succession, well within
+// the quiet period; the two writes must merge into one change.
 //
 // The file is created before the watcher starts so both writes are plain
 // modifications of an already-watched file. On macOS (kqueue) a create is
@@ -165,6 +168,12 @@ func TestWatcherBurst(t *testing.T) {
 // afterwards, so a create-then-modify pair can surface as two events spaced
 // further apart than the quiet period and split into two changes; starting from
 // an existing file keeps this test about the debounce merging, not that race.
+//
+// The two writes are issued back-to-back with no intervening sleep: the merge
+// only holds while both events reach the debouncer within one quiet window, and
+// kqueue delivers a directory write via a re-scan whose latency the test cannot
+// control, so spending none of the window on a deliberate sleep leaves the
+// whole quiet period to absorb that delivery jitter.
 func TestWatcherMergesCloseWrites(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "a.go")
@@ -172,7 +181,6 @@ func TestWatcherMergesCloseWrites(t *testing.T) {
 	w := newTestWatcher(t, dir)
 
 	writeFile(t, path, "package foo\n\nfunc Bar() {}\n")
-	time.Sleep(testQuiet / 3)
 	writeFile(t, path, "package foo\n\nfunc Baz() {}\n")
 	expectChange(t, w)
 }
