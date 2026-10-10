@@ -61,22 +61,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 
 	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
-	if feats&featQuietIgnore == 0 {
-		if tp, ok := tunder.(*types.TypeParam); ok {
-			// A typedef whose underlying type is a bare template parameter, e.g.
-			//   template <class _Tp> class shared_ptr { typedef _Tp element_type; };
-			// cannot be emitted as a Go top-level type (Go has no
-			// "type X[_Tp any] = _Tp"). But it is NOT unsupported: references to
-			// it, such as the field "element_type* __ptr_", must resolve to the
-			// template parameter itself. Register it transparently so lookups
-			// return _Tp, without emitting a declaration and without ignoring it
-			// (ignoring would poison every field that uses it and, through them,
-			// the whole enclosing class). See issue goplus/llcppg#985.
-			defineTypedefToTypeParam(ctx, decl, cName, tp)
-			return
-		}
-	}
-	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
+	if feats&featQuietIgnore != 0 {
 		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type (%d: %v), ignored", cName, underlying.Kind, clang.String(underlying))
 		ctx.ignoreType(cName, featQuietIgnore)
 		return
@@ -84,6 +69,20 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	if feats&featExplicitIgnore != 0 {
 		ctx.ignoref(featExplicitIgnore, decl, "typedef %s: unsupported underlying type (%d: %v), ignored", cName, underlying.Kind, clang.String(underlying))
 		ctx.ignoreType(cName, featExplicitIgnore)
+		return
+	}
+
+	if tp, ok := tunder.(*types.TypeParam); ok {
+		// A typedef whose underlying type is a bare template parameter, e.g.
+		//   template <class _Tp> class shared_ptr { typedef _Tp element_type; };
+		// cannot be emitted as a Go top-level type (Go has no
+		// "type X[_Tp any] = _Tp"). But it is NOT unsupported: references to
+		// it, such as the field "element_type* __ptr_", must resolve to the
+		// template parameter itself. Register it transparently so lookups
+		// return _Tp, without emitting a declaration and without ignoring it
+		// (ignoring would poison every field that uses it and, through them,
+		// the whole enclosing class). See issue goplus/llcppg#985.
+		defineTypedefToTypeParam(ctx, decl, cName, tp)
 		return
 	}
 
@@ -95,14 +94,6 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 	}
 
 	defineTypedef(ctx, decl, cName, goName, scope, tunder, tparams, feats)
-}
-
-func isTypedefUnsupported(tunder types.Type) bool {
-	switch tunder.(type) {
-	case *types.TypeParam:
-		return true
-	}
-	return false
 }
 
 // defineTypedefToTypeParam registers a typedef whose underlying type is a bare
