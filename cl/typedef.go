@@ -61,6 +61,21 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 
 	feats := 0
 	tunder := toTypeEx(ctx, pkgTypes, underlying, flagIsTypeDef, &feats, scope)
+	if feats&featQuietIgnore == 0 {
+		if tp, ok := tunder.(*types.TypeParam); ok {
+			// A typedef whose underlying type is a bare template parameter, e.g.
+			//   template <class _Tp> class shared_ptr { typedef _Tp element_type; };
+			// cannot be emitted as a Go top-level type (Go has no
+			// "type X[_Tp any] = _Tp"). But it is NOT unsupported: references to
+			// it, such as the field "element_type* __ptr_", must resolve to the
+			// template parameter itself. Register it transparently so lookups
+			// return _Tp, without emitting a declaration and without ignoring it
+			// (ignoring would poison every field that uses it and, through them,
+			// the whole enclosing class). See issue goplus/llcppg#985.
+			defineTypedefToTypeParam(ctx, decl, cName, tp)
+			return
+		}
+	}
 	if feats&featQuietIgnore != 0 || isTypedefUnsupported(tunder) {
 		ctx.ignoref(featQuietIgnore, decl, "typedef %s: unsupported underlying type (%d: %v), ignored", cName, underlying.Kind, clang.String(underlying))
 		ctx.ignoreType(cName, featQuietIgnore)
@@ -88,6 +103,21 @@ func isTypedefUnsupported(tunder types.Type) bool {
 		return true
 	}
 	return false
+}
+
+// defineTypedefToTypeParam registers a typedef whose underlying type is a bare
+// template parameter (e.g. "typedef _Tp element_type;" inside a class template)
+// as a transparent alias to that parameter. No Go top-level declaration is
+// emitted - Go cannot express "type X[_Tp any] = _Tp" - but the C/C++ name is
+// made resolvable so that fields and other members referring to it resolve to
+// the template parameter instead of being treated as unsupported. See issue
+// goplus/llcppg#985.
+func defineTypedefToTypeParam(ctx *pkgCtx, decl clang.Cursor, cName string, tp *types.TypeParam) {
+	obj := types.NewTypeName(goNodePos(ctx, decl), ctx.pkg.Types, tp.Obj().Name(), tp)
+	ctx.types[cName] = typeObj{obj, 0}
+	if debugCompileDecl {
+		ctx.logf(decl, "==> addType %s: %v (transparent type param)", cName, tp)
+	}
 }
 
 func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam, feats int) {
