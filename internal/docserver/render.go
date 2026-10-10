@@ -140,10 +140,10 @@ func (p *pkg) render() *pageData {
 	}
 
 	for _, c := range dp.Consts {
-		data.Consts = append(data.Consts, r.value(c, "const"))
+		data.Consts = append(data.Consts, r.value(c))
 	}
 	for _, v := range dp.Vars {
-		data.Vars = append(data.Vars, r.value(v, "var"))
+		data.Vars = append(data.Vars, r.value(v))
 	}
 	for _, f := range dp.Funcs {
 		data.Funcs = append(data.Funcs, r.fn(f, ""))
@@ -164,10 +164,10 @@ func (r *renderer) typ(t *doc.Type) *typeDoc {
 		Decl:   r.decl(t.Decl),
 	}
 	for _, c := range t.Consts {
-		td.Consts = append(td.Consts, r.value(c, "const"))
+		td.Consts = append(td.Consts, r.value(c))
 	}
 	for _, v := range t.Vars {
-		td.Vars = append(td.Vars, r.value(v, "var"))
+		td.Vars = append(td.Vars, r.value(v))
 	}
 	for _, f := range t.Funcs {
 		td.Funcs = append(td.Funcs, r.fn(f, ""))
@@ -178,7 +178,7 @@ func (r *renderer) typ(t *doc.Type) *typeDoc {
 	return td
 }
 
-func (r *renderer) value(v *doc.Value, kind string) *valueDoc {
+func (r *renderer) value(v *doc.Value) *valueDoc {
 	anchor := ""
 	if len(v.Names) > 0 {
 		anchor = symAnchor(v.Names[0], "")

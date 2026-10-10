@@ -33,6 +33,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 // Options configures Run.
@@ -99,9 +100,11 @@ func (o *Options) stderr() io.Writer {
 // it writes nothing and never executes package code.
 func Run(ctx context.Context, dir string, opts Options) error {
 	// Load once up front so usage errors (no Go files, multiple packages) are
-	// reported before we bind a port. The result is discarded; each request
-	// reloads so edits are picked up without a restart.
-	if _, err := load(dir, opts.AllDecls); err != nil {
+	// reported before we bind a port. We keep the result only to report the
+	// import path in the startup message; each request reloads independently so
+	// edits are picked up without a restart.
+	p, err := load(dir, opts.AllDecls)
+	if err != nil {
 		return err
 	}
 
@@ -118,15 +121,14 @@ func Run(ctx context.Context, dir string, opts Options) error {
 	url := "http://" + ln.Addr().String()
 	handler := newHandler(dir, opts.AllDecls)
 
-	srv := &http.Server{Handler: handler}
+	// ReadHeaderTimeout bounds how long a client may take to send request
+	// headers. It is harmless on the loopback default and prevents a trivial
+	// slowloris when an explicit non-loopback address is used.
+	srv := &http.Server{Handler: handler, ReadHeaderTimeout: 10 * time.Second}
 
 	// Report the URL before launching the browser so the author always has it,
 	// even if the launch fails or there is no browser (SSH, container, CI).
-	if p, perr := load(dir, opts.AllDecls); perr == nil {
-		fmt.Fprintf(opts.stdout(), "llcppg: serving documentation for %s at %s\n", p.ImportPath, url)
-	} else {
-		fmt.Fprintf(opts.stdout(), "llcppg: serving documentation at %s\n", url)
-	}
+	fmt.Fprintf(opts.stdout(), "llcppg: serving documentation for %s at %s\n", p.ImportPath, url)
 
 	if opts.OpenBrowser {
 		if err := openBrowser(url); err != nil {

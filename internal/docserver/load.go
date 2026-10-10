@@ -73,7 +73,8 @@ func load(dir string, allDecls bool) (*pkg, error) {
 		return nil, fmt.Errorf("llcppg: cannot read package in %s: %w", absDir, err)
 	}
 
-	// goFiles are the non-test .go files build selected, in directory order.
+	// goFiles are the non-test .go files build selected, sorted into a stable
+	// lexical order so the rendered output does not depend on directory order.
 	goFiles := make([]string, 0, len(bpkg.GoFiles)+len(bpkg.CgoFiles))
 	goFiles = append(goFiles, bpkg.GoFiles...)
 	goFiles = append(goFiles, bpkg.CgoFiles...)
