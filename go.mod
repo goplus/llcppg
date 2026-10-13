@@ -11,7 +11,7 @@ require (
 	github.com/llarhub/clang-c v0.9.1
 	github.com/qiniu/x v1.19.2
 	golang.org/x/mod v0.41.0
-	golang.org/x/text v0.42.0
+	golang.org/x/text v0.43.0
 )
 
 require golang.org/x/sys v0.13.0 // indirect
