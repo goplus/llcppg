@@ -18,7 +18,7 @@ type GzFile = *GzFileS
 type Stream = StreamS
 type Streamp = *Stream
 
-// Read one byte, falling back to the real function.
+// Read one byte from the gzip stream (macro fast path).
 //
 // llgo:link GzFile.Gzgetc C._llcppg_z_gzgetc
 func (g GzFile) Gzgetc() c.Int {
@@ -32,6 +32,8 @@ func (strm Streamp) DeflateInit(level c.Int) c.Int {
 	return 0
 }
 
+// Reset the stream, restoring the version string.
+//
 // llgo:link Streamp.Reset C._llcppg_z_reset
 func (strm Streamp) Reset(flags c.Int) {
 }

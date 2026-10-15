@@ -96,3 +96,80 @@ func TestPrecedingComment(t *testing.T) {
 		})
 	}
 }
+
+// TestFollowingComment exercises the source-scanning that recovers a macro's
+// trailing comment (issue #1056: for macros, a trailing comment on the line
+// directly below the #define is used when there is no leading comment). The
+// marker "@" in each source marks the byte MacroRawComment scans forward from
+// (the end of the macro's extent); it is stripped before the call.
+func TestFollowingComment(t *testing.T) {
+	tests := []struct {
+		name string
+		src  string // "@" marks the scan start (end of the macro extent)
+		want string
+	}{
+		{
+			name: "line_comment_below",
+			src:  "#define X 1@\n/// Maximum size limit.\n",
+			want: "/// Maximum size limit.",
+		},
+		{
+			name: "block_comment_below",
+			src:  "#define Z 1@\n/** Init for deflation. */\n",
+			want: "/** Init for deflation. */",
+		},
+		{
+			name: "multiline_block_below",
+			src:  "#define Z 1@\n/*\n * Init for deflation.\n */\n",
+			want: "/*\n * Init for deflation.\n */",
+		},
+		{
+			name: "consecutive_line_comments",
+			src:  "#define X 1@\n// line one\n// line two\nint y;\n",
+			want: "// line one\n// line two",
+		},
+		{
+			name: "blank_line_detaches",
+			src:  "#define X 1@\n\n/// detached doc\n",
+			want: "",
+		},
+		{
+			name: "inline_comment_not_trailing",
+			src:  "#define X 1@ // inline\n",
+			want: "",
+		},
+		{
+			name: "code_below_no_comment",
+			src:  "#define X 1@\nint y;\n",
+			want: "",
+		},
+		{
+			name: "next_decl_comment_detached_by_blank",
+			src:  "#define X 1@\n\n/// doc for next\n#define Y 2\n",
+			want: "",
+		},
+		{
+			name: "comment_at_file_end_no_newline",
+			src:  "#define X 1@\n/// doc",
+			want: "/// doc",
+		},
+		{
+			name: "no_comment_at_eof",
+			src:  "#define X 1@",
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			at := strings.IndexByte(tt.src, '@')
+			if at < 0 {
+				t.Fatalf("test source missing '@' marker")
+			}
+			src := tt.src[:at] + tt.src[at+1:]
+			got := followingComment([]byte(src), at)
+			if got != tt.want {
+				t.Errorf("followingComment:\n got: %q\nwant: %q", got, tt.want)
+			}
+		})
+	}
+}
