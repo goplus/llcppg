@@ -314,3 +314,31 @@ func TestStylesheetResetsTreeRoot(t *testing.T) {
 		}
 	}
 }
+
+// declPreRE matches the `.Documentation-declaration pre { ... }` block in
+// page.css so the test can assert the no-wrap rule lives there.
+var declPreRE = regexp.MustCompile(`(?s)\.Documentation-declaration pre\s*\{(.*?)\}`)
+
+// TestStylesheetDeclarationDoesNotWrap guards that a long function prototype
+// scrolls horizontally rather than wrapping onto several lines. pkgsite's own
+// stylesheet wraps declarations (white-space: pre-wrap); llcppg wants the
+// prototype to keep its single-line shape and scroll within its box, so the
+// declaration <pre> must set white-space: pre while the surrounding
+// .Documentation pre rule provides overflow-x: auto.
+func TestStylesheetDeclarationDoesNotWrap(t *testing.T) {
+	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil, false, "", nil, nil))
+	defer srv.Close()
+
+	css := getBody(t, srv.URL+"/static/page.css", http.StatusOK)
+	m := declPreRE.FindStringSubmatch(css)
+	if m == nil {
+		t.Fatal("page.css has no .Documentation-declaration pre rule")
+	}
+	if !strings.Contains(m[1], "white-space: pre;") {
+		t.Errorf(".Documentation-declaration pre must set white-space: pre so long prototypes scroll instead of wrapping; rule was:\n%s", m[1])
+	}
+	if !strings.Contains(css, "overflow-x: auto;") {
+		t.Error("page.css must keep overflow-x: auto so the declaration box scrolls horizontally")
+	}
+}

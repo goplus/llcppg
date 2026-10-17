@@ -214,10 +214,12 @@ func (r identifierResolver) toURL(pkgPath, id string) (url string) {
 type Link struct {
 	Href, Text string
 	Class      string // class for "a" tag; optional
+	Target     string // target for "a" tag (e.g. "_blank"); optional
+	Rel        string // rel for "a" tag (e.g. "noopener"); optional
 }
 
 var LinkTemplate = template.Must(template.New("link").Parse(
-	`<a {{with .Class}}class="{{.}}" {{end}}href="{{.Href}}">{{.Text}}</a>`))
+	`<a {{with .Class}}class="{{.}}" {{end}}{{with .Target}}target="{{.}}" {{end}}{{with .Rel}}rel="{{.}}" {{end}}href="{{.Href}}">{{.Text}}</a>`))
 
 func nodeName(n ast.Node) (string, *ast.Ident) {
 	switch n := n.(type) {

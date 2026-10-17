@@ -133,6 +133,76 @@ func TestRenderLinksTypes(t *testing.T) {
 	}
 }
 
+// multiFileSrc declares a type in one file and references it from another, so a
+// test can check that current-package type links do not depend on which file
+// the reference appears in.
+var multiFileSrc = map[string]string{
+	"a.go": `package multi
+
+// Use references Row, which is declared in b.go, and a built-in int.
+func Use(r *Row, n int) *Row { return r }
+`,
+	"b.go": `package multi
+
+// Row is declared in b.go and also referenced here, in its own file.
+type Row struct{}
+
+// Same references Row from Row's own file.
+func Same(x Row) Row { return x }
+`,
+}
+
+func TestRenderLinksCurrentPackageTypeAcrossFiles(t *testing.T) {
+	dir := writeDir(t, multiFileSrc)
+	p, err := load(dir, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(p.render(false).Body)
+
+	// A type defined in the current package must be linked wherever it is
+	// referenced, whether or not the reference is in the file that declares it.
+	// Before the fix, go/ast's per-file object resolution linked Row only in
+	// b.go (its own file) and left it unlinked in a.go. Use (a.go) references
+	// Row twice (*Row param, *Row result) and Same (b.go) references it twice
+	// (Row param, Row result); both pairs must now be linked.
+	if n := strings.Count(body, `href="#Row"`); n < 4 {
+		t.Errorf("expected Row linked consistently across files; got %d #Row links in:\n%s", n, body)
+	}
+}
+
+func TestRenderDoesNotLinkBuiltinTypes(t *testing.T) {
+	dir := writeDir(t, multiFileSrc)
+	p, err := load(dir, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(p.render(false).Body)
+
+	// A built-in type parameter (int) must not be a link: the docserver does
+	// not serve a "builtin" package, so such a link 404s.
+	if strings.Contains(body, "/builtin#int") || strings.Contains(body, `href="/builtin`) {
+		t.Errorf("built-in type int must not be linked (would 404); body:\n%s", body)
+	}
+}
+
+func TestRenderSourceLinksOpenInNewTab(t *testing.T) {
+	data := renderFixture(t, fixtureSrc, false)
+	body := string(data.Body)
+
+	// The "View Source"/symbol-name source links navigate to the separate
+	// /src/ page. In auto-exit mode a same-tab navigation unloads the doc page
+	// and shuts the server down, so these links must open in a new tab.
+	if !strings.Contains(body, `class="Documentation-source" target="_blank" rel="noopener" href="/src/`) {
+		t.Errorf("source links must open in a new tab (target=_blank rel=noopener); body:\n%s", body)
+	}
+	// In-page anchor links (e.g. the DB type link) are fragment navigations
+	// that do not unload the page, so they must stay in the same tab.
+	if strings.Contains(body, `target="_blank" rel="noopener" href="#`) {
+		t.Error("in-page anchor links should not open in a new tab")
+	}
+}
+
 func TestRenderLinksSymbolsToSource(t *testing.T) {
 	data := renderFixture(t, fixtureSrc, false)
 	body := string(data.Body)

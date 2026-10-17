@@ -1015,10 +1015,31 @@ func generateAnchorLinks(idr *identifierResolver, decl ast.Decl) map[*ast.Ident]
 				}
 			}
 		case *ast.Ident:
+			// Predeclared built-in identifiers (int, string, error, …) are not
+			// documented by the docserver, so a link to them 404s. Leave them
+			// unlinked: our rule is that only types defined in the current
+			// package carry links.
 			if node.Obj == nil && doc.IsPredeclared(node.Name) {
-				m[node] = idr.toURL("builtin", node.Name)
-			} else if node.Obj != nil && idr.topLevelDecls[node.Obj.Decl] {
-				m[node] = "#" + node.Name
+				break
+			}
+			// Link references to top-level declarations of the current package.
+			//
+			// We decide this by name rather than by the identifier's resolved
+			// ast.Object: go/ast object resolution is per-file, so a type used
+			// in a different file than the one that declares it has a nil (or
+			// mismatched) Obj and would otherwise be linked inconsistently —
+			// linked when referenced in its own file, unlinked when referenced
+			// from another. Matching the current package's top-level identifier
+			// set (collected across all files) links such references uniformly.
+			//
+			// The Obj guard still excludes local bindings whose name happens to
+			// collide with a package-level identifier: a parameter, result or
+			// receiver name resolves to a *ast.Field (not a top-level decl), so
+			// it is skipped and only genuine type references are linked.
+			if node.Obj == nil || idr.topLevelDecls[node.Obj.Decl] {
+				if ids := idr.pkgIDs[idr.name]; ids != nil && ids[node.Name] {
+					m[node] = "#" + node.Name
+				}
 			}
 		case *ast.FuncDecl:
 			ignore[node.Name] = true // E.g., "func NoLink() int"

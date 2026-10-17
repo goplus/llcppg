@@ -336,7 +336,15 @@ footer {
 }
 .Documentation pre .comment { color: var(--color-code-comment); }
 
-.Documentation-declaration pre { margin: 0; }
+.Documentation-declaration pre {
+  margin: 0;
+  /* A long function prototype should scroll horizontally within its box, not
+   * wrap onto several lines. The parent .Documentation pre rule already sets
+   * overflow-x: auto; make the no-wrap explicit here so the declaration keeps
+   * its single-line shape even if a browser default or an inherited rule would
+   * otherwise wrap it (pkgsite's own stylesheet uses white-space: pre-wrap). */
+  white-space: pre;
+}
 .Documentation-declaration + .Documentation-declaration { margin-top: 0.625rem; }
 
 .Documentation-indexList { margin: 0; }

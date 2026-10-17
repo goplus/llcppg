@@ -353,11 +353,26 @@ func executeToHTMLWithLimit(tmpl *template.Template, data any, limit int64) (saf
 // linkHTML returns an HTML-formatted name linked to the given URL.
 // The class argument is the class of the 'a' tag.
 // If url is the empty string, the name is not linked.
+//
+// The link opens in a new tab (target="_blank", rel="noopener"). Both callers —
+// the "View Source"/symbol-name source links and the file links — point at a
+// separate source-view page rather than an in-page anchor. The docserver's
+// auto-exit mode shuts the server down when the documentation page is unloaded
+// (navigated away), so following one of these links in the same tab would both
+// leave the documentation and stop the server; opening them in a new tab keeps
+// the documentation page (and the server) alive. It mirrors the "Source Files"
+// list, which already uses target="_blank" rel="noopener".
 func linkHTML(name, url, class string) safehtml.HTML {
 	if url == "" {
 		return safehtml.HTMLEscaped(name)
 	}
-	return render.ExecuteToHTML(render.LinkTemplate, render.Link{Class: class, Href: url, Text: name})
+	return render.ExecuteToHTML(render.LinkTemplate, render.Link{
+		Class:  class,
+		Href:   url,
+		Text:   name,
+		Target: "_blank",
+		Rel:    "noopener",
+	})
 }
 
 // examples is an internal representation of all package examples.
