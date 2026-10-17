@@ -207,16 +207,20 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 		return v // special case
 	}
 	name := rmPrefix(cName, p.nsPrefix)
+	methodPrefix := false
 	underscoreStart := false
 	if global {
 		name, underscoreStart = rmPrefixAndUnderscoreStart(name, p.fnPrefix)
-		if typCName != "" {
+		if prefix, ok := p.methodPrefix[typName]; ok {
+			methodPrefix = true
+			name = strings.TrimPrefix(name, prefix)
+		} else if typCName != "" {
 			// remove typCName prefix & suffix
 			if before, ok := strings.CutSuffix(name, typCName); ok {
 				name = strings.TrimSuffix(before, "_")
 			} else if after, ok := strings.CutPrefix(name, typCName+"_"); ok {
 				name = after
-			} else {
+			} else if typName != "" {
 				name = strings.TrimPrefix(name, typName+"_")
 			}
 		}
@@ -226,7 +230,7 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 	}
 	if underscoreStart || !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
 		name = p.cstyleToGo(name, underscoreStart, true)
-		if typName != "" {
+		if !methodPrefix && typName != "" {
 			var typSuffix []string
 			if abbrs, _ := p.typeAbbr.matchList(typName, true); len(abbrs) > 0 {
 				typName = abbrs[len(abbrs)-1]

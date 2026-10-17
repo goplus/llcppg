@@ -113,8 +113,8 @@ func (self Streamp) InflateBackInit(windowBits c.Int, window *uint8) c.Int {
 	return 0
 }
 
-// llgo:link GzFile.Gzgetc C._llcppg_gzgetc
-func (self GzFile) Gzgetc() c.Int {
+// llgo:link GzFile.Getc C._llcppg_gzgetc
+func (self GzFile) Getc() c.Int {
 	return 0
 }
 
@@ -246,14 +246,14 @@ func Gzdopen(fd c.Int, mode *c.Char) GzFile
 // gzbuffer() returns 0 on success, or -1 on failure, such as being called
 // too late.
 //
-// llgo:link GzFile.Gzbuffer C.gzbuffer
-func (self GzFile) Gzbuffer(size c.Uint) c.Int {
+// llgo:link GzFile.Buffer C.gzbuffer
+func (self GzFile) Buffer(size c.Uint) c.Int {
 	return 0
 }
 
 // backward compatibility
 //
-// llgo:link GzFile.Gzgetc_ C.gzgetc_
-func (self GzFile) Gzgetc_() c.Int {
+// llgo:link GzFile.Getc_ C.gzgetc_
+func (self GzFile) Getc_() c.Int {
 	return 0
 }

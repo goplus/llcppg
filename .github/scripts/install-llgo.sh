@@ -55,6 +55,12 @@ install_llvm_macos() {
   brew link --force --overwrite "llvm@$LLVM_VERSION" "lld@$LLVM_VERSION" || true
   LLVM_BIN="$(brew --prefix "llvm@$LLVM_VERSION")/bin"
   export PATH="$(brew --prefix "lld@$LLVM_VERSION")/bin:$PATH"
+
+  # Native macOS arm64 links use LLD 23 via an absolute path. Keep the
+  # matching LLVM/LLD toolchain on PATH for other targets.
+  # if [ "$(uname -m)" = arm64 ]; then
+  #  brew install --skip-link lld@23
+  # fi
 }
 
 case "$(uname -s)" in

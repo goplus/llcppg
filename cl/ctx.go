@@ -184,6 +184,8 @@ type pkgCtx struct {
 
 	typeAliasCache map[string]types.Type
 
+	methodPrefix map[string]string // Go type name => literal method prefix in C names
+
 	nameLookup func(manglingName string) (archivePath string, ok bool)
 	pubLookup  func(pkgPath string) (pubFile string, ok bool)
 
