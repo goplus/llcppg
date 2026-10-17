@@ -28,7 +28,7 @@ type Value struct {
 type Handle struct {
 }
 type Length = c.Ulong
-type HandlePtr *Handle
+type HandlePtr = *Handle
 
 // llgo:type C
 type Callback = func(_llcppg_param1 Length)
