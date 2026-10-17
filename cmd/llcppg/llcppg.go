@@ -70,7 +70,7 @@ func main() {
 }
 
 func help() {
-	fmt.Println("usage: llcppg [-v -debug] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
+	fmt.Println("usage: llcppg [-v -debug] [-d NAME=VALUE ...] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
 	fmt.Println("       llcppg -init [<module-name>]")
 	fmt.Println("       llcppg -doc [-http addr] [-open=false] [-all] [-autoexit=false]")
 }

@@ -36,15 +36,19 @@ import (
 func runGen() {
 	args := flag.Args()
 	if len(args) < 1 {
-		fmt.Println("usage: llcppg [-v -debug] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
-		fmt.Println("       llcppg -init [<module-name>]")
-		fmt.Println("       llcppg -doc [-http addr] [-open=false] [-all] [-autoexit=false]")
+		help()
 		return
 	}
 	destDir := args[0]
 	srcDir := "."
 	if len(args) >= 2 {
 		srcDir = args[1]
+	}
+
+	userDefines, err := parseDefines()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	log.SetFlags(0)
@@ -59,7 +63,7 @@ func runGen() {
 
 	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
-	err := Gen(destDir, srcDir, idx, *verbose || *debug)
+	err = Gen(destDir, srcDir, idx, userDefines, *verbose || *debug)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -70,8 +74,9 @@ func runGen() {
 
 // Gen generates Go files from the C/C++ header files and llcppg.cfg in the specified
 // source directory and writes them to the destination directory. It uses the provided
-// clang index for parsing.
-func Gen(destDir, srcDir string, index clang.Index, verbose bool) (err error) {
+// clang index for parsing. The defines are user constants (from the -d flag) injected
+// into every generated package.
+func Gen(destDir, srcDir string, index clang.Index, defines []cl.Define, verbose bool) (err error) {
 	cfg, err := tool.LoadConf(filepath.Join(srcDir, "llcppg.cfg"))
 	if err != nil {
 		return
@@ -92,7 +97,7 @@ func Gen(destDir, srcDir string, index clang.Index, verbose bool) (err error) {
 	}
 
 	if len(cfg.Pkgs) == 0 {
-		return genPkg(destDir, srcDir, mainPkgName, index, &cfg)
+		return genPkg(destDir, srcDir, mainPkgName, index, defines, &cfg)
 	}
 
 	errPkgCnt := 0
@@ -111,7 +116,7 @@ func Gen(destDir, srcDir string, index clang.Index, verbose bool) (err error) {
 			continue
 		}
 		subConf.Apply(&cfg)
-		errPkgCnt += convPkg(destDir, srcDir, mainPkgName, index, &subConf)
+		errPkgCnt += convPkg(destDir, srcDir, mainPkgName, index, defines, &subConf)
 	}
 	if errPkgCnt > 0 {
 		return fmt.Errorf("%d package(s) failed during generation", errPkgCnt)
@@ -119,8 +124,8 @@ func Gen(destDir, srcDir string, index clang.Index, verbose bool) (err error) {
 	return nil
 }
 
-func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, cfg *tool.Config) int {
-	err := genPkg(destDir, srcDir, mainPkgName, index, cfg)
+func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl.Define, cfg *tool.Config) int {
+	err := genPkg(destDir, srcDir, mainPkgName, index, defines, cfg)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -128,7 +133,7 @@ func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, cfg *tool.C
 	return 0
 }
 
-func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, cfg *tool.Config) (err error) {
+func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl.Define, cfg *tool.Config) (err error) {
 	pkgName := cfg.Name
 	if pos := strings.LastIndex(pkgName, "/"); pos >= 0 {
 		destDir = filepath.Join(destDir, pkgName[len(mainPkgName)+1:])
@@ -140,7 +145,7 @@ func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, cfg *tool.Co
 		return
 	}
 
-	pkg, _, err := cfg.NewPackage("", pkgName, srcDir, index)
+	pkg, _, err := cfg.NewPackage("", pkgName, srcDir, index, defines...)
 	if err != nil {
 		return
 	}

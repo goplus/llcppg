@@ -79,6 +79,9 @@ type Config struct {
 	// generating Go const names (optional).
 	MacroPrefix []string `json:"MacroPrefix"`
 
+	// Define specifies user constants to inject into the generated package (optional).
+	Define map[string]any `json:"Define"`
+
 	// convert capitalized, underscore-joined names to camel case, except names whose final
 	// segment is all-uppercase (acronyms/macros), which are kept as-is.
 	ForceCamelCase bool `json:"ForceCamelCase"`

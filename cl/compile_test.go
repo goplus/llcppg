@@ -19,8 +19,10 @@ package cl_test
 import (
 	"bytes"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -106,8 +108,18 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			files[i] = u
 		}
 
+		names := slices.Sorted(maps.Keys(conf.Define))
+		defines := make([]cl.Define, len(names))
+		for i, name := range names {
+			defines[i] = cl.Define{
+				Name:  name,
+				Value: conf.Define[name],
+			}
+		}
+
 		pkg, err := cl.NewPackage(pkgPrefix+myPkgName, fakePkgName, files, &cl.Config{
 			Importer:        imp,
+			Define:          defines,
 			LLGoPackage:     conf.LLGoPackage,
 			Language:        lang,
 			WrapFileHeader:  conf.WrapFileHeader,

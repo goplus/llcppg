@@ -70,7 +70,7 @@ const includeSuffix = string(os.PathSeparator) + "include"
 
 // NewPackage loads the source files and converts them into a Go package according to the
 // configuration.
-func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Index) (ret cl.Package, lang cl.Language, err error) {
+func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Index, defines ...cl.Define) (ret cl.Package, lang cl.Language, err error) {
 	lang, ok := cfg.Lang()
 	if !ok {
 		err = fmt.Errorf("invalid language: %q", cfg.Language)
@@ -199,6 +199,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 	ret, err = cl.NewPackage(pkgPath, pkgName, files, &cl.Config{
 		Fset:            fset,
 		Importer:        imp,
+		Define:          defines,
 		LLGoPackage:     cfg.LLGoPackage,
 		Language:        lang,
 		CFlags:          cfg.CFlags,
