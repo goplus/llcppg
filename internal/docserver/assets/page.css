@@ -5,12 +5,8 @@
   --color-border: #d0d7de;
   --color-bg-accented: #f6f8fa;
   --color-code-comment: #6a737d;
-  /* pkgsite tree.css uses these names; map them onto llcppg's palette so the
-   * copied rules below (and their dark-mode counterparts) resolve. */
   --color-background-accented: var(--color-bg-accented);
   --color-brand-primary: var(--color-link);
-  /* pkgsite's tree.css subtracts a sticky-header height when capping the
-   * scrollable group; llcppg has no sticky site header, so default to 0. */
   --js-sticky-header-height: 0rem;
 }
 
@@ -82,7 +78,7 @@ footer {
 .muted { color: var(--color-text-subtle); }
 
 #page { padding: 0 1.5rem; }
-.container { max-width: 60rem; }
+.container { max-width: 100rem; }
 
 /* -- two-column layout: outline sidebar + content ----------------------- */
 
@@ -118,24 +114,12 @@ footer {
 
 /* -- outline tree ------------------------------------------------------- */
 
-/* Copied from pkgsite static/shared/outline/tree.css (Copyright 2021 The Go
- * Authors, BSD-licensed) so the sidebar matches pkg.go.dev: top-level entries
- * are bold (font-weight 500, not the link style), nested groups collapse and
- * expand via the aria-expanded toggles outline.js sets, and the selected item
- * is highlighted. The custom properties it references are defined in :root
- * above. */
 .go-Tree {
   --js-tree-height: 0;
 
   display: flex;
   flex-direction: column;
 
-  /* pkgsite strips list bullets and the default left indent from every tree
-   * <ul> through its site-wide reset.css, which llcppg does not vendor. Without
-   * these three lines the root <ul class="go-Tree"> keeps the browser default
-   * list-style: disc and padding-left: 40px, so black bullets appear next to
-   * the top-level "Documentation" / "Source Files" entries. The `.go-Tree ul`
-   * rule below only matches descendant lists, not this root, so reset it here. */
   list-style: none;
   margin: 0;
   padding-left: 0;
@@ -336,7 +320,12 @@ footer {
 }
 .Documentation pre .comment { color: var(--color-code-comment); }
 
-.Documentation-declaration pre { margin: 0; }
+.Documentation-declaration pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
 .Documentation-declaration + .Documentation-declaration { margin-top: 0.625rem; }
 
 .Documentation-indexList { margin: 0; }
@@ -378,13 +367,8 @@ footer {
   font-size: 0.75rem;
 }
 
-/* The example Share/Format/Run buttons only work with pkgsite's playground
- * backend, which llcppg does not serve, so hide them to avoid dead controls. */
 .Documentation-exampleButtonsContainer { display: none; }
 
-/* Live-reload status marker, added by live.js only when the file watcher is
- * running. It sits unobtrusively in the corner so a stale page (server gone)
- * is not mistaken for a fresh one. */
 #llcppg-live {
   position: fixed;
   bottom: 0.75rem;

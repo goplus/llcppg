@@ -133,6 +133,118 @@ func TestRenderLinksTypes(t *testing.T) {
 	}
 }
 
+// multiFileSrc declares a type in one file and references it from another, so a
+// test can check that current-package type links do not depend on which file
+// the reference appears in.
+var multiFileSrc = map[string]string{
+	"a.go": `package multi
+
+// Use references Row, which is declared in b.go, and a built-in int.
+func Use(r *Row, n int) *Row { return r }
+`,
+	"b.go": `package multi
+
+// Row is declared in b.go and also referenced here, in its own file.
+type Row struct{}
+
+// Same references Row from Row's own file.
+func Same(x Row) Row { return x }
+`,
+}
+
+func TestRenderLinksCurrentPackageTypeAcrossFiles(t *testing.T) {
+	dir := writeDir(t, multiFileSrc)
+	p, err := load(dir, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(p.render(false).Body)
+
+	// A type defined in the current package must be linked wherever it is
+	// referenced, whether or not the reference is in the file that declares it.
+	// Before the fix, go/ast's per-file object resolution linked Row only in
+	// b.go (its own file) and left it unlinked in a.go. Use (a.go) references
+	// Row twice (*Row param, *Row result) and Same (b.go) references it twice
+	// (Row param, Row result); both pairs must now be linked.
+	if n := strings.Count(body, `href="#Row"`); n < 4 {
+		t.Errorf("expected Row linked consistently across files; got %d #Row links in:\n%s", n, body)
+	}
+}
+
+func TestRenderDoesNotLinkBuiltinTypes(t *testing.T) {
+	dir := writeDir(t, multiFileSrc)
+	p, err := load(dir, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(p.render(false).Body)
+
+	// A built-in type parameter (int) must not be a link: the docserver does
+	// not serve a "builtin" package, so such a link 404s.
+	if strings.Contains(body, "/builtin#int") || strings.Contains(body, `href="/builtin`) {
+		t.Errorf("built-in type int must not be linked (would 404); body:\n%s", body)
+	}
+}
+
+// collisionSrc declares a top-level type Row and a package-level var whose
+// initializer selects a struct field that is also named Row, so a test can
+// check that a non-package field selector ".Row" is not mislinked to the
+// top-level type just because the names collide.
+var collisionSrc = map[string]string{
+	"a.go": `package coll
+
+// Row is a top-level type.
+type Row struct{}
+
+// Holder has a Row-typed field, so "Row" is both a type name and a field name.
+type Holder struct {
+	Row *Row
+}
+
+// H selects the Row field, producing a non-package selector "(&Holder{}).Row".
+var H = (&Holder{}).Row
+`,
+}
+
+func TestRenderDoesNotLinkFieldSelectorCollision(t *testing.T) {
+	dir := writeDir(t, collisionSrc)
+	p, err := load(dir, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(p.render(false).Body)
+
+	// The field selector ".Row" in "var H = (&Holder{}).Row" must stay plain
+	// text: it is a field access, not a reference to the top-level Row type.
+	// Its *ast.Ident has a nil Obj, so a pure name-set match would otherwise
+	// link it to "#Row" merely because a top-level Row exists.
+	if strings.Contains(body, `{}).<a href="#Row">`) {
+		t.Errorf("a field selector .Row must not be linked to the top-level Row type; body:\n%s", body)
+	}
+	// Genuine type references to Row (the Holder.Row field's *Row type) must
+	// still be linked, so the fix does not over-suppress.
+	if !strings.Contains(body, `href="#Row"`) {
+		t.Errorf("genuine references to the top-level Row type must still be linked; body:\n%s", body)
+	}
+}
+
+func TestRenderSourceLinksOpenInNewTab(t *testing.T) {
+	data := renderFixture(t, fixtureSrc, false)
+	body := string(data.Body)
+
+	// The "View Source"/symbol-name source links navigate to the separate
+	// /src/ page. In auto-exit mode a same-tab navigation unloads the doc page
+	// and shuts the server down, so these links must open in a new tab.
+	if !strings.Contains(body, `class="Documentation-source" target="_blank" rel="noopener" href="/src/`) {
+		t.Errorf("source links must open in a new tab (target=_blank rel=noopener); body:\n%s", body)
+	}
+	// In-page anchor links (e.g. the DB type link) are fragment navigations
+	// that do not unload the page, so they must stay in the same tab.
+	if strings.Contains(body, `target="_blank" rel="noopener" href="#`) {
+		t.Error("in-page anchor links should not open in a new tab")
+	}
+}
+
 func TestRenderLinksSymbolsToSource(t *testing.T) {
 	data := renderFixture(t, fixtureSrc, false)
 	body := string(data.Body)
