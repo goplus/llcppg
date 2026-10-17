@@ -38,9 +38,6 @@ func (p *pkgCtx) docComments(decl clang.Cursor) []*ast.Comment {
 }
 
 func (p *pkgCtx) docCommentsEx[nodeT nodeCursor](decl nodeT) []*ast.Comment {
-	if !p.keepDoc {
-		return nil
-	}
 	raw := decl.RawComment()
 	if raw == "" {
 		return nil

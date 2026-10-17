@@ -7,22 +7,31 @@ import (
 
 const XGoPackage = true
 
+// Like ma_device_info.nativeDataFormats[64], each element owns its fields.
 type Device struct {
 	NativeDataFormats [64]_llcppg_anon_0
 	Sentinel          c.Int
 }
+
+// Preserve both extents: cells[1][2].y uses one shared element type.
 type Grid struct {
 	Cells [2][3]_llcppg_anon_1
 }
 type Samples struct {
 	_xgo_union [6]uint64
 }
+
+// Recursive records retain the path entries[1].inner[0].code.
 type Nested struct {
 	Entries [2]_llcppg_anon_2
 }
+
+// Anonymous union elements use the same recursive conversion as structs.
 type UnionArrays struct {
 	Values [2]_llcppg_anon_5
 }
+
+// Resolve existing names before generating an anonymous element type.
 type Tagged struct {
 	Code c.Int
 }
@@ -36,11 +45,15 @@ type NamedArrays struct {
 	Pointers [2]*Tagged
 	Rows     *[2]Tagged
 }
+
+// Element pointers and array pointers retain pointers[1]->code and (*rows)[1].code.
 type PointerArrays struct {
 	Pointers [2]*_llcppg_anon_6
 	Rows     *[2]_llcppg_anon_7
 }
 
+// Both callback paths must retain the C calling-convention marker.
+//
 // llgo:type C
 type CallbackElements struct {
 	Handlers  [2]_llcppg_anon_8

@@ -13,6 +13,8 @@ type Members struct {
 type StructUnion struct {
 	_xgo_union [2]uint64
 }
+
+// Like yaml_token_t.data: a struct owns a union of named, tagless structs.
 type Token struct {
 	Type c.Int
 	Data _llcppg_anon_0
@@ -20,6 +22,8 @@ type Token struct {
 type Nested struct {
 	_xgo_union [4]uint32
 }
+
+// Named records and typedefs must continue to use their declared Go types.
 type Tagged struct {
 	Code  c.Int
 	Value c.Double

@@ -139,7 +139,6 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			CFlags:          conf.CFlags,
 			ForceCamelCase:  conf.ForceCamelCase,
 			LoadLibcPubFile: conf.LoadLibcPubFile,
-			DontKeepDoc:     !conf.KeepDoc,
 			NameLookup:      nil,
 			PubFileLookup: func(pkgPath string) (pubFile string, ok bool) {
 				if name, ok := strings.CutPrefix(pkgPath, pkgPrefix); ok {

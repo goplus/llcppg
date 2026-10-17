@@ -11,6 +11,9 @@ type Config struct {
 //go:linkname Total C.total
 var Total c.Int
 
+// A const-qualified variable is an immutable var: it maps to a Go var linked
+// to the same C++ symbol, exactly like a mutable var.
+//
 //go:linkname MaxValue C.maxValue
 var MaxValue c.Int
 

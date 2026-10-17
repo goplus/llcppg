@@ -7,6 +7,7 @@ import (
 
 const XGoPackage = true
 
+// Named members retain their access level even when their union has no tag.
 type Packet struct {
 	Kind c.Int
 	Data _llcppg_anon_0
@@ -20,6 +21,8 @@ type Recursive struct {
 type Mixed struct {
 	_xgo_union [1]uint32
 }
+
+// A struct embeds its fieldless union; the inner union still shares storage.
 type Envelope struct {
 	Kind c.Int
 	_llcppg_anon_1

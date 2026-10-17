@@ -25,6 +25,8 @@ type AllFloats struct {
 type OnlyFloats struct {
 	_xgo_union [2]float64
 }
+
+// The enclosing struct's union is not located at the struct's base address.
 type Envelope struct {
 	Kind c.Int
 	_llcppg_anon_11

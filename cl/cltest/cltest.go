@@ -87,8 +87,6 @@ type Config struct {
 	ForceCamelCase bool `json:"ForceCamelCase"`
 
 	LoadLibcPubFile bool `json:"LoadLibcPubFile"`
-
-	KeepDoc bool `json:"KeepDoc"`
 }
 
 // LoadConf loads the lltest configuration.
