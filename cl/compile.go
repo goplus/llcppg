@@ -209,6 +209,13 @@ type Config struct {
 	// DefaultGoFile specifies default file name (optional).
 	DefaultGoFile string
 
+	// Define specifies user constants to inject into the generated package
+	// (optional). Each entry adds an untyped Go const; see Define for the value
+	// typing and $(name) reference rules. Entries are applied in order after the
+	// load phase and emitted together in a single const block in the default
+	// generated file.
+	Define []Define
+
 	// GoFileOf returns the Go file name for a given header file (optional). If ok is false,
 	// it means we don't know the Go file name for the header file and this header file will
 	// be skipped. If not specified, llcppg will use the default Go file name (DefaultGoFile)
@@ -316,6 +323,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		lastSeen: make(map[string]none), types: make(map[string]typeObj),
 		macroVals: make(map[string]any), impPkgs: make(map[string]none),
 		pubDeps: make(map[string]none), pubTyps: make(map[string]none),
+		defines: conf.Define, defaultGoFile: conf.DefaultGoFile,
 	}
 
 	if conf.LoadLibcPubFile {

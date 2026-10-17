@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/goplus/llcppg/internal/docserver"
 )
@@ -30,12 +31,28 @@ var (
 	debug    = flag.Bool("debug", false, "enable debug output")
 	initRepo = flag.Bool("init", false, "bootstrap a new binding repository from the template; the module name is taken from the optional argument, or inferred from the current directory name")
 
+	defines multiFlag // -d "NAME1=VALUE1; NAME2=VALUE2", repeatable
+
 	docMode     = flag.Bool("doc", false, "serve the documentation of the Go package in the current directory and open it in a browser")
 	docHTTP     = flag.String("http", docserver.DefaultAddr, "listen address for -doc (loopback only unless an explicit non-loopback host is given)")
 	docOpen     = flag.Bool("open", true, "launch the default browser for -doc; use -open=false to only print the URL")
 	docAll      = flag.Bool("all", false, "include unexported declarations in -doc")
 	docAutoExit = flag.Bool("autoexit", true, "for -doc, exit when the auto-opened page is closed; use -autoexit=false to keep serving until Ctrl-C")
 )
+
+func init() {
+	flag.Var(&defines, "d", "inject constants into the generated package: -d \"NAME1=VALUE1; NAME2=VALUE2\"; may be given more than once")
+}
+
+// multiFlag collects a repeatable string flag's values in the order given.
+type multiFlag []string
+
+func (m *multiFlag) String() string { return strings.Join(*m, "; ") }
+
+func (m *multiFlag) Set(v string) error {
+	*m = append(*m, v)
+	return nil
+}
 
 const (
 	cmdDoc = 1 << iota
@@ -70,7 +87,7 @@ func main() {
 }
 
 func help() {
-	fmt.Println("usage: llcppg [-v -debug] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
+	fmt.Println("usage: llcppg [-v -debug] [-d \"NAME=VALUE; ...\"] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
 	fmt.Println("       llcppg -init [<module-name>]")
 	fmt.Println("       llcppg -doc [-http addr] [-open=false] [-all] [-autoexit=false]")
 }

@@ -36,7 +36,7 @@ import (
 func runGen() {
 	args := flag.Args()
 	if len(args) < 1 {
-		fmt.Println("usage: llcppg [-v -debug] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
+		fmt.Println("usage: llcppg [-v -debug] [-d \"NAME=VALUE; ...\"] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
 		fmt.Println("       llcppg -init [<module-name>]")
 		fmt.Println("       llcppg -doc [-http addr] [-open=false] [-all] [-autoexit=false]")
 		return
@@ -45,6 +45,12 @@ func runGen() {
 	srcDir := "."
 	if len(args) >= 2 {
 		srcDir = args[1]
+	}
+
+	userDefines, err := cl.ParseDefineArgs(defines)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	log.SetFlags(0)
@@ -59,7 +65,7 @@ func runGen() {
 
 	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
-	err := Gen(destDir, srcDir, idx, *verbose || *debug)
+	err = Gen(destDir, srcDir, idx, userDefines, *verbose || *debug)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -70,12 +76,14 @@ func runGen() {
 
 // Gen generates Go files from the C/C++ header files and llcppg.cfg in the specified
 // source directory and writes them to the destination directory. It uses the provided
-// clang index for parsing.
-func Gen(destDir, srcDir string, index clang.Index, verbose bool) (err error) {
+// clang index for parsing. The defines are user constants (from the -d flag) injected
+// into every generated package.
+func Gen(destDir, srcDir string, index clang.Index, defines []cl.Define, verbose bool) (err error) {
 	cfg, err := tool.LoadConf(filepath.Join(srcDir, "llcppg.cfg"))
 	if err != nil {
 		return
 	}
+	cfg.Define = defines
 	if strings.Contains(cfg.Name, "/") {
 		err = errors.New("invalid package name: " + cfg.Name)
 		return

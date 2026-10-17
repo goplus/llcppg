@@ -208,6 +208,9 @@ type pkgCtx struct {
 	compiles []compileUnit
 	pubTyps  map[string]none // TODO(xsw): maybe can remove this field (use typdecls)
 
+	defines       []Define // user constants to inject (see Config.Define)
+	defaultGoFile string   // default Go file name, where injected consts are emitted
+
 	errCnt   int
 	failFast int
 	anonSeq  int
@@ -306,6 +309,9 @@ func (p *pkgCtx) compile() {
 	doCompile(p, &p.loads)
 	p.postLoad()
 	doCompile(p, &p.compiles)
+	// Inject user-specified constants after every referenceable constant is
+	// known and before the package is written out.
+	p.applyDefines(p.defines)
 }
 
 func doCompile(p *pkgCtx, pcompiles *[]compileUnit) {
