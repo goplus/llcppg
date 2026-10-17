@@ -38,7 +38,7 @@ type Handle struct {
 type Size = c.Ulong
 type Count = c.Int
 type Alias = Point
-type HandlePtr = *Handle
+type HandlePtr *Handle
 type _llcppg_anon_0 struct {
 	X c.Int
 }

@@ -103,6 +103,8 @@ const (
 	featHasCallback = 1 << iota
 	featExplicitIgnore
 	featQuietIgnore
+	featUncompleted // this type is not fully implemented
+
 	featAllIgnore = featExplicitIgnore | featQuietIgnore
 )
 
@@ -163,6 +165,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		// flagIsParam only governs the outermost type of a parameter, so clear
 		// it before recursing so inner arrays are not wrongly decayed.
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
+		*feats &^= featUncompleted // NOTE(xsw): a pointer is considered complete
 		return newPointer(ctx, pointee)
 	case lc.Type_LValueReference, lc.Type_RValueReference: // TODO(xsw): check RVRef is a pointer
 		elem := typ.NonReference()

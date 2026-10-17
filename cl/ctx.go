@@ -351,8 +351,8 @@ func (p *pkgCtx) aliasTypeName(cName, goName string) {
 	}
 }
 
-func (p *pkgCtx) addType(cName string, decl clang.Cursor, typNamed *types.Named) {
-	typObj := typeObj{typNamed.Obj(), 0}
+func (p *pkgCtx) addType(cName string, decl clang.Cursor, typNamed *types.Named, feats int) {
+	typObj := typeObj{typNamed.Obj(), feats}
 	p.types[cName] = typObj
 	p.aliasTypeName(cName, typObj.Name())
 	if decl.IsAnonymous() == 0 {

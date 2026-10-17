@@ -196,10 +196,14 @@ func loadClass(ctx *pkgCtx, cName string, this *classCtx, cls clang.Cursor) {
 // -----------------------------------------------------------------------------
 
 func newType(ctx *pkgCtx, cls clang.Cursor, cName, goName string, tparams ...*types.TypeParam) (ret typDecl) {
+	return newTypeEx(ctx, cls, cName, goName, tparams, 0)
+}
+
+func newTypeEx(ctx *pkgCtx, cls clang.Cursor, cName, goName string, tparams []*types.TypeParam, feats int) (ret typDecl) {
 	ret.defs = ctx.pkg.NewTypeDefs()
 	ret.TypeDecl = ret.defs.NewType(goName, tparams, goNode(ctx, cls))
 	if cName != "" {
-		ctx.addType(cName, cls, ret.Type())
+		ctx.addType(cName, cls, ret.Type(), feats)
 	}
 	return
 }
