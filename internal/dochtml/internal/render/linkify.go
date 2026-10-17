@@ -994,6 +994,11 @@ func generateAnchorPoints(decl ast.Decl) map[*ast.Ident]idKind {
 func generateAnchorLinks(idr *identifierResolver, decl ast.Decl) map[*ast.Ident]string {
 	m := map[*ast.Ident]string{}
 	ignore := map[ast.Node]bool{}
+	// curPkgIDs is the current package's top-level identifier set. It is
+	// invariant across the whole walk, so hoist the lookup out of the callback
+	// (it would otherwise be recomputed for every identifier node). A nil map
+	// is safe to index — it simply reports every name as absent.
+	curPkgIDs := idr.pkgIDs[idr.name]
 	ast.Inspect(decl, func(node ast.Node) bool {
 		if ignore[node] {
 			return false
@@ -1014,13 +1019,22 @@ func generateAnchorLinks(idr *identifierResolver, decl ast.Decl) map[*ast.Ident]
 					}
 				}
 			}
+			// Not a package-qualified selector (e.g. a field or embedded-field
+			// access like "x.Row"). Its .Sel is a field name, not a reference
+			// to a top-level declaration, so ignore it: otherwise the *ast.Ident
+			// visit below would link it to "#Row" whenever a top-level name of
+			// the same spelling exists (the selector's .Sel has a nil Obj and
+			// would pass the name-set guard by coincidence).
+			ignore[node.Sel] = true
 		case *ast.Ident:
 			// Predeclared built-in identifiers (int, string, error, …) are not
 			// documented by the docserver, so a link to them 404s. Leave them
 			// unlinked: our rule is that only types defined in the current
-			// package carry links.
+			// package carry links. Return true (rather than break) to make the
+			// intent explicit — a bare break only exits this switch, and the
+			// identifier is a leaf anyway, so continuing the walk is harmless.
 			if node.Obj == nil && doc.IsPredeclared(node.Name) {
-				break
+				return true
 			}
 			// Link references to top-level declarations of the current package.
 			//
@@ -1035,9 +1049,11 @@ func generateAnchorLinks(idr *identifierResolver, decl ast.Decl) map[*ast.Ident]
 			// The Obj guard still excludes local bindings whose name happens to
 			// collide with a package-level identifier: a parameter, result or
 			// receiver name resolves to a *ast.Field (not a top-level decl), so
-			// it is skipped and only genuine type references are linked.
+			// it is skipped and only genuine type references are linked. A field
+			// access with a nil Obj is handled separately, above, by ignoring
+			// the selector's .Sel.
 			if node.Obj == nil || idr.topLevelDecls[node.Obj.Decl] {
-				if ids := idr.pkgIDs[idr.name]; ids != nil && ids[node.Name] {
+				if curPkgIDs[node.Name] {
 					m[node] = "#" + node.Name
 				}
 			}

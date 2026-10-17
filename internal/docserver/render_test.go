@@ -186,6 +186,48 @@ func TestRenderDoesNotLinkBuiltinTypes(t *testing.T) {
 	}
 }
 
+// collisionSrc declares a top-level type Row and a package-level var whose
+// initializer selects a struct field that is also named Row, so a test can
+// check that a non-package field selector ".Row" is not mislinked to the
+// top-level type just because the names collide.
+var collisionSrc = map[string]string{
+	"a.go": `package coll
+
+// Row is a top-level type.
+type Row struct{}
+
+// Holder has a Row-typed field, so "Row" is both a type name and a field name.
+type Holder struct {
+	Row *Row
+}
+
+// H selects the Row field, producing a non-package selector "(&Holder{}).Row".
+var H = (&Holder{}).Row
+`,
+}
+
+func TestRenderDoesNotLinkFieldSelectorCollision(t *testing.T) {
+	dir := writeDir(t, collisionSrc)
+	p, err := load(dir, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(p.render(false).Body)
+
+	// The field selector ".Row" in "var H = (&Holder{}).Row" must stay plain
+	// text: it is a field access, not a reference to the top-level Row type.
+	// Its *ast.Ident has a nil Obj, so a pure name-set match would otherwise
+	// link it to "#Row" merely because a top-level Row exists.
+	if strings.Contains(body, `{}).<a href="#Row">`) {
+		t.Errorf("a field selector .Row must not be linked to the top-level Row type; body:\n%s", body)
+	}
+	// Genuine type references to Row (the Holder.Row field's *Row type) must
+	// still be linked, so the fix does not over-suppress.
+	if !strings.Contains(body, `href="#Row"`) {
+		t.Errorf("genuine references to the top-level Row type must still be linked; body:\n%s", body)
+	}
+}
+
 func TestRenderSourceLinksOpenInNewTab(t *testing.T) {
 	data := renderFixture(t, fixtureSrc, false)
 	body := string(data.Body)
