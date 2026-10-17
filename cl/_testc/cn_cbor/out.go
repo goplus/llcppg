@@ -47,6 +47,9 @@ type CnCbor struct {
 	Next       *CnCbor
 	Parent     *CnCbor
 }
+
+// Reduced from jimsch/cn-cbor 1.0.0, include/cn-cbor/cn-cbor.h.
+// Preserve all members of the anonymous union and the recursive record fields.
 type Uint8T = uint8
 type _llcppg_anon_0 struct {
 	_xgo_union [1]uint64

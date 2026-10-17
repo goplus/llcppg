@@ -8,10 +8,15 @@ import (
 
 const XGoPackage = true
 
+// A plain run of unsigned bit-fields packed into one storage word, plus a
+// regular member that keeps its natural conversion.
 type Flags struct {
 	_xgo_bits_0 [2]uint8
 	Value       c.Int
 }
+
+// Signed and bool bit-fields, with an unnamed zero-width separator that forces
+// the next field into a fresh storage unit (no accessor for the separator).
 type Mixed struct {
 	_xgo_align  [0]uint32
 	_xgo_bits_0 [7]uint8

@@ -241,10 +241,6 @@ type Config struct {
 	// parameter name. This option does not affect C++ instance methods, whose receiver is
 	// always named this.
 	UseStdRecvName bool
-
-	// DontKeepDoc specifies whether to keep the documentation comments in the generated
-	// Go package. If true, the documentation comments will be removed (optional).
-	DontKeepDoc bool
 }
 
 const (
@@ -309,8 +305,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
 		llgo: llgo, fset: pkg.Fset, lang: conf.Language, failFast: conf.FailFast,
-		keepDoc: !conf.DontKeepDoc, stdRecvName: conf.UseStdRecvName, cflags: conf.CFlags,
-		wrapFileHeader: conf.WrapFileHeader, forceCamelCase: conf.ForceCamelCase,
+		stdRecvName: conf.UseStdRecvName, wrapFileHeader: conf.WrapFileHeader,
+		cflags: conf.CFlags, forceCamelCase: conf.ForceCamelCase,
 		typeAbbr: typeAbbr, methodPrefix: conf.MethodPrefix,
 		typeAlias: conf.TypeAlias, typeAliasCache: make(map[string]types.Type),
 		nsPrefix: conf.NSPrefix, mthdCheck: methodCheck, fieldAlias: conf.FieldAlias,

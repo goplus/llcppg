@@ -5,6 +5,7 @@ import (
 	"unsafe"
 )
 
+// Categorizes how memory is being used by a translation unit.
 type CXTUResourceUsageKind c.Uint
 
 const (
@@ -16,6 +17,8 @@ type CXTUResourceUsageEntry struct {
 	Kind   CXTUResourceUsageKind
 	Amount c.Ulong
 }
+
+// The memory usage of a CXTranslationUnit, broken into categories.
 type CXTUResourceUsage struct {
 	Data       unsafe.Pointer
 	NumEntries c.Uint

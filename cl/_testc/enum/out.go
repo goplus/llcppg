@@ -32,10 +32,14 @@ type PyStatus struct {
 	ErrMsg   *c.Char
 	Exitcode c.Int
 }
+
+// Error codes for Compilation Database
 type CXCompilationDatabase_Error c.Uint
 
 const (
-	CXCompilationDatabase_NoError            CXCompilationDatabase_Error = 0
+	// No error occurred
+	CXCompilationDatabase_NoError CXCompilationDatabase_Error = 0
+	// Database can not be loaded
 	CXCompilationDatabase_CanNotLoadDatabase CXCompilationDatabase_Error = 1
 )
 

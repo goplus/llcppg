@@ -214,7 +214,6 @@ type pkgCtx struct {
 
 	forceCamelCase bool
 	stdRecvName    bool
-	keepDoc        bool
 }
 
 func (p *pkgCtx) checkFailFast() {
