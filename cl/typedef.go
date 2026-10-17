@@ -142,7 +142,11 @@ func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *
 	}
 
 	var isClass bool
-	tunder, isClass = ctx.effectiveUnder(cName, tunder)
+	if feats&featUncompleted != 0 {
+		isClass = true // NOTE(xsw): Don't alias to an uncompleted type
+	} else {
+		tunder, isClass = ctx.effectiveUnder(cName, tunder)
+	}
 
 	node := goNode(ctx, decl)
 	tparams = scope.typeParams(tparams)

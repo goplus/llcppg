@@ -148,7 +148,7 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 						results = newResults
 						creator = ctx.cstyleToGo(creator, false, true)
 						if mayMethod {
-							params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
+							params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, fn, params, mayMethod)
 							if typRecv != nil {
 								fnName = creator
 								typRecv = nil // skip redeclaration check
@@ -160,7 +160,7 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 				}
 			} else if cls, obj, mayClass := ctx.methodCheck(pkgTypes, cName); mayClass {
 				// try to method for C global functions
-				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, params)
+				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, fn, params, cls != "")
 				if typRecv != nil {
 					recvCType := fn.ArgumentType(0)
 					isPtr := recvCType.Kind == lc.Type_Pointer
@@ -293,11 +293,11 @@ const (
 	c2goMethodRecvName = "self"
 )
 
-func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*types.Var, *types.Var, *types.Named, string) {
+func tryToMethod[funcT fnCursor](ctx *pkgCtx, pkgTypes *types.Package, fn funcT, params []*types.Var, shouldMethod bool) ([]*types.Var, *types.Var, *types.Named, string) {
 	if len(params) > 0 {
 		first := params[0]
 		t := first.Type()
-		if len(params) == 2 && params[1].Type() == t {
+		if !shouldMethod && len(params) == 2 && types.Identical(params[1].Type(), t) && sameCV(fn) {
 			// don't convert to method if the two params have the same type
 			return params, nil, nil, ""
 		}
@@ -333,6 +333,16 @@ func tryToMethod(ctx *pkgCtx, pkgTypes *types.Package, params []*types.Var) ([]*
 		}
 	}
 	return params, nil, nil, ""
+}
+
+func sameCV[funcT fnCursor](fn funcT) bool {
+	arg0 := fn.ArgumentType(0)
+	arg1 := fn.ArgumentType(1)
+	if arg0.Kind == lc.Type_Pointer {
+		arg0 = arg0.Pointee()
+		arg1 = arg1.Pointee()
+	}
+	return arg0.IsConstQualified() == arg1.IsConstQualified()
 }
 
 func nonClass(ctx *pkgCtx, pkgTypes *types.Package, tn *types.TypeName) bool {

@@ -201,7 +201,7 @@ func (p *pkgCtx) postPreload() {
 		init := p.typdecls[cName].init
 		pkg.RestoreCurFile(init.at)
 		goName := p.typeName(cName, true)
-		td := newType(p, init.decl, cName, goName)
+		td := newTypeEx(p, init.decl, cName, goName, nil, featUncompleted)
 		td.TypeDecl.InitType(pkg, types.NewStruct(nil, nil))
 		p.typdecls[cName] = td
 	}

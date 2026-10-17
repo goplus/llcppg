@@ -18,7 +18,7 @@ type GzFileS struct {
 type StreamS struct {
 }
 type GzFile = *GzFileS
-type Stream = StreamS
+type Stream StreamS
 type Streamp = *Stream
 
 // llgo:link GzFile.Gzgetc C._llcppg_z_gzgetc
