@@ -338,12 +338,17 @@ footer {
 
 .Documentation-declaration pre {
   margin: 0;
-  /* A long function prototype should scroll horizontally within its box, not
-   * wrap onto several lines. The parent .Documentation pre rule already sets
-   * overflow-x: auto; make the no-wrap explicit here so the declaration keeps
-   * its single-line shape even if a browser default or an inherited rule would
-   * otherwise wrap it (pkgsite's own stylesheet uses white-space: pre-wrap). */
-  white-space: pre;
+  /* A long function prototype should wrap within its box rather than force a
+   * horizontal scroll. white-space: pre-wrap keeps the declaration's leading
+   * indentation and internal spacing (like plain `pre`) while allowing lines
+   * to wrap at the box edge (this matches pkgsite's own stylesheet). The
+   * overflow-wrap/word-break rules let an over-long unbroken token — e.g. a
+   * long generated C type or identifier name — break instead of overflowing
+   * the container. The parent .Documentation pre rule still keeps
+   * overflow-x: auto as a fallback for anything that genuinely cannot wrap. */
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .Documentation-declaration + .Documentation-declaration { margin-top: 0.625rem; }
 

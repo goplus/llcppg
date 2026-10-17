@@ -316,16 +316,15 @@ func TestStylesheetResetsTreeRoot(t *testing.T) {
 }
 
 // declPreRE matches the `.Documentation-declaration pre { ... }` block in
-// page.css so the test can assert the no-wrap rule lives there.
+// page.css so the test can assert the wrapping rule lives there.
 var declPreRE = regexp.MustCompile(`(?s)\.Documentation-declaration pre\s*\{(.*?)\}`)
 
-// TestStylesheetDeclarationDoesNotWrap guards that a long function prototype
-// scrolls horizontally rather than wrapping onto several lines. pkgsite's own
-// stylesheet wraps declarations (white-space: pre-wrap); llcppg wants the
-// prototype to keep its single-line shape and scroll within its box, so the
-// declaration <pre> must set white-space: pre while the surrounding
-// .Documentation pre rule provides overflow-x: auto.
-func TestStylesheetDeclarationDoesNotWrap(t *testing.T) {
+// TestStylesheetDeclarationWraps guards that a long function prototype wraps
+// within its box rather than forcing a horizontal scroll. The declaration
+// <pre> must set white-space: pre-wrap (which, like pkgsite's own stylesheet,
+// preserves indentation while allowing wrapping), plus overflow-wrap so an
+// over-long unbroken token still breaks instead of overflowing the container.
+func TestStylesheetDeclarationWraps(t *testing.T) {
 	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
 	srv := httptest.NewServer(newHandler(dir, false, nil, nil, false, "", nil, nil))
 	defer srv.Close()
@@ -335,10 +334,10 @@ func TestStylesheetDeclarationDoesNotWrap(t *testing.T) {
 	if m == nil {
 		t.Fatal("page.css has no .Documentation-declaration pre rule")
 	}
-	if !strings.Contains(m[1], "white-space: pre;") {
-		t.Errorf(".Documentation-declaration pre must set white-space: pre so long prototypes scroll instead of wrapping; rule was:\n%s", m[1])
+	if !strings.Contains(m[1], "white-space: pre-wrap;") {
+		t.Errorf(".Documentation-declaration pre must set white-space: pre-wrap so long prototypes wrap instead of scrolling; rule was:\n%s", m[1])
 	}
-	if !strings.Contains(css, "overflow-x: auto;") {
-		t.Error("page.css must keep overflow-x: auto so the declaration box scrolls horizontally")
+	if !strings.Contains(m[1], "overflow-wrap: break-word;") {
+		t.Errorf(".Documentation-declaration pre must set overflow-wrap: break-word so an over-long token breaks instead of overflowing; rule was:\n%s", m[1])
 	}
 }
