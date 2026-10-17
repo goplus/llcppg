@@ -82,7 +82,14 @@ footer {
 .muted { color: var(--color-text-subtle); }
 
 #page { padding: 0 1.5rem; }
-.container { max-width: 60rem; }
+/* The documentation page uses the full available width (up to a generous cap)
+ * so the outline + content grid — and the function-prototype declaration boxes
+ * inside it — can grow with the viewport, as pkg.go.dev's unit page does. The
+ * earlier 60rem cap left declarations narrow on wide screens, forcing long
+ * prototypes to wrap much sooner than their container had room for. 100rem
+ * roughly matches pkgsite's effective unit width while still keeping a maximum
+ * on ultra-wide monitors. */
+.container { max-width: 100rem; }
 
 /* -- two-column layout: outline sidebar + content ----------------------- */
 

@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -339,5 +340,33 @@ func TestStylesheetDeclarationWraps(t *testing.T) {
 	}
 	if !strings.Contains(m[1], "overflow-wrap: break-word;") {
 		t.Errorf(".Documentation-declaration pre must set overflow-wrap: break-word so an over-long token breaks instead of overflowing; rule was:\n%s", m[1])
+	}
+}
+
+// containerMaxWidthRE captures the max-width (in rem) declared on the
+// top-level .container wrapper in page.css.
+var containerMaxWidthRE = regexp.MustCompile(`\.container\s*\{[^}]*max-width:\s*([0-9.]+)rem`)
+
+// TestStylesheetContainerIsWide guards that the documentation page uses the
+// full available width rather than a narrow fixed column, so the function
+// prototype declaration boxes can grow with the viewport like pkg.go.dev's
+// unit page. A too-small .container cap (the earlier 60rem) made long
+// prototypes wrap far sooner than the viewport had room for.
+func TestStylesheetContainerIsWide(t *testing.T) {
+	dir := writeDir(t, map[string]string{"a.go": "package foo\n"})
+	srv := httptest.NewServer(newHandler(dir, false, nil, nil, false, "", nil, nil))
+	defer srv.Close()
+
+	css := getBody(t, srv.URL+"/static/page.css", http.StatusOK)
+	m := containerMaxWidthRE.FindStringSubmatch(css)
+	if m == nil {
+		t.Fatal("page.css has no .container max-width rule")
+	}
+	width, err := strconv.ParseFloat(m[1], 64)
+	if err != nil {
+		t.Fatalf(".container max-width %q is not a number: %v", m[1], err)
+	}
+	if width < 90 {
+		t.Errorf(".container max-width is %grem; it must be wide (>= 90rem) so declarations span the available width like pkgsite", width)
 	}
 }
