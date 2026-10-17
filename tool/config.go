@@ -180,12 +180,6 @@ type Config struct {
 	// IncludeDir specifies a function to determine the include directory for a given
 	// package path (optional).
 	IncludeDir func(pkgPath string) (includeDir string, err error) `json:"-"`
-
-	// Define carries user-specified constants to inject into the generated
-	// package, parsed from the command-line -d flag (optional). The equivalent
-	// "Define" field in llcppg.cfg is not implemented yet, so this is populated
-	// programmatically and not read from JSON.
-	Define []cl.Define `json:"-"`
 }
 
 // -----------------------------------------------------------------------------
@@ -220,9 +214,6 @@ func (cfg *Config) Apply(parent *Config) {
 	}
 	if cfg.Deps == nil {
 		cfg.Deps = parent.Deps
-	}
-	if cfg.Define == nil {
-		cfg.Define = parent.Define
 	}
 }
 

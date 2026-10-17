@@ -66,6 +66,12 @@ const (
 
 // -----------------------------------------------------------------------------
 
+// Define represents a user constant to be injected into the generated package.
+type Define struct {
+	Name  string
+	Value any
+}
+
 // Config specifies the configuration for llcppg.
 type Config struct {
 	// Fset provides source position information for syntax trees and types (optional).
@@ -209,11 +215,7 @@ type Config struct {
 	// DefaultGoFile specifies default file name (optional).
 	DefaultGoFile string
 
-	// Define specifies user constants to inject into the generated package
-	// (optional). Each entry adds an untyped Go const; see Define for the value
-	// typing and $(name) reference rules. Entries are applied in order after the
-	// load phase and emitted together in a single const block in the default
-	// generated file.
+	// Define specifies user constants to inject into the generated package (optional).
 	Define []Define
 
 	// GoFileOf returns the Go file name for a given header file (optional). If ok is false,
@@ -323,7 +325,6 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		lastSeen: make(map[string]none), types: make(map[string]typeObj),
 		macroVals: make(map[string]any), impPkgs: make(map[string]none),
 		pubDeps: make(map[string]none), pubTyps: make(map[string]none),
-		defines: conf.Define, defaultGoFile: conf.DefaultGoFile,
 	}
 
 	if conf.LoadLibcPubFile {
@@ -338,6 +339,14 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
 
 	ctx.compile()
+
+	for _, d := range conf.Define {
+		llgo.New(func(cb *gogen.CodeBuilder) int {
+			cb.Val(d.Value)
+			return 1
+		}, 0, 0, nil, d.Name)
+	}
+
 	ret.Package = pkg
 	ret.Wrap = ctx.wrap
 	ret.Public = ctx.publicEntries()

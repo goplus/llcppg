@@ -47,7 +47,7 @@ func runGen() {
 		srcDir = args[1]
 	}
 
-	userDefines, err := cl.ParseDefineArgs(defines)
+	userDefines, err := parseDefines()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -83,7 +83,6 @@ func Gen(destDir, srcDir string, index clang.Index, defines []cl.Define, verbose
 	if err != nil {
 		return
 	}
-	cfg.Define = defines
 	if strings.Contains(cfg.Name, "/") {
 		err = errors.New("invalid package name: " + cfg.Name)
 		return
@@ -100,7 +99,7 @@ func Gen(destDir, srcDir string, index clang.Index, defines []cl.Define, verbose
 	}
 
 	if len(cfg.Pkgs) == 0 {
-		return genPkg(destDir, srcDir, mainPkgName, index, &cfg)
+		return genPkg(destDir, srcDir, mainPkgName, index, defines, &cfg)
 	}
 
 	errPkgCnt := 0
@@ -119,7 +118,7 @@ func Gen(destDir, srcDir string, index clang.Index, defines []cl.Define, verbose
 			continue
 		}
 		subConf.Apply(&cfg)
-		errPkgCnt += convPkg(destDir, srcDir, mainPkgName, index, &subConf)
+		errPkgCnt += convPkg(destDir, srcDir, mainPkgName, index, defines, &subConf)
 	}
 	if errPkgCnt > 0 {
 		return fmt.Errorf("%d package(s) failed during generation", errPkgCnt)
@@ -127,8 +126,8 @@ func Gen(destDir, srcDir string, index clang.Index, defines []cl.Define, verbose
 	return nil
 }
 
-func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, cfg *tool.Config) int {
-	err := genPkg(destDir, srcDir, mainPkgName, index, cfg)
+func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl.Define, cfg *tool.Config) int {
+	err := genPkg(destDir, srcDir, mainPkgName, index, defines, cfg)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -136,7 +135,7 @@ func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, cfg *tool.C
 	return 0
 }
 
-func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, cfg *tool.Config) (err error) {
+func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl.Define, cfg *tool.Config) (err error) {
 	pkgName := cfg.Name
 	if pos := strings.LastIndex(pkgName, "/"); pos >= 0 {
 		destDir = filepath.Join(destDir, pkgName[len(mainPkgName)+1:])
@@ -148,7 +147,7 @@ func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, cfg *tool.Co
 		return
 	}
 
-	pkg, _, err := cfg.NewPackage("", pkgName, srcDir, index)
+	pkg, _, err := cfg.NewPackage("", pkgName, srcDir, index, defines...)
 	if err != nil {
 		return
 	}
