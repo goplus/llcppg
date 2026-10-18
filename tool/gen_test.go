@@ -358,6 +358,8 @@ func TestLLVM_AtomicOrdering(t *testing.T) {
 }
 
 func TestLLVM_Atomic(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagAll)
+	defer cl.SetDebug(0)
 	testFromDir(t, "Atomic", "./_testcpp", true, "system")
 }
 
