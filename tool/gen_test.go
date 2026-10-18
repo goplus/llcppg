@@ -318,11 +318,6 @@ func TestZlib(t *testing.T) {
 }
 
 func TestClang(t *testing.T) {
-	cl.SetDebug(cl.DbgFlagAll)
-	tool.SetDebug(tool.DbgFlagAll)
-	defer cl.SetDebug(0)
-	defer tool.SetDebug(0)
-
 	testFromDir(t, "", "./_testc/clang-c-22.1.8", false)
 }
 
@@ -339,6 +334,11 @@ func TestDeclare(t *testing.T) {
 }
 
 func TestDeps(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagAll)
+	tool.SetDebug(tool.DbgFlagAll)
+	defer cl.SetDebug(0)
+	defer tool.SetDebug(0)
+
 	testFromDir(t, "", "./_testdeps", false)
 }
 
@@ -358,6 +358,8 @@ func TestLLVM_AtomicOrdering(t *testing.T) {
 }
 
 func TestLLVM_Atomic(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagAll)
+	defer cl.SetDebug(0)
 	testFromDir(t, "Atomic", "./_testcpp", true, "system")
 }
 

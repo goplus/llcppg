@@ -58,6 +58,10 @@ type Config struct {
 	TypePrefix []string `json:"TypePrefix"`
 	TypeSuffix []string `json:"TypeSuffix"`
 
+	// TypeAbbr specifies abbreviated name for Go type names and will be used in function
+	// names (optional). See https://github.com/xgo-dev/llcppg/issues/958.
+	TypeAbbr []string
+
 	// Rename specifies a mapping of C/C++ names to Go names (optional). If a name is present
 	// in the map, it will be renamed to the corresponding Go name.
 	Rename map[string]string `json:"Rename"`
