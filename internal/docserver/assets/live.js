@@ -18,13 +18,24 @@
   // page reloads to pick up whatever the new server serves.
   var serverId = null;
 
+  // reload wraps location.reload() so a live-reload navigation can be told apart
+  // from the user closing the tab. In auto-exit mode the page beacons /_doc/bye
+  // on pagehide; location.reload() fires pagehide too, so without this flag an
+  // automatic update would look like a close and start the server's exit timer
+  // (see assets/page.html). We mark the flag on window so the pagehide handler,
+  // which lives in a separate inline script, can read it and skip the beacon.
+  function reload() {
+    window.__llcppgReloading = true;
+    location.reload();
+  }
+
   var es = new EventSource("/_events");
 
   es.addEventListener("hello", function (e) {
     if (serverId === null) {
       serverId = e.data;
     } else if (e.data !== serverId) {
-      location.reload();
+      reload();
       return;
     }
     setStatus("live");
@@ -34,7 +45,7 @@
     // A full reload re-runs the server's single render path, so the live view
     // can never drift from a manual refresh. The browser keeps the scroll
     // position and the URL fragment across the reload.
-    location.reload();
+    reload();
   });
 
   es.onopen = function () {

@@ -231,6 +231,42 @@ func monitorTrue(body string) bool {
 	return strings.Contains(collapsed, `if ( true ) sessionStorage.setItem("llcppg-doc"`)
 }
 
+// TestAutoExitReloadBeaconGuard verifies the client-side wiring that keeps a
+// live reload from being mistaken for a close (issue #1074): the auto-exit page
+// must guard the bye beacon on window.__llcppgReloading, and live.js must set
+// that flag before every location.reload(). Without both halves an automatic
+// update would beacon bye and start the server's exit timer.
+func TestAutoExitReloadBeaconGuard(t *testing.T) {
+	dir := writeDir(t, map[string]string{"a.go": "package foo\n\nfunc Bar() {}\n"})
+	// Live reload and auto-exit on together is the default `llcppg -doc` setup
+	// and the only configuration where the two scripts interact.
+	b := newBroker("inst-guard")
+	srv := httptest.NewServer(newHandler(dir, false, b, nil, true, "", nil, nil))
+	defer srv.Close()
+
+	body := getBody(t, srv.URL+"/", http.StatusOK)
+
+	// The page must pull in both the live-reload client and the auto-exit script.
+	if !strings.Contains(body, "/static/live.js") {
+		t.Error("auto-exit + live-reload page should include the live-reload client")
+	}
+	collapsed := strings.Join(strings.Fields(body), " ")
+	if !strings.Contains(collapsed, "if (window.__llcppgReloading) return;") {
+		t.Error("pagehide handler must skip the bye beacon while a live reload is in progress")
+	}
+
+	// live.js must set the flag before reloading so the guard above has something
+	// to check.
+	js := getBody(t, srv.URL+"/static/live.js", http.StatusOK)
+	collapsedJS := strings.Join(strings.Fields(js), " ")
+	if !strings.Contains(collapsedJS, "window.__llcppgReloading = true;") {
+		t.Error("live.js must set window.__llcppgReloading before location.reload()")
+	}
+	if !strings.Contains(collapsedJS, "location.reload();") {
+		t.Error("live.js should still reload the page on an update")
+	}
+}
+
 // assertNoExit fails if cancelled fires within a window comfortably longer than
 // the shortened exitGrace.
 func assertNoExit(t *testing.T, cancelled <-chan struct{}) {

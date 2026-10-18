@@ -81,9 +81,17 @@
 // and starts empty in any newly opened tab. On close, a monitored tab beacons
 // /_doc/bye so the server can shut down. Pages opened later by hand are not
 // served with Monitor, so they have no marker and never send bye.
+//
+// A live reload (live.js) also fires pagehide, but it is not a close: live.js
+// sets window.__llcppgReloading just before location.reload(), so we skip the
+// beacon in that case. Without this, an automatic update would look like a
+// close and start the server's exit timer — the conflict this guards against.
 if ({{.Monitor}}) sessionStorage.setItem("llcppg-doc", "1");
 if (sessionStorage.getItem("llcppg-doc"))
-  addEventListener("pagehide", function () { navigator.sendBeacon("/_doc/bye"); });
+  addEventListener("pagehide", function () {
+    if (window.__llcppgReloading) return;
+    navigator.sendBeacon("/_doc/bye");
+  });
 </script>{{end}}
 </body>
 </html>
