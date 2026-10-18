@@ -240,15 +240,12 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 		var cstyle bool
 		name, cstyle = p.cstyleToGoEx(name, underscoreStart, true)
 		if !methodPrefix && typName != "" {
-			var typSuffix []string
-			if abbrs, _ := p.typeAbbr.matchList(typName, true); len(abbrs) > 0 {
-				typName = abbrs[len(abbrs)-1]
-				typSuffix = abbrs
-			} else {
-				typSuffix = []string{typName}
+			abbrs, _ := p.typeAbbr.matchList(typName, true)
+			if len(abbrs) == 0 {
+				abbrs = []string{typName}
 			}
-			name = cutSuffixes(name, typSuffix)
-			name = p.cutMethodPrefix(name, typName, cstyle)
+			name = cutSuffixes(name, abbrs)
+			name = p.cutMethodPrefixes(name, abbrs, cstyle)
 		}
 	}
 	if order >= 0 {
@@ -257,13 +254,14 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 	return name
 }
 
-func (p *pkgCtx) cutMethodPrefix(name, objName string, cstyle bool) string {
+func (p *pkgCtx) cutMethodPrefixes(name string, abbrs []string, cstyle bool) string {
 	if cstyle {
-		if cName, ok := strings.CutPrefix(name, objName+"_"); ok && isAlpha(cName) {
-			return p.cstyleToGo(cName, false, true)
+		if cName, ok := cstyleCutPrefixes(name, abbrs); ok && isAlpha(cName) {
+			return cutPrefix(p.cstyleToGo(cName, false, true), "Get")
 		}
 		return name
 	}
+	objName := abbrs[len(abbrs)-1]
 	name = cutPrefix(name, objName)
 	name = cutPrefix(name, "Get")
 	return cutPrefix(name, objName)
@@ -406,6 +404,15 @@ func cutSuffixes(name string, suffix []string) string {
 		}
 	}
 	return name
+}
+
+func cstyleCutPrefixes(name string, prefix []string) (after string, ok bool) {
+	for _, pfx := range prefix {
+		if after, ok = strings.CutPrefix(name, pfx+"_"); ok {
+			return
+		}
+	}
+	return name, false
 }
 
 func rmPrefixAndUnderscoreStart(cName string, prefix []string) (name string, underscoreStart bool) {
