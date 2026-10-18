@@ -10,8 +10,8 @@ type Asn1StringSt struct {
 type ASN1_STRING Asn1StringSt
 type ASN1_BIT_STRING Asn1StringSt
 
-//go:linkname ASN1STRINGNew C.ASN1_STRING_new
-func ASN1STRINGNew() *ASN1_STRING
+//go:linkname ASN1_STRING_new C.ASN1_STRING_new
+func ASN1_STRING_new() *ASN1_STRING
 
 // llgo:link (*ASN1_STRING).Free C.ASN1_STRING_free
 func (a *ASN1_STRING) Free() {
@@ -26,8 +26,8 @@ func (dst *ASN1_STRING) Copy(str *ASN1_STRING) c.Int {
 	return 0
 }
 
-//go:linkname ASN1BIT_STRINGNew C.ASN1_BIT_STRING_new
-func ASN1BIT_STRINGNew() *ASN1_BIT_STRING
+//go:linkname ASN1_BIT_STRING_new C.ASN1_BIT_STRING_new
+func ASN1_BIT_STRING_new() *ASN1_BIT_STRING
 
 // llgo:link (*ASN1_BIT_STRING).Free C.ASN1_BIT_STRING_free
 func (a *ASN1_BIT_STRING) Free() {

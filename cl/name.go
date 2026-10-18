@@ -291,11 +291,13 @@ func cstyleToGo(name string, underscoreStart, public bool, rename map[string]str
 }
 
 func shouldKeepCStyle(parts []string, hasNS, forceCamelCase bool) bool {
-	if !hasNS && isAllUpperStart(parts) {
-		if forceCamelCase {
-			return isAnyUpperEnd(parts)
+	if !hasNS {
+		if isAnyUpperEnd(parts[:len(parts)-1]) {
+			return true
 		}
-		return true
+		if isAllUpperStart(parts) {
+			return !forceCamelCase
+		}
 	}
 	return false
 }
@@ -330,6 +332,11 @@ func goNameOf(name string, underscoreStart, public bool) string {
 			return "X_" + name
 		}
 		return "_" + name
+	} else if public {
+		if c := name[0]; 'a' <= c && c <= 'z' {
+			c -= 'a' - 'A'
+			name = string(c) + name[1:]
+		}
 	}
 	return name
 }
