@@ -360,7 +360,7 @@ func isAllUpperStart(parts []string) bool {
 
 func isAnyUpperEnd(parts []string) bool {
 	for _, part := range parts {
-		if part != "" {
+		if len(part) > 1 {
 			if c := part[len(part)-1]; 'A' <= c && c <= 'Z' {
 				return true
 			}
