@@ -4314,36 +4314,36 @@ func (self Cursor) USR() String {
 
 // Construct a USR for a specified Objective-C class.
 //
-//go:linkname ConstructUSRObjCClass C.clang_constructUSR_ObjCClass
-func ConstructUSRObjCClass(class_name *c.Char) String
+//go:linkname ConstructUSR_ObjCClass C.clang_constructUSR_ObjCClass
+func ConstructUSR_ObjCClass(class_name *c.Char) String
 
 // Construct a USR for a specified Objective-C category.
 //
-//go:linkname ConstructUSRObjCCategory C.clang_constructUSR_ObjCCategory
-func ConstructUSRObjCCategory(class_name *c.Char, category_name *c.Char) String
+//go:linkname ConstructUSR_ObjCCategory C.clang_constructUSR_ObjCCategory
+func ConstructUSR_ObjCCategory(class_name *c.Char, category_name *c.Char) String
 
 // Construct a USR for a specified Objective-C protocol.
 //
-//go:linkname ConstructUSRObjCProtocol C.clang_constructUSR_ObjCProtocol
-func ConstructUSRObjCProtocol(protocol_name *c.Char) String
+//go:linkname ConstructUSR_ObjCProtocol C.clang_constructUSR_ObjCProtocol
+func ConstructUSR_ObjCProtocol(protocol_name *c.Char) String
 
 // Construct a USR for a specified Objective-C instance variable and
 //   the USR for its containing class.
 //
-//go:linkname ConstructUSRObjCIvar C.clang_constructUSR_ObjCIvar
-func ConstructUSRObjCIvar(name *c.Char, classUSR String) String
+//go:linkname ConstructUSR_ObjCIvar C.clang_constructUSR_ObjCIvar
+func ConstructUSR_ObjCIvar(name *c.Char, classUSR String) String
 
 // Construct a USR for a specified Objective-C method and
 //   the USR for its containing class.
 //
-//go:linkname ConstructUSRObjCMethod C.clang_constructUSR_ObjCMethod
-func ConstructUSRObjCMethod(name *c.Char, isInstanceMethod c.Uint, classUSR String) String
+//go:linkname ConstructUSR_ObjCMethod C.clang_constructUSR_ObjCMethod
+func ConstructUSR_ObjCMethod(name *c.Char, isInstanceMethod c.Uint, classUSR String) String
 
 // Construct a USR for a specified Objective-C property and the USR
 //  for its containing class.
 //
-//go:linkname ConstructUSRObjCProperty C.clang_constructUSR_ObjCProperty
-func ConstructUSRObjCProperty(property *c.Char, classUSR String) String
+//go:linkname ConstructUSR_ObjCProperty C.clang_constructUSR_ObjCProperty
+func ConstructUSR_ObjCProperty(property *c.Char, classUSR String) String
 
 // Retrieve a name for the entity referenced by this cursor.
 //

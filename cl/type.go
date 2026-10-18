@@ -169,6 +169,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		return newPointer(ctx, pointee)
 	case lc.Type_LValueReference, lc.Type_RValueReference: // TODO(xsw): check RVRef is a pointer
 		elem := typ.NonReference()
+		*feats &^= featUncompleted // NOTE(xsw): a reference is considered complete
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
 		return newPointer(ctx, pointee)
 	case lc.Type_FunctionProto:
