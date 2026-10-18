@@ -347,6 +347,9 @@ func isAllUpper(part string) bool {
 }
 
 func isAllUpperStart(parts []string) bool {
+	if len(parts) < 2 {
+		return false
+	}
 	for _, part := range parts {
 		if part != "" {
 			if c := part[0]; 'a' <= c && c <= 'z' {
