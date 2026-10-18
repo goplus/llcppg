@@ -111,6 +111,14 @@ func (p *pkgCtx) cNS(decl clang.Cursor) (ns string) {
 
 // -----------------------------------------------------------------------------
 
+// externName applies the default naming rules to an external C/C++ symbol,
+// independently of the importing package's configuration and local aliases.
+func externName(cName string) string {
+	name, underscoreStart := checkUnderscoreStart(cName)
+	ret, _ := cstyleToGo(name, underscoreStart, true, nil, false)
+	return ret
+}
+
 func (p *pkgCtx) globalName(name string, trimPrefixs []string) string {
 	if v, ok := p.rename[name]; ok {
 		return v // special case
@@ -229,7 +237,8 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 		typName = "" // don't remove type name suffix for a method
 	}
 	if underscoreStart || !strings.HasPrefix(name, "XGo_") { // avoid rewriting XGo_xxx names
-		name = p.cstyleToGo(name, underscoreStart, true)
+		var cstyle bool
+		name, cstyle = p.cstyleToGoEx(name, underscoreStart, true)
 		if !methodPrefix && typName != "" {
 			var typSuffix []string
 			if abbrs, _ := p.typeAbbr.matchList(typName, true); len(abbrs) > 0 {
@@ -239,7 +248,7 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 				typSuffix = []string{typName}
 			}
 			name = cutSuffixes(name, typSuffix)
-			name = cutMethodPrefix(name, typName)
+			name = p.cutMethodPrefix(name, typName, cstyle)
 		}
 	}
 	if order >= 0 {
@@ -248,21 +257,31 @@ func (p *pkgCtx) funcName(cName string, order int, typName, typCName string, glo
 	return name
 }
 
+func (p *pkgCtx) cutMethodPrefix(name, objName string, cstyle bool) string {
+	if cstyle {
+		if cName, ok := strings.CutPrefix(name, objName+"_"); ok && isAlpha(cName) {
+			return p.cstyleToGo(cName, false, true)
+		}
+		return name
+	}
+	name = cutPrefix(name, objName)
+	name = cutPrefix(name, "Get")
+	return cutPrefix(name, objName)
+}
+
 func (p *pkgCtx) cstyleToGo(name string, underscoreStart, public bool) string {
+	ret, _ := cstyleToGo(name, underscoreStart, public, p.rename, p.forceCamelCase)
+	return ret
+}
+
+func (p *pkgCtx) cstyleToGoEx(name string, underscoreStart, public bool) (ret string, cstyle bool) {
 	return cstyleToGo(name, underscoreStart, public, p.rename, p.forceCamelCase)
 }
 
-// externName applies the default naming rules to an external C/C++ symbol,
-// independently of the importing package's configuration and local aliases.
-func externName(cName string) string {
-	name, underscoreStart := checkUnderscoreStart(cName)
-	return cstyleToGo(name, underscoreStart, true, nil, false)
-}
-
-func cstyleToGo(name string, underscoreStart, public bool, rename map[string]string, forceCamelCase bool) string {
+func cstyleToGo(name string, underscoreStart, public bool, rename map[string]string, forceCamelCase bool) (ret string, cstyle bool) {
 	parts, hasNS := cNameSplit(name)
 	if shouldKeepCStyle(parts, hasNS, forceCamelCase) {
-		return goNameOf(name, underscoreStart, public)
+		return goNameOf(name, underscoreStart, public), true
 	}
 	lastEndWithUpper := false
 	for i := 0; i < len(parts); i++ {
@@ -287,12 +306,13 @@ func cstyleToGo(name string, underscoreStart, public bool, rename map[string]str
 		lastEndWithUpper = endWithUpper
 		parts[i] = part
 	}
-	return goNameOf(strings.Join(parts, ""), underscoreStart, public)
+	return goNameOf(strings.Join(parts, ""), underscoreStart, public), false
 }
 
 func shouldKeepCStyle(parts []string, hasNS, forceCamelCase bool) bool {
 	if !hasNS {
-		if isAnyUpperEnd(parts[:len(parts)-1]) {
+		last := len(parts) - 1
+		if isAnyUpperEnd(parts[:last]) || isAllUpper(parts[0]) || last > 0 && isAllUpper(parts[last]) {
 			return true
 		}
 		if isAllUpperStart(parts) {
@@ -302,7 +322,29 @@ func shouldKeepCStyle(parts []string, hasNS, forceCamelCase bool) bool {
 	return false
 }
 
+func isAlpha(name string) bool {
+	if len(name) > 0 {
+		if c := name[0]; ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') {
+			return true
+		}
+	}
+	return false
+}
+
 // -----------------------------------------------------------------------------
+
+func isAllUpper(part string) bool {
+	n := len(part)
+	if n < 2 {
+		return false
+	}
+	for i := range n {
+		if c := part[i]; 'a' <= c && c <= 'z' {
+			return false
+		}
+	}
+	return true
+}
 
 func isAllUpperStart(parts []string) bool {
 	for _, part := range parts {
@@ -339,12 +381,6 @@ func goNameOf(name string, underscoreStart, public bool) string {
 		}
 	}
 	return name
-}
-
-func cutMethodPrefix(name, objName string) string {
-	name = cutPrefix(name, objName)
-	name = cutPrefix(name, "Get")
-	return cutPrefix(name, objName)
 }
 
 func cutPrefix(name, prefix string) string {
