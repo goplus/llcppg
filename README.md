@@ -8,4 +8,4 @@ llcppg - LLGo bindings autogen tool for C/C++ libraries
 [![LLGo](https://img.shields.io/badge/powered_by-LLGo-green.svg)](https://github.com/xgo-dev/llgo)
 [![XGo](https://img.shields.io/badge/project-XGo-blue.svg)](https://github.com/goplus/xgo)
 
-llcppg aims to be a tool for automatically generating LLGo bindings for C/C++ libraries, enhancing the experience of integrating LLGo with C/C++.
+llcppg aims to be a tool for automatically generating [LLGo bindings](https://github.com/xgo-dev/llgo/blob/main/doc/LLGo-Bindings.md) for C/C++ libraries, enhancing the experience of integrating LLGo with C/C++.
