@@ -153,6 +153,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		TypeSuffix:   conf.TypeSuffix,
 		TypeAbbr:     conf.TypeAbbr,
 		TypeAlias:    conf.TypeAlias,
+		TypeDef:      conf.TypeDef,
 		FieldAlias:   conf.FieldAlias,
 		Rename:       conf.Rename,
 		TypeIgnore:   conf.TypeIgnore,

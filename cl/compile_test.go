@@ -109,9 +109,9 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 		}
 
 		names := slices.Sorted(maps.Keys(conf.Define))
-		defines := make([]cl.Define, len(names))
+		defines := make([]cl.ConstDef, len(names))
 		for i, name := range names {
-			defines[i] = cl.Define{
+			defines[i] = cl.ConstDef{
 				Name:  name,
 				Value: conf.Define[name],
 			}
@@ -128,6 +128,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			EnumPrefix:      conf.EnumPrefix,
 			Rename:          conf.Rename,
 			FieldAlias:      conf.FieldAlias,
+			TypeDef:         conf.TypeDef,
 			TypeAlias:       conf.TypeAlias,
 			TypeIgnore:      conf.TypeIgnore,
 			TypePrefix:      conf.TypePrefix,
