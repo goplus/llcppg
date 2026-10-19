@@ -236,6 +236,12 @@ func (p *pkgCtx) exErrorf[nodeT nodeCursor](decl nodeT, format string, args ...a
 	p.checkFailFast()
 }
 
+func (p *pkgCtx) npErrorf(format string, args ...any) {
+	p.errCnt++
+	log.Printf(format, args...)
+	p.checkFailFast()
+}
+
 func (p *pkgCtx) exLogf[nodeT nodeCursor](decl nodeT, format string, args ...any) {
 	pos := decl.Position(p)
 	log.Printf("%s: %s", pos, fmt.Sprintf(format, args...))

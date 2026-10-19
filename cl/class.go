@@ -19,7 +19,6 @@ package cl
 import (
 	"go/types"
 	"strconv"
-	"strings"
 	"unsafe"
 
 	"github.com/goplus/llcppg/clang"
@@ -438,27 +437,9 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, cName stri
 }
 
 // alias = "__bufferRaw_ [1].X__SharedPtrEmplace_Storage_Data[_Tp, _Alloc]"
-func fieldAlias(ctx *pkgCtx, decl clang.Cursor, alias string, feats *int, scope *scopeCtx) (fldGoName string, fldType types.Type) {
-	found := false
-	pos := strings.IndexAny(alias, " \t")
-	if pos >= 0 {
-		fldGoName = alias[:pos]
-		aliasType := strings.TrimSpace(alias[pos+1:])
-		aliasType, isArrayOrSlice := strings.CutPrefix(aliasType, "[")
-		if isArrayOrSlice {
-			if end := strings.IndexByte(aliasType, ']'); end >= 0 {
-				idx := aliasType[:end]
-				if elem, ok := ctx.goTypeOf(aliasType[end+1:], scope); ok {
-					if n, err := strconv.ParseInt(idx, 10, 64); err == nil {
-						fldType, found = types.NewArray(elem, n), true
-					}
-				}
-			}
-		} else {
-			fldType, found = ctx.goTypeOf(aliasType, scope)
-		}
-	}
-	if !found {
+func fieldAlias(ctx *pkgCtx, decl clang.Cursor, alias string, feats *int, scope *scopeCtx) (fldName string, fldType types.Type) {
+	fldName, fldType, embedded, found := parseField(ctx, alias, scope)
+	if !found || embedded {
 		ctx.ignoref(featExplicitIgnore, decl, "FieldAlias %q could not be resolved", alias)
 		*feats |= featExplicitIgnore
 	}

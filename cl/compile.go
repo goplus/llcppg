@@ -355,6 +355,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	}
 
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
+	loadTypeDefs(ctx, conf.TypeDef)
 
 	ctx.compile()
 
@@ -380,6 +381,19 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 }
 
 // -----------------------------------------------------------------------------
+
+func loadTypeDefs(ctx *pkgCtx, typeDefs map[string][]TypeDef) {
+	if len(typeDefs) == 0 {
+		return
+	}
+	pkg := ctx.pkg
+	for fname, defs := range typeDefs {
+		for _, def := range defs {
+			pkg.SetCurFile(fname, true)
+			loadTypeDef(ctx, pkg, def)
+		}
+	}
+}
 
 func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(headerFile string) (string, bool)) {
 	pkg := ctx.pkg
