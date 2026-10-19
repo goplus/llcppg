@@ -216,10 +216,12 @@ type pkgCtx struct {
 	stdRecvName    bool
 }
 
+var exit = os.Exit
+
 func (p *pkgCtx) checkFailFast() {
 	p.failFast--
 	if p.failFast == 0 {
-		os.Exit(1)
+		exit(1)
 	}
 }
 
