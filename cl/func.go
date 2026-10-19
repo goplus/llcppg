@@ -248,7 +248,6 @@ func tryNewRecv[funcT fnCursor](fn funcT, precv **types.Var, typRecv **types.Nam
 			*typName = cls
 		}
 	}
-	return
 }
 
 func isTypeFromBase(t types.Type, base *types.Named) bool {

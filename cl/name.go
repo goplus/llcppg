@@ -198,6 +198,7 @@ func (p *pkgCtx) creatorCheck(pkgTypes *types.Package, cName string) (creator, r
 				creator, mayMethod = after[at+2:], true
 				return
 			}
+			p.npErrorf("NewCheck: invalid rule %q", rule)
 		}
 		creator, mayMethod = strings.CutPrefix(creator, ".")
 	}
