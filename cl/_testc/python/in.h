@@ -6,6 +6,10 @@ typedef struct {
     int v;
 } PyObject;
 
+typedef struct {
+    PyObject ob;
+} PyDictObject;
+
 PyAPI_FUNC(PyObject *) PyModule_NewObject(
     PyObject *name
     );

@@ -142,7 +142,7 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 	var nameInPkg string
 	if this == nil {
 		if ctx.lang == LanguageC {
-			if creator, obj, mayMethod, mayCreator := ctx.creatorCheck(pkgTypes, cName); mayCreator {
+			if creator, clsRecv, obj, mayMethod, mayCreator := ctx.creatorCheck(pkgTypes, cName); mayCreator {
 				if creator != "" {
 					if newResults, ok := tryNewResults(pkgTypes, obj, results); ok {
 						results = newResults
@@ -151,6 +151,11 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 							params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, fn, params, mayMethod)
 							if typRecv != nil {
 								fnName = creator
+								if clsRecv != "" {
+									if objRecv := pkgTypes.Scope().Lookup(clsRecv); objRecv != nil {
+										tryNewRecv(fn, &recv, &typRecv, &typName, &typCName, clsRecv, objRecv)
+									}
+								}
 								typRecv = nil // skip redeclaration check
 							}
 						} else {
@@ -162,19 +167,7 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 				// try to method for C global functions
 				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, fn, params, cls != "")
 				if typRecv != nil {
-					recvCType := fn.ArgumentType(0)
-					isPtr := recvCType.Kind == lc.Type_Pointer
-					if isPtr {
-						recvCType = recvCType.Pointee()
-					}
-					typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
-					if isPtr && cls != "" && cls != typName {
-						if t := obj.Type(); isTypeFromBase(t, typRecv) {
-							recv = types.NewParam(recv.Pos(), pkgTypes, recv.Name(), types.NewPointer(t))
-							typRecv = types.Unalias(t).(*types.Named)
-							typName = cls
-						}
-					}
+					tryNewRecv(fn, &recv, &typRecv, &typName, &typCName, cls, obj)
 				}
 			}
 		}
@@ -238,6 +231,24 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 		}
 		cb.End()
 	}
+}
+
+func tryNewRecv[funcT fnCursor](fn funcT, precv **types.Var, typRecv **types.Named, typName, typCName *string, cls string, obj types.Object) {
+	recvCType := fn.ArgumentType(0)
+	isPtr := recvCType.Kind == lc.Type_Pointer
+	if isPtr {
+		recvCType = recvCType.Pointee()
+	}
+	*typCName = trimTypeTag(clang.String(recvCType.Unqualified()))
+	if isPtr && cls != "" && cls != *typName {
+		if t := obj.Type(); isTypeFromBase(t, *typRecv) {
+			recv := *precv
+			*precv = types.NewParam(recv.Pos(), recv.Pkg(), recv.Name(), types.NewPointer(t))
+			*typRecv = types.Unalias(t).(*types.Named)
+			*typName = cls
+		}
+	}
+	return
 }
 
 func isTypeFromBase(t types.Type, base *types.Named) bool {

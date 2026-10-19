@@ -178,7 +178,7 @@ func (p *pkgCtx) typeName(cName string, _ bool) string {
 }
 
 // mayCreator sets true even if cls is not found, indicating that a creator might exist.
-func (p *pkgCtx) creatorCheck(pkgTypes *types.Package, cName string) (creator string, obj types.Object, mayMethod, mayCreator bool) {
+func (p *pkgCtx) creatorCheck(pkgTypes *types.Package, cName string) (creator, recv string, obj types.Object, mayMethod, mayCreator bool) {
 	rule, mayCreator := p.newCheck.match(cName, true)
 	if !mayCreator {
 		return
@@ -192,6 +192,13 @@ func (p *pkgCtx) creatorCheck(pkgTypes *types.Package, cName string) (creator st
 	obj = scope.Lookup(cls)
 	if obj != nil {
 		creator = strings.TrimLeft(rule[pos+1:], " \t")
+		if after, ok := strings.CutPrefix(creator, "(*"); ok {
+			if at := strings.Index(after, ")."); at >= 0 {
+				recv = after[:at]
+				creator, mayMethod = after[at+2:], true
+				return
+			}
+		}
 		creator, mayMethod = strings.CutPrefix(creator, ".")
 	}
 	return
