@@ -1,5 +1,7 @@
 #define PyAPI_FUNC(t) t
 
+typedef unsigned long size_t;
+
 typedef struct {
     int v;
 } PyObject;

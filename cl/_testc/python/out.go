@@ -8,8 +8,12 @@ import (
 type Object struct {
 	V c.Int
 }
+type SizeT = c.Ulong
 type ModuleObject struct {
 	Object
+	*byte
+	int
+	SizeT
 }
 
 //go:linkname ModuleNewObject C.PyModule_NewObject
