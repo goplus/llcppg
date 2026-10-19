@@ -38,9 +38,15 @@ type Config struct {
 	// Go package names (optional).
 	NSPrefix []string `json:"NSPrefix"` // C/C++ namespace prefix to remove
 
+	// Type Creator Detection (optional). See https://github.com/xgo-dev/llcppg/issues/960.
+	NewCheck []string `json:"NewCheck"`
+
+	// Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/955.
+	MethodCheck []string `json:"MethodCheck"`
+
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
 	// generating Go function names (optional).
-	FuncPrefix []string
+	FuncPrefix []string `json:"FuncPrefix"`
 
 	// EnumPrefix specifies the prefix to remove from C/C++ enum value names when generating
 	// Go const names (optional).
@@ -48,13 +54,13 @@ type Config struct {
 
 	// FieldAlias overrides the Go name and type of C/C++ fields (optional).
 	// See https://github.com/xgo-dev/llcppg/issues/1019.
-	FieldAlias map[string]string
+	FieldAlias map[string]string `json:"FieldAlias"`
 
 	// TypeDef is an object whose keys are file names and whose values are arrays of type
 	// definitions (optional). It defines Go types that should exist in the generated
 	// package but is missing from the C/C++ headers.
 	// See https://github.com/xgo-dev/llcppg/issues/1079.
-	TypeDef map[string][]cl.TypeDef
+	TypeDef map[string][]cl.TypeDef `json:"TypeDef"`
 
 	TypeAlias  map[string]string `json:"TypeAlias"`
 	TypeIgnore []string          `json:"TypeIgnore"`
@@ -66,7 +72,7 @@ type Config struct {
 
 	// TypeAbbr specifies abbreviated name for Go type names and will be used in function
 	// names (optional). See https://github.com/xgo-dev/llcppg/issues/958.
-	TypeAbbr []string
+	TypeAbbr []string `json:"TypeAbbr"`
 
 	// Rename specifies a mapping of C/C++ names to Go names (optional). If a name is present
 	// in the map, it will be renamed to the corresponding Go name.

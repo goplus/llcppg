@@ -220,13 +220,16 @@ func (p *pkgCtx) postLoad() { // TODO(xsw): remove this
 
 func loadTypeDef(ctx *pkgCtx, pkg *gogen.Package, def TypeDef) {
 	ctx.addLoadUnit(func(ctx *pkgCtx) {
+		if debugCompileDecl {
+			log.Println("==> typeDef", def.Name, def.Fields)
+		}
 		scope := &ctx.scopeCtx
 		decl := pkg.NewTypeDefs().NewType(def.Name, nil)
 		fields := make([]*types.Var, len(def.Fields))
 		for i, fld := range def.Fields {
 			fldName, fldTyp, embedded, found := parseField(ctx, fld, scope)
 			if !found {
-				ctx.npErrorf("TypeDef %s: invalid field %s", def.Name, fld)
+				ctx.npErrorf("TypeDef %s: invalid field %q", def.Name, fld)
 				return
 			}
 			fields[i] = types.NewField(0, pkg.Types, fldName, fldTyp, embedded)
