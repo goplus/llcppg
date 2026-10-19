@@ -48,9 +48,9 @@ func init() {
 
 // -----------------------------------------------------------------------------
 
-func parseDefines() ([]cl.Define, error) {
+func parseDefines() ([]cl.ConstDef, error) {
 	args := []string(defines)
-	defs := make([]cl.Define, len(args))
+	defs := make([]cl.ConstDef, len(args))
 	for i, arg := range args {
 		def, e := parseDefine(arg)
 		if e != nil {
@@ -61,7 +61,7 @@ func parseDefines() ([]cl.Define, error) {
 	return defs, nil
 }
 
-func parseDefine(entry string) (def cl.Define, err error) {
+func parseDefine(entry string) (def cl.ConstDef, err error) {
 	pos := strings.IndexByte(entry, '=')
 	if pos < 0 {
 		err = fmt.Errorf("invalid define %q: missing '='", entry)

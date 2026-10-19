@@ -17,9 +17,78 @@
 package cl
 
 import (
+	"go/types"
+	"strconv"
+	"strings"
+
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
 )
+
+// -----------------------------------------------------------------------------
+
+// field = "fieldName fieldType"
+// fieldType:
+//   - "pkg.Object"
+//   - ".Object"
+//   - "*pkg.Object"
+//   - "*.Object"
+//   - "[8].X__SharedPtrEmplace_Storage_Data[_Tp, _Alloc]"
+func parseField(ctx *pkgCtx, field string, scope *scopeCtx) (fldName string, fldType types.Type, embedded, found bool) {
+	fldTy := ""
+	pos := strings.IndexAny(field, " \t")
+	embedded = pos < 0
+	if embedded {
+		fldName = field
+		fldTy = field
+	} else {
+		fldName = field[:pos]
+		fldTy = strings.TrimLeft(field[pos+1:], " \t")
+	}
+	fldType, found = parseType(ctx, fldTy, scope)
+	if found && embedded {
+		t := fldType
+		if tp, ok := t.(*types.Pointer); ok {
+			t = tp.Elem()
+		}
+		switch t := t.(type) {
+		case *types.Named:
+			fldName = t.Obj().Name()
+		case *types.Alias:
+			fldName = t.Obj().Name()
+		case *types.Basic:
+			fldName = t.Name()
+		default:
+			found = false
+		}
+	}
+	return
+}
+
+func parseType(ctx *pkgCtx, typ string, scope *scopeCtx) (types.Type, bool) {
+	if typ == "" {
+		return nil, false
+	}
+	switch typ[0] {
+	case '*':
+		if elem, ok := parseType(ctx, typ[1:], scope); ok {
+			return types.NewPointer(elem), true
+		}
+	case '[':
+		typ = typ[1:]
+		if end := strings.IndexByte(typ, ']'); end >= 0 {
+			idx := typ[:end]
+			if elem, ok := parseType(ctx, typ[end+1:], scope); ok {
+				if n, err := strconv.ParseInt(idx, 10, 64); err == nil {
+					return types.NewArray(elem, n), true
+				}
+			}
+		}
+	default:
+		return ctx.goTypeOf(typ, scope)
+	}
+	return nil, false
+}
 
 // -----------------------------------------------------------------------------
 

@@ -66,10 +66,25 @@ const (
 
 // -----------------------------------------------------------------------------
 
-// Define represents a user constant to be injected into the generated package.
-type Define struct {
+// ConstDef represents a user constant to be injected into the generated package.
+// See https://github.com/xgo-dev/llcppg/issues/1067.
+type ConstDef struct {
 	Name  string
 	Value any
+}
+
+// TypeDef represents a type definition.
+type TypeDef struct {
+	// Name is the name of the type being defined.
+	Name string
+
+	// Fields lists the fields of the type being defined. Each entry in Fields is
+	// either an embedded field or a named field, distinguished by its shape:
+	// - Embedded field — a single token, the type itself: "Object". This produces
+	//   an embedded field. A pointer embed is written "*Object".
+	// - Named field — two tokens separated by a space, "Name Type": "name *c.Char",
+	//   "dict *Object".
+	Fields []string
 }
 
 // Config specifies the configuration for llcppg.
@@ -153,6 +168,12 @@ type Config struct {
 	// See https://github.com/xgo-dev/llcppg/issues/1019.
 	FieldAlias map[string]string
 
+	// TypeDef is an object whose keys are file names and whose values are arrays of type
+	// definitions (optional). It defines Go types that should exist in the generated
+	// package but is missing from the C/C++ headers.
+	// See https://github.com/xgo-dev/llcppg/issues/1079.
+	TypeDef map[string][]TypeDef
+
 	// TypeAlias specifies a mapping of C/C++ type names to a Go type name (alias) in
 	// pkgPath.Name format (pkgPath can be empty if Name is in current package), optional.
 	//
@@ -216,7 +237,8 @@ type Config struct {
 	DefaultGoFile string
 
 	// Define specifies user constants to inject into the generated package (optional).
-	Define []Define
+	// See https://github.com/xgo-dev/llcppg/issues/1067.
+	Define []ConstDef
 
 	// GoFileOf returns the Go file name for a given header file (optional). If ok is false,
 	// it means we don't know the Go file name for the header file and this header file will
@@ -333,6 +355,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	}
 
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
+	loadTypeDefs(ctx, conf.TypeDef)
 
 	ctx.compile()
 
@@ -358,6 +381,19 @@ func defaultNameLookup(manglingName string) (archivePath string, ok bool) {
 }
 
 // -----------------------------------------------------------------------------
+
+func loadTypeDefs(ctx *pkgCtx, typeDefs map[string][]TypeDef) {
+	if len(typeDefs) == 0 {
+		return
+	}
+	pkg := ctx.pkg
+	for fname, defs := range typeDefs {
+		for _, def := range defs {
+			pkg.SetCurFile(fname, true)
+			loadTypeDef(ctx, pkg, def)
+		}
+	}
+}
 
 func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(headerFile string) (string, bool)) {
 	pkg := ctx.pkg

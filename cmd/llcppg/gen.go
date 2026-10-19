@@ -76,7 +76,7 @@ func runGen() {
 // source directory and writes them to the destination directory. It uses the provided
 // clang index for parsing. The defines are user constants (from the -d flag) injected
 // into every generated package.
-func Gen(destDir, srcDir string, index clang.Index, defines []cl.Define, verbose bool) (err error) {
+func Gen(destDir, srcDir string, index clang.Index, defines []cl.ConstDef, verbose bool) (err error) {
 	cfg, err := tool.LoadConf(filepath.Join(srcDir, "llcppg.cfg"))
 	if err != nil {
 		return
@@ -124,7 +124,7 @@ func Gen(destDir, srcDir string, index clang.Index, defines []cl.Define, verbose
 	return nil
 }
 
-func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl.Define, cfg *tool.Config) int {
+func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl.ConstDef, cfg *tool.Config) int {
 	err := genPkg(destDir, srcDir, mainPkgName, index, defines, cfg)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -133,7 +133,7 @@ func convPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []c
 	return 0
 }
 
-func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl.Define, cfg *tool.Config) (err error) {
+func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl.ConstDef, cfg *tool.Config) (err error) {
 	pkgName := cfg.Name
 	if pos := strings.LastIndex(pkgName, "/"); pos >= 0 {
 		destDir = filepath.Join(destDir, pkgName[len(mainPkgName)+1:])

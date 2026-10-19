@@ -216,10 +216,12 @@ type pkgCtx struct {
 	stdRecvName    bool
 }
 
+var exit = os.Exit
+
 func (p *pkgCtx) checkFailFast() {
 	p.failFast--
 	if p.failFast == 0 {
-		os.Exit(1)
+		exit(1)
 	}
 }
 
@@ -233,6 +235,12 @@ func (p *pkgCtx) exIgnoref[nodeT nodeCursor](feats int, decl nodeT, format strin
 func (p *pkgCtx) exErrorf[nodeT nodeCursor](decl nodeT, format string, args ...any) {
 	p.errCnt++
 	p.exLogf(decl, format, args...)
+	p.checkFailFast()
+}
+
+func (p *pkgCtx) npErrorf(format string, args ...any) {
+	p.errCnt++
+	log.Printf(format, args...)
 	p.checkFailFast()
 }
 

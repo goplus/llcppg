@@ -21,6 +21,19 @@ import (
 	"testing"
 )
 
+func Test_npErrorf(t *testing.T) {
+	defer func() {
+		if e := recover(); e == nil {
+			t.Fatal("Test_npErrorf: no error?")
+		}
+	}()
+	exit = func(code int) {
+		panic(code)
+	}
+	ctx := &pkgCtx{failFast: 1}
+	ctx.npErrorf("Test_npErrorf")
+}
+
 func lineCommentsText(raw string) string {
 	comments := toLineComments(raw)
 	lines := make([]string, len(comments))

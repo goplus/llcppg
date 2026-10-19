@@ -69,7 +69,10 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 	cltest.TestFromDir(t, sel, relDir, func(t *testing.T, pkgDir string) {
 		pkgDir, _ = filepath.Abs(pkgDir)
 
-		conf, _ := cltest.LoadConf(pkgDir + "/in.cfg")
+		conf, err := cltest.LoadConf(pkgDir + "/in.cfg")
+		if err != nil && !os.IsNotExist(err) {
+			t.Fatal(err)
+		}
 		srcFiles := conf.Files
 		if len(srcFiles) == 0 {
 			srcFiles = []string{"in.h"}
@@ -109,9 +112,9 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 		}
 
 		names := slices.Sorted(maps.Keys(conf.Define))
-		defines := make([]cl.Define, len(names))
+		defines := make([]cl.ConstDef, len(names))
 		for i, name := range names {
-			defines[i] = cl.Define{
+			defines[i] = cl.ConstDef{
 				Name:  name,
 				Value: conf.Define[name],
 			}
@@ -128,6 +131,9 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			EnumPrefix:      conf.EnumPrefix,
 			Rename:          conf.Rename,
 			FieldAlias:      conf.FieldAlias,
+			NewCheck:        conf.NewCheck,
+			MethodCheck:     conf.MethodCheck,
+			TypeDef:         conf.TypeDef,
 			TypeAlias:       conf.TypeAlias,
 			TypeIgnore:      conf.TypeIgnore,
 			TypePrefix:      conf.TypePrefix,
@@ -183,6 +189,9 @@ var langExts = [...]string{
 }
 
 func TestC(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagAll)
+	defer cl.SetDebug(0)
+
 	testFromDir(t, "", "./_testc", cl.LanguageC)
 }
 
@@ -195,9 +204,6 @@ func TestPreprocessor(t *testing.T) {
 }
 
 func TestPub(t *testing.T) {
-	cl.SetDebug(cl.DbgFlagAll)
-	defer cl.SetDebug(0)
-
 	testFromDir(t, "", "./_testpub", cl.LanguageC, true)
 }
 
