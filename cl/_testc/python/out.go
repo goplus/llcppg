@@ -8,6 +8,9 @@ import (
 type Object struct {
 	V c.Int
 }
+type DictObject struct {
+	Ob Object
+}
 type SizeT = c.Ulong
 type ModuleObject struct {
 	Object
@@ -23,7 +26,7 @@ func ModuleNewObject(name *Object) *ModuleObject
 func ModuleNew(name *c.Char) *ModuleObject
 
 // llgo:link (*ModuleObject).Dict C.PyModule_GetDict
-func (_llcppg_param1 *ModuleObject) Dict() *Object {
+func (_llcppg_param1 *ModuleObject) Dict() *DictObject {
 	return nil
 }
 
