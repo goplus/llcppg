@@ -57,6 +57,7 @@ func badgeLines(module string) []string {
 		fmt.Sprintf("[![GoDoc](%s)](https://pkg.go.dev/github.com/llarhub/%s)", godocBadgeImageURL(module), repo),
 		fmt.Sprintf("[![GitHub release](https://img.shields.io/github/v/tag/llarhub/%s.svg?label=release)](https://github.com/llarhub/%s/releases)", repo, repo),
 		"[![LLGo](https://img.shields.io/badge/powered_by-LLGo-green.svg)](https://github.com/xgo-dev/llgo)",
+		"[![LLGo bindings](https://img.shields.io/badge/llarhub-LLGo_Bindings-brightgreen.svg)](https://github.com/xgo-dev/llgo/blob/main/doc/LLGo-Bindings.md)",
 		"[![XGo](https://img.shields.io/badge/project-XGo-blue.svg)](https://github.com/goplus/xgo)",
 	}
 }
