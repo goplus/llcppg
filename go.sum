@@ -2,8 +2,8 @@ github.com/fsnotify/fsnotify v1.10.1 h1:b0/UzAf9yR5rhf3RPm9gf3ehBPpf0oZKIjtpKrx5
 github.com/fsnotify/fsnotify v1.10.1/go.mod h1:TLheqan6HD6GBK6PrDWyDPBaEV8LspOxvPSjC+bVfgo=
 github.com/google/safehtml v0.1.1-0.20260610220727-a1fb0ade7257 h1:wThmHLGFvBJPSQEfy9hOsIoQyVR6NDQ+bdFwVW6OB0M=
 github.com/google/safehtml v0.1.1-0.20260610220727-a1fb0ade7257/go.mod h1:ses04bNFagkcb3YeHX2ozsdZyOU/Rh6mqMtwiEoLkmQ=
-github.com/goplus/gogen v1.26.2 h1:lxdAo1d3gaK75sp22XARAJnjx+nldPuQksTSv7HDejc=
-github.com/goplus/gogen v1.26.2/go.mod h1:Y7ulYW3wonQ3d9er00b0uGFEV/IUZa6okWJZh892ACQ=
+github.com/goplus/gogen v1.26.3 h1:LbOUh+HpUYZJPpBT1sg5qKzfzeiMdbpy6lq7wMqi+14=
+github.com/goplus/gogen v1.26.3/go.mod h1:Y7ulYW3wonQ3d9er00b0uGFEV/IUZa6okWJZh892ACQ=
 github.com/goplus/lib v0.6.3 h1:UJ0snNSpCTOvM3npLO0yu+kwmiud2d9/tKSeaD3PeCc=
 github.com/goplus/lib v0.6.3/go.mod h1:0krESx2ZyKMlgNp3oUMob++WJYR5a1PpubjSmMjnP0c=
 github.com/goplus/mod v0.22.1 h1:3GQZqKlcQAiMpRUDAHvFryGYie+mT0JMjguEqOtIjkE=
