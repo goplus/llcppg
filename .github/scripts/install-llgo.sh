@@ -48,6 +48,21 @@ install_llvm_linux() {
   $SUDO apt-get install -y git curl cmake pkg-config libgc-dev libssl-dev \
     zlib1g-dev libffi-dev libuv1-dev
   LLVM_BIN="/usr/lib/llvm-$LLVM_VERSION/bin"
+
+  # Guarantee an *unversioned* `llvm-config` on the default PATH.
+  #
+  # The apt.llvm.org packages only ship versioned names ("llvm-config-NN")
+  # plus "/usr/lib/llvm-NN/bin/llvm-config". Packages that bind libclang link
+  # with `-L$(llvm-config --libdir) -lclang`, and llgo expands that bare
+  # `llvm-config` itself at link time. If it is not resolvable right then, the
+  # `$(...)` collapses to an empty string, the stray `-L` swallows the
+  # following `-lclang`, and the link fails with undefined `clang_*` symbols
+  # (seen as `ld.lld: error: unable to find library -lclang`). A symlink in
+  # /usr/local/bin keeps `llvm-config` findable regardless of PATH ordering;
+  # refresh it so it always points at the version just set up.
+  if [ -x "$LLVM_BIN/llvm-config" ]; then
+    $SUDO ln -sf "$LLVM_BIN/llvm-config" /usr/local/bin/llvm-config
+  fi
 }
 
 install_llvm_macos() {
@@ -69,6 +84,25 @@ case "$(uname -s)" in
   *) echo "unsupported OS: $(uname -s)" >&2; exit 1 ;;
 esac
 export PATH="$LLVM_BIN:$PATH"
+
+# Make libclang (and the rest of LLVM's libraries) findable by the linker.
+#
+# Packages that bind libclang declare `link: -L$(llvm-config --libdir) -lclang`.
+# llgo expands that `$(llvm-config --libdir)` itself at link time, and if
+# llvm-config is not resolvable in that moment it silently drops the `-L`,
+# leaving a bare `-lclang`. On Linux the unversioned `libclang.so` dev symlink
+# lives only in llvm-config's libdir (not in the linker's default search path),
+# so the link then fails with `ld.lld: error: unable to find library -lclang`.
+#
+# Export the libdir via LIBRARY_PATH (always searched by the clang/lld driver)
+# so `-lclang` resolves even when that `$(...)` expansion comes up empty.
+LLVM_LIBDIR="$("$LLVM_BIN/llvm-config" --libdir 2>/dev/null || true)"
+LIBRARY_PATH_ORIG="${LIBRARY_PATH:-}" # preserved for GITHUB_ENV (see below)
+LIBRARY_PATH_EXPORT="" # shell-activation hint line, printed at the end
+if [ -n "$LLVM_LIBDIR" ]; then
+  export LIBRARY_PATH="$LLVM_LIBDIR${LIBRARY_PATH:+:$LIBRARY_PATH}"
+  LIBRARY_PATH_EXPORT="  export LIBRARY_PATH=\"$LLVM_LIBDIR\${LIBRARY_PATH:+:\$LIBRARY_PATH}\""
+fi
 
 # Go: llgo shells out to the `go` on PATH, and that launcher itself must be the
 # required version (an older launcher rejects newer GOEXPERIMENT values, e.g.
@@ -144,6 +178,9 @@ fi
 if [ -n "${GITHUB_ENV:-}" ]; then
   echo "LLGO_ROOT=$LLGO_SRC" >> "$GITHUB_ENV"
   echo "GOTOOLCHAIN=local" >> "$GITHUB_ENV"
+  if [ -n "$LLVM_LIBDIR" ]; then
+    echo "LIBRARY_PATH=$LLVM_LIBDIR${LIBRARY_PATH_ORIG:+:$LIBRARY_PATH_ORIG}" >> "$GITHUB_ENV"
+  fi
 fi
 
 cat <<MSG
@@ -152,5 +189,10 @@ LLGo installed. In your shell run:
   export PATH="$LLGO_BIN_DIR:$LLVM_BIN:$GO_ROOT/bin:\$PATH"
   export GOTOOLCHAIN=local
   export LLGO_ROOT="$LLGO_SRC"
+MSG
+if [ -n "$LIBRARY_PATH_EXPORT" ]; then
+  echo "$LIBRARY_PATH_EXPORT"
+fi
+cat <<MSG
 Then verify with: llgo version && (cd "$REPO_ROOT" && llgo test ./tool/pputil/...)
 MSG

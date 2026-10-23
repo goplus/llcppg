@@ -72,6 +72,7 @@ enough to start; the script obtains the exact Go version from `go.mod`
    export PATH="$HOME/.llgo/bin:/usr/lib/llvm-22/bin:$PATH"
    export GOTOOLCHAIN=local
    export LLGO_ROOT="$HOME/.llgo-src"
+   export LIBRARY_PATH="/usr/lib/llvm-22/lib${LIBRARY_PATH:+:$LIBRARY_PATH}"
    ```
 
    The printed `PATH` also contains the Go 1.27 `bin` directory; it **must**
@@ -92,6 +93,12 @@ Common failure modes:
 - `llvm-config`/`clang` not found or wrong version: add
   `/usr/lib/llvm-22/bin` (Linux) or `$(brew --prefix llvm@22)/bin` (macOS) to
   `PATH`.
+- `ld.lld: error: unable to find library -lclang` (or undefined `clang_*`
+  symbols at link time): `llvm-config` was not resolvable when `llgo` expanded
+  the `-L$(llvm-config --libdir)` link flag, so `-lclang` got dropped. Make sure
+  `llvm-config` is on `PATH` (the install script adds `/usr/lib/llvm-22/bin` and
+  symlinks `/usr/local/bin/llvm-config`) and re-run the `export LIBRARY_PATH=...`
+  line from step 2.
 - `llgo: command not found`: re-run the `export PATH=...` line from step 2.
 - apt/brew/network errors: re-run the script; it is idempotent.
 - Link errors with missing symbols: you ran plain `go test`; use `llgo test`.
