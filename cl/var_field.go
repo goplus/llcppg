@@ -105,7 +105,7 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor) {
 		ctx.ignoref(feats, decl, "var %s: parent is ignored", cName)
 		return
 	}
-	if varHasInitExpr(ctx, decl) {
+	if varHasInitExpr(decl) {
 		ctx.ignoref(featQuietIgnore, decl, "var %s: has initialized expression, ignored", cName)
 		return
 	}
@@ -137,19 +137,28 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor) {
 	defs.New(goNodePos(ctx, decl), typ, goName)
 }
 
-func varHasInitExpr(ctx *pkgCtx, v clang.Cursor) (hasInitExpr bool) {
+func varHasInitExpr(v clang.Cursor) (hasInitExpr bool) {
 	clang.VisitChildren(v, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		switch decl.Kind {
-		case lc.Cursor_InitListExpr, lc.Cursor_CallExpr, lc.Cursor_DeclRefExpr,
-			lc.Cursor_UnaryOperator, lc.Cursor_BinaryOperator, lc.Cursor_UnexposedExpr,
-			lc.Cursor_CXXStaticCastExpr, lc.Cursor_CXXBoolLiteralExpr:
-			hasInitExpr = true
-			return clang.Break
-		case lc.Cursor_TypeRef, lc.Cursor_UnaryExpr, lc.Cursor_ParmDecl,
-			lc.Cursor_IntegerLiteral:
+		case lc.Cursor_UnaryExpr, lc.Cursor_IntegerLiteral:
+			// A direct child of the declaration that belongs to the type rather
+			// than to an initializer: the array-bound expression of a sized
+			// array, e.g. the sizeof() in `char a[sizeof(text)]` (UnaryExpr) or
+			// the literal in `char a[10]` (IntegerLiteral). These do not mark
+			// the variable as having an initializer.
+		case lc.Cursor_TypeRef, lc.Cursor_ParmDecl:
+			// Type references and function-pointer parameter declarations are
+			// part of the declared type, not an initializer.
 		default:
-			if lc.Cursor_FirstAttr > decl.Kind || decl.Kind > lc.Cursor_LastAttr {
-				ctx.panicf(decl, "varHasInitExpr: unknown kind - %v", decl.Kind)
+			// Any other expression cursor is an initializer expression (an
+			// initialized global, which the generator intentionally omits).
+			// Cover the whole expression range so new/rare initializer kinds
+			// such as string, float and character literals are handled rather
+			// than panicking; non-expression children (e.g. attributes) are
+			// ignored.
+			if decl.Kind >= lc.Cursor_FirstExpr && decl.Kind <= lc.Cursor_LastExpr {
+				hasInitExpr = true
+				return clang.Break
 			}
 		}
 		return clang.Continue
