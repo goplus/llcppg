@@ -18,6 +18,9 @@ package tool
 
 import (
 	"encoding/json"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 
@@ -255,6 +258,26 @@ func (cfg *Config) StdlibDirs(workDir string) []string {
 		stdlibDirs = cstdlib.Dirs()
 	}
 	return stdlibDirs
+}
+
+// -----------------------------------------------------------------------------
+
+// LoadGoFiles loads Go source files from the specified directory and returns a map
+// of file names to AST files.
+func LoadGoFiles(dir string, goFiles []string, mode parser.Mode) (map[string]*ast.File, error) {
+	if len(goFiles) == 0 {
+		return nil, nil
+	}
+	ret := make(map[string]*ast.File, len(goFiles))
+	for _, fname := range goFiles {
+		file := filepath.Join(dir, fname)
+		f, e := parser.ParseFile(token.NewFileSet(), file, nil, mode)
+		if e != nil {
+			return nil, e
+		}
+		ret[fname] = f
+	}
+	return ret, nil
 }
 
 // -----------------------------------------------------------------------------

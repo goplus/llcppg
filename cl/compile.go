@@ -18,8 +18,10 @@ package cl
 
 import (
 	"fmt"
+	"go/ast"
 	"go/token"
 	"go/types"
+	"log"
 	"maps"
 
 	"github.com/goplus/gogen"
@@ -100,9 +102,9 @@ type Config struct {
 	// Go package (optional).
 	LLGoPackage string
 
-	// GoFiles — mixing hand-written and generated Go code (optional).
-	// See https://github.com/xgo-dev/llcppg/issues/1100.
-	GoFiles []string
+	// GoFiles provides the Go source files by filename, mixing hand-written and generated
+	// Go code (optional). See https://github.com/xgo-dev/llcppg/issues/1100.
+	GoFiles map[string]*ast.File
 
 	// Language specifies the programming language of the header file (default LanguageC).
 	Language Language
@@ -358,7 +360,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		ctx.c = pkg.Import(libcPkgPath)
 	}
 
-	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
+	loadFiles(ctx, files, pkgPath, conf.GoFileOf, conf.GoFiles)
+	loadGoFiles(ctx, conf.GoFiles)
 	loadTypeDefs(ctx, conf.TypeDef)
 
 	ctx.compile()
@@ -399,7 +402,7 @@ func loadTypeDefs(ctx *pkgCtx, typeDefs map[string][]TypeDef) {
 	}
 }
 
-func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(headerFile string) (string, bool)) {
+func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(headerFile string) (string, bool), goFiles map[string]*ast.File) {
 	pkg := ctx.pkg
 	pkgOf := ctx.pkgOf
 	scope := &ctx.scopeCtx
@@ -421,6 +424,9 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 					fname, ok := goFileOf(at)
 					if !ok {
 						return clang.Continue
+					}
+					if _, ok := goFiles[fname]; ok {
+						log.Panicf("Go file %s already exists in `GoFiles`\n", fname)
 					}
 					pkg.SetCurFile(fname, true)
 				}

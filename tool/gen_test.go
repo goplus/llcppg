@@ -285,7 +285,7 @@ func testFromDir(t *testing.T, sel, relDir string, single bool, subPkg ...string
 			}
 		}
 
-		pkg, lang, err := conf.NewPackage("", pkgName, pkgDir, idx)
+		pkg, lang, err := conf.NewPackage("", pkgName, destDir, pkgDir, idx)
 		if err != nil {
 			t.Error("conf.NewPackage:", err)
 			return

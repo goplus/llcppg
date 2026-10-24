@@ -18,6 +18,7 @@ package cl_test
 
 import (
 	"bytes"
+	"go/parser"
 	"log"
 	"maps"
 	"os"
@@ -78,11 +79,17 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			srcFiles = []string{"in.h"}
 		}
 
+		goFiles, err := tool.LoadGoFiles(pkgDir, conf.GoFiles, parser.AllErrors)
+		if err != nil {
+			t.Error("LoadGoFiles failed:", err)
+			return
+		}
+
 		var mod tool.Module
 		if conf.LoadLibcPubFile {
 			m, err := tool.LoadModuleFrom(pkgDir)
 			if err != nil {
-				t.Errorf("failed to load module: %v", err)
+				t.Error("failed to load module:", err)
 				return
 			}
 			mod = m
@@ -125,7 +132,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			Define:          defines,
 			LLGoPackage:     conf.LLGoPackage,
 			Language:        lang,
-			GoFiles:         conf.GoFiles,
+			GoFiles:         goFiles,
 			WrapFileHeader:  conf.WrapFileHeader,
 			NSPrefix:        conf.NSPrefix,
 			FuncPrefix:      conf.FuncPrefix,
