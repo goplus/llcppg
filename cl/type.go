@@ -241,8 +241,9 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 }
 
 func namedType(ctx *pkgCtx, typ lc.Type, feats *int) (ret types.Type, found bool) {
-	cName := cTypeName(typ)
-	if t, ok := ctx.typeAliasOf(cName, typ.Declaration()); ok {
+	decl := typ.Declaration()
+	cName := cNameOf(decl)
+	if t, ok := ctx.typeAliasOf(cName, decl); ok {
 		return t, true
 	}
 	if o, ok := ctx.getTypeObj(cName, feats); ok {

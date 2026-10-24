@@ -202,9 +202,12 @@ func doAliasType(ctx *pkgCtx, cName string, tunder types.Type, scope *scopeCtx, 
 	//   type Color = uint32
 	// The alias is emitted here instead of by the original record/typedef
 	// declaration (which is skipped for an aliased name), so the comment would
-	// otherwise be lost. decl is the declaration that triggered the alias; it is
-	// null when a type reference created the alias first, in which case there is
-	// no comment to attach. See issue goplus/llcppg#1097.
+	// otherwise be lost. decl is the declaration that triggered the alias: the
+	// typedef/record from loadTypedef, or the declaration of a referenced type
+	// (typ.Declaration()) from namedType/unexposedType, which is usually non-null
+	// and carries its own doc comment. It is null only when the triggering type
+	// has no backing declaration (e.g. a builtin or an unexposed type), in which
+	// case there is no comment to attach. See issue goplus/llcppg#1097.
 	if decl.IsNull() == 0 {
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			typDefs.SetComments(doc)

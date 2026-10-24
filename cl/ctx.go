@@ -504,8 +504,9 @@ var (
 // typeAliasOf resolves a configured TypeAlias for name and, on first encounter,
 // emits the Go alias declaration (e.g. "type Color = uint32"). decl is the
 // declaration that triggered the lookup so its C/C++ doc comment can be carried
-// onto the generated alias; pass a null cursor when resolving from a type
-// reference that has no declaration to attach. See issue goplus/llcppg#1097.
+// onto the generated alias. It may be a null cursor when the triggering type has
+// no backing declaration (e.g. a builtin or an unexposed type), in which case
+// there is no comment to attach. See issue goplus/llcppg#1097.
 func (p *pkgCtx) typeAliasOf(name string, decl clang.Cursor) (ret types.Type, found bool) {
 	if t, ok := p.typeAliasCache[name]; ok {
 		return t, true
