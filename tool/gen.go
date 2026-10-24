@@ -202,6 +202,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		Define:          defines,
 		LLGoPackage:     cfg.LLGoPackage,
 		Language:        lang,
+		GoFiles:         cfg.GoFiles,
 		CFlags:          cfg.CFlags,
 		Class:           cfg.Class,
 		NonClass:        cfg.NonClass,

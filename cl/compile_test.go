@@ -125,6 +125,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			Define:          defines,
 			LLGoPackage:     conf.LLGoPackage,
 			Language:        lang,
+			GoFiles:         conf.GoFiles,
 			WrapFileHeader:  conf.WrapFileHeader,
 			NSPrefix:        conf.NSPrefix,
 			FuncPrefix:      conf.FuncPrefix,

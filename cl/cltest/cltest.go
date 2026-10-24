@@ -34,6 +34,10 @@ type Config struct {
 	CFlags         string   `json:"CFlags"`
 	Files          []string `json:"Files"`
 
+	// GoFiles — mixing hand-written and generated Go code (optional).
+	// See https://github.com/xgo-dev/llcppg/issues/1100.
+	GoFiles []string
+
 	// NSPrefix specifies the prefix to remove from C/C++ namespace names when generating
 	// Go package names (optional).
 	NSPrefix []string `json:"NSPrefix"` // C/C++ namespace prefix to remove

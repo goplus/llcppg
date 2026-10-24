@@ -100,6 +100,10 @@ type Config struct {
 	// Go package (optional).
 	LLGoPackage string
 
+	// GoFiles — mixing hand-written and generated Go code (optional).
+	// See https://github.com/xgo-dev/llcppg/issues/1100.
+	GoFiles []string
+
 	// Language specifies the programming language of the header file (default LanguageC).
 	Language Language
 
@@ -143,7 +147,7 @@ type Config struct {
 	// a C wrapper whose body invokes the macro, and a Go declaration linking to it.
 	// The reference function supplies the wrapper's return type and the parameter
 	// types (matched to the macro's parameters by name, then by position).
-	// See https://github.com/goplus/llcppg/issues/1051.
+	// See https://github.com/xgo-dev/llcppg/issues/1051.
 	MacroFunc map[string]string
 
 	// MacroGroup declares groups of related constant macros that are emitted
@@ -155,7 +159,7 @@ type Config struct {
 	// header file: a range that crosses a header boundary is a configuration
 	// error. Configured groups take priority over automatic detection, which
 	// groups runs of adjacent constant macros of the same type.
-	// See https://github.com/goplus/llcppg/issues/1064.
+	// See https://github.com/xgo-dev/llcppg/issues/1064.
 	MacroGroup map[string]string
 
 	// TypeIgnore specifies a list of C/C++ type names to be ignored (optional).
@@ -195,7 +199,7 @@ type Config struct {
 
 	// MethodPrefix specifies a literal prefix to remove from the names of methods associated
 	// with a Go type (optional). The key is the Go type name and the value is the prefix in
-	// the original C/C++ function name. See https://github.com/goplus/llcppg/issues/1061.
+	// the original C/C++ function name. See https://github.com/xgo-dev/llcppg/issues/1061.
 	MethodPrefix map[string]string
 
 	// EnumPrefix specifies the prefix to remove from C/C++ enum value names when generating
