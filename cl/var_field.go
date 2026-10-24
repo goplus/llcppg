@@ -142,7 +142,12 @@ func varHasInitExpr(ctx *pkgCtx, v clang.Cursor) (hasInitExpr bool) {
 		switch decl.Kind {
 		case lc.Cursor_InitListExpr, lc.Cursor_CallExpr, lc.Cursor_DeclRefExpr,
 			lc.Cursor_UnaryOperator, lc.Cursor_BinaryOperator, lc.Cursor_UnexposedExpr,
-			lc.Cursor_CXXStaticCastExpr, lc.Cursor_CXXBoolLiteralExpr:
+			lc.Cursor_CXXStaticCastExpr, lc.Cursor_CXXBoolLiteralExpr,
+			lc.Cursor_StringLiteral, lc.Cursor_FloatingLiteral, lc.Cursor_CharacterLiteral:
+			// An initializer expression (an initialized global, which the
+			// generator intentionally omits). StringLiteral covers
+			// `char text[] = "hi"`, whose string-completed array would
+			// otherwise reach the panic below.
 			hasInitExpr = true
 			return clang.Break
 		case lc.Cursor_TypeRef, lc.Cursor_UnaryExpr, lc.Cursor_ParmDecl,
