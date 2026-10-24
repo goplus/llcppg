@@ -43,7 +43,7 @@ type _llcppg_anon_0 struct {
 	X c.Int
 }
 
-// llgo:type C
+//llgo:cdecl
 type Callback = func(_llcppg_param1 c.Int)
 type Configured = c.Long
 type private = c.Int

@@ -54,7 +54,7 @@ type PointerArrays struct {
 
 // Both callback paths must retain the C calling-convention marker.
 //
-// llgo:type C
+//llgo:cdecl
 type CallbackElements struct {
 	Handlers  [2]_llcppg_anon_8
 	Callbacks [2]func(_llcppg_param1 c.Int)
@@ -89,7 +89,7 @@ type _llcppg_anon_7 struct {
 	Code c.Int
 }
 
-// llgo:type C
+//llgo:cdecl
 type _llcppg_anon_8 struct {
 	Call func(_llcppg_param1 c.Int)
 }

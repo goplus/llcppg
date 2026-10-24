@@ -30,7 +30,7 @@ type Handle struct {
 type Length = c.Ulong
 type HandlePtr = *Handle
 
-// llgo:type C
+//llgo:cdecl
 type Callback = func(_llcppg_param1 Length)
 
 func (p *Value) XGof_ref_integer() *c.Int {

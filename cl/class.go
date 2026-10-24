@@ -166,8 +166,7 @@ func loadTemplateClass(ctx *pkgCtx, cName string, this *classCtx, obj *overloadO
 		return
 	}
 
-	goName := typDecl.Type().Obj().Name()
-	initClassType(ctx, typDecl, this, cName, goName, tparams)
+	initClassType(ctx, typDecl, this, cName, tparams)
 }
 
 // -----------------------------------------------------------------------------
@@ -188,8 +187,7 @@ func loadClass(ctx *pkgCtx, cName string, this *classCtx, cls clang.Cursor) {
 		return // declaration only, no definition
 	}
 
-	goName := typDecl.Type().Obj().Name()
-	initClassType(ctx, typDecl, this, cName, goName, nil)
+	initClassType(ctx, typDecl, this, cName, nil)
 }
 
 // -----------------------------------------------------------------------------
@@ -207,9 +205,9 @@ func newTypeEx(ctx *pkgCtx, cls clang.Cursor, cName, goName string, tparams []*t
 	return
 }
 
-func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName, goName string, tparams []*types.TypeParam) bool {
+func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string, tparams []*types.TypeParam) bool {
 	feats := 0
-	initClassTypeEx(ctx, typDecl, this, cName, goName, tparams, &feats)
+	initClassTypeEx(ctx, typDecl, this, cName, tparams, &feats)
 	if feats&featAllIgnore != 0 {
 		ctx.ignoref(feats, this.decl, "class %s: unsupported features, ignored", cName)
 		ctx.ignoreType(cName, feats)
@@ -219,14 +217,11 @@ func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName, goName s
 	return true
 }
 
-func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName, goName string, tparams []*types.TypeParam, feats *int) {
+func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string, tparams []*types.TypeParam, feats *int) {
 	cls := this.decl
-
-	// Attach the doc at the TypeDefs (GenDecl) level rather than on the
-	// TypeSpec; see the note in loadTypedef for why a spec-level doc renders as
-	// "type// doc" here.
-	if doc := ctx.docCommentGroup(cls); doc != nil {
-		typDecl.defs.SetComments(doc)
+	doc := ctx.docComments(cls)
+	if len(doc) != 0 {
+		typDecl.defs.SetComments(docCommentGroup(doc))
 	}
 
 	this.typNamed = typDecl.Type()
@@ -255,14 +250,8 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName, goName
 	if *feats&featAllIgnore != 0 {
 		return
 	}
-	// A record that holds a callback (function pointer) field must carry the
-	// "// llgo:type C" directive so those callbacks use the C calling
-	// convention, mirroring how function-pointer typedefs are handled (see
-	// defineTypedef). featHasCallback is set by toTypeEx while visiting the
-	// members above, so it is only known now; upgrade the doc-only comment set
-	// at the top of this function to the directive form.
-	if *feats&featHasCallback != 0 {
-		typDecl.defs.SetComments(ctx.directiveTypeC(cls, true))
+	if featCallback := *feats & featAllCallback; featCallback != 0 {
+		typDecl.defs.SetComments(ctx.directiveCallback(cls, featCallback)) // TODO(xsw): check this
 	}
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
 	// polymorphic class shares its vptr with its primary base (the first
@@ -296,7 +285,7 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, goName string, parent *scopeCtx) (
 		overloads: make(map[string]*overloads),
 		parent:    parent,
 	}
-	if !initClassType(ctx, typDecl, this, "", goName, nil) {
+	if !initClassType(ctx, typDecl, this, "", nil) {
 		return nil, false
 	}
 	return typDecl.Type(), true

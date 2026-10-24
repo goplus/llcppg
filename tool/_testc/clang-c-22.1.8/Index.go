@@ -1874,7 +1874,7 @@ const (
 	Visit_Continue VisitorResult = 1
 )
 
-// llgo:type C
+//llgo:cdecl
 type CursorAndRangeVisitor struct {
 	Context unsafe.Pointer
 	Visit   func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 Cursor, _llcppg_param3 SourceRange) VisitorResult
@@ -2122,7 +2122,7 @@ type IdxEntityRefInfo struct {
 // A group of callbacks used by #clang_indexSourceFile and
 // #clang_indexTranslationUnit.
 //
-// llgo:type C
+//llgo:cdecl
 type IndexerCallbacks struct {
 	AbortQuery             func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) c.Int
 	Diagnostic             func(_llcppg_param1 ClientData, _llcppg_param2 DiagnosticSet, _llcppg_param3 unsafe.Pointer)
@@ -2303,7 +2303,7 @@ type CursorSet = *CursorSetImpl
 // The visitor should return one of the \c CXChildVisitResult values
 // to direct clang_visitCursorChildren().
 //
-// llgo:type C
+//llgo:cdecl
 type CursorVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 Cursor, _llcppg_param3 ClientData) ChildVisitResult
 
 // Opaque pointer representing a policy that controls pretty printing
@@ -2334,7 +2334,7 @@ type CompletionString uintptr
 // array is sorted in order of immediate inclusion.  For example,
 // the first element refers to the location that included 'included_file'.
 //
-// llgo:type C
+//llgo:cdecl
 type InclusionVisitor = func(_llcppg_param1 File, _llcppg_param2 *SourceLocation, _llcppg_param3 c.Uint, _llcppg_param4 ClientData)
 
 // Evaluation result of a cursor
@@ -2368,7 +2368,7 @@ type IndexAction uintptr
 // The visitor should return one of the \c CXVisitorResult values
 // to direct \c clang_Type_visitFields.
 //
-// llgo:type C
+//llgo:cdecl
 type FieldVisitor = func(_llcppg_param1 Cursor, _llcppg_param2 ClientData) VisitorResult
 
 // CINDEX_DEPRECATED - disabled to silence MSVC deprecation warnings

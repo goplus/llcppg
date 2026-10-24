@@ -76,10 +76,10 @@ func emitMacroConst(defs *gogen.ConstDefs, ctx *pkgCtx, decl clang.Cursor, docRa
 			}
 			at := defs.NewPos()
 			if grouped {
-				at.Doc = docCommentGroupRaw(toLineComments(docRaw))
+				at.Doc = docCommentGroup(toLineComments(docRaw))
 			} else {
 				raw := clang.RawCommentsOf(decl)
-				doc := docCommentGroupRaw(toLineComments(raw.Text()))
+				doc := docCommentGroup(toLineComments(raw.Text()))
 				defs.SetComments(doc)
 			}
 			name := ctx.macroName(origName)
@@ -110,7 +110,7 @@ func loadMacroConstGroup(ctx *pkgCtx, defs *gogen.ConstDefs, items []clang.Curso
 	}
 
 	if docRaw != "" {
-		doc := docCommentGroupRaw(toLineComments(docRaw))
+		doc := docCommentGroup(toLineComments(docRaw))
 		defs.SetComments(doc)
 	}
 
