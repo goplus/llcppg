@@ -241,8 +241,9 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 }
 
 func namedType(ctx *pkgCtx, typ lc.Type, feats *int) (ret types.Type, found bool) {
-	cName := cTypeName(typ)
-	if t, ok := ctx.typeAliasOf(cName); ok {
+	decl := typ.Declaration()
+	cName := cNameOf(decl)
+	if t, ok := ctx.typeAliasOf(cName, decl); ok {
 		return t, true
 	}
 	if o, ok := ctx.getTypeObj(cName, feats); ok {
@@ -253,7 +254,7 @@ func namedType(ctx *pkgCtx, typ lc.Type, feats *int) (ret types.Type, found bool
 
 func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret types.Type, found bool) {
 	name := clang.String(typ)
-	if t, ok := ctx.typeAliasOf(name); ok { // typeAlias supported in config
+	if t, ok := ctx.typeAliasOf(name, typ.Declaration()); ok { // typeAlias supported in config
 		return t, true
 	}
 	if strings.HasPrefix(name, "typename ") || hasPredefinedDirective(name) {
