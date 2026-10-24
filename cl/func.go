@@ -85,6 +85,13 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 		return
 	}
 
+	if _, ok := ctx.funcDefLinks[cName]; ok {
+		// The symbol is claimed by a FuncDef entry, which emits it under the
+		// declared Go name. Skip the default binding to avoid a duplicate.
+		ctx.ignoref(featQuietIgnore, fn, "func %s: claimed by FuncDef, skipped", cName)
+		return
+	}
+
 	isOp := isOperator(obj.name)
 	if debugCompileDecl {
 		fnType := clang.String(fn.Type())

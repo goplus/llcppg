@@ -134,6 +134,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			NewCheck:        conf.NewCheck,
 			MethodCheck:     conf.MethodCheck,
 			TypeDef:         conf.TypeDef,
+			FuncDef:         conf.FuncDef,
 			TypeAlias:       conf.TypeAlias,
 			TypeIgnore:      conf.TypeIgnore,
 			TypePrefix:      conf.TypePrefix,

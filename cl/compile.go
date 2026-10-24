@@ -87,6 +87,28 @@ type TypeDef struct {
 	Fields []string
 }
 
+// FuncDef represents a function or method definition that should exist in the
+// generated package but is not produced by the default conversion.
+// See https://github.com/goplus/llcppg/issues/1083.
+type FuncDef struct {
+	// Name is the Go-side name of the symbol being added. It is the final Go name,
+	// exactly as it should appear in the package (it is not run through prefix
+	// stripping or any other naming rule). It takes one of three forms:
+	//   - "Ident"            — a package-level function, e.g. "NewModule".
+	//   - "(*Type).Method"   — a method with a pointer receiver, e.g.
+	//                          "(*ModuleObject).GetDict".
+	//   - "(Type).Method"    — a method with a value receiver, e.g. "(Object).IsNil".
+	// Type refers to a type of the package being generated, either produced from the
+	// headers or defined by TypeDef.
+	Name string
+
+	// Link is the name of the C symbol the Go function is linked to. It becomes the
+	// target of the //go:linkname directive in the generated code. The signature of
+	// the generated function is derived from the C declaration of this symbol. It is
+	// required.
+	Link string
+}
+
 // Config specifies the configuration for llcppg.
 type Config struct {
 	// Fset provides source position information for syntax trees and types (optional).
@@ -173,6 +195,12 @@ type Config struct {
 	// package but is missing from the C/C++ headers.
 	// See https://github.com/xgo-dev/llcppg/issues/1079.
 	TypeDef map[string][]TypeDef
+
+	// FuncDef is an object whose keys are file names and whose values are arrays of
+	// function definitions (optional). It declares Go functions and methods that should
+	// exist in the generated package, each linked to a C symbol, that the default
+	// conversion does not produce. See https://github.com/goplus/llcppg/issues/1083.
+	FuncDef map[string][]FuncDef
 
 	// TypeAlias specifies a mapping of C/C++ type names to a Go type name (alias) in
 	// pkgPath.Name format (pkgPath can be empty if Name is in current package), optional.
@@ -340,7 +368,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		fnIgnore: conf.FuncIgnore, classes: conf.Class, nonClasses: conf.NonClass,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), ovobjs: make(map[string]*overloadObj),
-		lastSeen: make(map[string]none), types: make(map[string]typeObj),
+		funcDefLinks: make(map[string]none),
+		lastSeen:     make(map[string]none), types: make(map[string]typeObj),
 		macroVals: make(map[string]any), impPkgs: make(map[string]none),
 		pubDeps: make(map[string]none), pubTyps: make(map[string]none),
 	}
@@ -356,6 +385,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 
 	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
 	loadTypeDefs(ctx, conf.TypeDef)
+	loadFuncDefs(ctx, conf.FuncDef)
 
 	ctx.compile()
 

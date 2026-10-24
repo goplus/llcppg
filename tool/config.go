@@ -118,6 +118,12 @@ type Config struct {
 	// See https://github.com/xgo-dev/llcppg/issues/1079.
 	TypeDef map[string][]cl.TypeDef `json:"TypeDef"`
 
+	// FuncDef is an object whose keys are file names and whose values are arrays of
+	// function definitions (optional). It declares Go functions and methods that should
+	// exist in the generated package, each linked to a C symbol, that the default
+	// conversion does not produce. See https://github.com/goplus/llcppg/issues/1083.
+	FuncDef map[string][]cl.FuncDef `json:"FuncDef"`
+
 	// TypeAlias specifies a mapping of C/C++ type names to a Go type name (alias) in
 	// pkgPath.Name format (pkgPath can be empty if Name is in current package), optional.
 	//

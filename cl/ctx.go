@@ -196,6 +196,7 @@ type pkgCtx struct {
 	mgroup       *macroGrouper           // macro grouping current state
 	macroVals    map[string]any          // macroName => value
 	ovobjs       map[string]*overloadObj // objUSR => overload object
+	funcDefLinks map[string]none         // C symbols claimed by FuncDef entries (skipped by default emission)
 	types        map[string]typeObj      // c/c++ fullName => type name object (include external types)
 	typdecls     map[string]typDecl      // c/c++ fullName => type declaration object (only local types)
 	impPkgs      map[string]none         // all loaded pub package paths, including transitive dependencies
