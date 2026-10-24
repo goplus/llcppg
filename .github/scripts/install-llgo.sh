@@ -40,13 +40,14 @@ install_llvm_linux() {
       $SUDO tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
     echo "deb https://apt.llvm.org/$codename/ llvm-toolchain-$codename-$LLVM_VERSION main" |
       $SUDO tee /etc/apt/sources.list.d/llvm-$LLVM_VERSION.list >/dev/null
-    $SUDO apt-get update
-    $SUDO apt-get install -y "llvm-$LLVM_VERSION-dev" "clang-$LLVM_VERSION" \
-      "libclang-$LLVM_VERSION-dev" "lld-$LLVM_VERSION" \
-      "libunwind-$LLVM_VERSION-dev" "libc++-$LLVM_VERSION-dev"
   fi
-  $SUDO apt-get install -y git curl cmake pkg-config libgc-dev libssl-dev \
-    zlib1g-dev libffi-dev libuv1-dev
+  # A preinstalled llvm-config does not imply that libclang or the other
+  # development packages are installed (e.g. on GitHub-hosted runners).
+  $SUDO apt-get update
+  $SUDO apt-get install -y "llvm-$LLVM_VERSION-dev" "clang-$LLVM_VERSION" \
+    "libclang-$LLVM_VERSION-dev" "lld-$LLVM_VERSION" \
+    "libunwind-$LLVM_VERSION-dev" "libc++-$LLVM_VERSION-dev" \
+    git curl cmake pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
   LLVM_BIN="/usr/lib/llvm-$LLVM_VERSION/bin"
 }
 
