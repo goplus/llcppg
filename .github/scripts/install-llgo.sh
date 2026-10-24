@@ -58,9 +58,9 @@ install_llvm_macos() {
 
   # Native macOS arm64 links use LLD 23 via an absolute path. Keep the
   # matching LLVM/LLD toolchain on PATH for other targets.
-  # if [ "$(uname -m)" = arm64 ]; then
-  #  brew install --skip-link lld@23
-  # fi
+  if [ "$(uname -m)" = arm64 ]; then
+    brew install --skip-link lld@23
+  fi
 }
 
 case "$(uname -s)" in
