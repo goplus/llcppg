@@ -34,7 +34,7 @@ func loadTypedef(ctx *pkgCtx, decl clang.Cursor, scope *scopeCtx) {
 		return
 	}
 
-	if _, ok := ctx.typeAliasOf(cName); ok {
+	if _, ok := ctx.typeAliasOf(cName, decl); ok {
 		// NOTE(xsw): typeAliasOf does the type alias when cName is first encountered.
 		return
 	}
@@ -188,7 +188,7 @@ func (ctx *pkgCtx) effectiveUnder(cName string, tunder types.Type) (types.Type, 
 
 // -----------------------------------------------------------------------------
 
-func doAliasType(ctx *pkgCtx, cName string, tunder types.Type, scope *scopeCtx) *types.Alias {
+func doAliasType(ctx *pkgCtx, cName string, tunder types.Type, scope *scopeCtx, decl clang.Cursor) *types.Alias {
 	var tparams []*types.TypeParam
 	if scope != nil {
 		tparams = scope.tparams
@@ -196,7 +196,24 @@ func doAliasType(ctx *pkgCtx, cName string, tunder types.Type, scope *scopeCtx) 
 		tparams, tunder = typeParamsAndInstantiate(ctx, tunder)
 	}
 	goName := ctx.typeName(cName, true)
-	t := ctx.pkg.NewTypeDefs().NewType(goName, tparams).AliasType(ctx.pkg, tunder)
+	typDefs := ctx.pkg.NewTypeDefs()
+	// Preserve the C/C++ doc comment on the configured TypeAlias, e.g.
+	//   // Color, 4 components, R8G8B8A8 (32bit)
+	//   type Color = uint32
+	// The alias is emitted here instead of by the original record/typedef
+	// declaration (which is skipped for an aliased name), so the comment would
+	// otherwise be lost. decl is the declaration that triggered the alias: the
+	// typedef/record from loadTypedef, or the declaration of a referenced type
+	// (typ.Declaration()) from namedType/unexposedType, which is usually non-null
+	// and carries its own doc comment. It is null only when the triggering type
+	// has no backing declaration (e.g. a builtin or an unexposed type), in which
+	// case there is no comment to attach. See issue goplus/llcppg#1097.
+	if decl.IsNull() == 0 {
+		if doc := ctx.docCommentGroup(decl); doc != nil {
+			typDefs.SetComments(doc)
+		}
+	}
+	t := typDefs.NewType(goName, tparams).AliasType(ctx.pkg, tunder)
 	obj := t.Obj()
 	ctx.types[cName] = typeObj{obj, 0}
 	ctx.aliasTypeName(cName, goName)
@@ -232,7 +249,7 @@ func typeParamsAndInstantiate(ctx *pkgCtx, t types.Type) (tparams []*types.TypeP
 // alias = ".StdBasicString[byte, c.Void, c.Void]"
 // alias = ".Iterator"
 // alias = "[_Derived, _Category, _Tp, _Distance, _Pointer, _Reference] = .Iterator[_Category, _Tp, _Distance, _Pointer, _Reference]"
-func (p *pkgCtx) aliasType(name, alias string) (ret types.Type, found bool) {
+func (p *pkgCtx) aliasType(name, alias string, decl clang.Cursor) (ret types.Type, found bool) {
 	if alias == "void" {
 		p.types[name] = typeObj{nil, featTyIgnore}
 		return tyIgnore, true
@@ -253,7 +270,7 @@ func (p *pkgCtx) aliasType(name, alias string) (ret types.Type, found bool) {
 	}
 	tunder, found := p.goTypeOf(alias, scope)
 	if found {
-		ret = doAliasType(p, name, tunder, scope)
+		ret = doAliasType(p, name, tunder, scope, decl)
 	}
 	return
 }
