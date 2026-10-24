@@ -137,7 +137,7 @@ func defineTypedefToTypeParam(ctx *pkgCtx, decl clang.Cursor, cName string, tp *
 func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam, feats int) {
 	pkg := ctx.pkg
 	typDefs := pkg.NewTypeDefs()
-	if doc := ctx.directiveTypeC(decl, feats&featHasCallback != 0); doc != nil {
+	if doc := ctx.directiveCallback(decl, feats&featAllCallback); doc != nil {
 		typDefs.SetComments(doc)
 	}
 

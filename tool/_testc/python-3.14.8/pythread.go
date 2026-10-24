@@ -44,7 +44,7 @@ const (
 	PYMEM_DOMAIN_OBJ MemAllocatorDomain = 2
 )
 
-// llgo:type C
+//llgo:cdecl
 type MemAllocatorEx struct {
 	Ctx     unsafe.Pointer
 	Malloc  func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.SizeT) unsafe.Pointer

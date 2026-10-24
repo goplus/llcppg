@@ -18,6 +18,7 @@ package cl
 
 import (
 	"go/ast"
+	"log"
 	"strings"
 
 	"github.com/goplus/llcppg/clang"
@@ -144,10 +145,10 @@ func toLineComments(raw string) []*ast.Comment {
 // whose only leading comment is the doc (types, consts), where no generated
 // directive needs to be preserved alongside it.
 func (p *pkgCtx) docCommentGroup(decl clang.Cursor) *ast.CommentGroup {
-	return docCommentGroupRaw(p.docComments(decl))
+	return docCommentGroup(p.docComments(decl))
 }
 
-func docCommentGroupRaw(comments []*ast.Comment) *ast.CommentGroup {
+func docCommentGroup(comments []*ast.Comment) *ast.CommentGroup {
 	if len(comments) == 0 {
 		return nil
 	}
@@ -170,7 +171,10 @@ func (p *pkgCtx) directiveComments(decl clang.Cursor, directive string) *ast.Com
 }
 
 func (p *pkgCtx) directiveCommentsEx[nodeT nodeCursor](decl nodeT, directive string) *ast.CommentGroup {
-	doc := p.docCommentsEx(decl)
+	return directiveComments(p.docCommentsEx(decl), directive)
+}
+
+func directiveComments(doc []*ast.Comment, directive string) *ast.CommentGroup {
 	if len(doc) == 0 {
 		return &ast.CommentGroup{List: []*ast.Comment{{Text: directive}}}
 	}
@@ -183,11 +187,23 @@ func (p *pkgCtx) directiveCommentsEx[nodeT nodeCursor](decl nodeT, directive str
 
 // -----------------------------------------------------------------------------
 
-func (p *pkgCtx) directiveTypeC(decl clang.Cursor, hasCallback bool) *ast.CommentGroup {
-	if hasCallback {
-		return p.directiveComments(decl, "\n// llgo:type C")
+func (p *pkgCtx) directiveCallback(decl clang.Cursor, featCallback int) *ast.CommentGroup {
+	return directiveCallback(p.docComments(decl), featCallback)
+}
+
+func directiveCallback(doc []*ast.Comment, featCallback int) *ast.CommentGroup {
+	var directive string
+	switch featCallback {
+	case 0:
+		return docCommentGroup(doc)
+	case featHasCdeclCallback:
+		directive = "\n//llgo:cdecl"
+	case featHasStdcallCallback:
+		directive = "\n//llgo:stdcall"
+	default:
+		log.Panicln("unexpected callback directive:", featCallback)
 	}
-	return p.docCommentGroup(decl)
+	return directiveComments(doc, directive)
 }
 
 // -----------------------------------------------------------------------------

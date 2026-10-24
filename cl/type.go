@@ -100,12 +100,14 @@ func newPointer(ctx *pkgCtx, typ types.Type) types.Type {
 }
 
 const (
-	featHasCallback = 1 << iota
+	featHasCdeclCallback = 1 << iota
+	featHasStdcallCallback
 	featExplicitIgnore
 	featQuietIgnore
 	featUncompleted // this type is not fully implemented
 
-	featAllIgnore = featExplicitIgnore | featQuietIgnore
+	featAllCallback = featHasCdeclCallback | featHasStdcallCallback
+	featAllIgnore   = featExplicitIgnore | featQuietIgnore
 )
 
 const (
@@ -159,7 +161,6 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	case lc.Type_Pointer:
 		elem := typ.Pointee()
 		if elem.Kind == lc.Type_FunctionProto {
-			*feats |= featHasCallback
 			return toFuncType(ctx, pkg, elem, feats)
 		}
 		// flagIsParam only governs the outermost type of a parameter, so clear
@@ -173,7 +174,6 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
 		return newPointer(ctx, pointee)
 	case lc.Type_FunctionProto:
-		*feats |= featHasCallback
 		return toFuncType(ctx, pkg, typ, feats)
 	case lc.Type_Enum, lc.Type_Record, lc.Type_Typedef:
 		if t, ok := namedType(ctx, typ, feats); ok {
@@ -338,6 +338,12 @@ func templateInstType(ctx *pkgCtx, typ lc.Type, spelling string, feats *int, sco
 }
 
 func toFuncType(ctx *pkgCtx, pkg *types.Package, fn lc.Type, feats *int) *types.Signature {
+	switch fn.FunctionTypeCallingConv() {
+	case lc.CallingConv_X86StdCall:
+		*feats |= featHasStdcallCallback
+	default:
+		*feats |= featHasCdeclCallback
+	}
 	params, variadic := toFuncParams(ctx, pkg, fn, feats, nil)
 	results := toFuncResults(ctx, pkg, fn.Result(), feats, nil)
 	return types.NewSignatureType(nil, nil, nil, params, results, variadic)
