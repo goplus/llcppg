@@ -518,6 +518,24 @@ func (p *pkgCtx) typeAliasOf(name string) (ret types.Type, found bool) {
 	return
 }
 
+// isConfTypeAliased reports whether cName has a non-empty TypeAlias entry in the
+// config. A record declaration (struct/union/class) for such a name must be
+// skipped during preload: the configured alias already owns the Go name, so
+// emitting the original declaration too would redeclare it in the package scope.
+// The typedef path (loadTypedef) is intercepted by typeAliasOf for the same
+// reason; this check covers the record that shares the C name. See issue
+// goplus/llcppg#1097.
+//
+// Unlike loadTypedef, which only returns early once typeAliasOf resolves the
+// alias target, this reports the presence of the config entry alone: a record
+// whose alias target is misconfigured (not resolvable) is still skipped rather
+// than falling back to the original declaration. typeAliasOf logs a [WARN] in
+// that case, so the misconfiguration is still surfaced.
+func (p *pkgCtx) isConfTypeAliased(cName string) bool {
+	newName, ok := p.typeAlias[cName]
+	return ok && newName != ""
+}
+
 func (p *pkgCtx) isMacroIgnored(cName string) bool {
 	return contains(cName, p.macroIgnore)
 }
