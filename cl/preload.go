@@ -377,6 +377,12 @@ func isPublic(decl clang.Cursor) bool {
 
 func preloadUnion(ctx *pkgCtx, decl clang.Cursor) {
 	cName := cNameOf(decl)
+	if ctx.isConfTypeAliased(cName) {
+		// A TypeAlias is configured for this name; the alias owns the Go name
+		// (declared lazily by typeAliasOf), so skip the original declaration to
+		// avoid a redeclaration. See issue goplus/llcppg#1097.
+		return
+	}
 	isDef := ctx.declareType(cName, decl)
 	if isDef {
 		ctx.addLoadUnit(func(ctx *pkgCtx) {
@@ -387,6 +393,12 @@ func preloadUnion(ctx *pkgCtx, decl clang.Cursor) {
 
 func preloadClass(ctx *pkgCtx, scope *scopeCtx, cls clang.Cursor) {
 	cName := cNameOf(cls)
+	if ctx.isConfTypeAliased(cName) {
+		// A TypeAlias is configured for this name; the alias owns the Go name
+		// (declared lazily by typeAliasOf), so skip the original declaration to
+		// avoid a redeclaration. See issue goplus/llcppg#1097.
+		return
+	}
 	if cls.NumTemplateArguments() >= 0 { // note: -1 means not a template class
 		scope.addOverloadObj(ctx, cName, cls)
 		return
