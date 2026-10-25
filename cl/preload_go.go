@@ -20,6 +20,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"log"
 	"strconv"
 )
 
@@ -51,14 +52,36 @@ func loadGoFile(ctx *pkgCtx, pkg *types.Package, scope *types.Scope, f *ast.File
 			case token.IMPORT:
 				for _, spec := range d.Specs {
 					imp := spec.(*ast.ImportSpec)
-					name := imp.Name
-					path := toString(ctx, imp.Path, "invalid import path")
-					pkgName := types.NewPkgName(name.Pos(), pkg, name.Name, ctx.importPkg(path))
-					insertObj(ctx, scope, pkgName)
+					loadGoImportSpec(ctx, pkg, scope, imp)
 				}
 			}
 		}
 	}
+}
+
+func loadGoImportSpec(ctx *pkgCtx, pkg *types.Package, scope *types.Scope, imp *ast.ImportSpec) {
+	path := toString(ctx, imp.Path, "invalid import path")
+	if path == "" {
+		return
+	}
+
+	imported := ctx.importPkg(path)
+	if imported == nil {
+		return
+	}
+
+	var pos token.Pos
+	var name string
+	if v := imp.Name; v != nil {
+		pos, name = v.Pos(), v.Name
+		if name == "_" || name == "." {
+			return
+		}
+	} else {
+		pos, name = imp.Path.Pos(), imported.Name()
+	}
+	pkgName := types.NewPkgName(pos, pkg, name, imported)
+	insertObj(ctx, scope, pkgName)
 }
 
 func loadGoType(ctx *pkgCtx, pkg *types.Package, scope *types.Scope, t *ast.TypeSpec) {
@@ -107,7 +130,7 @@ func newGoType(ctx *pkgCtx, pkg *types.Package, pos token.Pos, name string) *typ
 func goType(ctx *pkgCtx, scope *types.Scope, typ ast.Expr) (t types.Type) {
 	ret, err := tryType(ctx, scope, typ)
 	if err != nil {
-		ctx.npErrorf("%v\n", err)
+		log.Println(err)
 		return types.Typ[types.Invalid]
 	}
 	return ret
@@ -124,7 +147,7 @@ func tryType(ctx *pkgCtx, scope *types.Scope, typ ast.Expr) (t types.Type, _ err
 		}
 		return types.NewPointer(elem), nil
 	case *ast.StructType:
-		return goStructType(ctx, scope, v), nil
+		return tryStructType(ctx, scope, v)
 	case *ast.SelectorExpr:
 		return tryExternalType(ctx, scope, v)
 	case *ast.ArrayType:
@@ -155,18 +178,21 @@ func goArrayType(ctx *pkgCtx, scope *types.Scope, v *ast.ArrayType) types.Type {
 	return types.NewArray(elem, toInt64(ctx, v.Len, "non-constant array bound"))
 }
 
-func goStructType(ctx *pkgCtx, scope *types.Scope, v *ast.StructType) *types.Struct {
+func tryStructType(ctx *pkgCtx, scope *types.Scope, v *ast.StructType) (typ *types.Struct, err error) {
 	pkg := ctx.pkg.Types
 	fieldList := v.Fields.List
 	fields := make([]*types.Var, 0, len(fieldList))
 	for _, field := range fieldList {
+		if len(field.Names) == 0 {
+			return nil, ctx.newCodeErrorf(field.Pos(), field.End(), "embedded fields are not supported")
+		}
 		typ := goType(ctx, scope, field.Type)
 		for _, name := range field.Names {
 			fld := types.NewField(name.NamePos, pkg, name.Name, typ, false)
 			fields = append(fields, fld)
 		}
 	}
-	return types.NewStruct(fields, nil)
+	return types.NewStruct(fields, nil), nil
 }
 
 func tryExternalType(ctx *pkgCtx, scope *types.Scope, v *ast.SelectorExpr) (typ types.Type, err error) {
