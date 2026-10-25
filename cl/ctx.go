@@ -244,6 +244,12 @@ func (p *pkgCtx) npErrorf(format string, args ...any) {
 	p.checkFailFast()
 }
 
+func (p *pkgCtx) goErrorf(pos, end token.Pos, format string, args ...any) {
+	p.errCnt++
+	log.Println(p.newCodeErrorf(pos, end, format, args...))
+	p.checkFailFast()
+}
+
 func (p *pkgCtx) exLogf[nodeT nodeCursor](decl nodeT, format string, args ...any) {
 	pos := decl.Position(p)
 	log.Printf("%s: %s", pos, fmt.Sprintf(format, args...))
@@ -268,6 +274,10 @@ func (p *pkgCtx) panicf(decl clang.Cursor, format string, args ...any) {
 
 func (p *pkgCtx) errorf(decl clang.Cursor, format string, args ...any) {
 	p.exErrorf(clangNode{decl}, format, args...)
+}
+
+func (p *pkgCtx) newCodeErrorf(pos, end token.Pos, format string, args ...any) error {
+	return &gogen.CodeError{Fset: p.fset, Pos: pos, End: end, Msg: fmt.Sprintf(format, args...)}
 }
 
 func (p *pkgCtx) logtf(typ lc.Type, format string, args ...any) {

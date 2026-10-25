@@ -20,16 +20,196 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
-	"log"
+	"strconv"
 )
 
+// -----------------------------------------------------------------------------
+
 func loadGoFiles(ctx *pkgCtx, goFiles map[string]*ast.File) {
+	if len(goFiles) == 0 {
+		return
+	}
+	pkg := ctx.pkg
+	pkgTypes := pkg.Types
+	for goFile, f := range goFiles {
+		pkg.SetCurFile(goFile, true)
+		fileScope := types.NewScope(pkgTypes.Scope(), f.Pos(), f.End(), goFile)
+		loadGoFile(ctx, pkgTypes, fileScope, f)
+	}
 }
 
-func newGoType(pkg *types.Package, pos token.Pos, name string) *types.Named {
-	typName := types.NewTypeName(pos, pkg, name, nil)
-	if old := pkg.Scope().Insert(typName); old != nil {
-		log.Panicf("%s redeclared in this block\n\tprevious declaration at %v\n", name, "<TODO>")
+func loadGoFile(ctx *pkgCtx, pkg *types.Package, scope *types.Scope, f *ast.File) {
+	for _, decl := range f.Decls {
+		switch d := decl.(type) {
+		case *ast.GenDecl:
+			switch d.Tok {
+			case token.TYPE:
+				for _, spec := range d.Specs {
+					t := spec.(*ast.TypeSpec)
+					loadGoType(ctx, pkg, scope, t)
+				}
+			case token.IMPORT:
+				for _, spec := range d.Specs {
+					imp := spec.(*ast.ImportSpec)
+					name := imp.Name
+					path := toString(ctx, imp.Path, "invalid import path")
+					pkgName := types.NewPkgName(name.Pos(), pkg, name.Name, ctx.importPkg(path))
+					insertObj(ctx, scope, pkgName)
+				}
+			}
+		}
 	}
+}
+
+func loadGoType(ctx *pkgCtx, pkg *types.Package, scope *types.Scope, t *ast.TypeSpec) {
+	tName := t.Name
+	name := tName.Name
+	if t.Assign != token.NoPos { // alias type
+		if t.TypeParams != nil {
+			return // NOTE(xsw): doesn't support type parameters
+		}
+		ctx.addLoadUnit(func(ctx *pkgCtx) {
+			aliasGoType(ctx, pkg, t.Pos(), name, goType(ctx, scope, t.Type))
+		})
+		return
+	}
+	named := newGoType(ctx, pkg, t.Pos(), name)
+	ctx.addLoadUnit(func(ctx *pkgCtx) {
+		typ := goType(ctx, scope, t.Type)
+		named.SetUnderlying(typ.Underlying())
+	})
+}
+
+func insertObj(ctx *pkgCtx, scope *types.Scope, obj types.Object) {
+	if old := scope.Insert(obj); old != nil {
+		pos, name := obj.Pos(), obj.Name()
+		prev := ctx.fset.Position(old.Pos())
+		ctx.goErrorf(
+			pos, pos+token.Pos(len(name)),
+			"%s redeclared in this block\n\tprevious declaration at %v\n", name, prev)
+	}
+}
+
+func aliasGoType(ctx *pkgCtx, pkg *types.Package, pos token.Pos, name string, under types.Type) *types.Alias {
+	typName := types.NewTypeName(pos, pkg, name, nil)
+	insertObj(ctx, pkg.Scope(), typName)
+	return types.NewAlias(typName, under)
+}
+
+func newGoType(ctx *pkgCtx, pkg *types.Package, pos token.Pos, name string) *types.Named {
+	typName := types.NewTypeName(pos, pkg, name, nil)
+	insertObj(ctx, pkg.Scope(), typName)
 	return types.NewNamed(typName, nil, nil)
 }
+
+// -----------------------------------------------------------------------------
+
+func goType(ctx *pkgCtx, scope *types.Scope, typ ast.Expr) (t types.Type) {
+	ret, err := tryType(ctx, scope, typ)
+	if err != nil {
+		ctx.npErrorf("%v\n", err)
+		return types.Typ[types.Invalid]
+	}
+	return ret
+}
+
+func tryType(ctx *pkgCtx, scope *types.Scope, typ ast.Expr) (t types.Type, _ error) {
+	switch v := typ.(type) {
+	case *ast.Ident:
+		return tryIdentType(ctx, scope, v)
+	case *ast.StarExpr:
+		elem, err := tryType(ctx, scope, v.X)
+		if err != nil {
+			return nil, err
+		}
+		return types.NewPointer(elem), nil
+	case *ast.StructType:
+		return goStructType(ctx, scope, v), nil
+	case *ast.SelectorExpr:
+		return tryExternalType(ctx, scope, v)
+	case *ast.ArrayType:
+		return goArrayType(ctx, scope, v), nil
+	case *ast.ParenExpr:
+		return tryType(ctx, scope, v.X)
+	default:
+		return nil, ctx.newCodeErrorf(v.Pos(), v.End(), "goType unexpected: %T", v)
+	}
+}
+
+func tryIdentType(ctx *pkgCtx, scope *types.Scope, ident *ast.Ident) (typ types.Type, err error) {
+	_, o := scope.LookupParent(ident.Name, token.NoPos)
+	if o != nil {
+		if t, ok := o.(*types.TypeName); ok {
+			return t.Type(), nil
+		}
+	}
+	err = ctx.newCodeErrorf(ident.Pos(), ident.End(), "%s is not a type", ident.Name)
+	return
+}
+
+func goArrayType(ctx *pkgCtx, scope *types.Scope, v *ast.ArrayType) types.Type {
+	elem := goType(ctx, scope, v.Elt)
+	if v.Len == nil {
+		return types.NewSlice(elem)
+	}
+	return types.NewArray(elem, toInt64(ctx, v.Len, "non-constant array bound"))
+}
+
+func goStructType(ctx *pkgCtx, scope *types.Scope, v *ast.StructType) *types.Struct {
+	pkg := ctx.pkg.Types
+	fieldList := v.Fields.List
+	fields := make([]*types.Var, 0, len(fieldList))
+	for _, field := range fieldList {
+		typ := goType(ctx, scope, field.Type)
+		for _, name := range field.Names {
+			fld := types.NewField(name.NamePos, pkg, name.Name, typ, false)
+			fields = append(fields, fld)
+		}
+	}
+	return types.NewStruct(fields, nil)
+}
+
+func tryExternalType(ctx *pkgCtx, scope *types.Scope, v *ast.SelectorExpr) (typ types.Type, err error) {
+	id, ok := v.X.(*ast.Ident)
+	if !ok {
+		return nil, ctx.newCodeErrorf(v.Pos(), v.End(), "not a type")
+	}
+	if pkgName, ok := scope.Lookup(id.Name).(*types.PkgName); ok {
+		o := pkgName.Imported().Scope().Lookup(v.Sel.Name)
+		if t, ok := o.(*types.TypeName); ok {
+			return t.Type(), nil
+		}
+	}
+	return nil, ctx.newCodeErrorf(v.Pos(), v.End(), "%s.%s is not a type", id.Name, v.Sel.Name)
+}
+
+// -----------------------------------------------------------------------------
+
+func toInt64(ctx *pkgCtx, e ast.Expr, prompt string) int64 {
+	switch e := e.(type) {
+	case *ast.BasicLit:
+		if e.Kind == token.INT {
+			i, err := strconv.ParseInt(e.Value, 10, 64)
+			if err == nil {
+				return i
+			}
+		}
+		ctx.goErrorf(e.Pos(), e.End(), "%s: %s", prompt, e.Value)
+	default:
+		ctx.goErrorf(e.Pos(), e.End(), "%s", prompt)
+	}
+	return -1
+}
+
+func toString(ctx *pkgCtx, l *ast.BasicLit, prompt string) string {
+	if l.Kind == token.STRING {
+		s, err := strconv.Unquote(l.Value)
+		if err == nil {
+			return s
+		}
+	}
+	ctx.goErrorf(l.Pos(), l.End(), "%s: %s", prompt, l.Value)
+	return ""
+}
+
+// -----------------------------------------------------------------------------
