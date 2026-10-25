@@ -18,6 +18,9 @@ package tool
 
 import (
 	"encoding/json"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 
@@ -40,6 +43,10 @@ type Config struct {
 
 	// selected header files relative to Dir; overrides auto-discovery, optional.
 	Files []string `json:"Files"`
+
+	// GoFiles — mixing hand-written and generated Go code (optional).
+	// See https://github.com/xgo-dev/llcppg/issues/1100.
+	GoFiles []string
 
 	// C stdlib include dir, optional
 	Stdlib string `json:"Stdlib"`
@@ -92,7 +99,7 @@ type Config struct {
 
 	// MethodPrefix specifies a literal prefix to remove from the names of methods associated
 	// with a Go type (optional). The key is the Go type name and the value is the prefix in
-	// the original C/C++ function name. See https://github.com/goplus/llcppg/issues/1061.
+	// the original C/C++ function name. See https://github.com/xgo-dev/llcppg/issues/1061.
 	MethodPrefix map[string]string `json:"MethodPrefix"`
 
 	// TypePrefix/TypeSuffix specifies the prefix/suffix to remove from C/C++ type names
@@ -142,7 +149,7 @@ type Config struct {
 	// function declared in the processed headers (optional). Each listed macro is
 	// wrapped as a function the same way static inline functions are: llcppg emits
 	// a C wrapper whose body invokes the macro, and a Go declaration linking to it.
-	// See https://github.com/goplus/llcppg/issues/1051.
+	// See https://github.com/xgo-dev/llcppg/issues/1051.
 	MacroFunc map[string]string `json:"MacroFunc"`
 
 	// MacroGroup declares groups of related constant macros emitted together as a
@@ -153,7 +160,7 @@ type Config struct {
 	// renaming. The first and last macro must live in the same header file: a
 	// range that crosses a header boundary is a configuration error. Configured
 	// groups take priority over automatic detection.
-	// See https://github.com/goplus/llcppg/issues/1064.
+	// See https://github.com/xgo-dev/llcppg/issues/1064.
 	MacroGroup map[string]string `json:"MacroGroup"`
 
 	// NSIgnore specifies a list of C/C++ namespaces to be ignored (optional).
@@ -251,6 +258,26 @@ func (cfg *Config) StdlibDirs(workDir string) []string {
 		stdlibDirs = cstdlib.Dirs()
 	}
 	return stdlibDirs
+}
+
+// -----------------------------------------------------------------------------
+
+// LoadGoFiles loads Go source files from the specified directory and returns a map
+// of file names to AST files.
+func LoadGoFiles(fset *token.FileSet, dir string, goFiles []string, mode parser.Mode) (map[string]*ast.File, error) {
+	if len(goFiles) == 0 {
+		return nil, nil
+	}
+	ret := make(map[string]*ast.File, len(goFiles))
+	for _, fname := range goFiles {
+		file := filepath.Join(dir, fname)
+		f, e := parser.ParseFile(fset, file, nil, mode)
+		if e != nil {
+			return nil, e
+		}
+		ret[fname] = f
+	}
+	return ret, nil
 }
 
 // -----------------------------------------------------------------------------

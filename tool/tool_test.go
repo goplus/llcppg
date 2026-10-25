@@ -25,6 +25,25 @@ import (
 	"github.com/goplus/llcppg/tool"
 )
 
+func TestNewPackage(t *testing.T) {
+	idx := clang.CreateIndex(1, 1)
+	cfg := tool.Config{}
+	_, _, err := cfg.NewPackage("", "foo", ".", ".", idx)
+	if err == nil || err.Error() != `invalid language: ""` {
+		t.Fatal("cfg.NewPackage:", err)
+	}
+
+	cfg = tool.Config{
+		Language: "c",
+		Dir:      ".",
+		GoFiles:  []string{"unknown.go"},
+	}
+	_, _, err = cfg.NewPackage("", "foo", ".", ".", idx)
+	if err == nil || err.Error() != `open unknown.go: no such file or directory` {
+		t.Fatal("cfg.NewPackage:", err)
+	}
+}
+
 func TestPubImportNamingConfiguration(t *testing.T) {
 	pkgDir, err := filepath.Abs("_testc/clang-c-22.1.8")
 	if err != nil {

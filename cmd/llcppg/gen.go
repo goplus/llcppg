@@ -145,7 +145,7 @@ func genPkg(destDir, srcDir, mainPkgName string, index clang.Index, defines []cl
 		return
 	}
 
-	pkg, _, err := cfg.NewPackage("", pkgName, srcDir, index, defines...)
+	pkg, _, err := cfg.NewPackage("", pkgName, destDir, srcDir, index, defines...)
 	if err != nil {
 		return
 	}

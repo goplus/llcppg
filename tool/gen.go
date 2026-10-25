@@ -18,6 +18,7 @@ package tool
 
 import (
 	"fmt"
+	"go/parser"
 	"go/token"
 	"log"
 	"os"
@@ -70,7 +71,7 @@ const includeSuffix = string(os.PathSeparator) + "include"
 
 // NewPackage loads the source files and converts them into a Go package according to the
 // configuration.
-func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Index, defines ...cl.ConstDef) (ret cl.Package, lang cl.Language, err error) {
+func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index clang.Index, defines ...cl.ConstDef) (ret cl.Package, lang cl.Language, err error) {
 	lang, ok := cfg.Lang()
 	if !ok {
 		err = fmt.Errorf("invalid language: %q", cfg.Language)
@@ -98,6 +99,12 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 	stdlibDirs := cfg.StdlibDirs(workDir)
 	if debugSettings {
 		log.Println("==> stdlibDirs:", stdlibDirs)
+	}
+
+	fset := token.NewFileSet()
+	goFiles, err := LoadGoFiles(fset, destDir, cfg.GoFiles, parser.AllErrors)
+	if err != nil {
+		return
 	}
 
 	const (
@@ -132,7 +139,6 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		incDirs = append(incDirs, stdlibDir)
 	}
 
-	fset := token.NewFileSet()
 	imp := packages.NewImporter(fset, workDir)
 
 	c := cache.New(pkgHash)
@@ -202,6 +208,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, workDir string, index clang.Inde
 		Define:          defines,
 		LLGoPackage:     cfg.LLGoPackage,
 		Language:        lang,
+		GoFiles:         goFiles,
 		CFlags:          cfg.CFlags,
 		Class:           cfg.Class,
 		NonClass:        cfg.NonClass,

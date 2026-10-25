@@ -18,8 +18,10 @@ package cl
 
 import (
 	"fmt"
+	"go/ast"
 	"go/token"
 	"go/types"
+	"log"
 	"maps"
 
 	"github.com/goplus/gogen"
@@ -100,6 +102,10 @@ type Config struct {
 	// Go package (optional).
 	LLGoPackage string
 
+	// GoFiles provides the Go source files by filename, mixing hand-written and generated
+	// Go code (optional). See https://github.com/xgo-dev/llcppg/issues/1100.
+	GoFiles map[string]*ast.File
+
 	// Language specifies the programming language of the header file (default LanguageC).
 	Language Language
 
@@ -143,7 +149,7 @@ type Config struct {
 	// a C wrapper whose body invokes the macro, and a Go declaration linking to it.
 	// The reference function supplies the wrapper's return type and the parameter
 	// types (matched to the macro's parameters by name, then by position).
-	// See https://github.com/goplus/llcppg/issues/1051.
+	// See https://github.com/xgo-dev/llcppg/issues/1051.
 	MacroFunc map[string]string
 
 	// MacroGroup declares groups of related constant macros that are emitted
@@ -155,7 +161,7 @@ type Config struct {
 	// header file: a range that crosses a header boundary is a configuration
 	// error. Configured groups take priority over automatic detection, which
 	// groups runs of adjacent constant macros of the same type.
-	// See https://github.com/goplus/llcppg/issues/1064.
+	// See https://github.com/xgo-dev/llcppg/issues/1064.
 	MacroGroup map[string]string
 
 	// TypeIgnore specifies a list of C/C++ type names to be ignored (optional).
@@ -195,7 +201,7 @@ type Config struct {
 
 	// MethodPrefix specifies a literal prefix to remove from the names of methods associated
 	// with a Go type (optional). The key is the Go type name and the value is the prefix in
-	// the original C/C++ function name. See https://github.com/goplus/llcppg/issues/1061.
+	// the original C/C++ function name. See https://github.com/xgo-dev/llcppg/issues/1061.
 	MethodPrefix map[string]string
 
 	// EnumPrefix specifies the prefix to remove from C/C++ enum value names when generating
@@ -354,7 +360,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		ctx.c = pkg.Import(libcPkgPath)
 	}
 
-	loadFiles(ctx, files, pkgPath, conf.GoFileOf)
+	loadFiles(ctx, files, pkgPath, conf.GoFileOf, conf.GoFiles)
+	loadGoFiles(ctx, conf.GoFiles)
 	loadTypeDefs(ctx, conf.TypeDef)
 
 	ctx.compile()
@@ -395,7 +402,7 @@ func loadTypeDefs(ctx *pkgCtx, typeDefs map[string][]TypeDef) {
 	}
 }
 
-func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(headerFile string) (string, bool)) {
+func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(headerFile string) (string, bool), goFiles map[string]*ast.File) {
 	pkg := ctx.pkg
 	pkgOf := ctx.pkgOf
 	scope := &ctx.scopeCtx
@@ -417,6 +424,9 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 					fname, ok := goFileOf(at)
 					if !ok {
 						return clang.Continue
+					}
+					if _, ok := goFiles[fname]; ok {
+						log.Panicf("Go file %s already exists in `GoFiles`\n", fname)
 					}
 					pkg.SetCurFile(fname, true)
 				}
