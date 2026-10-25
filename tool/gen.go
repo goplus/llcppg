@@ -101,7 +101,8 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 		log.Println("==> stdlibDirs:", stdlibDirs)
 	}
 
-	goFiles, err := LoadGoFiles(destDir, cfg.GoFiles, parser.AllErrors)
+	fset := token.NewFileSet()
+	goFiles, err := LoadGoFiles(fset, destDir, cfg.GoFiles, parser.AllErrors)
 	if err != nil {
 		return
 	}
@@ -138,7 +139,6 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 		incDirs = append(incDirs, stdlibDir)
 	}
 
-	fset := token.NewFileSet()
 	imp := packages.NewImporter(fset, workDir)
 
 	c := cache.New(pkgHash)

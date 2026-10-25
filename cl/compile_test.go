@@ -18,7 +18,9 @@ package cl_test
 
 import (
 	"bytes"
+	"go/ast"
 	"go/parser"
+	"go/token"
 	"log"
 	"maps"
 	"os"
@@ -79,10 +81,15 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 			srcFiles = []string{"in.h"}
 		}
 
-		goFiles, err := tool.LoadGoFiles(pkgDir, conf.GoFiles, parser.AllErrors)
-		if err != nil {
-			t.Error("LoadGoFiles failed:", err)
-			return
+		var fset *token.FileSet
+		var goFiles map[string]*ast.File
+		if len(conf.GoFiles) != 0 {
+			fset = token.NewFileSet()
+			goFiles, err = tool.LoadGoFiles(fset, pkgDir, conf.GoFiles, parser.AllErrors)
+			if err != nil {
+				t.Error("LoadGoFiles failed:", err)
+				return
+			}
 		}
 
 		var mod tool.Module
@@ -128,6 +135,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 		}
 
 		pkg, err := cl.NewPackage(pkgPrefix+myPkgName, fakePkgName, files, &cl.Config{
+			Fset:            fset,
 			Importer:        imp,
 			Define:          defines,
 			LLGoPackage:     conf.LLGoPackage,

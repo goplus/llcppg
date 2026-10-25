@@ -213,7 +213,7 @@ func doAliasType(ctx *pkgCtx, cName string, tunder types.Type, scope *scopeCtx, 
 			typDefs.SetComments(doc)
 		}
 	}
-	t := typDefs.NewType(goName, tparams).AliasType(ctx.pkg, tunder)
+	t := typDefs.NewType(goName, tparams, goNode(ctx, decl)).AliasType(ctx.pkg, tunder)
 	obj := t.Obj()
 	ctx.types[cName] = typeObj{obj, 0}
 	ctx.aliasTypeName(cName, goName)
@@ -270,6 +270,9 @@ func (p *pkgCtx) aliasType(name, alias string, decl clang.Cursor) (ret types.Typ
 	}
 	tunder, found := p.goTypeOf(alias, scope)
 	if found {
+		if alias[0] == '.' && alias[1:] == name {
+			return tunder, true
+		}
 		ret = doAliasType(p, name, tunder, scope, decl)
 	}
 	return

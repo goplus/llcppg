@@ -1,3 +1,5 @@
+#define RLAPI
+
 // Color, 4 components, R8G8B8A8 (32bit)
 typedef struct Color {
     unsigned char r;        // Color red value
@@ -35,3 +37,5 @@ typedef struct Color {
 #define BLANK      CLITERAL(Color){ 0, 0, 0, 0 }           // Blank (Transparent)
 #define MAGENTA    CLITERAL(Color){ 255, 0, 255, 255 }     // Magenta
 #define RAYWHITE   CLITERAL(Color){ 245, 245, 245, 255 }   // My own White (raylib logo)
+
+RLAPI Color ColorAlpha(Color color, float alpha);          // Get color with alpha applied, alpha goes from 0.0f to 1.0f
