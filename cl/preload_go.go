@@ -67,6 +67,7 @@ func loadGoImportSpec(ctx *pkgCtx, pkg *types.Package, scope *types.Scope, imp *
 
 	pkgImp := ctx.pkg.TryImport(path)
 	if pkgImp.Types == nil {
+		ctx.goErrorf(imp.Pos(), imp.End(), "package \"%s\" not found", path)
 		return
 	}
 	imported := pkgImp.Types

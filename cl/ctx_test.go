@@ -17,9 +17,55 @@
 package cl
 
 import (
+	"go/ast"
+	"go/constant"
+	"go/token"
+	"go/types"
 	"strings"
 	"testing"
+
+	"github.com/goplus/gogen"
 )
+
+func newPkgCtx() *pkgCtx {
+	return &pkgCtx{
+		pkg: gogen.NewPackage("", "foo", nil),
+	}
+}
+
+func Test_loadGoImportSpec(t *testing.T) {
+	ctx := newPkgCtx()
+	pkgTypes := ctx.pkg.Types
+	loadGoImportSpec(ctx, pkgTypes, pkgTypes.Scope(), &ast.ImportSpec{
+		Path: &ast.BasicLit{
+			Kind:  token.STRING,
+			Value: `"fmt`,
+		},
+	})
+	if ctx.errCnt != 1 {
+		t.Fatalf("expected 1 error, got %d", ctx.errCnt)
+	}
+	loadGoImportSpec(ctx, pkgTypes, pkgTypes.Scope(), &ast.ImportSpec{
+		Path: &ast.BasicLit{
+			Kind:  token.STRING,
+			Value: `"unknown"`,
+		},
+	})
+	if ctx.errCnt != 2 {
+		t.Fatalf("expected 2 errors, got %d", ctx.errCnt)
+	}
+}
+
+func Test_insertObj(t *testing.T) {
+	ctx := newPkgCtx()
+	pkgTypes := ctx.pkg.Types
+	scope := pkgTypes.Scope()
+	insertObj(ctx, scope, types.NewConst(0, pkgTypes, "bar", nil, constant.MakeInt64(0)))
+	insertObj(ctx, scope, types.NewConst(0, pkgTypes, "bar", nil, constant.MakeInt64(1)))
+	if ctx.errCnt != 1 {
+		t.Fatalf("expected 1 error, got %d", ctx.errCnt)
+	}
+}
 
 func Test_npErrorf(t *testing.T) {
 	defer func() {

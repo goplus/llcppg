@@ -51,3 +51,10 @@ type Foo struct {
 type Point3D struct {
 	X [3](float64)
 }
+
+type FooT[T any] struct {
+	Foo
+	Value T
+}
+
+type BarT[T any] = FooT[T]
