@@ -64,7 +64,7 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 	testDiff(t, dir, "/out.go.txt", &b, exp)
 }
 
-func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile ...bool) {
+func testFromDir(t *testing.T, sel, relDir string, srcLang cl.Language, genPubFile ...bool) {
 	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
 
@@ -105,6 +105,7 @@ func testFromDir(t *testing.T, sel, relDir string, lang cl.Language, genPubFile 
 		const pkgPrefix = "testcl/"
 		rootDir, myPkgName := filepath.Split(pkgDir)
 		imp := packages.NewImporter(nil, rootDir)
+		lang := srcLang
 		if myPkgName == "cxx" { // as a special case for C++ tests
 			lang = cl.LanguageCXX
 		}

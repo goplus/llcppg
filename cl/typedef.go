@@ -268,9 +268,11 @@ func (p *pkgCtx) aliasType(name, alias string, decl clang.Cursor) (ret types.Typ
 		alias = strings.TrimLeft(alias, " \t")
 		scope = &scopeCtx{tparams: p.goTypeParams(typParams)}
 	}
-	tunder, found := p.goTypeOf(alias, scope)
+	tunder, tuobj, found := p.goTypeOfEx(alias, scope)
 	if found {
 		if alias[0] == '.' && alias[1:] == name {
+			p.types[name] = typeObj{tuobj, 0}
+			p.addPublicType(name)
 			return tunder, true
 		}
 		ret = doAliasType(p, name, tunder, scope, decl)

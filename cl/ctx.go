@@ -478,6 +478,11 @@ func (p *pkgCtx) goTypeParams(typParams string) []*types.TypeParam {
 }
 
 func (p *pkgCtx) goTypeOf(alias string, scope *scopeCtx) (ret types.Type, found bool) {
+	ret, _, found = p.goTypeOfEx(alias, scope)
+	return
+}
+
+func (p *pkgCtx) goTypeOfEx(alias string, scope *scopeCtx) (ret types.Type, obj *types.TypeName, found bool) {
 	typArgs := ""
 	if alias[len(alias)-1] == ']' { // has typeArgs
 		pos := strings.IndexByte(alias, '[')
