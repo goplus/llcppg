@@ -1,8 +1,16 @@
 package foo
 
+import (
+	_ "unsafe"
+
+	"github.com/goplus/lib/c"
+)
+
+type FloatPtr = *c.Float
+
 // Color, 4 components, R8G8B8A8 (32bit)
 // R, G, B, A uint8
-type Color uint32
+type Color c.Uint
 
 const (
 	LIGHTGRAY = Color(200 | 200<<8 | 200<<16 | 255<<24) // Light Gray
@@ -34,3 +42,12 @@ const (
 	MAGENTA  = Color(255 | 0<<8 | 255<<16 | 255<<24)   // Magenta
 	RAYWHITE = Color(245 | 245<<8 | 245<<16 | 255<<24) // My own White (raylib logo)
 )
+
+type Foo struct {
+	color Color
+	FloatPtr
+}
+
+type Point3D struct {
+	X [3](float64)
+}

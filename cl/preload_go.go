@@ -65,10 +65,11 @@ func loadGoImportSpec(ctx *pkgCtx, pkg *types.Package, scope *types.Scope, imp *
 		return
 	}
 
-	imported := ctx.importPkg(path)
-	if imported == nil {
+	pkgImp := ctx.pkg.TryImport(path)
+	if pkgImp.Types == nil {
 		return
 	}
+	imported := pkgImp.Types
 
 	var pos token.Pos
 	var name string
