@@ -1,4 +1,4 @@
-package foo
+package raylib
 
 import "github.com/goplus/lib/c"
 

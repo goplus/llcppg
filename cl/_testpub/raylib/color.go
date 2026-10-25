@@ -1,4 +1,4 @@
-package foo
+package raylib
 
 import (
 	_ "unsafe"
