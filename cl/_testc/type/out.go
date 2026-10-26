@@ -32,7 +32,7 @@ func Primitives(ch c.Char, uc uint8, sc int8, s int16, us uint16, i c.Int, ui c.
 
 // An enum value passed and returned by value.
 //
-// llgo:link Color.Pick C.pick
+//llgo:link Color.Pick C.pick
 func (c Color) Pick() Color {
 	return c
 }

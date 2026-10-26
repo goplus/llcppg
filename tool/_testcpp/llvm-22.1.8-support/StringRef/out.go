@@ -57,7 +57,7 @@ func ConsumeSignedInteger(Str *StringRef, Radix c.Uint, Result *c.LongLong) bool
 
 // Compare two strings, ignoring case.
 //
-// llgo:link (*StringRef).CompareInsensitive C._ZNK4llvm9StringRef19compare_insensitiveES0_
+//llgo:link (*StringRef).CompareInsensitive C._ZNK4llvm9StringRef19compare_insensitiveES0_
 func (this *StringRef) CompareInsensitive(RHS StringRef) c.Int {
 	return 0
 }
@@ -65,7 +65,7 @@ func (this *StringRef) CompareInsensitive(RHS StringRef) c.Int {
 // compare_numeric - Compare two strings, treating sequences of digits as
 // numbers.
 //
-// llgo:link (*StringRef).CompareNumeric C._ZNK4llvm9StringRef15compare_numericES0_
+//llgo:link (*StringRef).CompareNumeric C._ZNK4llvm9StringRef15compare_numericES0_
 func (this *StringRef) CompareNumeric(RHS StringRef) c.Int {
 	return 0
 }
@@ -89,26 +89,26 @@ func (this *StringRef) CompareNumeric(RHS StringRef) c.Int {
 // transform one of the given strings into the other. If zero,
 // the strings are identical.
 //
-// llgo:link (*StringRef).EditDistance C._ZNK4llvm9StringRef13edit_distanceES0_bj
+//llgo:link (*StringRef).EditDistance C._ZNK4llvm9StringRef13edit_distanceES0_bj
 func (this *StringRef) EditDistance(Other StringRef, AllowReplacements bool, MaxEditDistance c.Uint) c.Uint {
 	return 0
 }
 
-// llgo:link (*StringRef).EditDistanceInsensitive C._ZNK4llvm9StringRef25edit_distance_insensitiveES0_bj
+//llgo:link (*StringRef).EditDistanceInsensitive C._ZNK4llvm9StringRef25edit_distance_insensitiveES0_bj
 func (this *StringRef) EditDistanceInsensitive(Other StringRef, AllowReplacements bool, MaxEditDistance c.Uint) c.Uint {
 	return 0
 }
 
 // Check if this string starts with the given \p Prefix, ignoring case.
 //
-// llgo:link (*StringRef).StartsWithInsensitive C._ZNK4llvm9StringRef23starts_with_insensitiveES0_
+//llgo:link (*StringRef).StartsWithInsensitive C._ZNK4llvm9StringRef23starts_with_insensitiveES0_
 func (this *StringRef) StartsWithInsensitive(Prefix StringRef) bool {
 	return false
 }
 
 // Check if this string ends with the given \p Suffix, ignoring case.
 //
-// llgo:link (*StringRef).EndsWithInsensitive C._ZNK4llvm9StringRef21ends_with_insensitiveES0_
+//llgo:link (*StringRef).EndsWithInsensitive C._ZNK4llvm9StringRef21ends_with_insensitiveES0_
 func (this *StringRef) EndsWithInsensitive(Suffix StringRef) bool {
 	return false
 }
@@ -118,7 +118,7 @@ func (this *StringRef) EndsWithInsensitive(Suffix StringRef) bool {
 // \returns The index of the first occurrence of \p C, or npos if not
 // found.
 //
-// llgo:link (*StringRef).FindInsensitive__0 C._ZNK4llvm9StringRef16find_insensitiveEcm
+//llgo:link (*StringRef).FindInsensitive__0 C._ZNK4llvm9StringRef16find_insensitiveEcm
 func (this *StringRef) FindInsensitive__0(C c.Char, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -128,7 +128,7 @@ func (this *StringRef) FindInsensitive__0(C c.Char, From c.SizeT) c.SizeT {
 // \returns The index of the first occurrence of \p Str, or npos if not
 // found.
 //
-// llgo:link (*StringRef).Find__1 C._ZNK4llvm9StringRef4findES0_m
+//llgo:link (*StringRef).Find__1 C._ZNK4llvm9StringRef4findES0_m
 func (this *StringRef) Find__1(Str StringRef, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -138,7 +138,7 @@ func (this *StringRef) Find__1(Str StringRef, From c.SizeT) c.SizeT {
 // \returns The index of the first occurrence of \p Str, or npos if not
 // found.
 //
-// llgo:link (*StringRef).FindInsensitive__1 C._ZNK4llvm9StringRef16find_insensitiveES0_m
+//llgo:link (*StringRef).FindInsensitive__1 C._ZNK4llvm9StringRef16find_insensitiveES0_m
 func (this *StringRef) FindInsensitive__1(Str StringRef, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -148,7 +148,7 @@ func (this *StringRef) FindInsensitive__1(Str StringRef, From c.SizeT) c.SizeT {
 // \returns The index of the last occurrence of \p C, or npos if not
 // found.
 //
-// llgo:link (*StringRef).RfindInsensitive__1 C._ZNK4llvm9StringRef17rfind_insensitiveEcm
+//llgo:link (*StringRef).RfindInsensitive__1 C._ZNK4llvm9StringRef17rfind_insensitiveEcm
 func (this *StringRef) RfindInsensitive__1(C c.Char, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -158,7 +158,7 @@ func (this *StringRef) RfindInsensitive__1(C c.Char, From c.SizeT) c.SizeT {
 // \returns The index of the last occurrence of \p Str, or npos if not
 // found.
 //
-// llgo:link (*StringRef).Rfind__0 C._ZNK4llvm9StringRef5rfindES0_
+//llgo:link (*StringRef).Rfind__0 C._ZNK4llvm9StringRef5rfindES0_
 func (this *StringRef) Rfind__0(Str StringRef) c.SizeT {
 	return 0
 }
@@ -168,7 +168,7 @@ func (this *StringRef) Rfind__0(Str StringRef) c.SizeT {
 // \returns The index of the last occurrence of \p Str, or npos if not
 // found.
 //
-// llgo:link (*StringRef).RfindInsensitive__0 C._ZNK4llvm9StringRef17rfind_insensitiveES0_
+//llgo:link (*StringRef).RfindInsensitive__0 C._ZNK4llvm9StringRef17rfind_insensitiveES0_
 func (this *StringRef) RfindInsensitive__0(Str StringRef) c.SizeT {
 	return 0
 }
@@ -178,7 +178,7 @@ func (this *StringRef) RfindInsensitive__0(Str StringRef) c.SizeT {
 //
 // Complexity: O(size() + Chars.size())
 //
-// llgo:link (*StringRef).FindFirstOf__1 C._ZNK4llvm9StringRef13find_first_ofES0_m
+//llgo:link (*StringRef).FindFirstOf__1 C._ZNK4llvm9StringRef13find_first_ofES0_m
 func (this *StringRef) FindFirstOf__1(Chars StringRef, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -186,7 +186,7 @@ func (this *StringRef) FindFirstOf__1(Chars StringRef, From c.SizeT) c.SizeT {
 // Find the first character in the string that is not \p C or npos if not
 // found.
 //
-// llgo:link (*StringRef).FindFirstNotOf__0 C._ZNK4llvm9StringRef17find_first_not_ofEcm
+//llgo:link (*StringRef).FindFirstNotOf__0 C._ZNK4llvm9StringRef17find_first_not_ofEcm
 func (this *StringRef) FindFirstNotOf__0(C c.Char, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -196,7 +196,7 @@ func (this *StringRef) FindFirstNotOf__0(C c.Char, From c.SizeT) c.SizeT {
 //
 // Complexity: O(size() + Chars.size())
 //
-// llgo:link (*StringRef).FindFirstNotOf__1 C._ZNK4llvm9StringRef17find_first_not_ofES0_m
+//llgo:link (*StringRef).FindFirstNotOf__1 C._ZNK4llvm9StringRef17find_first_not_ofES0_m
 func (this *StringRef) FindFirstNotOf__1(Chars StringRef, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -206,7 +206,7 @@ func (this *StringRef) FindFirstNotOf__1(Chars StringRef, From c.SizeT) c.SizeT 
 //
 // Complexity: O(size() + Chars.size())
 //
-// llgo:link (*StringRef).FindLastOf__1 C._ZNK4llvm9StringRef12find_last_ofES0_m
+//llgo:link (*StringRef).FindLastOf__1 C._ZNK4llvm9StringRef12find_last_ofES0_m
 func (this *StringRef) FindLastOf__1(Chars StringRef, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -214,7 +214,7 @@ func (this *StringRef) FindLastOf__1(Chars StringRef, From c.SizeT) c.SizeT {
 // Find the last character in the string that is not \p C, or npos if not
 // found.
 //
-// llgo:link (*StringRef).FindLastNotOf__0 C._ZNK4llvm9StringRef16find_last_not_ofEcm
+//llgo:link (*StringRef).FindLastNotOf__0 C._ZNK4llvm9StringRef16find_last_not_ofEcm
 func (this *StringRef) FindLastNotOf__0(C c.Char, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -224,7 +224,7 @@ func (this *StringRef) FindLastNotOf__0(C c.Char, From c.SizeT) c.SizeT {
 //
 // Complexity: O(size() + Chars.size())
 //
-// llgo:link (*StringRef).FindLastNotOf__1 C._ZNK4llvm9StringRef16find_last_not_ofES0_m
+//llgo:link (*StringRef).FindLastNotOf__1 C._ZNK4llvm9StringRef16find_last_not_ofES0_m
 func (this *StringRef) FindLastNotOf__1(Chars StringRef, From c.SizeT) c.SizeT {
 	return 0
 }
@@ -232,7 +232,7 @@ func (this *StringRef) FindLastNotOf__1(Chars StringRef, From c.SizeT) c.SizeT {
 // Return the number of non-overlapped occurrences of \p Str in
 // the string.
 //
-// llgo:link (*StringRef).Count__1 C._ZNK4llvm9StringRef5countES0_
+//llgo:link (*StringRef).Count__1 C._ZNK4llvm9StringRef5countES0_
 func (this *StringRef) Count__1(Str StringRef) c.SizeT {
 	return 0
 }
@@ -248,7 +248,7 @@ func (this *StringRef) Count__1(Str StringRef) c.SizeT {
 // APInt::fromString is superficially similar but assumes the
 // string is well-formed in the given radix.
 //
-// llgo:link (*StringRef).GetAsInteger__1 C._ZNK4llvm9StringRef12getAsIntegerEjRNS_5APIntE
+//llgo:link (*StringRef).GetAsInteger__1 C._ZNK4llvm9StringRef12getAsIntegerEjRNS_5APIntE
 func (this *StringRef) GetAsInteger__1(Radix c.Uint, Result *APInt) bool {
 	return false
 }
@@ -263,7 +263,7 @@ func (this *StringRef) GetAsInteger__1(Radix c.Uint, Result *APInt) bool {
 // The portion of the string representing the discovered numeric value
 // is removed from the beginning of the string.
 //
-// llgo:link (*StringRef).ConsumeInteger__1 C._ZN4llvm9StringRef14consumeIntegerEjRNS_5APIntE
+//llgo:link (*StringRef).ConsumeInteger__1 C._ZN4llvm9StringRef14consumeIntegerEjRNS_5APIntE
 func (this *StringRef) ConsumeInteger__1(Radix c.Uint, Result *APInt) bool {
 	return false
 }
@@ -276,7 +276,7 @@ func (this *StringRef) ConsumeInteger__1(Radix c.Uint, Result *APInt) bool {
 // in case of an overflow or underflow, or an invalid floating point
 // representation.
 //
-// llgo:link (*StringRef).GetAsDouble C._ZNK4llvm9StringRef11getAsDoubleERdb
+//llgo:link (*StringRef).GetAsDouble C._ZNK4llvm9StringRef11getAsDoubleERdb
 func (this *StringRef) GetAsDouble(Result *c.Double, AllowInexact bool) bool {
 	return false
 }

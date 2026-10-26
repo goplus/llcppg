@@ -108,7 +108,7 @@ type DiagnosticSet uintptr
 
 // Determine the number of diagnostics in a CXDiagnosticSet.
 //
-// llgo:link DiagnosticSet.NumDiagnosticsInSet C.clang_getNumDiagnosticsInSet
+//llgo:link DiagnosticSet.NumDiagnosticsInSet C.clang_getNumDiagnosticsInSet
 func (Diags DiagnosticSet) NumDiagnosticsInSet() c.Uint {
 	return 0
 }
@@ -121,7 +121,7 @@ func (Diags DiagnosticSet) NumDiagnosticsInSet() c.Uint {
 // \returns the requested diagnostic. This diagnostic must be freed
 // via a call to \c clang_disposeDiagnostic().
 //
-// llgo:link DiagnosticSet.DiagnosticInSet C.clang_getDiagnosticInSet
+//llgo:link DiagnosticSet.DiagnosticInSet C.clang_getDiagnosticInSet
 func (Diags DiagnosticSet) DiagnosticInSet(Index c.Uint) Diagnostic {
 	return 0
 }
@@ -143,7 +143,7 @@ func LoadDiagnostics(file *c.Char, error *LoadDiag_Error, errorString *CXString.
 
 // Release a CXDiagnosticSet and all of its contained diagnostics.
 //
-// llgo:link DiagnosticSet.Dispose C.clang_disposeDiagnosticSet
+//llgo:link DiagnosticSet.Dispose C.clang_disposeDiagnosticSet
 func (Diags DiagnosticSet) Dispose() {
 }
 
@@ -152,14 +152,14 @@ func (Diags DiagnosticSet) Dispose() {
 // This CXDiagnosticSet does not need to be released by
 // clang_disposeDiagnosticSet.
 //
-// llgo:link Diagnostic.ChildDiagnostics C.clang_getChildDiagnostics
+//llgo:link Diagnostic.ChildDiagnostics C.clang_getChildDiagnostics
 func (D Diagnostic) ChildDiagnostics() DiagnosticSet {
 	return 0
 }
 
 // Destroy a diagnostic.
 //
-// llgo:link Diagnostic.Dispose C.clang_disposeDiagnostic
+//llgo:link Diagnostic.Dispose C.clang_disposeDiagnostic
 func (Diagnostic Diagnostic) Dispose() {
 }
 
@@ -177,7 +177,7 @@ func (Diagnostic Diagnostic) Dispose() {
 //
 // \returns A new string containing for formatted diagnostic.
 //
-// llgo:link Diagnostic.Format C.clang_formatDiagnostic
+//llgo:link Diagnostic.Format C.clang_formatDiagnostic
 func (Diagnostic Diagnostic) Format(Options c.Uint) CXString.String {
 	return CXString.String{}
 }
@@ -193,7 +193,7 @@ func DefaultDiagnosticDisplayOptions() c.Uint
 
 // Determine the severity of the given diagnostic.
 //
-// llgo:link Diagnostic.Severity C.clang_getDiagnosticSeverity
+//llgo:link Diagnostic.Severity C.clang_getDiagnosticSeverity
 func (_llcppg_param1 Diagnostic) Severity() DiagnosticSeverity {
 	return 0
 }
@@ -203,14 +203,14 @@ func (_llcppg_param1 Diagnostic) Severity() DiagnosticSeverity {
 // This location is where Clang would print the caret ('^') when
 // displaying the diagnostic on the command line.
 //
-// llgo:link Diagnostic.Location C.clang_getDiagnosticLocation
+//llgo:link Diagnostic.Location C.clang_getDiagnosticLocation
 func (_llcppg_param1 Diagnostic) Location() CXSourceLocation.SourceLocation {
 	return CXSourceLocation.SourceLocation{}
 }
 
 // Retrieve the text of the given diagnostic.
 //
-// llgo:link Diagnostic.Spelling C.clang_getDiagnosticSpelling
+//llgo:link Diagnostic.Spelling C.clang_getDiagnosticSpelling
 func (_llcppg_param1 Diagnostic) Spelling() CXString.String {
 	return CXString.String{}
 }
@@ -226,7 +226,7 @@ func (_llcppg_param1 Diagnostic) Spelling() CXString.String {
 // \returns A string that contains the command-line option used to enable this
 // warning, such as "-Wconversion" or "-pedantic".
 //
-// llgo:link Diagnostic.Option C.clang_getDiagnosticOption
+//llgo:link Diagnostic.Option C.clang_getDiagnosticOption
 func (Diag Diagnostic) Option(Disable *CXString.String) CXString.String {
 	return CXString.String{}
 }
@@ -240,7 +240,7 @@ func (Diag Diagnostic) Option(Disable *CXString.String) CXString.String {
 // \returns The number of the category that contains this diagnostic, or zero
 // if this diagnostic is uncategorized.
 //
-// llgo:link Diagnostic.Category C.clang_getDiagnosticCategory
+//llgo:link Diagnostic.Category C.clang_getDiagnosticCategory
 func (_llcppg_param1 Diagnostic) Category() c.Uint {
 	return 0
 }
@@ -261,7 +261,7 @@ func GetDiagnosticCategoryName(Category c.Uint) CXString.String
 //
 // \returns The text of the given diagnostic category.
 //
-// llgo:link Diagnostic.CategoryText C.clang_getDiagnosticCategoryText
+//llgo:link Diagnostic.CategoryText C.clang_getDiagnosticCategoryText
 func (_llcppg_param1 Diagnostic) CategoryText() CXString.String {
 	return CXString.String{}
 }
@@ -269,7 +269,7 @@ func (_llcppg_param1 Diagnostic) CategoryText() CXString.String {
 // Determine the number of source ranges associated with the given
 // diagnostic.
 //
-// llgo:link Diagnostic.NumRanges C.clang_getDiagnosticNumRanges
+//llgo:link Diagnostic.NumRanges C.clang_getDiagnosticNumRanges
 func (_llcppg_param1 Diagnostic) NumRanges() c.Uint {
 	return 0
 }
@@ -286,7 +286,7 @@ func (_llcppg_param1 Diagnostic) NumRanges() c.Uint {
 //
 // \returns the requested source range.
 //
-// llgo:link Diagnostic.Range C.clang_getDiagnosticRange
+//llgo:link Diagnostic.Range C.clang_getDiagnosticRange
 func (Diagnostic Diagnostic) Range(Range c.Uint) CXSourceLocation.SourceRange {
 	return CXSourceLocation.SourceRange{}
 }
@@ -294,7 +294,7 @@ func (Diagnostic Diagnostic) Range(Range c.Uint) CXSourceLocation.SourceRange {
 // Determine the number of fix-it hints associated with the
 // given diagnostic.
 //
-// llgo:link Diagnostic.NumFixIts C.clang_getDiagnosticNumFixIts
+//llgo:link Diagnostic.NumFixIts C.clang_getDiagnosticNumFixIts
 func (Diagnostic Diagnostic) NumFixIts() c.Uint {
 	return 0
 }
@@ -323,7 +323,7 @@ func (Diagnostic Diagnostic) NumFixIts() c.Uint {
 // \returns A string containing text that should be replace the source
 // code indicated by the \c ReplacementRange.
 //
-// llgo:link Diagnostic.FixIt C.clang_getDiagnosticFixIt
+//llgo:link Diagnostic.FixIt C.clang_getDiagnosticFixIt
 func (Diagnostic Diagnostic) FixIt(FixIt c.Uint, ReplacementRange *CXSourceLocation.SourceRange) CXString.String {
 	return CXString.String{}
 }

@@ -129,7 +129,7 @@ type APISet = *APISetImpl
 // declaration), return the associated parsed comment as a
 // \c CXComment_FullComment AST node.
 //
-// llgo:link Cursor.ParsedComment C.clang_Cursor_getParsedComment
+//llgo:link Cursor.ParsedComment C.clang_Cursor_getParsedComment
 func (self Cursor) ParsedComment() Comment {
 	return Comment{}
 }
@@ -138,7 +138,7 @@ func (self Cursor) ParsedComment() Comment {
 //
 // \returns the type of the AST node.
 //
-// llgo:link Comment.Kind C.clang_Comment_getKind
+//llgo:link Comment.Kind C.clang_Comment_getKind
 func (self Comment) Kind() CommentKind {
 	return 0
 }
@@ -147,7 +147,7 @@ func (self Comment) Kind() CommentKind {
 //
 // \returns number of children of the AST node.
 //
-// llgo:link Comment.NumChildren C.clang_Comment_getNumChildren
+//llgo:link Comment.NumChildren C.clang_Comment_getNumChildren
 func (self Comment) NumChildren() c.Uint {
 	return 0
 }
@@ -158,7 +158,7 @@ func (self Comment) NumChildren() c.Uint {
 //
 // \returns the specified child of the AST node.
 //
-// llgo:link Comment.Child C.clang_Comment_getChild
+//llgo:link Comment.Child C.clang_Comment_getChild
 func (self Comment) Child(ChildIdx c.Uint) Comment {
 	return self
 }
@@ -171,7 +171,7 @@ func (self Comment) Child(ChildIdx c.Uint) Comment {
 //
 // \returns non-zero if \c Comment is whitespace.
 //
-// llgo:link Comment.IsWhitespace C.clang_Comment_isWhitespace
+//llgo:link Comment.IsWhitespace C.clang_Comment_isWhitespace
 func (self Comment) IsWhitespace() c.Uint {
 	return 0
 }
@@ -180,7 +180,7 @@ func (self Comment) IsWhitespace() c.Uint {
 // immediately following it in the comment text.  Newlines between paragraphs
 // do not count.
 //
-// llgo:link Comment.InlineContentCommentHasTrailingNewline C.clang_InlineContentComment_hasTrailingNewline
+//llgo:link Comment.InlineContentCommentHasTrailingNewline C.clang_InlineContentComment_hasTrailingNewline
 func (self Comment) InlineContentCommentHasTrailingNewline() c.Uint {
 	return 0
 }
@@ -189,7 +189,7 @@ func (self Comment) InlineContentCommentHasTrailingNewline() c.Uint {
 //
 // \returns text contained in the AST node.
 //
-// llgo:link Comment.TextCommentGetText C.clang_TextComment_getText
+//llgo:link Comment.TextCommentGetText C.clang_TextComment_getText
 func (self Comment) TextCommentGetText() String {
 	return String{}
 }
@@ -198,7 +198,7 @@ func (self Comment) TextCommentGetText() String {
 //
 // \returns name of the inline command.
 //
-// llgo:link Comment.InlineCommandCommentGetCommandName C.clang_InlineCommandComment_getCommandName
+//llgo:link Comment.InlineCommandCommentGetCommandName C.clang_InlineCommandComment_getCommandName
 func (self Comment) InlineCommandCommentGetCommandName() String {
 	return String{}
 }
@@ -208,7 +208,7 @@ func (self Comment) InlineCommandCommentGetCommandName() String {
 // \returns the most appropriate rendering mode, chosen on command
 // semantics in Doxygen.
 //
-// llgo:link Comment.InlineCommandCommentGetRenderKind C.clang_InlineCommandComment_getRenderKind
+//llgo:link Comment.InlineCommandCommentGetRenderKind C.clang_InlineCommandComment_getRenderKind
 func (self Comment) InlineCommandCommentGetRenderKind() CommentInlineCommandRenderKind {
 	return 0
 }
@@ -217,7 +217,7 @@ func (self Comment) InlineCommandCommentGetRenderKind() CommentInlineCommandRend
 //
 // \returns number of command arguments.
 //
-// llgo:link Comment.InlineCommandCommentGetNumArgs C.clang_InlineCommandComment_getNumArgs
+//llgo:link Comment.InlineCommandCommentGetNumArgs C.clang_InlineCommandComment_getNumArgs
 func (self Comment) InlineCommandCommentGetNumArgs() c.Uint {
 	return 0
 }
@@ -228,7 +228,7 @@ func (self Comment) InlineCommandCommentGetNumArgs() c.Uint {
 //
 // \returns text of the specified argument.
 //
-// llgo:link Comment.InlineCommandCommentGetArgText C.clang_InlineCommandComment_getArgText
+//llgo:link Comment.InlineCommandCommentGetArgText C.clang_InlineCommandComment_getArgText
 func (self Comment) InlineCommandCommentGetArgText(ArgIdx c.Uint) String {
 	return String{}
 }
@@ -238,7 +238,7 @@ func (self Comment) InlineCommandCommentGetArgText(ArgIdx c.Uint) String {
 //
 // \returns HTML tag name.
 //
-// llgo:link Comment.HTMLTagCommentGetTagName C.clang_HTMLTagComment_getTagName
+//llgo:link Comment.HTMLTagCommentGetTagName C.clang_HTMLTagComment_getTagName
 func (self Comment) HTMLTagCommentGetTagName() String {
 	return String{}
 }
@@ -247,7 +247,7 @@ func (self Comment) HTMLTagCommentGetTagName() String {
 //
 // \returns non-zero if tag is self-closing (for example, &lt;br /&gt;).
 //
-// llgo:link Comment.HTMLStartTagCommentIsSelfClosing C.clang_HTMLStartTagComment_isSelfClosing
+//llgo:link Comment.HTMLStartTagCommentIsSelfClosing C.clang_HTMLStartTagComment_isSelfClosing
 func (self Comment) HTMLStartTagCommentIsSelfClosing() c.Uint {
 	return 0
 }
@@ -256,7 +256,7 @@ func (self Comment) HTMLStartTagCommentIsSelfClosing() c.Uint {
 //
 // \returns number of attributes (name-value pairs) attached to the start tag.
 //
-// llgo:link Comment.HTMLStartTagGetNumAttrs C.clang_HTMLStartTag_getNumAttrs
+//llgo:link Comment.HTMLStartTagGetNumAttrs C.clang_HTMLStartTag_getNumAttrs
 func (self Comment) HTMLStartTagGetNumAttrs() c.Uint {
 	return 0
 }
@@ -267,7 +267,7 @@ func (self Comment) HTMLStartTagGetNumAttrs() c.Uint {
 //
 // \returns name of the specified attribute.
 //
-// llgo:link Comment.HTMLStartTagGetAttrName C.clang_HTMLStartTag_getAttrName
+//llgo:link Comment.HTMLStartTagGetAttrName C.clang_HTMLStartTag_getAttrName
 func (self Comment) HTMLStartTagGetAttrName(AttrIdx c.Uint) String {
 	return String{}
 }
@@ -278,7 +278,7 @@ func (self Comment) HTMLStartTagGetAttrName(AttrIdx c.Uint) String {
 //
 // \returns value of the specified attribute.
 //
-// llgo:link Comment.HTMLStartTagGetAttrValue C.clang_HTMLStartTag_getAttrValue
+//llgo:link Comment.HTMLStartTagGetAttrValue C.clang_HTMLStartTag_getAttrValue
 func (self Comment) HTMLStartTagGetAttrValue(AttrIdx c.Uint) String {
 	return String{}
 }
@@ -287,7 +287,7 @@ func (self Comment) HTMLStartTagGetAttrValue(AttrIdx c.Uint) String {
 //
 // \returns name of the block command.
 //
-// llgo:link Comment.BlockCommandCommentGetCommandName C.clang_BlockCommandComment_getCommandName
+//llgo:link Comment.BlockCommandCommentGetCommandName C.clang_BlockCommandComment_getCommandName
 func (self Comment) BlockCommandCommentGetCommandName() String {
 	return String{}
 }
@@ -296,7 +296,7 @@ func (self Comment) BlockCommandCommentGetCommandName() String {
 //
 // \returns number of word-like arguments.
 //
-// llgo:link Comment.BlockCommandCommentGetNumArgs C.clang_BlockCommandComment_getNumArgs
+//llgo:link Comment.BlockCommandCommentGetNumArgs C.clang_BlockCommandComment_getNumArgs
 func (self Comment) BlockCommandCommentGetNumArgs() c.Uint {
 	return 0
 }
@@ -307,7 +307,7 @@ func (self Comment) BlockCommandCommentGetNumArgs() c.Uint {
 //
 // \returns text of the specified word-like argument.
 //
-// llgo:link Comment.BlockCommandCommentGetArgText C.clang_BlockCommandComment_getArgText
+//llgo:link Comment.BlockCommandCommentGetArgText C.clang_BlockCommandComment_getArgText
 func (self Comment) BlockCommandCommentGetArgText(ArgIdx c.Uint) String {
 	return String{}
 }
@@ -317,7 +317,7 @@ func (self Comment) BlockCommandCommentGetArgText(ArgIdx c.Uint) String {
 //
 // \returns paragraph argument of the block command.
 //
-// llgo:link Comment.BlockCommandCommentGetParagraph C.clang_BlockCommandComment_getParagraph
+//llgo:link Comment.BlockCommandCommentGetParagraph C.clang_BlockCommandComment_getParagraph
 func (self Comment) BlockCommandCommentGetParagraph() Comment {
 	return self
 }
@@ -326,7 +326,7 @@ func (self Comment) BlockCommandCommentGetParagraph() Comment {
 //
 // \returns parameter name.
 //
-// llgo:link Comment.ParamCommandCommentGetParamName C.clang_ParamCommandComment_getParamName
+//llgo:link Comment.ParamCommandCommentGetParamName C.clang_ParamCommandComment_getParamName
 func (self Comment) ParamCommandCommentGetParamName() String {
 	return String{}
 }
@@ -337,7 +337,7 @@ func (self Comment) ParamCommandCommentGetParamName() String {
 // in the function prototype and \c clang_ParamCommandComment_getParamIndex
 // function will return a meaningful value.
 //
-// llgo:link Comment.ParamCommandCommentIsParamIndexValid C.clang_ParamCommandComment_isParamIndexValid
+//llgo:link Comment.ParamCommandCommentIsParamIndexValid C.clang_ParamCommandComment_isParamIndexValid
 func (self Comment) ParamCommandCommentIsParamIndexValid() c.Uint {
 	return 0
 }
@@ -346,7 +346,7 @@ func (self Comment) ParamCommandCommentIsParamIndexValid() c.Uint {
 //
 // \returns zero-based parameter index in function prototype.
 //
-// llgo:link Comment.ParamCommandCommentGetParamIndex C.clang_ParamCommandComment_getParamIndex
+//llgo:link Comment.ParamCommandCommentGetParamIndex C.clang_ParamCommandComment_getParamIndex
 func (self Comment) ParamCommandCommentGetParamIndex() c.Uint {
 	return 0
 }
@@ -356,7 +356,7 @@ func (self Comment) ParamCommandCommentGetParamIndex() c.Uint {
 // \returns non-zero if parameter passing direction was specified explicitly in
 // the comment.
 //
-// llgo:link Comment.ParamCommandCommentIsDirectionExplicit C.clang_ParamCommandComment_isDirectionExplicit
+//llgo:link Comment.ParamCommandCommentIsDirectionExplicit C.clang_ParamCommandComment_isDirectionExplicit
 func (self Comment) ParamCommandCommentIsDirectionExplicit() c.Uint {
 	return 0
 }
@@ -365,7 +365,7 @@ func (self Comment) ParamCommandCommentIsDirectionExplicit() c.Uint {
 //
 // \returns parameter passing direction.
 //
-// llgo:link Comment.ParamCommandCommentGetDirection C.clang_ParamCommandComment_getDirection
+//llgo:link Comment.ParamCommandCommentGetDirection C.clang_ParamCommandComment_getDirection
 func (self Comment) ParamCommandCommentGetDirection() CommentParamPassDirection {
 	return 0
 }
@@ -374,7 +374,7 @@ func (self Comment) ParamCommandCommentGetDirection() CommentParamPassDirection 
 //
 // \returns template parameter name.
 //
-// llgo:link Comment.TParamCommandCommentGetParamName C.clang_TParamCommandComment_getParamName
+//llgo:link Comment.TParamCommandCommentGetParamName C.clang_TParamCommandComment_getParamName
 func (self Comment) TParamCommandCommentGetParamName() String {
 	return String{}
 }
@@ -387,7 +387,7 @@ func (self Comment) TParamCommandCommentGetParamName() String {
 // \c clang_TParamCommandComment_getIndex functions will return a meaningful
 // value.
 //
-// llgo:link Comment.TParamCommandCommentIsParamPositionValid C.clang_TParamCommandComment_isParamPositionValid
+//llgo:link Comment.TParamCommandCommentIsParamPositionValid C.clang_TParamCommandComment_isParamPositionValid
 func (self Comment) TParamCommandCommentIsParamPositionValid() c.Uint {
 	return 0
 }
@@ -404,7 +404,7 @@ func (self Comment) TParamCommandCommentIsParamPositionValid() c.Uint {
 // for C and TT nesting depth is 0,
 // for T nesting depth is 1.
 //
-// llgo:link Comment.TParamCommandCommentGetDepth C.clang_TParamCommandComment_getDepth
+//llgo:link Comment.TParamCommandCommentGetDepth C.clang_TParamCommandComment_getDepth
 func (self Comment) TParamCommandCommentGetDepth() c.Uint {
 	return 0
 }
@@ -426,7 +426,7 @@ func (self Comment) TParamCommandCommentGetDepth() c.Uint {
 // at depth 0 T's index is 1 (same as TT's),
 // at depth 1 T's index is 0.
 //
-// llgo:link Comment.TParamCommandCommentGetIndex C.clang_TParamCommandComment_getIndex
+//llgo:link Comment.TParamCommandCommentGetIndex C.clang_TParamCommandComment_getIndex
 func (self Comment) TParamCommandCommentGetIndex(Depth c.Uint) c.Uint {
 	return 0
 }
@@ -435,7 +435,7 @@ func (self Comment) TParamCommandCommentGetIndex(Depth c.Uint) c.Uint {
 //
 // \returns text contained in the AST node.
 //
-// llgo:link Comment.VerbatimBlockLineCommentGetText C.clang_VerbatimBlockLineComment_getText
+//llgo:link Comment.VerbatimBlockLineCommentGetText C.clang_VerbatimBlockLineComment_getText
 func (self Comment) VerbatimBlockLineCommentGetText() String {
 	return String{}
 }
@@ -444,7 +444,7 @@ func (self Comment) VerbatimBlockLineCommentGetText() String {
 //
 // \returns text contained in the AST node.
 //
-// llgo:link Comment.VerbatimLineCommentGetText C.clang_VerbatimLineComment_getText
+//llgo:link Comment.VerbatimLineCommentGetText C.clang_VerbatimLineComment_getText
 func (self Comment) VerbatimLineCommentGetText() String {
 	return String{}
 }
@@ -456,7 +456,7 @@ func (self Comment) VerbatimLineCommentGetText() String {
 //
 // \returns string containing an HTML tag.
 //
-// llgo:link Comment.HTMLTagCommentGetAsString C.clang_HTMLTagComment_getAsString
+//llgo:link Comment.HTMLTagCommentGetAsString C.clang_HTMLTagComment_getAsString
 func (self Comment) HTMLTagCommentGetAsString() String {
 	return String{}
 }
@@ -491,7 +491,7 @@ func (self Comment) HTMLTagCommentGetAsString() String {
 //
 // \returns string containing an HTML fragment.
 //
-// llgo:link Comment.FullCommentGetAsHTML C.clang_FullComment_getAsHTML
+//llgo:link Comment.FullCommentGetAsHTML C.clang_FullComment_getAsHTML
 func (self Comment) FullCommentGetAsHTML() String {
 	return String{}
 }
@@ -505,7 +505,7 @@ func (self Comment) FullCommentGetAsHTML() String {
 //
 // \returns string containing an XML document.
 //
-// llgo:link Comment.FullCommentGetAsXML C.clang_FullComment_getAsXML
+//llgo:link Comment.FullCommentGetAsXML C.clang_FullComment_getAsXML
 func (self Comment) FullCommentGetAsXML() String {
 	return String{}
 }
@@ -519,7 +519,7 @@ func (self Comment) FullCommentGetAsXML() String {
 //
 // \returns Error code indicating success or failure of the APISet creation.
 //
-// llgo:link TranslationUnit.CreateAPISet C.clang_createAPISet
+//llgo:link TranslationUnit.CreateAPISet C.clang_createAPISet
 func (self TranslationUnit) CreateAPISet(out_api *APISet) ErrorCode {
 	return 0
 }
@@ -528,7 +528,7 @@ func (self TranslationUnit) CreateAPISet(out_api *APISet) ErrorCode {
 //
 // The provided \c CXAPISet can not be used after this function is called.
 //
-// llgo:link APISet.Dispose C.clang_disposeAPISet
+//llgo:link APISet.Dispose C.clang_disposeAPISet
 func (self APISet) Dispose() {
 }
 
@@ -564,7 +564,7 @@ func GetSymbolGraphForUSR(usr *c.Char, api APISet) String
 // the symbol being queried or a null string if it can not be found in the
 // APISet.
 //
-// llgo:link Cursor.SymbolGraphFor C.clang_getSymbolGraphForCursor
+//llgo:link Cursor.SymbolGraphFor C.clang_getSymbolGraphForCursor
 func (self Cursor) SymbolGraphFor() String {
 	return String{}
 }

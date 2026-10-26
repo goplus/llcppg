@@ -88,32 +88,32 @@ type Streamp = *Stream
 // semi-opaque gzip file descriptor
 type GzFile = *GzFileS
 
-// llgo:link Streamp.DeflateInit C._llcppg_deflateInit
+//llgo:link Streamp.DeflateInit C._llcppg_deflateInit
 func (self Streamp) DeflateInit(level c.Int) c.Int {
 	return 0
 }
 
-// llgo:link Streamp.InflateInit C._llcppg_inflateInit
+//llgo:link Streamp.InflateInit C._llcppg_inflateInit
 func (self Streamp) InflateInit() c.Int {
 	return 0
 }
 
-// llgo:link Streamp.DeflateInit2 C._llcppg_deflateInit2
+//llgo:link Streamp.DeflateInit2 C._llcppg_deflateInit2
 func (self Streamp) DeflateInit2(level c.Int, method c.Int, windowBits c.Int, memLevel c.Int, strategy c.Int) c.Int {
 	return 0
 }
 
-// llgo:link Streamp.InflateInit2 C._llcppg_inflateInit2
+//llgo:link Streamp.InflateInit2 C._llcppg_inflateInit2
 func (self Streamp) InflateInit2(windowBits c.Int) c.Int {
 	return 0
 }
 
-// llgo:link Streamp.InflateBackInit C._llcppg_inflateBackInit
+//llgo:link Streamp.InflateBackInit C._llcppg_inflateBackInit
 func (self Streamp) InflateBackInit(windowBits c.Int, window *uint8) c.Int {
 	return 0
 }
 
-// llgo:link GzFile.Getc C._llcppg_gzgetc
+//llgo:link GzFile.Getc C._llcppg_gzgetc
 func (self GzFile) Getc() c.Int {
 	return 0
 }
@@ -151,12 +151,12 @@ func DeflateCopy(dest Streamp, source Streamp) c.Int
 // deflateReset returns Z_OK if success, or Z_STREAM_ERROR if the source
 // stream state was inconsistent (such as zalloc or state being Z_NULL).
 //
-// llgo:link Streamp.DeflateReset C.deflateReset
+//llgo:link Streamp.DeflateReset C.deflateReset
 func (self Streamp) DeflateReset() c.Int {
 	return 0
 }
 
-// llgo:link Streamp.DeflateBound C.deflateBound
+//llgo:link Streamp.DeflateBound C.deflateBound
 func (self Streamp) DeflateBound(sourceLen ULong) ULong {
 	return 0
 }
@@ -175,7 +175,7 @@ func (self Streamp) DeflateBound(sourceLen ULong) ULong {
 // delfateBound_z() is the same, but takes and returns a size_t length.  Note
 // that a long is 32 bits on Windows.
 //
-// llgo:link Streamp.DeflateBoundZ C.deflateBound_z
+//llgo:link Streamp.DeflateBoundZ C.deflateBound_z
 func (self Streamp) DeflateBoundZ(sourceLen SizeT) SizeT {
 	return 0
 }
@@ -183,27 +183,27 @@ func (self Streamp) DeflateBoundZ(sourceLen SizeT) SizeT {
 // deflateInit and inflateInit are macros to allow checking the zlib version
 // and the compiler's view of z_stream:
 //
-// llgo:link Streamp.DeflateInit_ C.deflateInit_
+//llgo:link Streamp.DeflateInit_ C.deflateInit_
 func (self Streamp) DeflateInit_(level c.Int, version *c.Char, stream_size c.Int) c.Int {
 	return 0
 }
 
-// llgo:link Streamp.InflateInit_ C.inflateInit_
+//llgo:link Streamp.InflateInit_ C.inflateInit_
 func (self Streamp) InflateInit_(version *c.Char, stream_size c.Int) c.Int {
 	return 0
 }
 
-// llgo:link Streamp.DeflateInit2_ C.deflateInit2_
+//llgo:link Streamp.DeflateInit2_ C.deflateInit2_
 func (self Streamp) DeflateInit2_(level c.Int, method c.Int, windowBits c.Int, memLevel c.Int, strategy c.Int, version *c.Char, stream_size c.Int) c.Int {
 	return 0
 }
 
-// llgo:link Streamp.InflateInit2_ C.inflateInit2_
+//llgo:link Streamp.InflateInit2_ C.inflateInit2_
 func (self Streamp) InflateInit2_(windowBits c.Int, version *c.Char, stream_size c.Int) c.Int {
 	return 0
 }
 
-// llgo:link Streamp.InflateBackInit_ C.inflateBackInit_
+//llgo:link Streamp.InflateBackInit_ C.inflateBackInit_
 func (self Streamp) InflateBackInit_(windowBits c.Int, window *uint8, version *c.Char, stream_size c.Int) c.Int {
 	return 0
 }
@@ -246,14 +246,14 @@ func Gzdopen(fd c.Int, mode *c.Char) GzFile
 // gzbuffer() returns 0 on success, or -1 on failure, such as being called
 // too late.
 //
-// llgo:link GzFile.Buffer C.gzbuffer
+//llgo:link GzFile.Buffer C.gzbuffer
 func (self GzFile) Buffer(size c.Uint) c.Int {
 	return 0
 }
 
 // backward compatibility
 //
-// llgo:link GzFile.Getc_ C.gzgetc_
+//llgo:link GzFile.Getc_ C.gzgetc_
 func (self GzFile) Getc_() c.Int {
 	return 0
 }

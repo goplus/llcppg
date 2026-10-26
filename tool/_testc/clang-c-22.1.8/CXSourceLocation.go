@@ -59,7 +59,7 @@ func IsBeforeInTranslationUnit(loc1 SourceLocation, loc2 SourceLocation) c.Uint
 
 // Returns non-zero if the given source location is in a system header.
 //
-// llgo:link SourceLocation.IsInSystemHeader C.clang_Location_isInSystemHeader
+//llgo:link SourceLocation.IsInSystemHeader C.clang_Location_isInSystemHeader
 func (self SourceLocation) IsInSystemHeader() c.Int {
 	return 0
 }
@@ -67,7 +67,7 @@ func (self SourceLocation) IsInSystemHeader() c.Int {
 // Returns non-zero if the given source location is in the main file of
 // the corresponding translation unit.
 //
-// llgo:link SourceLocation.IsFromMainFile C.clang_Location_isFromMainFile
+//llgo:link SourceLocation.IsFromMainFile C.clang_Location_isFromMainFile
 func (self SourceLocation) IsFromMainFile() c.Int {
 	return 0
 }
@@ -92,7 +92,7 @@ func EqualRanges(range1 SourceRange, range2 SourceRange) c.Uint
 
 // Returns non-zero if \p range is null.
 //
-// llgo:link SourceRange.IsNull C.clang_Range_isNull
+//llgo:link SourceRange.IsNull C.clang_Range_isNull
 func (self SourceRange) IsNull() c.Int {
 	return 0
 }
@@ -118,7 +118,7 @@ func (self SourceRange) IsNull() c.Int {
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.Expansion C.clang_getExpansionLocation
+//llgo:link SourceLocation.Expansion C.clang_getExpansionLocation
 func (self SourceLocation) Expansion(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
@@ -161,7 +161,7 @@ func (self SourceLocation) Expansion(file *File, line *c.Uint, column *c.Uint, o
 // \param column [out] if non-NULL, will be set to the column number of the
 // source location. For an invalid source location, zero is returned.
 //
-// llgo:link SourceLocation.Presumed C.clang_getPresumedLocation
+//llgo:link SourceLocation.Presumed C.clang_getPresumedLocation
 func (self SourceLocation) Presumed(filename *String, line *c.Uint, column *c.Uint) {
 }
 
@@ -172,7 +172,7 @@ func (self SourceLocation) Presumed(filename *String, line *c.Uint, column *c.Ui
 // #clang_getExpansionLocation(). See that interface's documentation for
 // details.
 //
-// llgo:link SourceLocation.Instantiation C.clang_getInstantiationLocation
+//llgo:link SourceLocation.Instantiation C.clang_getInstantiationLocation
 func (self SourceLocation) Instantiation(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
@@ -197,7 +197,7 @@ func (self SourceLocation) Instantiation(file *File, line *c.Uint, column *c.Uin
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.Spelling C.clang_getSpellingLocation
+//llgo:link SourceLocation.Spelling C.clang_getSpellingLocation
 func (self SourceLocation) Spelling(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
@@ -223,14 +223,14 @@ func (self SourceLocation) Spelling(file *File, line *c.Uint, column *c.Uint, of
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.File C.clang_getFileLocation
+//llgo:link SourceLocation.File C.clang_getFileLocation
 func (self SourceLocation) File(file *File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve a source location representing the first character within a
 // source range.
 //
-// llgo:link SourceRange.Start C.clang_getRangeStart
+//llgo:link SourceRange.Start C.clang_getRangeStart
 func (self SourceRange) Start() SourceLocation {
 	return SourceLocation{}
 }
@@ -238,13 +238,13 @@ func (self SourceRange) Start() SourceLocation {
 // Retrieve a source location representing the last character within a
 // source range.
 //
-// llgo:link SourceRange.End C.clang_getRangeEnd
+//llgo:link SourceRange.End C.clang_getRangeEnd
 func (self SourceRange) End() SourceLocation {
 	return SourceLocation{}
 }
 
 // Destroy the given \c CXSourceRangeList.
 //
-// llgo:link (*SourceRangeList).Dispose C.clang_disposeSourceRangeList
+//llgo:link (*SourceRangeList).Dispose C.clang_disposeSourceRangeList
 func (self *SourceRangeList) Dispose() {
 }

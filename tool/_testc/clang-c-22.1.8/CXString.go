@@ -28,19 +28,19 @@ type StringSet struct {
 // is only valid while the `CXString` is valid. This function is similar
 // to `std::string::c_str()`.
 //
-// llgo:link String.CStr C.clang_getCString
+//llgo:link String.CStr C.clang_getCString
 func (self String) CStr() *c.Char {
 	return nil
 }
 
 // Free the given string.
 //
-// llgo:link String.Dispose C.clang_disposeString
+//llgo:link String.Dispose C.clang_disposeString
 func (self String) Dispose() {
 }
 
 // Free the given string set.
 //
-// llgo:link (*StringSet).Dispose C.clang_disposeStringSet
+//llgo:link (*StringSet).Dispose C.clang_disposeStringSet
 func (self *StringSet) Dispose() {
 }
