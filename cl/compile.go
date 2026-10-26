@@ -256,6 +256,10 @@ type Config struct {
 	// llcppg will stop after printing errors `FailFast` times.
 	FailFast int
 
+	// EnumAlwaysUntyped specifies whether all enums should be treated as untyped (optional).
+	// See https://github.com/xgo-dev/llcppg/issues/1103.
+	EnumAlwaysUntyped bool
+
 	// ForceCamelCase converts capitalized, underscore-joined names to camel case (optional),
 	// except names whose final segment is all-uppercase (acronyms/macros), which are kept
 	// as-is.
@@ -336,10 +340,11 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		stdRecvName: conf.UseStdRecvName, wrapFileHeader: conf.WrapFileHeader,
 		cflags: conf.CFlags, forceCamelCase: conf.ForceCamelCase,
 		typeAbbr: typeAbbr, methodPrefix: conf.MethodPrefix,
+		enumPrefix: conf.EnumPrefix, enumAlwaysUntyped: conf.EnumAlwaysUntyped,
 		typeAlias: conf.TypeAlias, typeAliasCache: make(map[string]types.Type),
 		nsPrefix: conf.NSPrefix, mthdCheck: methodCheck, fieldAlias: conf.FieldAlias,
-		nsIgnore: conf.NSIgnore, typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
-		newCheck: newCheck, fnPrefix: conf.FuncPrefix, enumPrefix: conf.EnumPrefix,
+		nsIgnore: conf.NSIgnore, newCheck: newCheck, fnPrefix: conf.FuncPrefix,
+		typePrefix: conf.TypePrefix, typeSuffix: conf.TypeSuffix,
 		macroPrefix: conf.MacroPrefix, macroIgnore: conf.MacroIgnore,
 		macroFunc: conf.MacroFunc, macroGroup: conf.MacroGroup, rename: rename,
 		varPrefix: conf.VarPrefix, typeIgnore: conf.TypeIgnore, typdecls: typdecls,

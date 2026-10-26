@@ -172,8 +172,13 @@ type Config struct {
 	// exit on first N errors, optional
 	FailFast int `json:"FailFast"`
 
-	// convert capitalized, underscore-joined names to camel case, except names whose final
-	// segment is all-uppercase (acronyms/macros), which are kept as-is.
+	// EnumAlwaysUntyped specifies whether all enums should be treated as untyped (optional).
+	// See https://github.com/xgo-dev/llcppg/issues/1103.
+	EnumAlwaysUntyped bool `json:"EnumAlwaysUntyped"`
+
+	// ForceCamelCase converts capitalized, underscore-joined names to camel case (optional),
+	// except names whose final segment is all-uppercase (acronyms/macros), which are kept
+	// as-is.
 	ForceCamelCase bool `json:"ForceCamelCase"`
 
 	// quietly ignore inline functions
