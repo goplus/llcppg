@@ -231,6 +231,16 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 		}
 		cb.End()
 	}
+
+	// Record the generated Go function so automatic MacroFunc detection can
+	// forward to it (see macrofunc_auto.go). Only real C/C++ function
+	// declarations are recorded: the macro wrapper path reuses doCompileFunc
+	// with a synthetic overloadObj that has no decl.
+	if obj.decl.Kind == lc.Cursor_FunctionDecl {
+		ctx.compiledFns[objUSR(obj.decl)] = &compiledFn{
+			fn: f.Func, recv: recv, variadic: variadic,
+		}
+	}
 }
 
 func tryNewRecv[funcT fnCursor](fn funcT, precv **types.Var, typRecv **types.Named, typName, typCName *string, cls string, obj types.Object) {

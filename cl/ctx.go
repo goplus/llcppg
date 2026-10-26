@@ -195,6 +195,7 @@ type pkgCtx struct {
 
 	mgroup       *macroGrouper           // macro grouping current state
 	macroVals    map[string]any          // macroName => value
+	compiledFns  map[string]*compiledFn  // func USR => generated Go function (global funcs & method-converted globals)
 	ovobjs       map[string]*overloadObj // objUSR => overload object
 	types        map[string]typeObj      // c/c++ fullName => type name object (include external types)
 	typdecls     map[string]typDecl      // c/c++ fullName => type declaration object (only local types)
@@ -204,9 +205,10 @@ type pkgCtx struct {
 	lastSeen     map[string]none         // last seen include file set (loaded include files)
 	thisSeen     map[string]none         // include file set seen in this translation unit
 
-	loads    []compileUnit
-	compiles []compileUnit
-	pubTyps  map[string]none // TODO(xsw): maybe can remove this field (use typdecls)
+	loads      []compileUnit
+	compiles   []compileUnit
+	autoMacros []compileUnit   // detected-forwarding-macro units, run after all funcs compiled
+	pubTyps    map[string]none // TODO(xsw): maybe can remove this field (use typdecls)
 
 	errCnt   int
 	failFast int
@@ -320,11 +322,21 @@ func (p *pkgCtx) addCompileUnit(f compileFunc) {
 	})
 }
 
+func (p *pkgCtx) addAutoMacroUnit(f compileFunc) {
+	p.autoMacros = append(p.autoMacros, compileUnit{
+		fn: f,
+		at: p.pkg.CurFile(),
+	})
+}
+
 func (p *pkgCtx) compile() {
 	p.postPreload()
 	doCompile(p, &p.loads)
 	p.postLoad()
 	doCompile(p, &p.compiles)
+	// Forwarding-macro detection runs last so every callee's Go declaration has
+	// already been generated and recorded (see macrofunc_auto.go).
+	doCompile(p, &p.autoMacros)
 }
 
 func doCompile(p *pkgCtx, pcompiles *[]compileUnit) {

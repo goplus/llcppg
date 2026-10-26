@@ -437,10 +437,19 @@ func preloadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, fn clang.Cursor) {
 func preloadMacroFunc(ctx *pkgCtx, decl clang.Cursor) {
 	macroName := clang.String(decl)
 	if refName, ok := ctx.macroFunc[macroName]; ok {
+		// Explicit entry: processed in wrap mode and never reinterpreted by
+		// automatic detection.
 		ctx.addLoadUnit(func(ctx *pkgCtx) {
 			loadMacroFunc(ctx, decl, macroName, refName)
 		})
+		return
 	}
+	// Automatic detection of forwarding macros (goplus/llcppg#1109). Always on;
+	// a macro that does not match the rules is silently skipped.
+	if ctx.isMacroIgnored(macroName) {
+		return
+	}
+	autoMacroFunc(ctx, decl)
 }
 
 // -----------------------------------------------------------------------------

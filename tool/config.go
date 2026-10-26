@@ -150,6 +150,12 @@ type Config struct {
 	// wrapped as a function the same way static inline functions are: llcppg emits
 	// a C wrapper whose body invokes the macro, and a Go declaration linking to it.
 	// See https://github.com/xgo-dev/llcppg/issues/1051.
+	//
+	// Function-like macros not listed here are examined by automatic
+	// forwarding-macro detection: a plain forwarding call to a generated function
+	// becomes an ordinary Go function calling the callee directly. A listed macro
+	// is always wrapped and never reinterpreted.
+	// See https://github.com/xgo-dev/llcppg/issues/1109.
 	MacroFunc map[string]string `json:"MacroFunc"`
 
 	// MacroGroup declares groups of related constant macros emitted together as a
