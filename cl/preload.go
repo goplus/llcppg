@@ -84,14 +84,15 @@ func (p *scopeCtx) addOverloadObj(ctx *pkgCtx, name string, decl clang.Cursor) (
 	return
 }
 
-// lookupFuncDecl finds a declared global function cursor by its C name among the
-// parsed declarations.
+// lookupFuncDecl finds a declared global function cursor by its C name
+// among the parsed declarations. It resolves a name only when that name
+// maps to a single (non-overloaded) function declaration; overloaded
+// names return ok == false, since a single reference signature cannot be
+// chosen unambiguously.
 func (p *scopeCtx) lookupFuncDecl(cName string) (ret clang.Cursor, ok bool) {
-	if ovs, ok := p.overloads[cName]; ok {
-		for _, obj := range ovs.items {
-			if obj.decl.Kind == lc.Cursor_FunctionDecl {
-				return obj.decl, true
-			}
+	if ovs, ok := p.overloads[cName]; ok && len(ovs.items) == 1 {
+		if decl := ovs.items[0].decl; decl.Kind == lc.Cursor_FunctionDecl {
+			return decl, true
 		}
 	}
 	return
