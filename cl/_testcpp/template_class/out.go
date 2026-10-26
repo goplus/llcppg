@@ -15,7 +15,7 @@ type Bar[T1 any, T2 any] struct {
 	v3        c.Int
 }
 
-// llgo:type C
+//llgo:cdecl
 type X_vtable_Bar[T1 any, T2 any] struct {
 	XGo_dtor          func(this *Bar[T1, T2])
 	XGo_dtor_deleting func(this *Bar[T1, T2])

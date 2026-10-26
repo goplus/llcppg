@@ -29,25 +29,13 @@ import (
 //
 // vtable-aware bindings for C++ virtual methods.
 //
-// For every polymorphic class X (one that declares or inherits virtual
-// methods) llcppg emits, in addition to the struct that mirrors the C++ data
-// layout:
-//
-//   - a typed vtable struct `X_vtable_XXX`, annotated `// llgo:type C`, with one
-//     field per virtual slot in vtable order. A public method's slot is a
-//     function-pointer field whose first parameter is "this *X"; a reserved or
-//     non-public slot is instead an unexported "_xgo_slotN unsafe.Pointer"
-//     placeholder that only holds the slot's position (see vtableSlot).
-//   - an accessor method "func (p *X) XGo_vptr() *X_vtable_XXX" that reinterprets
-//     the pointer stored at offset 0 as the typed vtable.
-//
 // The vptr slot itself keeps the layout it already had; the only change is that
 // the exported field "XGo_vptr" becomes the unexported field vptrName
 // ("_xgo_vptr") so it can coexist with the "XGo_vptr()" accessor (Go forbids a
 // field and a method sharing a name). Only the class that owns the vptr (i.e.
 // has no primary base) declares that field.
 //
-// See issue goplus/llcppg#754 for the full proposal.
+// See issue https://github.com/xgo-dev/llcppg/issues/754 for the full proposal.
 
 // vtableName returns the Go name of the typed vtable struct for a class named
 // clsName, e.g. "Shape" -> "X_vtable_Shape".
@@ -128,16 +116,12 @@ func genVtable(ctx *pkgCtx, this *classCtx, ownsVptr bool) {
 	}
 	vtStruct := types.NewStruct(fields, nil)
 
-	// `llgo:type C` keeps the struct laid out exactly as the C++ vtable so the
-	// reinterpret cast in the accessor is valid. The leading "\n" renders a
-	// blank line before the directive, matching the spacing of the generated
-	// method blocks.
 	var tparams []*types.TypeParam
 	if hasTarg {
 		tparams = cloneTypeParams(targs)
 	}
 	vtDecl := pkg.NewTypeDefs().SetComments(&ast.CommentGroup{
-		List: []*ast.Comment{{Text: "\n// llgo:type C"}},
+		List: []*ast.Comment{{Text: directiveCdecl}},
 	}).NewType(vtableName(clsName), tparams, goNode(ctx, this.decl))
 
 	vtRecv := types.Type(vtDecl.InitType(pkg, vtStruct))

@@ -191,15 +191,20 @@ func (p *pkgCtx) directiveCallback(decl clang.Cursor, featCallback int) *ast.Com
 	return directiveCallback(p.docComments(decl), featCallback)
 }
 
+const (
+	directiveCdecl   = "\n//llgo:cdecl"
+	directiveStdcall = "\n//llgo:stdcall"
+)
+
 func directiveCallback(doc []*ast.Comment, featCallback int) *ast.CommentGroup {
 	var directive string
 	switch featCallback {
 	case 0:
 		return docCommentGroup(doc)
 	case featHasCdeclCallback:
-		directive = "\n//llgo:cdecl"
+		directive = directiveCdecl
 	case featHasStdcallCallback:
-		directive = "\n//llgo:stdcall"
+		directive = directiveStdcall
 	default:
 		log.Panicln("unexpected callback directive:", featCallback)
 	}
