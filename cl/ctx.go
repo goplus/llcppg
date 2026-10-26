@@ -212,6 +212,8 @@ type pkgCtx struct {
 	failFast int
 	anonSeq  int
 
+	enumAlwaysUntyped bool
+
 	forceCamelCase bool
 	stdRecvName    bool
 }

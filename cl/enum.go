@@ -104,7 +104,9 @@ func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			typDecl.defs.SetComments(doc)
 		}
-		enumType = typDecl.Type()
+		if !ctx.enumAlwaysUntyped {
+			enumType = typDecl.Type()
+		}
 	} else {
 		if doc := ctx.docCommentGroup(decl); doc != nil {
 			defs.SetComments(doc)
