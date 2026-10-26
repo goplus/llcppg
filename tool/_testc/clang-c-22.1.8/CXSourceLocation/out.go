@@ -61,7 +61,7 @@ func IsBeforeInTranslationUnit(loc1 SourceLocation, loc2 SourceLocation) c.Uint
 
 // Returns non-zero if the given source location is in a system header.
 //
-// llgo:link SourceLocation.IsInSystemHeader C.clang_Location_isInSystemHeader
+//llgo:link SourceLocation.IsInSystemHeader C.clang_Location_isInSystemHeader
 func (location SourceLocation) IsInSystemHeader() c.Int {
 	return 0
 }
@@ -69,7 +69,7 @@ func (location SourceLocation) IsInSystemHeader() c.Int {
 // Returns non-zero if the given source location is in the main file of
 // the corresponding translation unit.
 //
-// llgo:link SourceLocation.IsFromMainFile C.clang_Location_isFromMainFile
+//llgo:link SourceLocation.IsFromMainFile C.clang_Location_isFromMainFile
 func (location SourceLocation) IsFromMainFile() c.Int {
 	return 0
 }
@@ -94,7 +94,7 @@ func EqualRanges(range1 SourceRange, range2 SourceRange) c.Uint
 
 // Returns non-zero if \p range is null.
 //
-// llgo:link SourceRange.IsNull C.clang_Range_isNull
+//llgo:link SourceRange.IsNull C.clang_Range_isNull
 func (range_ SourceRange) IsNull() c.Int {
 	return 0
 }
@@ -120,7 +120,7 @@ func (range_ SourceRange) IsNull() c.Int {
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.Expansion C.clang_getExpansionLocation
+//llgo:link SourceLocation.Expansion C.clang_getExpansionLocation
 func (location SourceLocation) Expansion(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
@@ -163,7 +163,7 @@ func (location SourceLocation) Expansion(file *CXFile.File, line *c.Uint, column
 // \param column [out] if non-NULL, will be set to the column number of the
 // source location. For an invalid source location, zero is returned.
 //
-// llgo:link SourceLocation.Presumed C.clang_getPresumedLocation
+//llgo:link SourceLocation.Presumed C.clang_getPresumedLocation
 func (location SourceLocation) Presumed(filename *CXString.String, line *c.Uint, column *c.Uint) {
 }
 
@@ -174,7 +174,7 @@ func (location SourceLocation) Presumed(filename *CXString.String, line *c.Uint,
 // #clang_getExpansionLocation(). See that interface's documentation for
 // details.
 //
-// llgo:link SourceLocation.Instantiation C.clang_getInstantiationLocation
+//llgo:link SourceLocation.Instantiation C.clang_getInstantiationLocation
 func (location SourceLocation) Instantiation(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
@@ -199,7 +199,7 @@ func (location SourceLocation) Instantiation(file *CXFile.File, line *c.Uint, co
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.Spelling C.clang_getSpellingLocation
+//llgo:link SourceLocation.Spelling C.clang_getSpellingLocation
 func (location SourceLocation) Spelling(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
@@ -225,14 +225,14 @@ func (location SourceLocation) Spelling(file *CXFile.File, line *c.Uint, column 
 // \param offset [out] if non-NULL, will be set to the offset into the
 // buffer to which the given source location points.
 //
-// llgo:link SourceLocation.File C.clang_getFileLocation
+//llgo:link SourceLocation.File C.clang_getFileLocation
 func (location SourceLocation) File(file *CXFile.File, line *c.Uint, column *c.Uint, offset *c.Uint) {
 }
 
 // Retrieve a source location representing the first character within a
 // source range.
 //
-// llgo:link SourceRange.Start C.clang_getRangeStart
+//llgo:link SourceRange.Start C.clang_getRangeStart
 func (range_ SourceRange) Start() SourceLocation {
 	return SourceLocation{}
 }
@@ -240,13 +240,13 @@ func (range_ SourceRange) Start() SourceLocation {
 // Retrieve a source location representing the last character within a
 // source range.
 //
-// llgo:link SourceRange.End C.clang_getRangeEnd
+//llgo:link SourceRange.End C.clang_getRangeEnd
 func (range_ SourceRange) End() SourceLocation {
 	return SourceLocation{}
 }
 
 // Destroy the given \c CXSourceRangeList.
 //
-// llgo:link (*SourceRangeList).Dispose C.clang_disposeSourceRangeList
+//llgo:link (*SourceRangeList).Dispose C.clang_disposeSourceRangeList
 func (ranges *SourceRangeList) Dispose() {
 }

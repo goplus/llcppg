@@ -19,14 +19,14 @@ type File uintptr
 
 // Retrieve the complete file and path name of the given file.
 //
-// llgo:link File.Name C.clang_getFileName
+//llgo:link File.Name C.clang_getFileName
 func (self File) Name() String {
 	return String{}
 }
 
 // Retrieve the last modification time of the given file.
 //
-// llgo:link File.Time C.clang_getFileTime
+//llgo:link File.Time C.clang_getFileTime
 func (self File) Time() time.TimeT {
 	return 0
 }
@@ -38,7 +38,7 @@ func (self File) Time() time.TimeT {
 // \returns If there was a failure getting the unique ID, returns non-zero,
 // otherwise returns 0.
 //
-// llgo:link File.UniqueID C.clang_getFileUniqueID
+//llgo:link File.UniqueID C.clang_getFileUniqueID
 func (self File) UniqueID(outID *FileUniqueID) c.Int {
 	return 0
 }
@@ -53,7 +53,7 @@ func FileIsEqual(file1 File, file2 File) c.Int
 //
 // An empty string may be returned. Use \c clang_getFileName() in that case.
 //
-// llgo:link File.TryGetRealPathName C.clang_File_tryGetRealPathName
+//llgo:link File.TryGetRealPathName C.clang_File_tryGetRealPathName
 func (self File) TryGetRealPathName() String {
 	return String{}
 }

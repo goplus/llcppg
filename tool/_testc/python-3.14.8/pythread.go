@@ -71,7 +71,7 @@ type Object = X_object
 //go:linkname IsTrue C.Py_IsTrue
 func IsTrue(x *Object) c.Int
 
-// llgo:link (*Object).IsTrue C.PyObject_IsTrue
+//llgo:link (*Object).IsTrue C.PyObject_IsTrue
 func (self *Object) IsTrue() c.Int {
 	return 0
 }
@@ -79,21 +79,21 @@ func (self *Object) IsTrue() c.Int {
 //go:linkname NewByteArray C.PyByteArray_New
 func NewByteArray() *ByteArrayObject
 
-// llgo:link (*Object).AsByteArray C.PyByteArray_FromObject
+//llgo:link (*Object).AsByteArray C.PyByteArray_FromObject
 func (self *Object) AsByteArray() *ByteArrayObject {
 	return nil
 }
 
-// llgo:link (*ListObject).Item C.PyList_GetItem
+//llgo:link (*ListObject).Item C.PyList_GetItem
 func (self *ListObject) Item(index *Object) *Object {
 	return nil
 }
 
-// llgo:link (*ListObject).SetItem C.PyList_SetItem
+//llgo:link (*ListObject).SetItem C.PyList_SetItem
 func (self *ListObject) SetItem(index *Object, value *Object) {
 }
 
-// llgo:link (*DictObject).Item C.PyDict_GetItem
+//llgo:link (*DictObject).Item C.PyDict_GetItem
 func (self *DictObject) Item(index *Object) *Object {
 	return nil
 }

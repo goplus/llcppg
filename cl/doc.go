@@ -157,7 +157,7 @@ func docCommentGroup(comments []*ast.Comment) *ast.CommentGroup {
 }
 
 // directiveComments builds the comment group for a declaration that carries a
-// generated directive (e.g. "//go:linkname" or "// llgo:link"): the C/C++ doc
+// generated directive (e.g. "//go:linkname" or "//llgo:link"): the C/C++ doc
 // comment (when keepDoc is on) followed by the directive. The directive is
 // always emitted last so it stays adjacent to the declaration it applies to.
 //

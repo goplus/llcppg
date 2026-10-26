@@ -218,7 +218,7 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 			"\n//go:linkname "+nameInPkg+" C."+manglingName))
 	} else {
 		f.SetComments(pkg, ctx.directiveCommentsEx(fn,
-			"\n// llgo:link "+nameInPkg+" C."+manglingName))
+			"\n//llgo:link "+nameInPkg+" C."+manglingName))
 		cb := f.BodyStart(pkg)
 		if n := results.Len(); n > 0 {
 			retType := results.At(0).Type()

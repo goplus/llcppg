@@ -66,12 +66,12 @@ func (p *Shape) XGo_vptr() *X_vtable_Shape {
 	return (*X_vtable_Shape)(p._xgo_vptr)
 }
 
-// llgo:link (*Shape).Area C._ZN5Shape4areaEv
+//llgo:link (*Shape).Area C._ZN5Shape4areaEv
 func (this *Shape) Area() c.Int {
 	return 0
 }
 
-// llgo:link (*Shape).XGo_Dtor C._ZN5ShapeD1Ev
+//llgo:link (*Shape).XGo_Dtor C._ZN5ShapeD1Ev
 func (this *Shape) XGo_Dtor() {
 }
 
@@ -86,12 +86,12 @@ func (p *Widget) XGo_vptr() *X_vtable_Widget {
 	return (*X_vtable_Widget)(p._xgo_vptr)
 }
 
-// llgo:link (*Widget).Paint C._ZN6Widget5paintEv
+//llgo:link (*Widget).Paint C._ZN6Widget5paintEv
 func (this *Widget) Paint() c.Int {
 	return 0
 }
 
-// llgo:link (*Widget).XGo_Dtor C._ZN6WidgetD1Ev
+//llgo:link (*Widget).XGo_Dtor C._ZN6WidgetD1Ev
 func (this *Widget) XGo_Dtor() {
 }
 
@@ -107,7 +107,7 @@ func (p *Circle) XGo_vptr() *X_vtable_Circle {
 	return (*X_vtable_Circle)(*(*unsafe.Pointer)(unsafe.Pointer(p)))
 }
 
-// llgo:link (*Circle).Area C._ZN6Circle4areaEv
+//llgo:link (*Circle).Area C._ZN6Circle4areaEv
 func (this *Circle) Area() c.Int {
 	return 0
 }
@@ -125,7 +125,7 @@ func (p *Button) XGo_vptr() *X_vtable_Button {
 	return (*X_vtable_Button)(*(*unsafe.Pointer)(unsafe.Pointer(p)))
 }
 
-// llgo:link (*Button).Click C._ZN6Button5clickEv
+//llgo:link (*Button).Click C._ZN6Button5clickEv
 func (this *Button) Click() c.Int {
 	return 0
 }

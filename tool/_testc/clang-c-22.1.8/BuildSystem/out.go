@@ -38,7 +38,7 @@ func VirtualFileOverlayCreate(options c.Uint) VirtualFileOverlay
 // The virtual path must be canonicalized (not contain "."/"..").
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link VirtualFileOverlay.AddFileMapping C.clang_VirtualFileOverlay_addFileMapping
+//llgo:link VirtualFileOverlay.AddFileMapping C.clang_VirtualFileOverlay_addFileMapping
 func (_llcppg_param1 VirtualFileOverlay) AddFileMapping(virtualPath *c.Char, realPath *c.Char) CXErrorCode.ErrorCode {
 	return 0
 }
@@ -48,7 +48,7 @@ func (_llcppg_param1 VirtualFileOverlay) AddFileMapping(virtualPath *c.Char, rea
 // option can be used to override the default.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link VirtualFileOverlay.SetCaseSensitivity C.clang_VirtualFileOverlay_setCaseSensitivity
+//llgo:link VirtualFileOverlay.SetCaseSensitivity C.clang_VirtualFileOverlay_setCaseSensitivity
 func (_llcppg_param1 VirtualFileOverlay) SetCaseSensitivity(caseSensitive c.Int) CXErrorCode.ErrorCode {
 	return 0
 }
@@ -61,7 +61,7 @@ func (_llcppg_param1 VirtualFileOverlay) SetCaseSensitivity(caseSensitive c.Int)
 // \param out_buffer_size pointer to receive the buffer size.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link VirtualFileOverlay.WriteToBuffer C.clang_VirtualFileOverlay_writeToBuffer
+//llgo:link VirtualFileOverlay.WriteToBuffer C.clang_VirtualFileOverlay_writeToBuffer
 func (_llcppg_param1 VirtualFileOverlay) WriteToBuffer(options c.Uint, out_buffer_ptr **c.Char, out_buffer_size *c.Uint) CXErrorCode.ErrorCode {
 	return 0
 }
@@ -76,7 +76,7 @@ func Free(buffer unsafe.Pointer)
 
 // Dispose a \c CXVirtualFileOverlay object.
 //
-// llgo:link VirtualFileOverlay.Dispose C.clang_VirtualFileOverlay_dispose
+//llgo:link VirtualFileOverlay.Dispose C.clang_VirtualFileOverlay_dispose
 func (_llcppg_param1 VirtualFileOverlay) Dispose() {
 }
 
@@ -91,7 +91,7 @@ func ModuleMapDescriptorCreate(options c.Uint) ModuleMapDescriptor
 // Sets the framework module name that the module.modulemap describes.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link ModuleMapDescriptor.SetFrameworkModuleName C.clang_ModuleMapDescriptor_setFrameworkModuleName
+//llgo:link ModuleMapDescriptor.SetFrameworkModuleName C.clang_ModuleMapDescriptor_setFrameworkModuleName
 func (_llcppg_param1 ModuleMapDescriptor) SetFrameworkModuleName(name *c.Char) CXErrorCode.ErrorCode {
 	return 0
 }
@@ -99,7 +99,7 @@ func (_llcppg_param1 ModuleMapDescriptor) SetFrameworkModuleName(name *c.Char) C
 // Sets the umbrella header name that the module.modulemap describes.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link ModuleMapDescriptor.SetUmbrellaHeader C.clang_ModuleMapDescriptor_setUmbrellaHeader
+//llgo:link ModuleMapDescriptor.SetUmbrellaHeader C.clang_ModuleMapDescriptor_setUmbrellaHeader
 func (_llcppg_param1 ModuleMapDescriptor) SetUmbrellaHeader(name *c.Char) CXErrorCode.ErrorCode {
 	return 0
 }
@@ -112,13 +112,13 @@ func (_llcppg_param1 ModuleMapDescriptor) SetUmbrellaHeader(name *c.Char) CXErro
 // \param out_buffer_size pointer to receive the buffer size.
 // \returns 0 for success, non-zero to indicate an error.
 //
-// llgo:link ModuleMapDescriptor.WriteToBuffer C.clang_ModuleMapDescriptor_writeToBuffer
+//llgo:link ModuleMapDescriptor.WriteToBuffer C.clang_ModuleMapDescriptor_writeToBuffer
 func (_llcppg_param1 ModuleMapDescriptor) WriteToBuffer(options c.Uint, out_buffer_ptr **c.Char, out_buffer_size *c.Uint) CXErrorCode.ErrorCode {
 	return 0
 }
 
 // Dispose a \c CXModuleMapDescriptor object.
 //
-// llgo:link ModuleMapDescriptor.Dispose C.clang_ModuleMapDescriptor_dispose
+//llgo:link ModuleMapDescriptor.Dispose C.clang_ModuleMapDescriptor_dispose
 func (_llcppg_param1 ModuleMapDescriptor) Dispose() {
 }
