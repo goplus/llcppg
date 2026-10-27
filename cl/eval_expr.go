@@ -18,6 +18,7 @@ package cl
 
 import (
 	"go/token"
+	"log"
 	"strconv"
 	"strings"
 
@@ -85,6 +86,9 @@ func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token)
 			var kind int
 			var arg any
 			kind, arg, tok, left, ok = parseExpr(ctx, tu, left, true)
+			if debugMacroFunc {
+				log.Println("==> funcCallArg:", kind, arg, tok, ok, len(left))
+			}
 			if !ok {
 				return
 			}

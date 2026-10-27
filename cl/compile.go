@@ -32,19 +32,22 @@ const (
 	DbgFlagCompileDecl = 1 << iota
 	DbgFlagMajorProc
 	DbgFlagQuietIgnore
-	DbgFlagAll = DbgFlagCompileDecl | DbgFlagMajorProc | DbgFlagQuietIgnore
+	DbgFlagMacroFunc
+	DbgFlagAll = DbgFlagCompileDecl | DbgFlagMajorProc | DbgFlagQuietIgnore | DbgFlagMacroFunc
 )
 
 var (
 	debugCompileDecl bool
 	debugMajorProc   bool
 	debugQuietIgnore bool
+	debugMacroFunc   bool
 )
 
 func SetDebug(flags int) {
 	debugCompileDecl = (flags & DbgFlagCompileDecl) != 0
 	debugMajorProc = (flags & DbgFlagMajorProc) != 0
 	debugQuietIgnore = (flags & DbgFlagQuietIgnore) != 0
+	debugMacroFunc = (flags & DbgFlagMacroFunc) != 0
 }
 
 // -----------------------------------------------------------------------------
@@ -360,8 +363,9 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), ovobjs: make(map[string]*overloadObj),
 		lastSeen: make(map[string]none), types: make(map[string]typeObj),
-		macroVals: make(map[string]any), compiledFns: make(map[string]*gogen.Func),
-		impPkgs: make(map[string]none), pubDeps: make(map[string]none), pubTyps: make(map[string]none),
+		compiledFns: make(map[string]*gogen.Func), impPkgs: make(map[string]none),
+		pubDeps: make(map[string]none), pubTyps: make(map[string]none),
+		macroVals: map[string]any{"NULL": nil}, // TODO(xsw): load macro values
 	}
 
 	if conf.LoadLibcPubFile {

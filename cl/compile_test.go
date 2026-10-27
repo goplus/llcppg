@@ -207,6 +207,9 @@ var langExts = [...]string{
 }
 
 func TestC(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagMacroFunc)
+	defer cl.SetDebug(0)
+
 	testFromDir(t, "", "./_testc", cl.LanguageC)
 }
 
