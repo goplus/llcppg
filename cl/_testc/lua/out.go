@@ -47,6 +47,12 @@ func (L *State) LLoadfilex(filename *c.Char, mode *c.Char) c.Int {
 func (L *State) LLoadfile(f *c.Char) c.Int {
 	return L.LLoadfilex(f, nil)
 }
+func (L *State) LCheckunsigned(a c.Int) Integer {
+	return L.LCheckinteger(a)
+}
+func (L *State) LOptunsigned(a c.Int, d Integer) Integer {
+	return L.LOptinteger(a, d)
+}
 func (L *State) LCheckint(n c.Int) Integer {
 	return L.LCheckinteger(n)
 }
