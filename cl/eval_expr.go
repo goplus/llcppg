@@ -104,6 +104,9 @@ func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token)
 	if !ok || tok != token.LPAREN {
 		return
 	}
+	if debugMacroFunc {
+		log.Println("==> funcCallExpr:", lit)
+	}
 	for !expectRParen(tu, &left) {
 		var kind int
 		var arg any

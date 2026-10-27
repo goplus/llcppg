@@ -23,8 +23,10 @@ import (
 	"go/types"
 	"log"
 	"maps"
+	"unsafe"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 )
 
@@ -290,6 +292,10 @@ const (
 	libcPkgPath = "github.com/goplus/lib/c"
 )
 
+const (
+	c_INT_MAX = (1 << (unsafe.Sizeof(c.Int(0))*8 - 1)) - 1
+)
+
 // -----------------------------------------------------------------------------
 
 // Source represents a source file to be processed by llcppg.
@@ -298,7 +304,6 @@ type Source = clang.TranslationUnit
 // NewPackage loads translation units and generates a Go package with the given package
 // path, name and configuration.
 func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Package, err error) {
-	interp := &nodeInterp{}
 	if conf == nil {
 		conf = &Config{}
 	}
@@ -320,13 +325,12 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		LoadNamed:       nil,
 		HandleErr:       nil,
 		NewBuiltin:      nil,
-		NodeInterpreter: interp,
+		NodeInterpreter: nodeInterp{},
 		CanImplicitCast: nil,
 		DefaultGoFile:   conf.DefaultGoFile,
 	}
 	pkg := gogen.NewPackage(pkgPath, pkgName, confGox)
 	pkg.SetRedeclarable(true)
-	interp.fset = pkg.Fset
 
 	llgo := pkg.NewConstDefs(pkg.Types.Scope())
 	if llgoPkg := conf.LLGoPackage; llgoPkg != "" {
@@ -361,11 +365,14 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		varPrefix: conf.VarPrefix, typeIgnore: conf.TypeIgnore, typdecls: typdecls,
 		fnIgnore: conf.FuncIgnore, classes: conf.Class, nonClasses: conf.NonClass,
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
-		fileBases: make(map[clang.File]int), ovobjs: make(map[string]*overloadObj),
+		files: make(map[clang.File]file), ovobjs: make(map[string]*overloadObj),
 		lastSeen: make(map[string]none), types: make(map[string]typeObj),
 		compiledFns: make(map[string]*gogen.Func), impPkgs: make(map[string]none),
 		pubDeps: make(map[string]none), pubTyps: make(map[string]none),
-		macroVals: map[string]any{"NULL": nil}, // TODO(xsw): load macro values
+		macroVals: map[string]any{ // TODO(xsw): load macro values
+			"NULL":    nil,
+			"INT_MAX": c_INT_MAX,
+		},
 	}
 
 	if conf.LoadLibcPubFile {

@@ -73,6 +73,24 @@ func goNodePos(ctx *pkgCtx, v clang.Cursor) token.Pos {
 
 // -----------------------------------------------------------------------------
 
+type nodeInterp struct {
+}
+
+func (p nodeInterp) LoadExpr(v ast.Node) string {
+	if v, ok := v.(*node); ok {
+		if src, offset, ok := v.ctx.fileOffset(v.pos); ok {
+			end := int(v.end-v.pos) + offset
+			if uint(end) > uint(len(src)) {
+				end = len(src)
+			}
+			return string(src[offset:end])
+		}
+	}
+	panic("unreachable: nodeInterp.LoadExpr")
+}
+
+// -----------------------------------------------------------------------------
+
 type nodeCursor interface {
 	Name() string
 	FullName() string
@@ -107,16 +125,6 @@ func (n clangNode) FullName() string {
 
 // -----------------------------------------------------------------------------
 
-type nodeInterp struct {
-	fset *token.FileSet
-}
-
-func (p *nodeInterp) LoadExpr(v ast.Node) string {
-	panic("todo: nodeInterp.LoadExpr")
-}
-
-// -----------------------------------------------------------------------------
-
 type none struct{}
 
 type compileFunc = func(ctx *pkgCtx)
@@ -141,6 +149,11 @@ type typDecl struct {
 	*gogen.TypeDecl
 	defs *gogen.TypeDefs
 	init *typDeclInit
+}
+
+type file struct {
+	base int
+	src  []byte
 }
 
 type pkgCtx struct {
@@ -194,7 +207,7 @@ type pkgCtx struct {
 
 	pkgOf func(headerFile string) (pkgPath string, ok bool)
 
-	fileBases map[clang.File]int // clang.File => base
+	files map[clang.File]file // clang.File => file
 
 	mgroup       *macroGrouper           // macro grouping current state
 	macroVals    map[string]any          // macroName => value
@@ -299,16 +312,29 @@ func (p *pkgCtx) position(pos token.Pos) token.Position {
 	return p.fset.Position(pos)
 }
 
-func (p *pkgCtx) getFileBase(c clang.Cursor, file clang.File) int {
-	base, ok := p.fileBases[file]
+func (p *pkgCtx) getFileBase(decl clang.Cursor, fp clang.File) int {
+	f, ok := p.files[fp]
 	if !ok {
-		src := clang.TU(c).FileContents(file)
-		tf := p.fset.AddFile(clang.FileName(file), -1, len(src))
+		src := clang.TU(decl).FileContents(fp)
+		tf := p.fset.AddFile(clang.FileName(fp), -1, len(src))
 		tf.SetLinesForContent(src)
-		base = tf.Base()
-		p.fileBases[file] = base
+		f = file{tf.Base(), src}
+		p.files[fp] = f
 	}
-	return base
+	return f.base
+}
+
+func (p *pkgCtx) fileOffset(pos token.Pos) (src []byte, offset int, ok bool) {
+	tf := p.fset.File(pos)
+	if tf != nil {
+		base := tf.Base()
+		for _, f := range p.files {
+			if f.base == base {
+				return f.src, int(pos) - f.base, true
+			}
+		}
+	}
+	return
 }
 
 func (p *pkgCtx) addLoadUnit(f compileFunc) {

@@ -62,6 +62,9 @@ func emitMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, paramNames 
 	}
 	if len(body) >= 3 { // fn()
 		if v, ok := evalFuncCallExpr(ctx, tu, body); ok {
+			if debugMacroFunc {
+				log.Println("macroFunc", macroName, paramNames)
+			}
 			doCompileAutoMacroFunc(ctx, decl, macroName, paramNames, v)
 		}
 	}
