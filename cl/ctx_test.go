@@ -25,11 +25,15 @@ import (
 	"testing"
 
 	"github.com/goplus/gogen"
+	"github.com/goplus/lib/c"
+	"github.com/goplus/llcppg/clang"
 )
 
 func newPkgCtx() *pkgCtx {
 	return &pkgCtx{
-		pkg: gogen.NewPackage("", "foo", nil),
+		pkg:   gogen.NewPackage("", "foo", nil),
+		fset:  token.NewFileSet(),
+		files: make(map[clang.File]file),
 	}
 }
 
@@ -193,4 +197,48 @@ func Test_isMethodCall(t *testing.T) {
 	if new(funcCallExpr).isMethodCall("foo") {
 		t.Fatal("Test_isMethodCall: expected false")
 	}
+}
+
+func Test_nodeInterp(t *testing.T) {
+	func() {
+		defer func() {
+			if e := recover(); e == nil {
+				t.Logf("Test_nodeInterp: no error?")
+			}
+		}()
+		var ni nodeInterp
+		ni.LoadExpr(nil)
+	}()
+	const content = "hello"
+	var ni nodeInterp
+	var fp = clang.File(1)
+	ctx := newPkgCtx()
+	node := newNode(ctx, content, fp, 1, 2)
+	if v := ni.LoadExpr(node); v != "e" {
+		t.Fatal("Test_nodeInterp: expected 'e', got ", v)
+	}
+	node = newNode(ctx, content, fp, 4, 6)
+	if v := ni.LoadExpr(node); v != "o" {
+		t.Fatal("Test_nodeInterp: expected 'o', got ", v)
+	}
+	if _, _, ok := ctx.fileOffset(0); ok {
+		t.Fatal("Test_nodeInterp: expected fileOffset(0) to be not ok")
+	}
+}
+
+func newNode(ctx *pkgCtx, content string, fp clang.File, pos, end c.Uint) ast.Node {
+	base := getFileBase(ctx, content, fp)
+	return &node{pos: token.Pos(int(pos) + base), end: token.Pos(int(end) + base), ctx: ctx}
+}
+
+func getFileBase(p *pkgCtx, content string, fp clang.File) int {
+	f, ok := p.files[fp]
+	if !ok {
+		src := []byte(content)
+		tf := p.fset.AddFile("foo.h", -1, len(src))
+		tf.SetLinesForContent(src)
+		f = file{tf.Base(), src}
+		p.files[fp] = f
+	}
+	return f.base
 }
