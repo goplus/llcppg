@@ -133,29 +133,32 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		if doc := docCommentGroup(decl); doc != nil {
 			f.SetComments(pkg, doc)
 		}
-		cb := f.BodyStart(pkg)
+		node := goNode(ctx, decl)
+		cb := f.BodyStart(pkg, node)
 		if recv != nil {
-			cb.Val(recv)
-			cb.MemberVal(fnRef.Name(), 0)
+			cb.Val(recv, node)
+			cb.MemberVal(fnRef.Name(), 0, node)
 		} else {
-			cb.Val(fnRef.Func)
+			cb.Val(fnRef.Func, node)
 		}
 		for i, arg := range v.args {
 			if arg.kind == fca_Sizeof { // IntType( unsafe.Sizeof( T ) )
 				intT := callParams.At(i).Type()
 				t := arg.v.(types.Type)
-				cb.Typ(intT).Val(ctx.unsafeSizeof()).ZeroLit(t).Call(1).Call(1)
+				cb.Typ(intT, node).
+					Val(ctx.unsafeSizeof(), node).ZeroLit(t).CallWith(1, 0, 0, node).
+					CallWith(1, 0, 0, node)
 			} else if s, ok := arg.v.(string); ok { // c.Str("...")
-				cb.Val(ctx.cStr()).Val(s).Call(1)
+				cb.Val(ctx.cStr()).Val(s, node).CallWith(1, 0, 0, node)
 			} else {
-				cb.Val(arg.v)
+				cb.Val(arg.v, node)
 			}
 		}
-		cb.Call(len(v.args))
+		cb.CallWith(len(v.args), 0, 0, node)
 		if results.Len() > 0 {
-			cb.Return(1)
+			cb.Return(1, node)
 		}
-		cb.EndStmt().End()
+		cb.EndStmt().End(node)
 	}
 }
 

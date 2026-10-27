@@ -2,6 +2,8 @@ package foo
 
 import "github.com/goplus/lib/c"
 
+const LUA_REGISTRYINDEX = -1073742823
+
 type LBuffer struct {
 	B    *c.Char
 	Size SizeT
@@ -42,6 +44,11 @@ func (L *State) LOptinteger(arg c.Int, def Integer) Integer {
 
 //llgo:link (*State).LLoadfilex C.luaL_loadfilex
 func (L *State) LLoadfilex(filename *c.Char, mode *c.Char) c.Int {
+	return 0
+}
+
+//llgo:link (*State).Getfield C.lua_getfield
+func (L *State) Getfield(idx c.Int, k *c.Char) c.Int {
 	return 0
 }
 func (L *State) LLoadfile(f *c.Char) c.Int {
