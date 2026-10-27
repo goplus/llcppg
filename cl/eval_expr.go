@@ -90,7 +90,7 @@ func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token)
 				return
 			}
 			tok, lit, left, ok = scanToken(tu, left)
-			if !ok {
+			if !ok || tok != token.IDENT {
 				return
 			}
 		default:

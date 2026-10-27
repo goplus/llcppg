@@ -43,3 +43,7 @@ LUALIB_API int (luaL_loadfilex) (lua_State *L, const char *filename,
 
 #define luaL_checklong(L,n) ((long)luaL_checkinteger(L, (n)))
 #define luaL_optlong(L,n,d) ((long)luaL_optinteger(L, (n), (d)))
+
+#define foo(p) ((int)(*p))
+#define bar(p) (*p)
+#define baz(p) *p
