@@ -188,3 +188,9 @@ func Test_typeNameOf(t *testing.T) {
 		t.Fatal("Test_typeNameOf: expected empty string for types.Int")
 	}
 }
+
+func Test_isMethodCall(t *testing.T) {
+	if new(funcCallExpr).isMethodCall("foo") {
+		t.Fatal("Test_isMethodCall: expected false")
+	}
+}
