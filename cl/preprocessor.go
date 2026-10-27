@@ -21,6 +21,7 @@ import (
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -52,6 +53,22 @@ func loadInclude(ctx *pkgCtx, decl clang.Cursor) {
 
 // -----------------------------------------------------------------------------
 
+func emitMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, paramNames []string, tu clang.TranslationUnit, body []lc.Token) {
+	if ctx.isMacroIgnored(macroName) {
+		if debugCompileDecl {
+			log.Println("macroFunc", macroName, paramNames, "- ignored")
+		}
+		return
+	}
+	if len(body) >= 3 { // fn()
+		if v, ok := evalFuncCallExpr(ctx, tu, body); ok {
+			doCompileAutoMacroFunc(ctx, decl, macroName, paramNames, v)
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+
 func emitMacroConst(defs *gogen.ConstDefs, ctx *pkgCtx, decl clang.Cursor, docRaw string, grouped bool) {
 	origName := clang.String(decl)
 	if ctx.isMacroIgnored(origName) {
@@ -78,9 +95,7 @@ func emitMacroConst(defs *gogen.ConstDefs, ctx *pkgCtx, decl clang.Cursor, docRa
 			if grouped {
 				at.Doc = docCommentGroup(toLineComments(docRaw))
 			} else {
-				raw := clang.RawCommentsOf(decl)
-				doc := docCommentGroup(toLineComments(raw.Text()))
-				defs.SetComments(doc)
+				defs.SetComments(ctx.docCommentGroup(decl))
 			}
 			name := ctx.macroName(origName)
 			defs.NewAt(at, func(cb *gogen.CodeBuilder) int {
@@ -91,6 +106,8 @@ func emitMacroConst(defs *gogen.ConstDefs, ctx *pkgCtx, decl clang.Cursor, docRa
 		}
 	}
 }
+
+// -----------------------------------------------------------------------------
 
 func loadMacroConst(ctx *pkgCtx, defs *gogen.ConstDefs, decl clang.Cursor) {
 	emitMacroConst(defs, ctx, decl, "", false)

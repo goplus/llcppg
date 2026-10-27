@@ -11,6 +11,6 @@ import (
 //
 //go:linkname PACK_FULL_VERSION C.Py_PACK_FULL_VERSION
 func PACK_FULL_VERSION(x c.Int, y c.Int, z c.Int, level c.Int, serial c.Int) c.Uint32T
-
-//go:linkname PACK_VERSION C.Py_PACK_VERSION
-func PACK_VERSION(x c.Int, y c.Int) c.Uint32T
+func PACK_VERSION(X c.Int, Y c.Int) c.Uint32T {
+	return PACK_FULL_VERSION(X, Y, 0, 0, 0)
+}

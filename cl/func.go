@@ -211,6 +211,9 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 		ctx.exErrorf(fn, "%v", err)
 		return
 	}
+	if obj.decl.Kind != 0 {
+		ctx.compiledFns[objUSR(obj.decl)] = f
+	}
 
 	if recv == nil {
 		ctx.forceImportUnsafe()

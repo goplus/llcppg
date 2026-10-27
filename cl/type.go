@@ -30,6 +30,19 @@ import (
 
 // -----------------------------------------------------------------------------
 
+func typeNameOf(typ types.Type) string {
+	if tp, ok := typ.(*types.Pointer); ok {
+		typ = tp.Elem()
+	}
+	switch t := typ.(type) {
+	case *types.Named:
+		return t.Obj().Name()
+	case *types.Alias:
+		return t.Obj().Name()
+	}
+	return ""
+}
+
 func cloneTypeName(obj *types.TypeName) *types.TypeName {
 	return types.NewTypeName(obj.Pos(), obj.Pkg(), obj.Name(), obj.Type())
 }

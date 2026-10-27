@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
 )
@@ -31,7 +32,74 @@ func evalConstExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v 
 	defer func() {
 		recover()
 	}()
-	v, _, ok = parseExpr(ctx, tu, tokens, false)
+	kind, v, _, _, ok := parseExpr(ctx, tu, tokens, false)
+	ok = ok && kind == fca_Const
+	return
+}
+
+// -----------------------------------------------------------------------------
+
+// funcCallArg kinds
+const (
+	fca_Const = iota
+	fca_Ident
+	fca_Sizeof
+)
+
+type funcCallArg struct {
+	kind int
+	v    any
+}
+
+type funcCallExpr struct {
+	fn   string
+	args []funcCallArg
+}
+
+func (p *funcCallExpr) isMethodCall(recvName string) bool {
+	if len(p.args) == 0 {
+		return false
+	}
+	arg := p.args[0]
+	return arg.kind == fca_Ident && arg.v.(string) == recvName
+}
+
+func evalFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v funcCallExpr, ok bool) {
+	v, left, ok := parseFuncCallExpr(ctx, tu, tokens)
+	ok = ok && len(left) == 0
+	return
+}
+
+func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v funcCallExpr, left []lc.Token, found bool) {
+	tok, lit, left, ok := scanToken(tu, tokens)
+	if !ok {
+		return
+	}
+	switch tok {
+	case token.IDENT:
+		tok, _, left, ok = scanToken(tu, left)
+		if !ok || tok != token.LPAREN {
+			return
+		}
+		for !expectRParen(tu, &left) {
+			var kind int
+			var arg any
+			kind, arg, tok, left, ok = parseExpr(ctx, tu, left, true)
+			if !ok {
+				return
+			}
+			v.args = append(v.args, funcCallArg{kind, arg})
+			if tok == token.RPAREN {
+				break
+			}
+		}
+		v.fn, found = lit, true
+	case token.LPAREN:
+		if v, left, ok = parseFuncCallExpr(ctx, tu, left); ok {
+			tok, _, left, ok = scanToken(tu, left)
+			found = ok && tok == token.RPAREN
+		}
+	}
 	return
 }
 
@@ -59,12 +127,36 @@ var opPrecs = map[token.Token]int{
 	token.OR:  2,
 }
 
-func parseExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token, needRParen bool) (v any, left []lc.Token, ok bool) {
-	v, left, ok = parseOperand(ctx, tu, tokens)
+func parseExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token, needRParen bool) (kind int, v any, tok token.Token, left []lc.Token, found bool) {
+	kind, v, left, ok := parseOperand(ctx, tu, tokens)
 	if !ok {
 		return
 	}
-	var tok token.Token
+	if kind == fca_Ident {
+		switch v.(string) {
+		case "sizeof":
+			tok, _, left, ok = scanToken(tu, left)
+			if !ok || tok != token.LPAREN {
+				return
+			}
+			tok, v, left, ok = scanToken(tu, left)
+			if !ok || tok != token.IDENT {
+				return
+			}
+			tok, _, left, ok = scanToken(tu, left)
+			if !ok || tok != token.RPAREN {
+				return
+			}
+			kind = fca_Sizeof
+		}
+		if needRParen {
+			tok, _, left, ok = scanToken(tu, left)
+			found = ok && (tok == token.RPAREN || tok == token.COMMA)
+		} else {
+			tok, found = token.ILLEGAL, len(left) == 0
+		}
+		return
+	}
 	var n, prec int
 	var ops = []operand{{val: v, tok: token.ILLEGAL, prec: -1}}
 	for len(left) > 0 {
@@ -74,8 +166,8 @@ func parseExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token, needRPa
 		}
 		prec, ok = opPrecs[tok]
 		if !ok {
-			if tok == token.RPAREN && needRParen {
-				_, ok = calc(ops, n, 0)
+			if needRParen && (tok == token.RPAREN || tok == token.COMMA) {
+				_, found = calc(ops, n, 0)
 				v = ops[0].val
 			}
 			return
@@ -84,15 +176,16 @@ func parseExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token, needRPa
 		if !ok {
 			return
 		}
-		v, left, ok = parseOperand(ctx, tu, left)
-		if !ok {
+		kind, v, left, ok = parseOperand(ctx, tu, left)
+		if !ok || kind != fca_Const {
 			return
 		}
 		n++
 		ops = append(ops[:n], operand{val: v, tok: tok, prec: prec})
 	}
+	tok = token.ILLEGAL
 	if ok = !needRParen; ok {
-		_, ok = calc(ops, n, 0)
+		_, found = calc(ops, n, 0)
 		v = ops[0].val
 	}
 	return
@@ -187,7 +280,7 @@ func floatMathOp(op token.Token, a, b float64) float64 {
 	panic("floatMathOp: unknown op")
 }
 
-func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v any, left []lc.Token, ok bool) {
+func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (kind int, v any, left []lc.Token, ok bool) {
 	tok, lit, left, ok := scanToken(tu, tokens)
 	if !ok {
 		return
@@ -202,16 +295,24 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v a
 			v, ok = int(val), e == nil
 		}
 	case token.LPAREN:
-		return parseExpr(ctx, tu, left, true)
+		kind, v, _, left, ok = parseExpr(ctx, tu, left, true)
+		if ok && kind == fca_Ident {
+			switch v.(string) {
+			case "int": // (int)operand
+				return parseOperand(ctx, tu, left)
+			}
+		}
 	case token.IDENT:
-		v, ok = ctx.macroVals[lit]
+		if v, ok = ctx.macroVals[lit]; !ok {
+			kind, v, ok = fca_Ident, lit, true
+		}
 	case token.STRING:
 		val, e := strconv.Unquote(lit)
 		v, ok = val, e == nil
 	case token.CHAR:
 		ok = false // not supported
 	case token.SUB: // -
-		v, left, ok = parseOperand(ctx, tu, left)
+		_, v, left, ok = parseOperand(ctx, tu, left)
 		if !ok {
 			return
 		}
@@ -224,7 +325,7 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v a
 			ok = false
 		}
 	case token.TILDE: // ~
-		v, left, ok = parseOperand(ctx, tu, left)
+		_, v, left, ok = parseOperand(ctx, tu, left)
 		if !ok {
 			return
 		}
@@ -243,6 +344,7 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v a
 var c2goOps = map[string]token.Token{
 	"(": token.LPAREN,
 	")": token.RPAREN,
+	",": token.COMMA,
 
 	"%": token.REM,
 	"*": token.MUL,
@@ -280,7 +382,7 @@ func scanToken(tu clang.TranslationUnit, tokens []lc.Token) (ret token.Token, li
 				ret = token.FLOAT
 			}
 			left = tokens[1:]
-		case lc.Token_Identifier:
+		case lc.Token_Identifier, lc.Token_Keyword:
 			ret = token.IDENT
 			lit, ok = tu.TokenSpelling(tok), true
 			left = tokens[1:]
@@ -291,6 +393,27 @@ func scanToken(tu clang.TranslationUnit, tokens []lc.Token) (ret token.Token, li
 		break
 	}
 	return
+}
+
+func expectRParen(tu clang.TranslationUnit, left *[]lc.Token) bool {
+	tokens := *left
+	for len(tokens) > 0 {
+		tok := tokens[0]
+		kind := tok.Kind()
+		switch kind {
+		case lc.Token_Punctuation:
+			op := tu.TranslationUnit.TokenSpelling(tok).CStr()
+			if c.Strcmp(op, c.Str(")")) == 0 {
+				*left = tokens[1:]
+				return true
+			}
+		case lc.Token_Comment:
+			tokens = tokens[1:]
+			continue
+		}
+		break
+	}
+	return false
 }
 
 // -----------------------------------------------------------------------------

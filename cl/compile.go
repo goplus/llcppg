@@ -150,6 +150,14 @@ type Config struct {
 	// The reference function supplies the wrapper's return type and the parameter
 	// types (matched to the macro's parameters by name, then by position).
 	// See https://github.com/xgo-dev/llcppg/issues/1051.
+	//
+	// Function-like macros that are not listed here are examined by automatic
+	// forwarding-macro detection: a macro whose body is a single plain call to a
+	// generated function, with every argument being one of the macro's parameters
+	// or a compile-time constant, is turned into an ordinary Go function that
+	// calls the callee directly (no C wrapper, no //go:linkname). A macro listed
+	// here is always processed in wrap mode and never reinterpreted by detection.
+	// See https://github.com/xgo-dev/llcppg/issues/1109.
 	MacroFunc map[string]string
 
 	// MacroGroup declares groups of related constant macros that are emitted
@@ -352,8 +360,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		pkgOf: conf.PackageOf, nameLookup: nameLookup, pubLookup: conf.PubFileLookup,
 		fileBases: make(map[clang.File]int), ovobjs: make(map[string]*overloadObj),
 		lastSeen: make(map[string]none), types: make(map[string]typeObj),
-		macroVals: make(map[string]any), impPkgs: make(map[string]none),
-		pubDeps: make(map[string]none), pubTyps: make(map[string]none),
+		macroVals: make(map[string]any), compiledFns: make(map[string]*gogen.Func),
+		impPkgs: make(map[string]none), pubDeps: make(map[string]none), pubTyps: make(map[string]none),
 	}
 
 	if conf.LoadLibcPubFile {

@@ -155,6 +155,9 @@ type pkgCtx struct {
 	tany types.Type
 	tptr types.Type
 
+	sizeof_ types.Object
+	cStr_   types.Object
+
 	cflags string
 	lang   Language
 
@@ -195,6 +198,7 @@ type pkgCtx struct {
 
 	mgroup       *macroGrouper           // macro grouping current state
 	macroVals    map[string]any          // macroName => value
+	compiledFns  map[string]*gogen.Func  // func USR => generated Go function
 	ovobjs       map[string]*overloadObj // objUSR => overload object
 	types        map[string]typeObj      // c/c++ fullName => type name object (include external types)
 	typdecls     map[string]typDecl      // c/c++ fullName => type declaration object (only local types)
@@ -206,6 +210,7 @@ type pkgCtx struct {
 
 	loads    []compileUnit
 	compiles []compileUnit
+	posts    []compileUnit
 	pubTyps  map[string]none // TODO(xsw): maybe can remove this field (use typdecls)
 
 	errCnt   int
@@ -320,11 +325,19 @@ func (p *pkgCtx) addCompileUnit(f compileFunc) {
 	})
 }
 
+func (p *pkgCtx) addPostUnit(f compileFunc) {
+	p.posts = append(p.posts, compileUnit{
+		fn: f,
+		at: p.pkg.CurFile(),
+	})
+}
+
 func (p *pkgCtx) compile() {
 	p.postPreload()
 	doCompile(p, &p.loads)
 	p.postLoad()
 	doCompile(p, &p.compiles)
+	doCompile(p, &p.posts)
 }
 
 func doCompile(p *pkgCtx, pcompiles *[]compileUnit) {
@@ -342,9 +355,27 @@ func doCompile(p *pkgCtx, pcompiles *[]compileUnit) {
 	}
 }
 
+func (p *pkgCtx) cStr() types.Object {
+	if p.cStr_ == nil {
+		p.cStr_ = p.c.Ref("Str")
+	}
+	return p.cStr_
+}
+
+func (p *pkgCtx) unsafe() gogen.PkgRef {
+	return gogen.PkgRef{Types: types.Unsafe}
+}
+
+func (p *pkgCtx) unsafeSizeof() types.Object {
+	if p.sizeof_ == nil {
+		p.sizeof_ = p.unsafe().Ref("Sizeof")
+	}
+	return p.sizeof_
+}
+
 func (p *pkgCtx) unsafePointer() types.Type {
 	if p.tptr == nil {
-		p.tptr = p.pkg.Import("unsafe").Ref("Pointer").Type()
+		p.tptr = p.unsafe().Ref("Pointer").Type()
 	}
 	return p.tptr
 }

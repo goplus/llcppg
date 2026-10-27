@@ -435,12 +435,9 @@ func preloadGlobalFunc(ctx *pkgCtx, scope *scopeCtx, fn clang.Cursor) {
 }
 
 func preloadMacroFunc(ctx *pkgCtx, decl clang.Cursor) {
-	macroName := clang.String(decl)
-	if refName, ok := ctx.macroFunc[macroName]; ok {
-		ctx.addLoadUnit(func(ctx *pkgCtx) {
-			loadMacroFunc(ctx, decl, macroName, refName)
-		})
-	}
+	ctx.addLoadUnit(func(ctx *pkgCtx) {
+		loadMacroFunc(ctx, decl)
+	})
 }
 
 // -----------------------------------------------------------------------------
