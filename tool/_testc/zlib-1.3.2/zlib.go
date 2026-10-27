@@ -4,8 +4,10 @@ package zlib
 
 import (
 	"github.com/goplus/lib/c"
-	_ "unsafe"
+	"unsafe"
 )
+
+const VERSION = "1.3.2"
 
 // Allowed flush values; see deflate() and inflate() below for details
 const (
@@ -87,36 +89,6 @@ type Streamp = *Stream
 
 // semi-opaque gzip file descriptor
 type GzFile = *GzFileS
-
-//llgo:link Streamp.DeflateInit C._llcppg_deflateInit
-func (self Streamp) DeflateInit(level c.Int) c.Int {
-	return 0
-}
-
-//llgo:link Streamp.InflateInit C._llcppg_inflateInit
-func (self Streamp) InflateInit() c.Int {
-	return 0
-}
-
-//llgo:link Streamp.DeflateInit2 C._llcppg_deflateInit2
-func (self Streamp) DeflateInit2(level c.Int, method c.Int, windowBits c.Int, memLevel c.Int, strategy c.Int) c.Int {
-	return 0
-}
-
-//llgo:link Streamp.InflateInit2 C._llcppg_inflateInit2
-func (self Streamp) InflateInit2(windowBits c.Int) c.Int {
-	return 0
-}
-
-//llgo:link Streamp.InflateBackInit C._llcppg_inflateBackInit
-func (self Streamp) InflateBackInit(windowBits c.Int, window *uint8) c.Int {
-	return 0
-}
-
-//llgo:link GzFile.Getc C._llcppg_gzgetc
-func (self GzFile) Getc() c.Int {
-	return 0
-}
 
 // The application can compare zlibVersion and ZLIB_VERSION for consistency.
 // If the first character differs, the library code actually used is not
@@ -256,4 +228,19 @@ func (self GzFile) Buffer(size c.Uint) c.Int {
 //llgo:link GzFile.Getc_ C.gzgetc_
 func (self GzFile) Getc_() c.Int {
 	return 0
+}
+func (self Streamp) DeflateInit(level c.Int) c.Int {
+	return self.DeflateInit_(level, c.Str("1.3.2"), c.Int(unsafe.Sizeof(Stream{})))
+}
+func (self Streamp) InflateInit() c.Int {
+	return self.InflateInit_(c.Str("1.3.2"), c.Int(unsafe.Sizeof(Stream{})))
+}
+func (self Streamp) DeflateInit2(level c.Int, method c.Int, windowBits c.Int, memLevel c.Int, strategy c.Int) c.Int {
+	return self.DeflateInit2_(level, method, windowBits, memLevel, strategy, c.Str("1.3.2"), c.Int(unsafe.Sizeof(Stream{})))
+}
+func (self Streamp) InflateInit2(windowBits c.Int) c.Int {
+	return self.InflateInit2_(windowBits, c.Str("1.3.2"), c.Int(unsafe.Sizeof(Stream{})))
+}
+func (self Streamp) InflateBackInit(windowBits c.Int, window *uint8) c.Int {
+	return self.InflateBackInit_(windowBits, window, c.Str("1.3.2"), c.Int(unsafe.Sizeof(Stream{})))
 }

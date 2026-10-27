@@ -1,3 +1,5 @@
+#define ZLIB_VERSION "1.3.2"
+
 #define Z_NO_FLUSH      0
 #define Z_PARTIAL_FLUSH 1
 #define Z_SYNC_FLUSH    2
