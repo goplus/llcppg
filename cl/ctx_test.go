@@ -182,3 +182,9 @@ func TestToLineComments(t *testing.T) {
 		})
 	}
 }
+
+func Test_typeNameOf(t *testing.T) {
+	if name := typeNameOf(types.Typ[types.Int]); name != "" {
+		t.Fatal("Test_typeNameOf: expected empty string for types.Int")
+	}
+}
