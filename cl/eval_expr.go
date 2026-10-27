@@ -369,10 +369,6 @@ func scanToken(tu clang.TranslationUnit, tokens []lc.Token) (ret token.Token, li
 		switch kind {
 		case lc.Token_Punctuation:
 			op := tu.TokenSpelling(tok)
-			if op == "\\" {
-				tokens = tokens[1:]
-				continue
-			}
 			left = tokens[1:]
 			ret, ok = c2goOps[op]
 		case lc.Token_Literal:

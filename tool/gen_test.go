@@ -328,6 +328,9 @@ func TestSingleC(t *testing.T) {
 }
 
 func TestPython(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagAll)
+	defer cl.SetDebug(0)
+
 	testFromDir(t, "", "./_testc/python-3.14.8", false)
 }
 
