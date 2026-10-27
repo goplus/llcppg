@@ -296,6 +296,12 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (kin
 		}
 	case token.LPAREN:
 		kind, v, _, left, ok = parseExpr(ctx, tu, left, true)
+		if ok && kind == fca_Ident {
+			switch v.(string) {
+			case "int": // (int)operand
+				return parseOperand(ctx, tu, left)
+			}
+		}
 	case token.IDENT:
 		if v, ok = ctx.macroVals[lit]; !ok {
 			kind, v, ok = fca_Ident, lit, true

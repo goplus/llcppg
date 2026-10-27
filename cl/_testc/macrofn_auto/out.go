@@ -88,6 +88,12 @@ func (g GzFile) Gzgetc() c.Int {
 func (strm Streamp) DeflateInit(level c.Int) c.Int {
 	return strm.DeflateInit_(level, c.Str("1.3.1"), c.Int(unsafe.Sizeof(Stream{})))
 }
+func (strm Streamp) InflateInit() c.Int {
+	return strm.InflateInit_(c.Str("1.3.1"), c.Int(unsafe.Sizeof(Stream{})))
+}
+func (strm Streamp) InflateBackInit(windowBits c.Int, window *uint8) c.Int {
+	return strm.InflateBackInit_(windowBits, window, c.Str("1.3.1"), c.Int(unsafe.Sizeof(Stream{})))
+}
 
 // void-returning forwarder: the body is a bare call with no result.
 func (strm Streamp) Reset() {
@@ -97,4 +103,9 @@ func (strm Streamp) Reset() {
 // Package-level callee with a numeric literal and an object-like constant macro.
 func Configure(mode c.Int) c.Int {
 	return Configure_(mode, -1)
+}
+
+// Skipped: sizeof over an incomplete type whose layout Go cannot know (rule 3).
+func (o *OpaqueT) OpenOpaque() c.Int {
+	return o.OpenOpaque_(c.Int(unsafe.Sizeof(OpaqueT{})))
 }
