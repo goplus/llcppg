@@ -219,9 +219,9 @@ func initClassType(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string, t
 
 func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string, tparams []*types.TypeParam, feats *int) {
 	cls := this.decl
-	doc := ctx.docComments(cls)
+	doc := docComments(cls)
 	if len(doc) != 0 {
-		typDecl.defs.SetComments(docCommentGroup(doc))
+		typDecl.defs.SetComments(doDocCommentGroup(doc))
 	}
 
 	this.typNamed = typDecl.Type()
@@ -251,7 +251,7 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string,
 		return
 	}
 	if featCallback := *feats & featAllCallback; featCallback != 0 {
-		typDecl.defs.SetComments(ctx.directiveCallback(cls, featCallback)) // TODO(xsw): check this
+		typDecl.defs.SetComments(directiveCallback(cls, featCallback)) // TODO(xsw): check this
 	}
 	// Establish the layout at offset 0, following the C++ Itanium ABI. A
 	// polymorphic class shares its vptr with its primary base (the first

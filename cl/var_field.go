@@ -133,7 +133,7 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor) {
 	goName := ctx.varName(cName)
 	ctx.forceImportUnsafe()
 	defs := pkg.NewVarDefs(pkgTypes.Scope()).SetComments(
-		ctx.directiveComments(decl, "\n//go:linkname "+goName+" C."+manglingName))
+		directiveComments(decl, "\n//go:linkname "+goName+" C."+manglingName))
 	defs.New(goNodePos(ctx, decl), typ, goName)
 }
 

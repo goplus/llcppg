@@ -130,7 +130,7 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 			ctx.errorf(decl, "%v", err)
 			return
 		}
-		if doc := ctx.docCommentGroup(decl); doc != nil {
+		if doc := docCommentGroup(decl); doc != nil {
 			f.SetComments(pkg, doc)
 		}
 		cb := f.BodyStart(pkg)
