@@ -79,7 +79,21 @@ func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token)
 	needRParen := tok == token.LPAREN
 	if needRParen {
 		tok, lit, left, ok = scanToken(tu, left)
-		if !ok || tok != token.IDENT {
+		if !ok {
+			return
+		}
+		switch tok {
+		case token.IDENT:
+		case token.LPAREN: // ((Type)...)
+			tok, lit, left, ok = scanToken(tu, left)
+			if !ok || tok != token.IDENT || !isType(ctx, lit) || !expectRParen(tu, &left) {
+				return
+			}
+			tok, lit, left, ok = scanToken(tu, left)
+			if !ok {
+				return
+			}
+		default:
 			return
 		}
 	} else if tok != token.IDENT {
@@ -304,8 +318,7 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (kin
 	case token.LPAREN:
 		kind, v, _, left, ok = parseExpr(ctx, tu, left, true)
 		if ok && kind == fca_Ident {
-			switch v.(string) {
-			case "int": // (int)operand
+			if isType(ctx, v.(string)) { // (Type)operand
 				return parseOperand(ctx, tu, left)
 			}
 		}

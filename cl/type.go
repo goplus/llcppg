@@ -30,6 +30,14 @@ import (
 
 // -----------------------------------------------------------------------------
 
+func isType(_ *pkgCtx, typ string) bool {
+	switch typ {
+	case "int", "long":
+		return true
+	}
+	return false
+}
+
 func typeNameOf(typ types.Type) string {
 	if tp, ok := typ.(*types.Pointer); ok {
 		typ = tp.Elem()

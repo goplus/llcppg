@@ -47,3 +47,15 @@ func (L *State) LLoadfilex(filename *c.Char, mode *c.Char) c.Int {
 func (L *State) LLoadfile(f *c.Char) c.Int {
 	return L.LLoadfilex(f, nil)
 }
+func (L *State) LCheckint(n c.Int) Integer {
+	return L.LCheckinteger(n)
+}
+func (L *State) LOptint(n c.Int, d Integer) Integer {
+	return L.LOptinteger(n, d)
+}
+func (L *State) LChecklong(n c.Int) Integer {
+	return L.LCheckinteger(n)
+}
+func (L *State) LOptlong(n c.Int, d Integer) Integer {
+	return L.LOptinteger(n, d)
+}
