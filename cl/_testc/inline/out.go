@@ -18,5 +18,8 @@ func Add(a c.Int, b c.Int) c.Int
 //go:linkname Mul C._llcppg_mul
 func Mul(a c.Int, b c.Int) c.Int
 
+//go:linkname Foo C._llcppg_foo
+func Foo(f func(_llcppg_param1 c.Int, _llcppg_param2 c.Int) c.Int) c.Int
+
 //go:linkname G C.g
 func G()
