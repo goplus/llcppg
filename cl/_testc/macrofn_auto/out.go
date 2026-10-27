@@ -100,7 +100,7 @@ func (strm Streamp) Reset() {
 	strm.Reset_(0)
 }
 
-// No-argument forwarder; the macro has no doc, so the callee's doc is used.
+// No-argument forwarder
 func Version() c.Int {
 	return Version_()
 }
