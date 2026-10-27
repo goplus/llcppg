@@ -49,7 +49,7 @@ int configure_(int mode, int level);
 
 /// Initialize for deflation, filling in the version and stream size.
 #define z_deflateInit(strm, level) \
-        deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
+        deflateInit_((strm), (level), ZLIB_VERSION, sizeof(z_stream))
 
 #define z_inflateInit(strm) \
         inflateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))

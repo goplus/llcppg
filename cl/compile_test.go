@@ -207,9 +207,6 @@ var langExts = [...]string{
 }
 
 func TestC(t *testing.T) {
-	cl.SetDebug(cl.DbgFlagAll)
-	defer cl.SetDebug(0)
-
 	testFromDir(t, "", "./_testc", cl.LanguageC)
 }
 
@@ -222,6 +219,9 @@ func TestPreprocessor(t *testing.T) {
 }
 
 func TestPub(t *testing.T) {
+	cl.SetDebug(cl.DbgFlagAll)
+	defer cl.SetDebug(0)
+
 	testFromDir(t, "", "./_testpub", cl.LanguageC, true)
 }
 

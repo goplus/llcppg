@@ -17,6 +17,9 @@
 package cl
 
 import (
+	"go/types"
+	"log"
+
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
@@ -24,26 +27,137 @@ import (
 
 // -----------------------------------------------------------------------------
 
-func loadMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName, refName string) {
-	ctx.addCompileUnit(func(ctx *pkgCtx) {
-		compileMacroFunc(ctx, decl, macroName, refName)
+func loadMacroFunc(ctx *pkgCtx, decl clang.Cursor) {
+	ctx.addPostUnit(func(ctx *pkgCtx) {
+		compileMacroFunc(ctx, decl)
 	})
 }
 
 // -----------------------------------------------------------------------------
 
-// compileMacroFunc resolves the reference function, matches the macro's
-// parameters to it, emits the C wrapper, and generates the Go declaration.
-func compileMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName, refName string) {
-	paramNames, variadic, ok := macroParamNames(decl)
-	if !ok {
-		return
-	}
-	if variadic {
-		ctx.errorf(decl, "macroFunc %s: variadic macros are not supported", macroName)
+func compileMacroFunc(ctx *pkgCtx, decl clang.Cursor) {
+	macroName := clang.String(decl)
+
+	tu := clang.TU(decl)
+	tokens, dispose := tu.Tokenize(decl.Extent())
+	defer dispose()
+
+	paramNames, iNext, variadic, ok := macroParamNames(tu, tokens)
+	if !ok || variadic {
 		return
 	}
 
+	if refName, ok := ctx.macroFunc[macroName]; ok {
+		doCompileMacroFunc(ctx, decl, macroName, refName, paramNames)
+	} else {
+		emitMacroFunc(ctx, decl, macroName, paramNames, tu, tokens[iNext:])
+	}
+}
+
+func checkParam(name string, params []*types.Var) (*types.Var, bool) {
+	for _, param := range params {
+		if param.Name() == name {
+			return param, true
+		}
+	}
+	return nil, false
+}
+
+func convMacroFuncCallArgs(ctx *pkgCtx, args []exprVal, params []*types.Var) bool {
+	for i, arg := range args {
+		switch arg.kind {
+		case fca_Ident:
+			if param, ok := checkParam(arg.v.(string), params); ok {
+				args[i].v = param
+			} else {
+				return false
+			}
+		case fca_Sizeof:
+			if t, ok := ctx.goTypeOf(arg.v.(string), &ctx.scopeCtx); ok {
+				args[i].v = t
+			} else {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, paramNames []string, v funcCallExpr) {
+	log.Println("==> doCompileAutoMacroFunc:", macroName, paramNames, v)
+	ref, ok := ctx.lookupFuncDecl(v.fn)
+	if !ok {
+		return
+	}
+
+	macroParams, ok := matchMacroParams(ctx, decl, macroName, v.fn, paramNames, ref)
+	if !ok {
+		return
+	}
+
+	if fnRef, ok := ctx.compiledFns[objUSR(ref)]; ok {
+		typName := ""
+		sigCall := fnRef.Signature()
+		recv := sigCall.Recv()
+		if recv != nil {
+			if len(macroParams) == 0 || !v.isMethodCall(macroParams[0].name) {
+				return
+			}
+			typName = typeNameOf(recv.Type())
+			macroParams = macroParams[1:]
+			v.args = v.args[1:]
+		}
+		callParams := sigCall.Params()
+		if callParams.Len() != len(v.args) {
+			return
+		}
+		pkg := ctx.pkg
+		pkgTypes := pkg.Types
+		fnPos := goNodePos(ctx, decl)
+		feats := 0
+		params := make([]*types.Var, len(macroParams))
+		for i, p := range macroParams {
+			typ := toTypeEx(ctx, pkgTypes, p.typ, flagIsParam, &feats, &ctx.scopeCtx)
+			params[i] = types.NewParam(fnPos, pkgTypes, p.name, typ)
+		}
+		if !convMacroFuncCallArgs(ctx, v.args, params) {
+			return
+		}
+		results := sigCall.Results()
+		sig := types.NewSignatureType(recv, nil, nil, types.NewTuple(params...), results, false)
+		fnName := ctx.funcName(macroName, -1, typName, typName, true, true)
+		f, err := pkg.NewFuncWith(fnPos, fnName, sig, nil)
+		if err != nil {
+			ctx.errorf(decl, "%v", err)
+			return
+		}
+		if doc := ctx.docCommentGroup(decl); doc != nil {
+			f.SetComments(pkg, doc)
+		}
+		cb := f.BodyStart(pkg)
+		if recv != nil {
+			cb.Val(recv)
+			cb.MemberVal(fnRef.Name(), 0)
+		} else {
+			cb.Val(fnRef.Func)
+		}
+		for i, arg := range v.args {
+			if arg.kind == fca_Sizeof { // IntType( unsafe.Sizeof( T ) )
+				intT := callParams.At(i).Type()
+				cb.Typ(intT).Val(ctx.unsafeSizeof()).ZeroLit(arg.v.(types.Type)).Call(1).Call(1)
+			} else {
+				cb.Val(arg.v)
+			}
+		}
+		cb.Call(len(v.args))
+		if results.Len() > 0 {
+			cb.Return(1)
+		}
+		cb.EndStmt().End()
+	}
+}
+
+func doCompileMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName, refName string, paramNames []string) {
 	ref, ok := ctx.lookupFuncDecl(refName)
 	if !ok {
 		ctx.errorf(decl, "macroFunc %s: reference function %s not found", macroName, refName)
@@ -68,29 +182,33 @@ func compileMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName, refName string)
 // ")", ... so the parameters are the identifiers between the first "(" (which
 // immediately follows the macro name for a function-like macro) and the
 // matching ")".
-func macroParamNames(decl clang.Cursor) (names []string, variadic, ok bool) {
-	tu := clang.TU(decl)
-	tokens, dispose := tu.Tokenize(decl.Extent())
-	defer dispose()
+func macroParamNames(tu clang.TranslationUnit, tokens []lc.Token) (names []string, iNext int, variadic, ok bool) {
 	// tokens[0] is the macro name; tokens[1] must be "(" for a function-like
 	// macro. Walk until the matching ")".
 	if len(tokens) < 3 || tu.TokenSpelling(tokens[1]) != "(" {
 		return
 	}
 	for i := 2; i < len(tokens); i++ {
-		spelling := tu.TokenSpelling(tokens[i])
-		switch spelling {
-		case ")":
-			ok = true
-			return
-		case ",":
-			// separator, skip
-		case "...":
-			variadic = true
-		default:
-			if tokens[i].Kind() == lc.Token_Identifier {
-				names = append(names, spelling)
+		tok := tokens[i]
+		switch tok.Kind() {
+		case lc.Token_Punctuation:
+			switch tu.TokenSpelling(tok) {
+			case ",":
+				// noop
+			case ")":
+				iNext, ok = i+1, true
+				return
+			case "...":
+				variadic = true
+			default:
+				return
 			}
+		case lc.Token_Identifier:
+			names = append(names, tu.TokenSpelling(tok))
+		case lc.Token_Comment:
+			// noop
+		default:
+			return
 		}
 	}
 	return
