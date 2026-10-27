@@ -32,13 +32,6 @@ type Streamp = *Stream
 // not be detected (rule 3).
 type OpaqueT OpaqueS
 
-// gzgetc has real logic, so it stays an explicit MacroFunc entry (C wrapper).
-//
-//llgo:link GzFile.Gzgetc C._llcppg_z_gzgetc
-func (g GzFile) Gzgetc() c.Int {
-	return 0
-}
-
 //llgo:link (*OpaqueT).OpenOpaque_ C.openOpaque_
 func (o *OpaqueT) OpenOpaque_(size c.Int) c.Int {
 	return 0
@@ -84,30 +77,24 @@ func Version_() c.Int
 //go:linkname Configure_ C.configure_
 func Configure_(mode c.Int, level c.Int) c.Int
 
-// Initialize for deflation, filling in the version and stream size.
-func DeflateInit(strm Streamp, level c.Int) c.Int {
-	return strm.DeflateInit_(level, c.Str("1.3.1"), c.Int(unsafe.Sizeof(Stream{})))
-}
-func InflateInit(strm Streamp) c.Int {
-	return strm.InflateInit_(c.Str("1.3.1"), c.Int(unsafe.Sizeof(Stream{})))
+// gzgetc has real logic, so it stays an explicit MacroFunc entry (C wrapper).
+//
+//llgo:link GzFile.Gzgetc C._llcppg_z_gzgetc
+func (g GzFile) Gzgetc() c.Int {
+	return 0
 }
 
-// Initialize for deflation with extra options.
-func InflateBackInit(strm Streamp, windowBits c.Int, window *uint8) c.Int {
-	return strm.InflateBackInit_(windowBits, window, c.Str("1.3.1"), c.Int(unsafe.Sizeof(Stream{})))
+// Initialize for deflation, filling in the version and stream size.
+func (strm Streamp) DeflateInit(level c.Int) c.Int {
+	return strm.DeflateInit_(level, c.Str("1.3.1"), c.Int(unsafe.Sizeof(Stream{})))
 }
 
 // void-returning forwarder: the body is a bare call with no result.
-func Reset(strm Streamp) {
-	strm.Reset_(c.Int(0))
-}
-
-// No-argument forwarder; the macro has no doc, so the callee's doc is used.
-func Version() c.Int {
-	return Version_()
+func (strm Streamp) Reset() {
+	strm.Reset_(0)
 }
 
 // Package-level callee with a numeric literal and an object-like constant macro.
 func Configure(mode c.Int) c.Int {
-	return Configure_(mode, c.Int(-1))
+	return Configure_(mode, -1)
 }

@@ -18,7 +18,6 @@ package cl
 
 import (
 	"go/types"
-	"log"
 
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
@@ -63,7 +62,7 @@ func checkParam(name string, params []*types.Var) (*types.Var, bool) {
 	return nil, false
 }
 
-func convMacroFuncCallArgs(ctx *pkgCtx, args []exprVal, params []*types.Var) bool {
+func convMacroFuncCallArgs(ctx *pkgCtx, args []funcCallArg, params []*types.Var) bool {
 	for i, arg := range args {
 		switch arg.kind {
 		case fca_Ident:
@@ -73,8 +72,9 @@ func convMacroFuncCallArgs(ctx *pkgCtx, args []exprVal, params []*types.Var) boo
 				return false
 			}
 		case fca_Sizeof:
-			if t, ok := ctx.goTypeOf(arg.v.(string), &ctx.scopeCtx); ok {
-				args[i].v = t
+			feats := 0
+			if o, ok := ctx.getTypeObj(arg.v.(string), &feats); ok {
+				args[i].v = o.Type()
 			} else {
 				return false
 			}
@@ -84,7 +84,6 @@ func convMacroFuncCallArgs(ctx *pkgCtx, args []exprVal, params []*types.Var) boo
 }
 
 func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, paramNames []string, v funcCallExpr) {
-	log.Println("==> doCompileAutoMacroFunc:", macroName, paramNames, v)
 	ref, ok := ctx.lookupFuncDecl(v.fn)
 	if !ok {
 		return
@@ -144,7 +143,10 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		for i, arg := range v.args {
 			if arg.kind == fca_Sizeof { // IntType( unsafe.Sizeof( T ) )
 				intT := callParams.At(i).Type()
-				cb.Typ(intT).Val(ctx.unsafeSizeof()).ZeroLit(arg.v.(types.Type)).Call(1).Call(1)
+				t := arg.v.(types.Type)
+				cb.Typ(intT).Val(ctx.unsafeSizeof()).ZeroLit(t).Call(1).Call(1)
+			} else if s, ok := arg.v.(string); ok { // c.Str("...")
+				cb.Val(ctx.cStr()).Val(s).Call(1)
 			} else {
 				cb.Val(arg.v)
 			}

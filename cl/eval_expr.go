@@ -39,20 +39,21 @@ func evalConstExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (v 
 
 // -----------------------------------------------------------------------------
 
+// funcCallArg kinds
 const (
 	fca_Const = iota
 	fca_Ident
 	fca_Sizeof
 )
 
-type exprVal struct {
+type funcCallArg struct {
 	kind int
 	v    any
 }
 
 type funcCallExpr struct {
 	fn   string
-	args []exprVal
+	args []funcCallArg
 }
 
 func (p *funcCallExpr) isMethodCall(recvName string) bool {
@@ -87,7 +88,7 @@ func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token)
 			if !ok {
 				return
 			}
-			v.args = append(v.args, exprVal{kind, arg})
+			v.args = append(v.args, funcCallArg{kind, arg})
 			if tok == token.RPAREN {
 				break
 			}

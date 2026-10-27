@@ -155,8 +155,8 @@ type pkgCtx struct {
 	tany types.Type
 	tptr types.Type
 
-	unsafe_ gogen.PkgRef
 	sizeof_ types.Object
+	cStr_   types.Object
 
 	cflags string
 	lang   Language
@@ -355,11 +355,15 @@ func doCompile(p *pkgCtx, pcompiles *[]compileUnit) {
 	}
 }
 
-func (p *pkgCtx) unsafe() gogen.PkgRef {
-	if p.unsafe_.Types == nil {
-		p.unsafe_ = p.pkg.Import("unsafe")
+func (p *pkgCtx) cStr() types.Object {
+	if p.cStr_ == nil {
+		p.cStr_ = p.c.Ref("Str")
 	}
-	return p.unsafe_
+	return p.cStr_
+}
+
+func (p *pkgCtx) unsafe() gogen.PkgRef {
+	return gogen.PkgRef{Types: types.Unsafe}
 }
 
 func (p *pkgCtx) unsafeSizeof() types.Object {
