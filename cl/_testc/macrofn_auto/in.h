@@ -62,12 +62,12 @@ int configure_(int mode, int level);
 #define z_reset(strm) \
         reset_((strm), 0)
 
-// No-argument forwarder; the macro has no doc, so the callee's doc is used.
+// No-argument forwarder
 #define z_version() version_()
 
 // Package-level callee with a numeric literal and an object-like constant macro.
 #define z_configure(mode) \
-        configure_((mode), Z_DEFAULT_LEVEL)
+        (configure_((mode), Z_DEFAULT_LEVEL))
 
 // Skipped: sizeof over an incomplete type whose layout Go cannot know (rule 3).
 #define z_openOpaque(o) \

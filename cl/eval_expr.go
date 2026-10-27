@@ -18,6 +18,7 @@ package cl
 
 import (
 	"go/token"
+	"log"
 	"strconv"
 	"strings"
 
@@ -75,31 +76,51 @@ func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token)
 	if !ok {
 		return
 	}
-	switch tok {
-	case token.IDENT:
-		tok, _, left, ok = scanToken(tu, left)
-		if !ok || tok != token.LPAREN {
+	needRParen := tok == token.LPAREN
+	if needRParen {
+		tok, lit, left, ok = scanToken(tu, left)
+		if !ok {
 			return
 		}
-		for !expectRParen(tu, &left) {
-			var kind int
-			var arg any
-			kind, arg, tok, left, ok = parseExpr(ctx, tu, left, true)
-			if !ok {
+		switch tok {
+		case token.IDENT:
+		case token.LPAREN: // ((Type)...)
+			tok, lit, left, ok = scanToken(tu, left)
+			if !ok || tok != token.IDENT || !isType(ctx, lit) || !expectRParen(tu, &left) {
 				return
 			}
-			v.args = append(v.args, funcCallArg{kind, arg})
-			if tok == token.RPAREN {
-				break
+			tok, lit, left, ok = scanToken(tu, left)
+			if !ok || tok != token.IDENT {
+				return
 			}
+		default:
+			return
 		}
-		v.fn, found = lit, true
-	case token.LPAREN:
-		if v, left, ok = parseFuncCallExpr(ctx, tu, left); ok {
-			tok, _, left, ok = scanToken(tu, left)
-			found = ok && tok == token.RPAREN
+	} else if tok != token.IDENT {
+		return
+	}
+
+	tok, _, left, ok = scanToken(tu, left)
+	if !ok || tok != token.LPAREN {
+		return
+	}
+	for !expectRParen(tu, &left) {
+		var kind int
+		var arg any
+		kind, arg, tok, left, ok = parseExpr(ctx, tu, left, true)
+		if debugMacroFunc {
+			log.Println("==> funcCallArg:", kind, arg, tok, ok, len(left))
+		}
+		if !ok {
+			return
+		}
+		v.args = append(v.args, funcCallArg{kind, arg})
+		if tok == token.RPAREN {
+			break
 		}
 	}
+	v.fn = lit
+	found = !needRParen || expectRParen(tu, &left)
 	return
 }
 
@@ -297,8 +318,7 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (kin
 	case token.LPAREN:
 		kind, v, _, left, ok = parseExpr(ctx, tu, left, true)
 		if ok && kind == fca_Ident {
-			switch v.(string) {
-			case "int": // (int)operand
+			if isType(ctx, v.(string)) { // (Type)operand
 				return parseOperand(ctx, tu, left)
 			}
 		}

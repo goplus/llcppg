@@ -85,7 +85,7 @@ func emitMacroConst(defs *gogen.ConstDefs, ctx *pkgCtx, decl clang.Cursor, docRa
 		log.Println("macro", origName, "-", len(tokens), "tokens")
 	}
 	if len(tokens) > 1 {
-		if v, ok := evalConstExpr(ctx, tu, tokens[1:]); ok {
+		if v, ok := evalConstExpr(ctx, tu, tokens[1:]); ok && v != nil { // not NULL
 			if oldv, ok := ctx.macroVals[origName]; ok {
 				if oldv == v {
 					return // allow redefinition with the same value
