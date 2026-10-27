@@ -137,7 +137,7 @@ func defineTypedefToTypeParam(ctx *pkgCtx, decl clang.Cursor, cName string, tp *
 func defineTypedef(ctx *pkgCtx, decl clang.Cursor, cName, goName string, scope *scopeCtx, tunder types.Type, tparams []*types.TypeParam, feats int) {
 	pkg := ctx.pkg
 	typDefs := pkg.NewTypeDefs()
-	if doc := ctx.directiveCallback(decl, feats&featAllCallback); doc != nil {
+	if doc := directiveCallback(decl, feats&featAllCallback); doc != nil {
 		typDefs.SetComments(doc)
 	}
 
@@ -209,7 +209,7 @@ func doAliasType(ctx *pkgCtx, cName string, tunder types.Type, scope *scopeCtx, 
 	// has no backing declaration (e.g. a builtin or an unexposed type), in which
 	// case there is no comment to attach. See issue goplus/llcppg#1097.
 	if decl.IsNull() == 0 {
-		if doc := ctx.docCommentGroup(decl); doc != nil {
+		if doc := docCommentGroup(decl); doc != nil {
 			typDefs.SetComments(doc)
 		}
 	}

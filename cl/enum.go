@@ -101,14 +101,14 @@ func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
 
 	var enumType types.Type
 	if typDecl.defs != nil {
-		if doc := ctx.docCommentGroup(decl); doc != nil {
+		if doc := docCommentGroup(decl); doc != nil {
 			typDecl.defs.SetComments(doc)
 		}
 		if !ctx.enumAlwaysUntyped {
 			enumType = typDecl.Type()
 		}
 	} else {
-		if doc := ctx.docCommentGroup(decl); doc != nil {
+		if doc := docCommentGroup(decl); doc != nil {
 			defs.SetComments(doc)
 		}
 	}
@@ -120,7 +120,7 @@ func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
 		name := ctx.enumvalName(clang.String(item), ns)
 		val := int(item.EnumConstantDeclValue()) // TODO(xsw): use int64 for 64-bit enums?
 		at := defs.NewPos()
-		if doc := ctx.docCommentGroup(item); doc != nil {
+		if doc := docCommentGroup(item); doc != nil {
 			at.Doc = doc
 		}
 		pos := goNodePos(ctx, item)

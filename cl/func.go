@@ -217,10 +217,10 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 
 	if recv == nil {
 		ctx.forceImportUnsafe()
-		f.SetComments(pkg, ctx.directiveCommentsEx(fn,
+		f.SetComments(pkg, directiveCommentsEx(fn,
 			"\n//go:linkname "+nameInPkg+" C."+manglingName))
 	} else {
-		f.SetComments(pkg, ctx.directiveCommentsEx(fn,
+		f.SetComments(pkg, directiveCommentsEx(fn,
 			"\n//llgo:link "+nameInPkg+" C."+manglingName))
 		cb := f.BodyStart(pkg)
 		if n := results.Len(); n > 0 {

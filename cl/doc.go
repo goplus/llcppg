@@ -34,11 +34,11 @@ import (
 // the content is re-emitted as a block of "//" line comments so it renders as a
 // leading Go doc comment. Callers place these comments before any generated
 // directive (e.g. //go:linkname), which must stay adjacent to its declaration.
-func (p *pkgCtx) docComments(decl clang.Cursor) []*ast.Comment {
-	return p.docCommentsEx(clangNode{decl})
+func docComments(decl clang.Cursor) []*ast.Comment {
+	return docCommentsEx(clangNode{decl})
 }
 
-func (p *pkgCtx) docCommentsEx[nodeT nodeCursor](decl nodeT) []*ast.Comment {
+func docCommentsEx[nodeT nodeCursor](decl nodeT) []*ast.Comment {
 	raw := decl.RawComment()
 	if raw == "" {
 		return nil
@@ -144,11 +144,11 @@ func toLineComments(raw string) []*ast.Comment {
 // comment, or nil when there is nothing to attach. It is used for declarations
 // whose only leading comment is the doc (types, consts), where no generated
 // directive needs to be preserved alongside it.
-func (p *pkgCtx) docCommentGroup(decl clang.Cursor) *ast.CommentGroup {
-	return docCommentGroup(p.docComments(decl))
+func docCommentGroup(decl clang.Cursor) *ast.CommentGroup {
+	return doDocCommentGroup(docComments(decl))
 }
 
-func docCommentGroup(comments []*ast.Comment) *ast.CommentGroup {
+func doDocCommentGroup(comments []*ast.Comment) *ast.CommentGroup {
 	if len(comments) == 0 {
 		return nil
 	}
@@ -166,15 +166,15 @@ func docCommentGroup(comments []*ast.Comment) *ast.CommentGroup {
 // declaration). When a doc comment is present, the "\n" is moved to the front
 // of the whole group so the blank line separates the doc block from the
 // preceding code, and the directive follows the doc with no blank line.
-func (p *pkgCtx) directiveComments(decl clang.Cursor, directive string) *ast.CommentGroup {
-	return p.directiveCommentsEx(clangNode{decl}, directive)
+func directiveComments(decl clang.Cursor, directive string) *ast.CommentGroup {
+	return directiveCommentsEx(clangNode{decl}, directive)
 }
 
-func (p *pkgCtx) directiveCommentsEx[nodeT nodeCursor](decl nodeT, directive string) *ast.CommentGroup {
-	return directiveComments(p.docCommentsEx(decl), directive)
+func directiveCommentsEx[nodeT nodeCursor](decl nodeT, directive string) *ast.CommentGroup {
+	return doDirectiveComments(docCommentsEx(decl), directive)
 }
 
-func directiveComments(doc []*ast.Comment, directive string) *ast.CommentGroup {
+func doDirectiveComments(doc []*ast.Comment, directive string) *ast.CommentGroup {
 	if len(doc) == 0 {
 		return &ast.CommentGroup{List: []*ast.Comment{{Text: directive}}}
 	}
@@ -187,8 +187,8 @@ func directiveComments(doc []*ast.Comment, directive string) *ast.CommentGroup {
 
 // -----------------------------------------------------------------------------
 
-func (p *pkgCtx) directiveCallback(decl clang.Cursor, featCallback int) *ast.CommentGroup {
-	return directiveCallback(p.docComments(decl), featCallback)
+func directiveCallback(decl clang.Cursor, featCallback int) *ast.CommentGroup {
+	return doDirectiveCallback(docComments(decl), featCallback)
 }
 
 const (
@@ -196,11 +196,11 @@ const (
 	directiveStdcall = "\n//llgo:stdcall"
 )
 
-func directiveCallback(doc []*ast.Comment, featCallback int) *ast.CommentGroup {
+func doDirectiveCallback(doc []*ast.Comment, featCallback int) *ast.CommentGroup {
 	var directive string
 	switch featCallback {
 	case 0:
-		return docCommentGroup(doc)
+		return doDocCommentGroup(doc)
 	case featHasCdeclCallback:
 		directive = directiveCdecl
 	case featHasStdcallCallback:
@@ -208,7 +208,7 @@ func directiveCallback(doc []*ast.Comment, featCallback int) *ast.CommentGroup {
 	default:
 		log.Panicln("unexpected callback directive:", featCallback)
 	}
-	return directiveComments(doc, directive)
+	return doDirectiveComments(doc, directive)
 }
 
 // -----------------------------------------------------------------------------
