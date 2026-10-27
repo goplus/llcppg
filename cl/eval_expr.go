@@ -81,7 +81,7 @@ func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token)
 		if !ok || tok != token.LPAREN {
 			return
 		}
-		for !nextIsRParen(tu, left) {
+		for !expectRParen(tu, &left) {
 			var kind int
 			var arg any
 			kind, arg, tok, left, ok = parseExpr(ctx, tu, left, true)
@@ -399,7 +399,8 @@ func scanToken(tu clang.TranslationUnit, tokens []lc.Token) (ret token.Token, li
 	return
 }
 
-func nextIsRParen(tu clang.TranslationUnit, tokens []lc.Token) bool {
+func expectRParen(tu clang.TranslationUnit, left *[]lc.Token) bool {
+	tokens := *left
 	for len(tokens) > 0 {
 		tok := tokens[0]
 		kind := tok.Kind()
@@ -407,6 +408,7 @@ func nextIsRParen(tu clang.TranslationUnit, tokens []lc.Token) bool {
 		case lc.Token_Punctuation:
 			op := tu.TranslationUnit.TokenSpelling(tok).CStr()
 			if c.Strcmp(op, c.Str(")")) == 0 {
+				*left = tokens[1:]
 				return true
 			}
 		case lc.Token_Comment:

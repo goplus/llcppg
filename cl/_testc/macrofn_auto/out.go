@@ -100,6 +100,11 @@ func (strm Streamp) Reset() {
 	strm.Reset_(0)
 }
 
+// No-argument forwarder; the macro has no doc, so the callee's doc is used.
+func Version() c.Int {
+	return Version_()
+}
+
 // Package-level callee with a numeric literal and an object-like constant macro.
 func Configure(mode c.Int) c.Int {
 	return Configure_(mode, -1)
