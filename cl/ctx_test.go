@@ -202,12 +202,14 @@ func Test_isMethodCall(t *testing.T) {
 func Test_nodeInterp(t *testing.T) {
 	func() {
 		defer func() {
-			if e := recover(); e == nil {
-				t.Logf("Test_nodeInterp: no error?")
+			if e := recover(); e != nil {
+				t.Logf("Test_nodeInterp: panic?")
 			}
 		}()
 		var ni nodeInterp
-		ni.LoadExpr(nil)
+		if v := ni.LoadExpr(nil); v != "" {
+			t.Logf("Test_nodeInterp: expected empty string for nil node, got %q", v)
+		}
 	}()
 	const content = "hello"
 	var ni nodeInterp

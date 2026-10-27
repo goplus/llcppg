@@ -86,7 +86,7 @@ func (p nodeInterp) LoadExpr(v ast.Node) string {
 			return string(src[offset:end])
 		}
 	}
-	panic("unreachable: nodeInterp.LoadExpr")
+	return "" // non-*node (gogen-synthesized) or source unavailable
 }
 
 // -----------------------------------------------------------------------------
