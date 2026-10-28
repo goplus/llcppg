@@ -421,9 +421,7 @@ func newParam[funcT fnCursor](ctx *pkgCtx, pkg *types.Package, fn funcT, i c.Int
 }
 
 func avoidKeyword(name string) string {
-	switch name {
-	case "map", "type", "range", "chan", "var", "func", "go", "select",
-		"defer", "package", "import", "interface", "fallthrough":
+	if token.IsKeyword(name) {
 		return name + "_"
 	}
 	return name
