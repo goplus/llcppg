@@ -144,6 +144,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 		NSPrefix:          conf.NSPrefix,
 		NewCheck:          conf.NewCheck,
 		MethodCheck:       conf.MethodCheck,
+		Method:            conf.Method,
 		FuncPrefix:        conf.FuncPrefix,
 		EnumPrefix:        conf.EnumPrefix,
 		EnumAlwaysUntyped: conf.EnumAlwaysUntyped,

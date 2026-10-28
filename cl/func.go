@@ -165,7 +165,8 @@ func doCompileFunc[funcT fnCursor](ctx *pkgCtx, cName, manglingName string, fn f
 				}
 			} else if cls, obj, mayClass := ctx.methodCheck(pkgTypes, cName); mayClass {
 				// try to method for C global functions
-				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, fn, params, cls != "")
+				mayMethod := cls != "" || contains(cName, ctx.methods)
+				params, recv, typRecv, typName = tryToMethod(ctx, pkgTypes, fn, params, mayMethod)
 				if typRecv != nil {
 					tryNewRecv(fn, &recv, &typRecv, &typName, &typCName, cls, obj)
 				}

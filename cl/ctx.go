@@ -186,6 +186,7 @@ type pkgCtx struct {
 	macroPrefix []string
 	typePrefix  []string
 	typeSuffix  []string
+	methods     []string
 	classes     []string          // typedef names to be treated as classes
 	nonClasses  []string          // typedef names to be treated as non-classes
 	rename      map[string]string // C/C++ name => Go name

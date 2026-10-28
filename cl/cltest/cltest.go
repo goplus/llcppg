@@ -48,6 +48,9 @@ type Config struct {
 	// Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/955.
 	MethodCheck []string `json:"MethodCheck"`
 
+	// Method specifies a list of C function names to be treated as methods (optional).
+	Method []string `json:"Method"`
+
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
 	// generating Go function names (optional).
 	FuncPrefix []string `json:"FuncPrefix"`
