@@ -244,3 +244,10 @@ func getFileBase(p *pkgCtx, content string, fp clang.File) int {
 	}
 	return f.base
 }
+
+func Test_funcCallExpr_checkParam(t *testing.T) {
+	v := funcCallExpr{}
+	if i := v.checkParam("bar"); i != -1 {
+		t.Fatal("Test_funcCallExpr_checkParam: expected index -1 for non-existent param")
+	}
+}

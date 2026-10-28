@@ -72,3 +72,6 @@ func (L *State) LChecklong(n c.Int) Integer {
 func (L *State) LOptlong(n c.Int, d Integer) Integer {
 	return L.LOptinteger(n, d)
 }
+func (L *State) LGetmetatable(n *c.Char) c.Int {
+	return L.Getfield(-1073742823, n)
+}

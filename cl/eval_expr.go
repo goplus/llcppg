@@ -45,6 +45,8 @@ const (
 	fca_Const = iota
 	fca_Ident
 	fca_Sizeof
+
+	fca_IdentResolved
 )
 
 type funcCallArg struct {
@@ -55,6 +57,15 @@ type funcCallArg struct {
 type funcCallExpr struct {
 	fn   string
 	args []funcCallArg
+}
+
+func (p *funcCallExpr) checkParam(name string) int {
+	for i, arg := range p.args {
+		if arg.kind == fca_Ident && arg.v.(string) == name {
+			return i
+		}
+	}
+	return -1
 }
 
 func (p *funcCallExpr) isMethodCall(recvName string) bool {

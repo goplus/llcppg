@@ -44,6 +44,8 @@ LUALIB_API int (luaL_loadfilex) (lua_State *L, const char *filename,
 #define luaL_checklong(L,n) ((long)luaL_checkinteger(L, (n)))
 #define luaL_optlong(L,n,d) ((long)luaL_optinteger(L, (n), (d)))
 
+#define luaL_nonMethod(n,L) luaL_checkinteger(L, (n))
+
 #define foo(p) ((int)(*p))
 #define bar(p) (*p)
 #define baz(p) *p
@@ -52,4 +54,4 @@ LUA_API int (lua_getfield) (lua_State *L, int idx, const char *k);
 
 #define LUA_REGISTRYINDEX	(-(INT_MAX/2 + 1000))
 
-// #define luaL_getmetatable(L,n)  (lua_getfield(L, LUA_REGISTRYINDEX, (n)))
+#define luaL_getmetatable(L,n)  (lua_getfield(L, LUA_REGISTRYINDEX, (n)))

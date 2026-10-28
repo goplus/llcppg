@@ -53,24 +53,14 @@ func compileMacroFunc(ctx *pkgCtx, decl clang.Cursor) {
 	}
 }
 
-func checkParam(name string, params []*types.Var) (*types.Var, bool) {
-	for _, param := range params {
-		if param.Name() == name {
-			return param, true
-		}
-	}
-	return nil, false
-}
-
-func convMacroFuncCallArgs(ctx *pkgCtx, args []funcCallArg, params []*types.Var) bool {
+func convMacroFuncCallArgs(ctx *pkgCtx, args []funcCallArg) bool {
 	for i, arg := range args {
 		switch arg.kind {
+		case fca_IdentResolved:
+			// Already resolved, nothing to do
 		case fca_Ident:
-			if param, ok := checkParam(arg.v.(string), params); ok {
-				args[i].v = param
-			} else {
-				return false
-			}
+			// Unresolved identifier, cannot convert
+			return false
 		case fca_Sizeof:
 			feats := 0
 			if o, ok := ctx.getTypeObj(arg.v.(string), &feats); ok {
@@ -89,21 +79,16 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		return
 	}
 
-	macroParams, ok := matchMacroParams(ctx, decl, macroName, v.fn, paramNames, ref)
-	if !ok {
-		return
-	}
-
 	if fnRef, ok := ctx.compiledFns[objUSR(ref)]; ok {
 		typName := ""
 		sigCall := fnRef.Signature()
 		recv := sigCall.Recv()
 		if recv != nil {
-			if len(macroParams) == 0 || !v.isMethodCall(macroParams[0].name) {
+			if len(paramNames) == 0 || !v.isMethodCall(paramNames[0]) {
 				return
 			}
 			typName = typeNameOf(recv.Type())
-			macroParams = macroParams[1:]
+			paramNames = paramNames[1:]
 			v.args = v.args[1:]
 		}
 		callParams := sigCall.Params()
@@ -113,13 +98,18 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		pkg := ctx.pkg
 		pkgTypes := pkg.Types
 		fnPos := goNodePos(ctx, decl)
-		feats := 0
-		params := make([]*types.Var, len(macroParams))
-		for i, p := range macroParams {
-			typ := toTypeEx(ctx, pkgTypes, p.typ, flagIsParam, &feats, &ctx.scopeCtx)
-			params[i] = types.NewParam(fnPos, pkgTypes, p.name, typ)
+		params := make([]*types.Var, len(paramNames))
+		for i, pname := range paramNames {
+			iParam := v.checkParam(pname)
+			if iParam < 0 {
+				return
+			}
+			typ := callParams.At(iParam).Type()
+			param := types.NewParam(fnPos, pkgTypes, pname, typ)
+			v.args[iParam] = funcCallArg{fca_IdentResolved, param}
+			params[i] = param
 		}
-		if !convMacroFuncCallArgs(ctx, v.args, params) {
+		if !convMacroFuncCallArgs(ctx, v.args) {
 			return
 		}
 		results := sigCall.Results()
