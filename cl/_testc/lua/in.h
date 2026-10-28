@@ -52,4 +52,4 @@ LUA_API int (lua_getfield) (lua_State *L, int idx, const char *k);
 
 #define LUA_REGISTRYINDEX	(-(INT_MAX/2 + 1000))
 
-// #define luaL_getmetatable(L,n)  (lua_getfield(L, LUA_REGISTRYINDEX, (n)))
+#define luaL_getmetatable(L,n)  (lua_getfield(L, LUA_REGISTRYINDEX, (n)))

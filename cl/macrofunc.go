@@ -89,7 +89,7 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		return
 	}
 
-	macroParams, ok := matchMacroParams(ctx, decl, macroName, v.fn, paramNames, ref)
+	macroParams, ok := matchAutoMacroParams(paramNames, ref, v.args)
 	if !ok {
 		return
 	}
@@ -270,6 +270,53 @@ func matchMacroParams(ctx *pkgCtx, decl clang.Cursor, macroName, refName string,
 		ctx.errorf(decl, "macroFunc %s: cannot resolve parameter %s from reference function %s",
 			macroName, paramNames[i], refName)
 		return nil, false
+	}
+	return params, true
+}
+
+// matchAutoMacroParams resolves, for an automatically detected function-like
+// macro, which reference-function parameter supplies each macro parameter's
+// type. Unlike matchMacroParams (used for configured MacroFunc entries, where
+// the macro parameters map one-to-one onto the reference parameters), the
+// automatic path works from the parsed macro body, whose call arguments may
+// interleave macro parameters with constants, sizeof, and other expressions —
+// e.g. "#define luaL_getmetatable(L,n) lua_getfield(L, LUA_REGISTRYINDEX, (n))"
+// passes the macro's "n" as the reference function's *third* argument. The type
+// of each macro parameter must therefore come from the reference parameter at
+// the call position where the parameter's identifier appears, not from the
+// macro parameter's ordinal index. callArgs[k] aligns positionally with
+// reference argument k; a macro parameter that never appears as a call argument
+// cannot be typed, so the macro is skipped.
+func matchAutoMacroParams(paramNames []string, ref clang.Cursor, callArgs []funcCallArg) ([]macroFuncParam, bool) {
+	nRef := int(ref.NumArguments())
+	if len(callArgs) != nRef {
+		return nil, false
+	}
+
+	// Map each macro parameter name to the reference argument type at the call
+	// position where that name is used. Only the first use is needed: all uses
+	// of the same macro parameter must share one Go type.
+	typByName := make(map[string]lc.Type, len(paramNames))
+	for i, arg := range callArgs {
+		if arg.kind != fca_Ident {
+			continue
+		}
+		name := arg.v.(string)
+		if _, seen := typByName[name]; !seen {
+			typByName[name] = ref.Argument(c.Uint(i)).Type()
+		}
+	}
+
+	params := make([]macroFuncParam, len(paramNames))
+	for i, name := range paramNames {
+		typ, ok := typByName[name]
+		if !ok {
+			// This macro parameter is not forwarded to the reference function
+			// (or appears only in an unsupported position), so its type cannot
+			// be inferred; skip generating this macro function.
+			return nil, false
+		}
+		params[i] = macroFuncParam{name: name, typ: typ}
 	}
 	return params, true
 }
