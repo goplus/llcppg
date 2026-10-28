@@ -218,7 +218,7 @@ func TestCpp(t *testing.T) {
 	testFromDir(t, "", "./_testcpp", cl.LanguageCXX)
 }
 
-func TestPreprocessor(t *testing.T) {
+func TestPP(t *testing.T) {
 	testFromDir(t, "", "./_testpp", cl.LanguageCXX)
 }
 
