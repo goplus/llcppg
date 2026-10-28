@@ -118,19 +118,21 @@ func parseFuncCallExpr(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token)
 	if debugMacroFunc {
 		log.Println("==> funcCallExpr:", lit)
 	}
-	for !expectRParen(tu, &left) {
-		var kind int
-		var arg any
-		kind, arg, tok, left, ok = parseExpr(ctx, tu, left, true)
-		if debugMacroFunc {
-			log.Println("==> funcCallArg:", kind, arg, tok, ok, len(left))
-		}
-		if !ok {
-			return
-		}
-		v.args = append(v.args, funcCallArg{kind, arg})
-		if tok == token.RPAREN {
-			break
+	if !expectRParen(tu, &left) {
+		for {
+			var kind int
+			var arg any
+			kind, arg, tok, left, ok = parseExpr(ctx, tu, left, true)
+			if debugMacroFunc {
+				log.Println("==> funcCallArg:", kind, arg, tok, ok, len(left))
+			}
+			if !ok {
+				return
+			}
+			v.args = append(v.args, funcCallArg{kind, arg})
+			if tok == token.RPAREN {
+				break
+			}
 		}
 	}
 	v.fn = lit
