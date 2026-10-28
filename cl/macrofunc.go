@@ -105,7 +105,7 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 				return
 			}
 			typ := callParams.At(iParam).Type()
-			param := types.NewParam(fnPos, pkgTypes, pname, typ)
+			param := types.NewParam(fnPos, pkgTypes, avoidKeyword(pname), typ)
 			v.args[iParam] = funcCallArg{fca_IdentResolved, param}
 			params[i] = param
 		}
