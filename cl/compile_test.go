@@ -150,6 +150,7 @@ func testFromDir(t *testing.T, sel, relDir string, srcLang cl.Language, genPubFi
 			FieldAlias:        conf.FieldAlias,
 			NewCheck:          conf.NewCheck,
 			MethodCheck:       conf.MethodCheck,
+			Method:            conf.Method,
 			TypeDef:           conf.TypeDef,
 			TypeAlias:         conf.TypeAlias,
 			TypeIgnore:        conf.TypeIgnore,

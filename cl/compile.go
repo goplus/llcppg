@@ -231,6 +231,9 @@ type Config struct {
 	// Type Method Detection (optional). See https://github.com/xgo-dev/llcppg/issues/955.
 	MethodCheck []string
 
+	// Method specifies a list of C function names to be treated as methods (optional).
+	Method []string
+
 	// FuncPrefix specifies the prefix to remove from C/C++ global function names when
 	// generating Go function names (optional).
 	FuncPrefix []string
@@ -354,7 +357,7 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		llgo: llgo, fset: pkg.Fset, lang: conf.Language, failFast: conf.FailFast,
 		stdRecvName: conf.UseStdRecvName, wrapFileHeader: conf.WrapFileHeader,
 		cflags: conf.CFlags, forceCamelCase: conf.ForceCamelCase,
-		typeAbbr: typeAbbr, methodPrefix: conf.MethodPrefix,
+		typeAbbr: typeAbbr, methodPrefix: conf.MethodPrefix, methods: conf.Method,
 		enumPrefix: conf.EnumPrefix, enumAlwaysUntyped: conf.EnumAlwaysUntyped,
 		typeAlias: conf.TypeAlias, typeAliasCache: make(map[string]types.Type),
 		nsPrefix: conf.NSPrefix, mthdCheck: methodCheck, fieldAlias: conf.FieldAlias,

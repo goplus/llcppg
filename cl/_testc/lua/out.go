@@ -32,6 +32,11 @@ func (B *LBuffer) Addlstring(s *c.Char, l SizeT) {
 func (B *LBuffer) MAddlstring(s *c.Char, l SizeT) {
 }
 
+//llgo:link (*State).Closethread C.lua_closethread
+func (L *State) Closethread(from *State) c.Int {
+	return 0
+}
+
 //llgo:link (*State).LCheckinteger C.luaL_checkinteger
 func (L *State) LCheckinteger(arg c.Int) Integer {
 	return 0

@@ -215,6 +215,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 		NSPrefix:          cfg.NSPrefix,
 		NewCheck:          cfg.NewCheck,
 		MethodCheck:       cfg.MethodCheck,
+		Method:            cfg.Method,
 		FuncPrefix:        cfg.FuncPrefix,
 		VarPrefix:         cfg.VarPrefix,
 		EnumPrefix:        cfg.EnumPrefix,

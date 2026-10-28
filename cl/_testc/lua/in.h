@@ -25,6 +25,8 @@ typedef LUA_UNSIGNED lua_Unsigned;
 
 typedef struct lua_State lua_State;
 
+LUA_API int        (lua_closethread) (lua_State *L, lua_State *from);
+
 LUALIB_API lua_Integer (luaL_checkinteger) (lua_State *L, int arg);
 LUALIB_API lua_Integer (luaL_optinteger) (lua_State *L, int arg,
                                           lua_Integer def);
