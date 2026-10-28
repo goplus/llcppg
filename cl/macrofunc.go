@@ -53,24 +53,14 @@ func compileMacroFunc(ctx *pkgCtx, decl clang.Cursor) {
 	}
 }
 
-func checkParam(name string, params []*types.Var) (*types.Var, bool) {
-	for _, param := range params {
-		if param.Name() == name {
-			return param, true
-		}
-	}
-	return nil, false
-}
-
-func convMacroFuncCallArgs(ctx *pkgCtx, args []funcCallArg, params []*types.Var) bool {
+func convMacroFuncCallArgs(ctx *pkgCtx, args []funcCallArg) bool {
 	for i, arg := range args {
 		switch arg.kind {
+		case fca_IdentResolved:
+			// Already resolved, nothing to do
 		case fca_Ident:
-			if param, ok := checkParam(arg.v.(string), params); ok {
-				args[i].v = param
-			} else {
-				return false
-			}
+			// Unresolved identifier, cannot convert
+			return false
 		case fca_Sizeof:
 			feats := 0
 			if o, ok := ctx.getTypeObj(arg.v.(string), &feats); ok {
@@ -89,21 +79,16 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		return
 	}
 
-	macroParams, ok := matchAutoMacroParams(paramNames, ref, v.args)
-	if !ok {
-		return
-	}
-
 	if fnRef, ok := ctx.compiledFns[objUSR(ref)]; ok {
 		typName := ""
 		sigCall := fnRef.Signature()
 		recv := sigCall.Recv()
 		if recv != nil {
-			if len(macroParams) == 0 || !v.isMethodCall(macroParams[0].name) {
+			if len(paramNames) == 0 || !v.isMethodCall(paramNames[0]) {
 				return
 			}
 			typName = typeNameOf(recv.Type())
-			macroParams = macroParams[1:]
+			paramNames = paramNames[1:]
 			v.args = v.args[1:]
 		}
 		callParams := sigCall.Params()
@@ -113,13 +98,18 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		pkg := ctx.pkg
 		pkgTypes := pkg.Types
 		fnPos := goNodePos(ctx, decl)
-		feats := 0
-		params := make([]*types.Var, len(macroParams))
-		for i, p := range macroParams {
-			typ := toTypeEx(ctx, pkgTypes, p.typ, flagIsParam, &feats, &ctx.scopeCtx)
-			params[i] = types.NewParam(fnPos, pkgTypes, p.name, typ)
+		params := make([]*types.Var, len(paramNames))
+		for i, pname := range paramNames {
+			iParam := v.checkParam(pname)
+			if iParam < 0 {
+				return
+			}
+			typ := callParams.At(iParam).Type()
+			param := types.NewParam(fnPos, pkgTypes, pname, typ)
+			v.args[iParam] = funcCallArg{fca_IdentResolved, param}
+			params[i] = param
 		}
-		if !convMacroFuncCallArgs(ctx, v.args, params) {
+		if !convMacroFuncCallArgs(ctx, v.args) {
 			return
 		}
 		results := sigCall.Results()
@@ -270,53 +260,6 @@ func matchMacroParams(ctx *pkgCtx, decl clang.Cursor, macroName, refName string,
 		ctx.errorf(decl, "macroFunc %s: cannot resolve parameter %s from reference function %s",
 			macroName, paramNames[i], refName)
 		return nil, false
-	}
-	return params, true
-}
-
-// matchAutoMacroParams resolves, for an automatically detected function-like
-// macro, which reference-function parameter supplies each macro parameter's
-// type. Unlike matchMacroParams (used for configured MacroFunc entries, where
-// the macro parameters map one-to-one onto the reference parameters), the
-// automatic path works from the parsed macro body, whose call arguments may
-// interleave macro parameters with constants, sizeof, and other expressions —
-// e.g. "#define luaL_getmetatable(L,n) lua_getfield(L, LUA_REGISTRYINDEX, (n))"
-// passes the macro's "n" as the reference function's *third* argument. The type
-// of each macro parameter must therefore come from the reference parameter at
-// the call position where the parameter's identifier appears, not from the
-// macro parameter's ordinal index. callArgs[k] aligns positionally with
-// reference argument k; a macro parameter that never appears as a call argument
-// cannot be typed, so the macro is skipped.
-func matchAutoMacroParams(paramNames []string, ref clang.Cursor, callArgs []funcCallArg) ([]macroFuncParam, bool) {
-	nRef := int(ref.NumArguments())
-	if len(callArgs) != nRef {
-		return nil, false
-	}
-
-	// Map each macro parameter name to the reference argument type at the call
-	// position where that name is used. Only the first use is needed: all uses
-	// of the same macro parameter must share one Go type.
-	typByName := make(map[string]lc.Type, len(paramNames))
-	for i, arg := range callArgs {
-		if arg.kind != fca_Ident {
-			continue
-		}
-		name := arg.v.(string)
-		if _, seen := typByName[name]; !seen {
-			typByName[name] = ref.Argument(c.Uint(i)).Type()
-		}
-	}
-
-	params := make([]macroFuncParam, len(paramNames))
-	for i, name := range paramNames {
-		typ, ok := typByName[name]
-		if !ok {
-			// This macro parameter is not forwarded to the reference function
-			// (or appears only in an unsupported position), so its type cannot
-			// be inferred; skip generating this macro function.
-			return nil, false
-		}
-		params[i] = macroFuncParam{name: name, typ: typ}
 	}
 	return params, true
 }
