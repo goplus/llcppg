@@ -97,7 +97,8 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		}
 		pkg := ctx.pkg
 		pkgTypes := pkg.Types
-		fnPos := goNodePos(ctx, decl)
+		node := goNode(ctx, decl)
+		fnPos := node.Pos()
 		params := make([]*types.Var, len(paramNames))
 		for i, pname := range paramNames {
 			iParam := v.checkParam(pname)
@@ -123,7 +124,6 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		if doc := docCommentGroup(decl); doc != nil {
 			f.SetComments(pkg, doc)
 		}
-		node := goNode(ctx, decl)
 		cb := f.BodyStart(pkg, node)
 		if recv != nil {
 			cb.Val(recv, node)
