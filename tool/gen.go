@@ -183,7 +183,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 		}
 	}
 
-	files, err := ParseSources(index, topHeaders, incDirs, cfg.Language)
+	files, err := ParseSources(index, topHeaders, incDirs, cfg.Language, platformDir)
 	if err != nil {
 		return
 	}
@@ -363,22 +363,27 @@ func (p Module) IncludeDir(modPath string) (includeDir string, err error) {
 // -----------------------------------------------------------------------------
 
 // ParseFlags constructs the command-line flags for parsing C/C++ source files with clang.
-func ParseFlags(includeDirs []string, lang string) []string {
+func ParseFlags(includeDirs []string, lang, platformDir string) []string {
 	n := len(includeDirs)
-	flags := make([]string, n+2, n+4)
+	flags := make([]string, n+3, n+5)
 	for i, dir := range includeDirs {
 		flags[i] = "-I" + dir
 	}
 	flags[n] = "-x"
 	flags[n+1] = lang
+	flags[n+2] = "-fparse-all-comments"
+	if platformDir != "" {
+		if triple, ok := targetTriple(platformDir); ok {
+			flags = append(flags, "-target", triple)
+		}
+	}
 	return flags
 }
 
 // ParseSources parses the given source files and returns the translation units corresponding
 // to those files.
-func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string) ([]cl.Source, error) {
-	flags := ParseFlags(includeDirs, lang)
-	flags = append(flags, "-fparse-all-comments")
+func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang, platformDir string) ([]cl.Source, error) {
+	flags := ParseFlags(includeDirs, lang, platformDir)
 	files := make([]cl.Source, len(headerFiles))
 	for i, headerFile := range headerFiles {
 		tu, e := index.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)
