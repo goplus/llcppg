@@ -19,6 +19,7 @@ package tool
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 	"testing"
@@ -275,5 +276,12 @@ func TestTargetTriple(t *testing.T) {
 				t.Fatalf("TargetTriple() = %q,%v; want %q,%v", triple, ok, tt.want, tt.wantOK)
 			}
 		})
+	}
+}
+
+func TestParseFlags(t *testing.T) {
+	flags := ParseFlags([]string{"./include"}, "c", "darwin-arm64")
+	if !reflect.DeepEqual(flags, []string{"-I./include", "-x", "c", "-fparse-all-comments", "-target", "arm64-apple-darwin"}) {
+		t.Fatal("ParseFlags failed:", flags)
 	}
 }

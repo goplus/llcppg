@@ -381,9 +381,7 @@ func ParseFlags(includeDirs []string, lang, platformDir string) []string {
 }
 
 // ParseSources parses the given source files and returns the translation units corresponding
-// to those files. extraFlags are appended after the standard parse flags (e.g.
-// "-target <triple>" for a platform-specific project); callers that need no
-// extra flags may omit them.
+// to those files.
 func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang, platformDir string) ([]cl.Source, error) {
 	flags := ParseFlags(includeDirs, lang, platformDir)
 	files := make([]cl.Source, len(headerFiles))
