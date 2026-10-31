@@ -226,13 +226,13 @@ var clangTriples = map[string]string{
 	"darwin-arm64": "arm64-apple-darwin",
 }
 
-// TargetTriple returns the Clang target triple for the target platform (the one
+// targetTriple returns the Clang target triple for the target platform (the one
 // selected by TargetPlatform) and whether a mapping exists. It is used to pass
 // "-target <triple>" to libclang for platform-specific projects; ok is false
 // for platforms without a known triple, in which case the caller parses with
 // the host default as before.
-func TargetTriple() (triple string, ok bool) {
-	triple, ok = clangTriples[PlatformDir()]
+func targetTriple(platformDir string) (triple string, ok bool) {
+	triple, ok = clangTriples[platformDir]
 	return
 }
 

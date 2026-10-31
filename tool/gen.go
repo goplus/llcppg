@@ -183,17 +183,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 		}
 	}
 
-	// For a platform-specific project, parse headers for the requested target
-	// triple (e.g. "arm64-apple-darwin") instead of the host, so conditional
-	// compilation, macros, and type layout match the target. Ordinary projects
-	// and platforms without a known triple parse as before.
-	var parseFlags []string
-	if platformDir != "" {
-		if triple, ok := TargetTriple(); ok {
-			parseFlags = []string{"-target", triple}
-		}
-	}
-	files, err := ParseSources(index, topHeaders, incDirs, cfg.Language, parseFlags...)
+	files, err := ParseSources(index, topHeaders, incDirs, cfg.Language, platformDir)
 	if err != nil {
 		return
 	}
@@ -373,14 +363,20 @@ func (p Module) IncludeDir(modPath string) (includeDir string, err error) {
 // -----------------------------------------------------------------------------
 
 // ParseFlags constructs the command-line flags for parsing C/C++ source files with clang.
-func ParseFlags(includeDirs []string, lang string) []string {
+func ParseFlags(includeDirs []string, lang, platformDir string) []string {
 	n := len(includeDirs)
-	flags := make([]string, n+2, n+4)
+	flags := make([]string, n+3, n+5)
 	for i, dir := range includeDirs {
 		flags[i] = "-I" + dir
 	}
 	flags[n] = "-x"
 	flags[n+1] = lang
+	flags[n+2] = "-fparse-all-comments"
+	if platformDir != "" {
+		if triple, ok := targetTriple(platformDir); ok {
+			flags = append(flags, "-target", triple)
+		}
+	}
 	return flags
 }
 
@@ -388,10 +384,8 @@ func ParseFlags(includeDirs []string, lang string) []string {
 // to those files. extraFlags are appended after the standard parse flags (e.g.
 // "-target <triple>" for a platform-specific project); callers that need no
 // extra flags may omit them.
-func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang string, extraFlags ...string) ([]cl.Source, error) {
-	flags := ParseFlags(includeDirs, lang)
-	flags = append(flags, "-fparse-all-comments")
-	flags = append(flags, extraFlags...)
+func ParseSources(index clang.Index, headerFiles, includeDirs []string, lang, platformDir string) ([]cl.Source, error) {
+	flags := ParseFlags(includeDirs, lang, platformDir)
 	files := make([]cl.Source, len(headerFiles))
 	for i, headerFile := range headerFiles {
 		tu, e := index.ParseTranslationUnit(clang.DetailedPreprocessingRecord, headerFile, flags...)

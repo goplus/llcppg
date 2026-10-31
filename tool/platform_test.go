@@ -270,7 +270,7 @@ func TestTargetTriple(t *testing.T) {
 	} {
 		t.Run(tt.goos+"-"+tt.goarch, func(t *testing.T) {
 			withPlatform(t, tt.goos, tt.goarch)
-			triple, ok := TargetTriple()
+			triple, ok := targetTriple(PlatformDir())
 			if ok != tt.wantOK || triple != tt.want {
 				t.Fatalf("TargetTriple() = %q,%v; want %q,%v", triple, ok, tt.want, tt.wantOK)
 			}

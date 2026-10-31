@@ -98,7 +98,7 @@ func testSingleFile(t *testing.T, idx clang.Index, pkgDir, headerDir, headerFile
 	incDirs = append(incDirs, conf.StdlibDirs(pkgDir)...)
 	log.Println("==> includeDirs:", incDirs)
 
-	flags := tool.ParseFlags(incDirs, conf.Language)
+	flags := tool.ParseFlags(incDirs, conf.Language, "")
 	if lang == cl.LanguageCXX && runtime.GOOS != "darwin" {
 		// These two flags let the C++ ADT headers parse against the bundled
 		// libc++ (github.com/llarhub/libcxx) on non-Apple hosts, where macOS
