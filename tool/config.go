@@ -38,7 +38,15 @@ type Config struct {
 	// Language (required). c, c++, etc.
 	Language string `json:"Language"`
 
-	// dir or dir/... (recursive), required
+	// dir or dir/... (recursive), required.
+	//
+	// For a platform-specific project (headers differ per OS/arch), Dir must
+	// start with the literal "$GOOS-$GOARCH/" prefix, e.g.
+	// "$GOOS-$GOARCH/include" or "$GOOS-$GOARCH/include/...". The prefix opts
+	// the project into per-platform layout: headers are read from
+	// <$GOOS-$GOARCH>/... (e.g. darwin-arm64/include) and output is written
+	// under <dest-dir>/$GOOS-$GOARCH. $GOOS/$GOARCH may appear only as this
+	// leading segment. See https://github.com/goplus/llcppg/issues/1125.
 	Dir string `json:"Dir"`
 
 	// selected header files relative to Dir; overrides auto-discovery, optional.

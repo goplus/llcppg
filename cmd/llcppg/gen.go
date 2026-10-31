@@ -87,6 +87,24 @@ func Gen(destDir, srcDir string, index clang.Index, defines []cl.ConstDef, verbo
 	}
 	mainPkgName := cfg.Name
 
+	// For a platform-specific project (Dir prefixed with $GOOS-$GOARCH/), the
+	// generated package is placed under <dest-dir>/<platform> automatically;
+	// the user never creates the platform subdirectory by hand. Ordinary
+	// projects write straight into <dest-dir> as before.
+	// See https://github.com/goplus/llcppg/issues/1125.
+	platformDir, specific, err := cfg.Platform()
+	if err != nil {
+		return
+	}
+	if specific {
+		// Fail fast (before any output directory is created) when the headers
+		// for the target platform are missing.
+		if err = cfg.CheckPlatformDir(srcDir); err != nil {
+			return
+		}
+		destDir = filepath.Join(destDir, platformDir)
+	}
+
 	if !verbose {
 		if cfg.IgnoreInline {
 			cl.InlineFuncIgnore = cl.QuietIgnore // quiet ignore inline functions
