@@ -145,13 +145,17 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 	c.Prepare(workDir, pkgPaths[1:nDeps+1]...)
 	imp.SetCache(c)
 
-	dir := cfg.Dir
-	recursive := strings.HasSuffix(dir, "/...")
-	if recursive {
-		dir = dir[:len(dir)-4]
+	dir, recursive, platformDir, err := cfg.srcDir(workDir)
+	if err != nil {
+		return
 	}
-	if !filepath.IsAbs(dir) {
-		dir = filepath.Join(workDir, dir)
+	if platformDir != "" {
+		// Platform-specific project: the resolved platform directory (e.g.
+		// workDir/darwin-arm64/include) must exist. Fail with a message that
+		// names the expected path when it does not.
+		if err = checkPlatformDir(dir, platformDir); err != nil {
+			return
+		}
 	}
 	if debugSettings {
 		log.Println("==> srcDir:", dir)
