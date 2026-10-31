@@ -85,6 +85,11 @@ func TestPlatform(t *testing.T) {
 				if err == nil {
 					t.Fatalf("Platform(%q) = nil err, want error", tt.dir)
 				}
+				// The diagnostic must name the full configured Dir, not an
+				// internal substring left after stripping the prefix.
+				if !strings.Contains(err.Error(), tt.dir) {
+					t.Fatalf("Platform(%q) error should name the dir, got %q", tt.dir, err.Error())
+				}
 				return
 			}
 			if err != nil {
@@ -164,12 +169,22 @@ func TestCutPlatformPrefix(t *testing.T) {
 }
 
 func TestCheckNoPlaceholderMessage(t *testing.T) {
-	err := checkNoPlaceholder("include/$GOOS")
+	err := checkNoPlaceholder("include/$GOOS", "include/$GOOS")
 	if err == nil {
 		t.Fatal("checkNoPlaceholder should reject stray $GOOS")
 	}
 	if !strings.Contains(err.Error(), platformPlaceholder) {
 		t.Fatalf("error should mention %q, got %q", platformPlaceholder, err.Error())
+	}
+
+	// The message must report the original dir, not the scanned substring, so
+	// the diagnostic matches the configured Dir value.
+	err = checkNoPlaceholder("$GOOS-$GOARCH/include/$GOOS", "include/$GOOS")
+	if err == nil {
+		t.Fatal("checkNoPlaceholder should reject stray $GOOS after prefix")
+	}
+	if !strings.Contains(err.Error(), "$GOOS-$GOARCH/include/$GOOS") {
+		t.Fatalf("error should name the full dir, got %q", err.Error())
 	}
 }
 

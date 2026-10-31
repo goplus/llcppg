@@ -89,8 +89,10 @@ func platformOf(dir string) (platformDir string, specific bool, err error) {
 	// placeholder).
 	rest, specific := cutPlatformPrefix(dir)
 	if specific {
-		// No further occurrence of the placeholder tokens is permitted.
-		if err = checkNoPlaceholder(rest); err != nil {
+		// No further occurrence of the placeholder tokens is permitted. Scan
+		// the remainder after the leading segment, but report the original dir
+		// so the diagnostic matches the configured Dir value.
+		if err = checkNoPlaceholder(dir, rest); err != nil {
 			return
 		}
 		platformDir = PlatformDir()
@@ -98,7 +100,7 @@ func platformOf(dir string) (platformDir string, specific bool, err error) {
 	}
 	// Not prefixed: reject any stray $GOOS / $GOARCH elsewhere in the path so
 	// that a misplaced placeholder is a clear error rather than a silent no-op.
-	if err = checkNoPlaceholder(dir); err != nil {
+	if err = checkNoPlaceholder(dir, dir); err != nil {
 		return
 	}
 	return
@@ -125,12 +127,14 @@ func cutPlatformPrefix(dir string) (rest string, ok bool) {
 	}
 }
 
-// checkNoPlaceholder returns an error if s still mentions $GOOS or $GOARCH.
-func checkNoPlaceholder(s string) error {
-	if strings.Contains(s, "$GOOS") || strings.Contains(s, "$GOARCH") {
+// checkNoPlaceholder returns an error if scan still mentions $GOOS or $GOARCH.
+// dir is the original Dir value used only in the error message, so the
+// diagnostic names what the user configured rather than an internal substring.
+func checkNoPlaceholder(dir, scan string) error {
+	if strings.Contains(scan, "$GOOS") || strings.Contains(scan, "$GOARCH") {
 		return fmt.Errorf(
 			"invalid Dir %q: $GOOS/$GOARCH may only appear as the leading %q segment",
-			s, platformPlaceholder)
+			dir, platformPlaceholder)
 	}
 	return nil
 }
