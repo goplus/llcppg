@@ -253,3 +253,27 @@ func TestCheckPlatformDir(t *testing.T) {
 		t.Fatalf("CheckPlatformDir after mkdir err: %v", err)
 	}
 }
+
+func TestTargetTriple(t *testing.T) {
+	for _, tt := range []struct {
+		goos, goarch string
+		want         string
+		wantOK       bool
+	}{
+		{"linux", "amd64", "x86_64-unknown-linux-gnu", true},
+		{"linux", "arm64", "aarch64-unknown-linux-gnu", true},
+		{"darwin", "amd64", "x86_64-apple-darwin", true},
+		{"darwin", "arm64", "arm64-apple-darwin", true},
+		// An unmapped platform yields no triple.
+		{"windows", "amd64", "", false},
+		{"linux", "riscv64", "", false},
+	} {
+		t.Run(tt.goos+"-"+tt.goarch, func(t *testing.T) {
+			withPlatform(t, tt.goos, tt.goarch)
+			triple, ok := TargetTriple()
+			if ok != tt.wantOK || triple != tt.want {
+				t.Fatalf("TargetTriple() = %q,%v; want %q,%v", triple, ok, tt.want, tt.wantOK)
+			}
+		})
+	}
+}

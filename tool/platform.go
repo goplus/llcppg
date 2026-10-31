@@ -210,3 +210,30 @@ func checkPlatformDir(dir, platformDir string) error {
 }
 
 // -----------------------------------------------------------------------------
+// Mapping a $GOOS-$GOARCH platform to the Clang target triple used when parsing
+// headers, so conditional compilation, macros, and type layout are interpreted
+// for the requested platform rather than the host.
+//
+// See https://github.com/goplus/llcppg/issues/1124.
+
+// clangTriples maps a $GOOS-$GOARCH directory name to the Clang target triple.
+// Only the platforms recognized by the initial implementation are listed; an
+// unmapped platform yields no triple (TargetTriple reports ok == false).
+var clangTriples = map[string]string{
+	"linux-amd64":  "x86_64-unknown-linux-gnu",
+	"linux-arm64":  "aarch64-unknown-linux-gnu",
+	"darwin-amd64": "x86_64-apple-darwin",
+	"darwin-arm64": "arm64-apple-darwin",
+}
+
+// TargetTriple returns the Clang target triple for the target platform (the one
+// selected by TargetPlatform) and whether a mapping exists. It is used to pass
+// "-target <triple>" to libclang for platform-specific projects; ok is false
+// for platforms without a known triple, in which case the caller parses with
+// the host default as before.
+func TargetTriple() (triple string, ok bool) {
+	triple, ok = clangTriples[PlatformDir()]
+	return
+}
+
+// -----------------------------------------------------------------------------
