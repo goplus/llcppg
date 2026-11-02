@@ -436,6 +436,7 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 	lastSeen := ctx.lastSeen
 
 	for _, f := range files {
+		thisFile := ""
 		ctx.thisSeen = make(map[string]none) // reset for each file
 		clang.VisitChildren(f.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			if pkgOf != nil {
@@ -447,13 +448,7 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 				if !ok || pkgPath != myPkgPath {
 					return clang.Continue
 				}
-				// Record the file providing this declaration so a later
-				// translation unit that includes it skips reprocessing.
-				// loadInclude only records files reached via an inclusion
-				// directive, so the translation unit's own main input file
-				// would otherwise be reprocessed when a later input includes
-				// it, falsely reporting conflicting definitions.
-				ctx.thisSeen[at] = none{}
+				thisFile = at
 				if goFileOf != nil {
 					fname, ok := goFileOf(at)
 					if !ok {
@@ -472,6 +467,9 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 		})
 		groupClose(ctx)
 		maps.Copy(lastSeen, ctx.thisSeen)
+		if thisFile != "" {
+			lastSeen[thisFile] = none{}
+		}
 	}
 	scope.reorder()
 }
