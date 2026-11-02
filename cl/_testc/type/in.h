@@ -1,5 +1,7 @@
 typedef long double LongDouble;
 
+typedef _Float16 f16;
+
 // An enumeration type used as a value type.
 enum Color {
 	Red,
