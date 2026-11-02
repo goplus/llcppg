@@ -24,6 +24,7 @@ type Matrix struct {
 	Name [32]c.Char
 }
 type LongDouble = c.LongDouble
+type F16 = c.Float16
 
 // Various primitive C types as function parameters and result.
 //

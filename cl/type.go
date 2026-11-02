@@ -249,10 +249,12 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		case lc.Type_Float:
 			return types.Typ[types.Complex64]
 		}
-	case lc.Type_LongDouble:
-		return ctx.basicTyp(cLongDouble)
 	case lc.Type_WChar:
 		return ctx.basicTyp(cWcharT)
+	case lc.Type_LongDouble:
+		return ctx.basicTyp(cLongDouble)
+	case lc.Type_Float16, lc.Type_Half:
+		return ctx.basicTyp(cFloat16)
 	case lc.Type_BlockPointer, lc.Type_Invalid:
 		*feats |= featQuietIgnore // will always be ignored
 		return types.Typ[types.Invalid]
@@ -431,6 +433,7 @@ const (
 	cFloat
 	cDouble
 	cLongDouble
+	cFloat16
 	cWcharT
 	cBasicMax
 )
@@ -447,6 +450,7 @@ var ctypBasic = [cBasicMax]string{
 	cFloat:      "Float",
 	cDouble:     "Double",
 	cLongDouble: "LongDouble",
+	cFloat16:    "Float16",
 	cWcharT:     "WcharT",
 }
 
