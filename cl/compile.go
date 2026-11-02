@@ -447,6 +447,13 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 				if !ok || pkgPath != myPkgPath {
 					return clang.Continue
 				}
+				// Record the file providing this declaration so a later
+				// translation unit that includes it skips reprocessing.
+				// loadInclude only records files reached via an inclusion
+				// directive, so the translation unit's own main input file
+				// would otherwise be reprocessed when a later input includes
+				// it, falsely reporting conflicting definitions.
+				ctx.thisSeen[at] = none{}
 				if goFileOf != nil {
 					fname, ok := goFileOf(at)
 					if !ok {
