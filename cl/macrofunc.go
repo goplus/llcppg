@@ -141,6 +141,12 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 			} else if s, ok := arg.v.(string); ok { // c.Str("...")
 				cb.Val(ctx.cStr()).Val(s, node).CallWith(1, 0, 0, node)
 			} else {
+				if arg.kind == fca_Const && arg.v == 0 {
+					// C's integer zero denotes a null callback in this parameter position.
+					if _, ok := callParams.At(i).Type().Underlying().(*types.Signature); ok {
+						arg.v = nil
+					}
+				}
 				cb.Val(arg.v, node)
 			}
 		}
