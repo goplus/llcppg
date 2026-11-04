@@ -57,7 +57,7 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
 		typDecl, ok = ctx.typdecls[cName]
 		if !ok {
 			goName := ctx.typeName(cName, true)
-			typDecl = newEnumType(ctx, decl, cName, goName)
+			typDecl = newType(ctx, decl, cName, goName)
 			ctx.typdecls[cName] = typDecl
 		}
 	}
@@ -73,30 +73,25 @@ func loadEnum(ctx *pkgCtx, decl clang.Cursor) {
 }
 
 func emitEnum(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
-	typDecl := newEnumType(ctx, decl, "", goName)
+	typDecl := newType(ctx, decl, "", goName)
 	initEnumvals(ctx, decl, typDecl, ctx.cNS(decl))
 	return typDecl.Type()
-}
-
-func newEnumType(ctx *pkgCtx, decl clang.Cursor, cName, goName string) typDecl {
-	typDecl := newType(ctx, decl, cName, goName)
-
-	pkg := ctx.pkg
-	pkgTypes := pkg.Types
-
-	feats := 0
-	typ := decl.EnumDeclIntegerType()
-	underType := toTypeEx(ctx, pkgTypes, typ, flagIsTypeDef, &feats, nil)
-	if feats&featAllIgnore != 0 {
-		ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d: %s)", cNameOf(decl), cTypeName(typ), typ.Kind, clang.String(typ))
-	}
-	typDecl.InitType(pkg, underType)
-	return typDecl
 }
 
 func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
+
+	if typDecl.defs != nil {
+		feats := 0
+		typ := decl.EnumDeclIntegerType()
+		underType := toTypeEx(ctx, pkgTypes, typ, flagIsTypeDef, &feats, nil)
+		if feats&featAllIgnore != 0 {
+			ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d: %s)", cNameOf(decl), cTypeName(typ), typ.Kind, clang.String(typ))
+		}
+		typDecl.InitType(pkg, underType)
+	}
+
 	defs := pkg.NewConstDefs(pkgTypes.Scope())
 
 	var enumType types.Type
