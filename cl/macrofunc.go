@@ -132,19 +132,23 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 			cb.Val(fnRef.Func, node)
 		}
 		for i, arg := range v.args {
+			paramType := callParams.At(i).Type()
 			if arg.kind == fca_Sizeof { // IntType( unsafe.Sizeof( T ) )
-				intT := callParams.At(i).Type()
 				t := arg.v.(types.Type)
-				cb.Typ(intT, node).
+				cb.Typ(paramType, node).
 					Val(ctx.unsafeSizeof(), node).ZeroLit(t).CallWith(1, 0, 0, node).
 					CallWith(1, 0, 0, node)
 			} else if s, ok := arg.v.(string); ok { // c.Str("...")
 				cb.Val(ctx.cStr()).Val(s, node).CallWith(1, 0, 0, node)
 			} else {
-				if arg.kind == fca_Const && arg.v == 0 {
-					// C's integer zero denotes a null callback in this parameter position.
-					if _, ok := callParams.At(i).Type().Underlying().(*types.Signature); ok {
-						arg.v = nil
+				if !(sigCall.Variadic() && i == callParams.Len()-1) {
+					cArg := i
+					if recv != nil {
+						cArg++
+					}
+					if isZeroArg(arg, ref.Argument(c.Uint(cArg)).Type(), paramType) {
+						cb.ZeroLit(paramType)
+						continue
 					}
 				}
 				cb.Val(arg.v, node)
@@ -156,6 +160,49 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 		}
 		cb.EndStmt().End(node)
 	}
+}
+
+func isZeroArg(arg funcCallArg, cType lc.Type, goType types.Type) bool {
+	if arg.kind != fca_Const {
+		return false
+	}
+	integer := false
+	switch v := arg.v.(type) {
+	case int:
+		if v != 0 {
+			return false
+		}
+		integer = true
+	case float64:
+		if v != 0 {
+			return false
+		}
+	default:
+		return false
+	}
+
+	if integer {
+		if _, ok := goType.Underlying().(*types.Signature); ok {
+			return true
+		}
+	}
+
+	switch cType.Canonical().Kind {
+	case lc.Type_Bool:
+		basic, ok := goType.Underlying().(*types.Basic)
+		return ok && basic.Kind() == types.Bool
+	case lc.Type_Pointer, lc.Type_FunctionProto, lc.Type_ConstantArray, lc.Type_IncompleteArray, lc.Type_VariableArray:
+		if !integer {
+			return false
+		}
+		switch typ := goType.Underlying().(type) {
+		case *types.Pointer:
+			return true
+		case *types.Basic:
+			return typ.Kind() == types.UnsafePointer || typ.Kind() == types.Uintptr
+		}
+	}
+	return false
 }
 
 func doCompileMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName, refName string, paramNames []string) {

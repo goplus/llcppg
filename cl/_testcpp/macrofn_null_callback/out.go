@@ -17,6 +17,9 @@ type OwnerT Owner
 //go:linkname InvokeCallback C._Z15invoke_callbackiPFiiE
 func InvokeCallback(mode c.Int, callback CallbackT) c.Int
 
+//go:linkname SetOptions C._Z11set_optionsiPib
+func SetOptions(count c.Int, pointer *c.Int, enabled bool)
+
 //go:linkname OpenCallbacks C._Z14open_callbacksPKvPFiPvPciEPFiS1_PKciEPFlS1_liEPFiS1_E
 func OpenCallbacks(cookie unsafe.Pointer, read func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 *c.Char, _llcppg_param3 c.Int) c.Int, write func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 *c.Char, _llcppg_param3 c.Int) c.Int, seek func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.Long, _llcppg_param3 c.Int) c.Long, close func(_llcppg_param1 unsafe.Pointer) c.Int) c.Int
 
@@ -27,6 +30,9 @@ func InvokeEmpty(mode c.Int) c.Int {
 }
 func InvokeZero(callback CallbackT) c.Int {
 	return InvokeCallback(0, callback)
+}
+func SetDefaultOptions() {
+	SetOptions(0, nil, false)
 }
 func OpenRead(cookie unsafe.Pointer, fn func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 *c.Char, _llcppg_param3 c.Int) c.Int) c.Int {
 	return OpenCallbacks(cookie, fn, nil, nil, nil)

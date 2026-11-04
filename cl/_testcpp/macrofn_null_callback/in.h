@@ -5,6 +5,9 @@ int invoke_callback(int mode, callback_t callback);
 #define invoke_empty(mode) invoke_callback(mode, 0)
 #define invoke_zero(callback) invoke_callback(0, callback)
 
+void set_options(int count, int *pointer, bool enabled);
+#define set_default_options() set_options(0, 0, 0)
+
 int open_callbacks(const void *cookie,
     int (*read)(void *, char *, int),
     int (*write)(void *, const char *, int),
