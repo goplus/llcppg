@@ -284,6 +284,7 @@ func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret t
 	name := clang.String(typ)
 	// clang-c stores a tagged QualType in Data[0]. Its common base's first
 	// word is the Type pointer; for example, const __size_t has a tag bit.
+	// https://github.com/llvm/llvm-project/blob/llvmorg-22.1.8/clang/include/clang/AST/TypeBase.h#L952-L957
 	base := unsafe.Pointer(uintptr(typ.Data[0]) &^ uintptr(15))
 	typPtr := *(**clangcpp.Type)(base)
 	predefined := c.GoString(typPtr.GetTypeClassName()) == "PredefinedSugar"
