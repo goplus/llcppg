@@ -287,6 +287,10 @@ func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret t
 	// https://github.com/llvm/llvm-project/blob/llvmorg-22.1.8/clang/include/clang/AST/TypeBase.h#L952-L957
 	base := unsafe.Pointer(uintptr(typ.Data[0]) &^ uintptr(15))
 	typPtr := *(**clangcpp.Type)(base)
+	// Clang spells predefined size_t as __size_t. Only normalize
+	// PredefinedSugar so user-defined names, such as a C++ template parameter
+	// named __size_t, keep their original spelling.
+	// https://github.com/llvm/llvm-project/blob/llvmorg-22.1.8/clang/lib/AST/Type.cpp#L5746-L5754
 	predefined := c.GoString(typPtr.GetTypeClassName()) == "PredefinedSugar"
 	if predefined {
 		if t, ok := ctx.typeAliasOf(name, typ.Declaration()); ok {
