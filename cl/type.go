@@ -21,10 +21,12 @@ import (
 	"go/types"
 	"strconv"
 	"strings"
+	"unsafe"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
+	clangcpp "github.com/goplus/llcppg/tool/clang-cpp"
 	lc "github.com/llarhub/clang-c"
 )
 
@@ -280,6 +282,17 @@ func namedType(ctx *pkgCtx, typ lc.Type, feats *int) (ret types.Type, found bool
 
 func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret types.Type, found bool) {
 	name := clang.String(typ)
+	// clang-c stores a tagged QualType in Data[0]. Its common base's first
+	// word is the Type pointer; for example, const __size_t has a tag bit.
+	base := unsafe.Pointer(uintptr(typ.Data[0]) &^ uintptr(15))
+	typPtr := *(**clangcpp.Type)(base)
+	predefined := c.GoString(typPtr.GetTypeClassName()) == "PredefinedSugar"
+	if predefined {
+		if t, ok := ctx.typeAliasOf(name, typ.Declaration()); ok {
+			return t, true
+		}
+		name = strings.TrimPrefix(removeCV(name), "__")
+	}
 	if t, ok := ctx.typeAliasOf(name, typ.Declaration()); ok { // typeAlias supported in config
 		return t, true
 	}
@@ -295,7 +308,10 @@ func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret t
 	if t, ok := templateInstType(ctx, typ, name, feats, scope); ok {
 		return t, true
 	}
-	cName := cTypeName(typ)
+	cName := name
+	if !predefined {
+		cName = cTypeName(typ)
+	}
 	if o, ok := ctx.getTypeObj(cName, feats); ok {
 		return o.Type(), true
 	}
