@@ -45,7 +45,7 @@ install_llvm_linux() {
   # development packages are installed (e.g. on GitHub-hosted runners).
   $SUDO apt-get update
   $SUDO apt-get install -y "llvm-$LLVM_VERSION-dev" "clang-$LLVM_VERSION" \
-    "libclang-$LLVM_VERSION-dev" "lld-$LLVM_VERSION" \
+    "libclang-$LLVM_VERSION-dev" "libclang-cpp${LLVM_VERSION}-dev" "lld-$LLVM_VERSION" \
     "libunwind-$LLVM_VERSION-dev" "libc++-$LLVM_VERSION-dev" \
     git curl cmake pkg-config libgc-dev libssl-dev zlib1g-dev libffi-dev libuv1-dev
   LLVM_BIN="/usr/lib/llvm-$LLVM_VERSION/bin"
