@@ -7,6 +7,3 @@ import (
 
 //go:linkname Strlen C.strlen
 func Strlen(_llcppg_param1 *c.Char) c.SizeT
-
-//go:linkname OrdinarySize C.ordinary_size
-func OrdinarySize() c.Ulong

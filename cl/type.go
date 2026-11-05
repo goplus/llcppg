@@ -21,12 +21,10 @@ import (
 	"go/types"
 	"strconv"
 	"strings"
-	"unsafe"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
-	clangcpp "github.com/goplus/llcppg/tool/clang-cpp"
 	lc "github.com/llarhub/clang-c"
 )
 
@@ -282,22 +280,6 @@ func namedType(ctx *pkgCtx, typ lc.Type, feats *int) (ret types.Type, found bool
 
 func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret types.Type, found bool) {
 	name := clang.String(typ)
-	// clang-c stores a tagged QualType in Data[0]. Its common base's first
-	// word is the Type pointer; for example, const __size_t has a tag bit.
-	// https://github.com/llvm/llvm-project/blob/llvmorg-22.1.8/clang/include/clang/AST/TypeBase.h#L952-L957
-	base := unsafe.Pointer(uintptr(typ.Data[0]) &^ uintptr(15))
-	typPtr := *(**clangcpp.Type)(base)
-	// Clang spells predefined size_t as __size_t. Only normalize
-	// PredefinedSugar so user-defined names, such as a C++ template parameter
-	// named __size_t, keep their original spelling.
-	// https://github.com/llvm/llvm-project/blob/llvmorg-22.1.8/clang/lib/AST/Type.cpp#L5746-L5754
-	predefined := c.GoString(typPtr.GetTypeClassName()) == "PredefinedSugar"
-	if predefined {
-		if t, ok := ctx.typeAliasOf(name, typ.Declaration()); ok {
-			return t, true
-		}
-		name = strings.TrimPrefix(removeCV(name), "__")
-	}
 	if t, ok := ctx.typeAliasOf(name, typ.Declaration()); ok { // typeAlias supported in config
 		return t, true
 	}
@@ -313,10 +295,7 @@ func unexposedType(ctx *pkgCtx, typ lc.Type, feats *int, scope *scopeCtx) (ret t
 	if t, ok := templateInstType(ctx, typ, name, feats, scope); ok {
 		return t, true
 	}
-	cName := name
-	if !predefined {
-		cName = cTypeName(typ)
-	}
+	cName := cTypeName(typ)
 	if o, ok := ctx.getTypeObj(cName, feats); ok {
 		return o.Type(), true
 	}

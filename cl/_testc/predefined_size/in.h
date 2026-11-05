@@ -1,2 +1,2 @@
-__SIZE_TYPE__ strlen(const char *);
-__SIZE_TYPE__ ordinary_size(void);
+#include "sys/_types/_size_t.h"
+size_t strlen(const char *);

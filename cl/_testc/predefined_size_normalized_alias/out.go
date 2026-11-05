@@ -8,4 +8,4 @@ import (
 type SizeT = uint64
 
 //go:linkname Strlen C.strlen
-func Strlen(_llcppg_param1 *c.Char) SizeT
+func Strlen(__s *c.Char) SizeT
