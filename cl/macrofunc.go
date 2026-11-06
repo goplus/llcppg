@@ -91,8 +91,9 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 			paramNames = paramNames[1:]
 			v.args = v.args[1:]
 		}
+		variadic := sigCall.Variadic()
 		callParams := sigCall.Params()
-		if callParams.Len() != len(v.args) {
+		if fncallUnmatched(callParams, v.args, variadic) {
 			return
 		}
 		pkg := ctx.pkg
@@ -105,7 +106,7 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 			if iParam < 0 {
 				return
 			}
-			typ := callParams.At(iParam).Type()
+			typ := fnParamType(callParams, iParam, variadic)
 			param := types.NewParam(fnPos, pkgTypes, avoidKeyword(pname), typ)
 			v.args[iParam] = funcCallArg{fca_IdentResolved, param}
 			params[i] = param
@@ -132,8 +133,8 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 			cb.Val(fnRef.Func, node)
 		}
 		for i, arg := range v.args {
-			paramType := callParams.At(i).Type()
-			if arg.kind == fca_Sizeof { // IntType( unsafe.Sizeof( T ) )
+			paramType := fnParamType(callParams, i, variadic)
+			if arg.kind == fca_Sizeof { // paramType( unsafe.Sizeof( T ) )
 				t := arg.v.(types.Type)
 				cb.Typ(paramType, node).
 					Val(ctx.unsafeSizeof(), node).ZeroLit(t).CallWith(1, 0, 0, node).
@@ -141,17 +142,14 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 			} else if s, ok := arg.v.(string); ok { // c.Str("...")
 				cb.Val(ctx.cStr()).Val(s, node).CallWith(1, 0, 0, node)
 			} else {
-				if !(sigCall.Variadic() && i == callParams.Len()-1) {
-					cArg := i
-					if recv != nil {
-						cArg++
-					}
-					if isZeroArg(arg, ref.Argument(c.Uint(cArg)).Type(), paramType) {
-						cb.ZeroLit(paramType)
-						continue
-					}
+				tun := types.Unalias(paramType)
+				if isPtrType(tun) && isZero(arg.v) {
+					cb.Val(nil, node)
+				} else if t, ok := tun.(*types.Basic); ok && t.Kind() == types.Bool {
+					cb.Val(!isZero(arg.v), node)
+				} else {
+					cb.Val(arg.v, node)
 				}
-				cb.Val(arg.v, node)
 			}
 		}
 		cb.CallWith(len(v.args), 0, 0, node)
@@ -162,45 +160,40 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 	}
 }
 
-func isZeroArg(arg funcCallArg, cType lc.Type, goType types.Type) bool {
-	if arg.kind != fca_Const {
-		return false
+func fncallUnmatched(callParams *types.Tuple, args []funcCallArg, variadic bool) bool {
+	if variadic {
+		n := callParams.Len() - 1
+		return len(args) < n
 	}
-	integer := false
-	switch v := arg.v.(type) {
+	return callParams.Len() != len(args)
+}
+
+func fnParamType(callParams *types.Tuple, i int, variadic bool) types.Type {
+	if variadic {
+		n := callParams.Len() - 1
+		if i >= n {
+			return callParams.At(n).Type().(*types.Slice).Elem()
+		}
+	}
+	return callParams.At(i).Type()
+}
+
+func isPtrType(t types.Type) bool {
+	switch t := t.(type) {
+	case *types.Pointer, *types.Signature:
+		return true
+	case *types.Basic:
+		return t.Kind() == types.UnsafePointer
+	}
+	return false
+}
+
+func isZero(v any) bool {
+	switch v := v.(type) {
 	case int:
-		if v != 0 {
-			return false
-		}
-		integer = true
+		return v == 0
 	case float64:
-		if v != 0 {
-			return false
-		}
-	default:
-		return false
-	}
-
-	if integer {
-		if _, ok := goType.Underlying().(*types.Signature); ok {
-			return true
-		}
-	}
-
-	switch cType.Canonical().Kind {
-	case lc.Type_Bool:
-		basic, ok := goType.Underlying().(*types.Basic)
-		return ok && basic.Kind() == types.Bool
-	case lc.Type_Pointer, lc.Type_FunctionProto, lc.Type_ConstantArray, lc.Type_IncompleteArray, lc.Type_VariableArray:
-		if !integer {
-			return false
-		}
-		switch typ := goType.Underlying().(type) {
-		case *types.Pointer:
-			return true
-		case *types.Basic:
-			return typ.Kind() == types.UnsafePointer || typ.Kind() == types.Uintptr
-		}
+		return v == 0
 	}
 	return false
 }
