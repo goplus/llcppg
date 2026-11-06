@@ -143,10 +143,10 @@ func doCompileAutoMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName string, pa
 				cb.Val(ctx.cStr()).Val(s, node).CallWith(1, 0, 0, node)
 			} else {
 				tun := types.Unalias(paramType)
-				if isPtrType(tun) && isZero(arg.v) {
+				if isPtrType(tun) && isNull(arg.v) {
 					cb.Val(nil, node)
 				} else if t, ok := tun.(*types.Basic); ok && t.Kind() == types.Bool {
-					cb.Val(!isZero(arg.v), node)
+					cb.Val(boolVal(arg.v), node)
 				} else {
 					cb.Val(arg.v, node)
 				}
@@ -188,14 +188,22 @@ func isPtrType(t types.Type) bool {
 	return false
 }
 
-func isZero(v any) bool {
+func isNull(v any) bool {
 	switch v := v.(type) {
 	case int:
 		return v == 0
-	case float64:
-		return v == 0
 	}
 	return false
+}
+
+func boolVal(v any) any {
+	switch v := v.(type) {
+	case int:
+		return v != 0
+	case float64:
+		return v != 0
+	}
+	return v
 }
 
 func doCompileMacroFunc(ctx *pkgCtx, decl clang.Cursor, macroName, refName string, paramNames []string) {
