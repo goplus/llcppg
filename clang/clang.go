@@ -88,11 +88,9 @@ const (
 // ParseTranslationUnit parses the given source file and returns the translation unit corresponding
 // to that file.
 func (i Index) ParseTranslationUnit(options clang.TranslationUnit_Flags, filename string, args ...string) (ret TranslationUnit, err error) {
-	// Preserve declared types, such as size_t in strlen, instead of builtin types.
-	cArgs := make([]*c.Char, len(args)+1)
-	cArgs[0] = c.AllocaCStr("-fno-builtin")
+	cArgs := make([]*c.Char, len(args))
 	for i, arg := range args {
-		cArgs[i+1] = c.AllocaCStr(arg)
+		cArgs[i] = c.AllocaCStr(arg)
 	}
 	e := i.Index.ParseTranslationUnit2(
 		c.AllocaCStr(filename), unsafe.SliceData(cArgs), c.Int(len(cArgs)), nil, 0, c.Uint(options), &ret.TranslationUnit)
