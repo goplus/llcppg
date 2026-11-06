@@ -117,8 +117,8 @@ func testFromDir(t *testing.T, sel, relDir string, srcLang cl.Language, genPubFi
 		files := make([]cl.Source, len(srcFiles))
 		for i, srcFile := range srcFiles {
 			presumedFile := filepath.Join(pkgDir, srcFile)
-			u, err := idx.ParseTranslationUnit(
-				clang.DetailedPreprocessingRecord, presumedFile, "-x", cltest.LanguageOf(lang), "-fparse-all-comments")
+			flags := tool.ParseFlags(nil, cltest.LanguageOf(lang), "")
+			u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, presumedFile, flags...)
 			if err != nil {
 				t.Fatal("ParseTranslationUnit failed:", err)
 			}
