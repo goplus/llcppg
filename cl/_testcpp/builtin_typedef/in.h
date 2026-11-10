@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <stddef.h>
-#include "../../_testc/builtin_typedef/external/types.h"
-#include "../../_testc/builtin_typedef/unconfigured/types.h"
+#include "external/types.h"
+#include "unconfigured/types.h"
 
 #if __has_feature(modules)
 #error Module compilation must remain disabled
