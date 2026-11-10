@@ -22,7 +22,9 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// Mangling returns the linker name without a Darwin target's ABI prefix.
+/**
+ * Retrieve a name for the entity referenced by this cursor.
+ */
 func Mangling(fn Cursor) string {
 	manglingName := GoStringAndDispose(fn.Mangling())
 	if manglingName == "" {
