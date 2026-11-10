@@ -1,5 +1,4 @@
-#include <stdarg.h>
-#include <stddef.h>
+#include "builtin/types.h"
 #include "external/types.h"
 #include "unconfigured/types.h"
 
