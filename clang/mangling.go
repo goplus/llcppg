@@ -47,17 +47,17 @@ func isAppleTriple(triple string) bool {
 	_, targetOS, _ := strings.Cut(rest, "-")
 	switch {
 	case strings.HasPrefix(targetOS, "darwin"):
-		return true
+		fallthrough
 	case strings.HasPrefix(targetOS, "macosx"):
-		return true
+		fallthrough
 	case strings.HasPrefix(targetOS, "ios"):
-		return true
+		fallthrough
 	case strings.HasPrefix(targetOS, "tvos"):
-		return true
+		fallthrough
 	case strings.HasPrefix(targetOS, "watchos"):
-		return true
+		fallthrough
 	case strings.HasPrefix(targetOS, "driverkit"):
-		return true
+		fallthrough
 	case strings.HasPrefix(targetOS, "xros"):
 		return true
 	}
