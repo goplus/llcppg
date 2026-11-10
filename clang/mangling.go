@@ -33,17 +33,35 @@ func Mangling(fn Cursor) string {
 	info := fn.TranslationUnit().TargetInfo()
 	triple := GoStringAndDispose(info.Triple())
 	info.Dispose()
+	if isAppleTriple(triple) {
+		// Darwin adds one underscore: _normal becomes normal, while
+		// __leading keeps the underscore from the source declaration.
+		return strings.TrimPrefix(manglingName, "_")
+	}
+	return manglingName
+}
+
+func isAppleTriple(triple string) bool {
 	// TargetInfo supplies a normalized arch-vendor-os[-environment] triple.
 	_, rest, _ := strings.Cut(triple, "-")
 	_, targetOS, _ := strings.Cut(rest, "-")
-	for _, os := range []string{"darwin", "macosx", "ios", "tvos", "watchos", "driverkit", "xros"} {
-		if strings.HasPrefix(targetOS, os) {
-			// Darwin adds one underscore: _normal becomes normal, while
-			// __leading keeps the underscore from the source declaration.
-			return strings.TrimPrefix(manglingName, "_")
-		}
+	switch {
+	case strings.HasPrefix(targetOS, "darwin"):
+		return true
+	case strings.HasPrefix(targetOS, "macosx"):
+		return true
+	case strings.HasPrefix(targetOS, "ios"):
+		return true
+	case strings.HasPrefix(targetOS, "tvos"):
+		return true
+	case strings.HasPrefix(targetOS, "watchos"):
+		return true
+	case strings.HasPrefix(targetOS, "driverkit"):
+		return true
+	case strings.HasPrefix(targetOS, "xros"):
+		return true
 	}
-	return manglingName
+	return false
 }
 
 // -----------------------------------------------------------------------------
