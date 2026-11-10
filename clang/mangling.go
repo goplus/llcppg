@@ -1,5 +1,3 @@
-//go:build darwin
-
 /*
  * Copyright (c) 2026 The XGo Authors (xgo.dev). All rights reserved.
  *
@@ -19,22 +17,31 @@
 package clang
 
 import (
-	"github.com/goplus/lib/c"
+	"strings"
 )
 
 // -----------------------------------------------------------------------------
 
-/**
- * Retrieve a name for the entity referenced by this cursor.
- */
+// Mangling returns the linker name without a Darwin target's ABI prefix.
 func Mangling(fn Cursor) string {
-	m := fn.Mangling()
-	manglingName := c.GoString(m.CStr())
-	m.Dispose()
+	manglingName := GoStringAndDispose(fn.Mangling())
 	if manglingName == "" {
 		return ""
 	}
-	return manglingName[1:]
+	info := fn.TranslationUnit().TargetInfo()
+	triple := GoStringAndDispose(info.Triple())
+	info.Dispose()
+	// TargetInfo supplies a normalized arch-vendor-os[-environment] triple.
+	_, rest, _ := strings.Cut(triple, "-")
+	_, targetOS, _ := strings.Cut(rest, "-")
+	for _, os := range []string{"darwin", "macosx", "ios", "tvos", "watchos", "driverkit", "xros"} {
+		if strings.HasPrefix(targetOS, os) {
+			// Darwin adds one underscore: _normal becomes normal, while
+			// __leading keeps the underscore from the source declaration.
+			return strings.TrimPrefix(manglingName, "_")
+		}
+	}
+	return manglingName
 }
 
 // -----------------------------------------------------------------------------
