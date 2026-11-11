@@ -373,7 +373,9 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		lastSeen: make(map[string]none), types: make(map[string]typeObj),
 		compiledFns: make(map[string]*gogen.Func), impPkgs: make(map[string]none),
 		pubDeps: make(map[string]none), pubTyps: make(map[string]none),
-		macroVals: map[string]any{ // TODO(xsw): load macro values
+		// TODO(xsw): Also load macro values from standard library headers,
+		// such as NULL (<stddef.h>) and INT_MAX (<limits.h>).
+		macroVals: map[string]any{
 			"NULL":    nil,
 			"INT_MAX": c_INT_MAX,
 		},
@@ -439,12 +441,9 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 	for _, f := range files {
 		ctx.thisSeen = make(map[string]none) // reset for each file
 		clang.VisitChildren(f.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
-			if decl.Kind == lc.Cursor_MacroDefinition && clang.PresumedFile(decl.Location()) == "<built-in>" {
+			if decl.Kind == lc.Cursor_MacroDefinition && clang.PresumedFile(decl.Location()) == "<built-in>" && decl.IsMacroFunctionLike() == 0 {
 				// Predefined macros such as __INT_MAX__ come from Clang's
 				// <built-in> buffer, outside the configured header paths.
-				if decl.IsMacroFunctionLike() != 0 {
-					return clang.Continue
-				}
 				name := clang.String(decl)
 				if _, ok := ctx.macroVals[name]; ok {
 					return clang.Continue
