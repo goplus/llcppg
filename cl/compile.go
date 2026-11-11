@@ -28,6 +28,7 @@ import (
 	"github.com/goplus/gogen"
 	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 const (
@@ -438,6 +439,25 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 	for _, f := range files {
 		ctx.thisSeen = make(map[string]none) // reset for each file
 		clang.VisitChildren(f.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
+			if decl.Kind == lc.Cursor_MacroDefinition && clang.PresumedFile(decl.Location()) == "<built-in>" {
+				// Predefined macros such as __INT_MAX__ come from Clang's
+				// <built-in> buffer, outside the configured header paths.
+				if decl.IsMacroFunctionLike() != 0 {
+					return clang.Continue
+				}
+				name := clang.String(decl)
+				if _, ok := ctx.macroVals[name]; ok {
+					return clang.Continue
+				}
+				tokens, dispose := f.Tokenize(decl.Extent())
+				if len(tokens) > 1 {
+					if v, ok := evalConstExpr(ctx, f, tokens[1:]); ok {
+						ctx.macroVals[name] = v
+					}
+				}
+				dispose()
+				return clang.Continue
+			}
 			if pkgOf != nil {
 				at := clang.PresumedFile(decl.Location())
 				if _, ok := lastSeen[at]; ok {

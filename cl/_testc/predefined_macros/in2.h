@@ -1,0 +1,1 @@
+#define PREVIOUS_MACRO (INT_MAX_VALUE - __INT_MAX__)
