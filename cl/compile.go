@@ -441,7 +441,8 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 	for _, f := range files {
 		ctx.thisSeen = make(map[string]none) // reset for each file
 		clang.VisitChildren(f.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
-			if decl.Kind == lc.Cursor_MacroDefinition && clang.PresumedFile(decl.Location()) == "<built-in>" && decl.IsMacroFunctionLike() == 0 {
+			at := clang.PresumedFile(decl.Location())
+			if decl.Kind == lc.Cursor_MacroDefinition && at == "<built-in>" && decl.IsMacroFunctionLike() == 0 {
 				// Predefined macros such as __INT_MAX__ come from Clang's
 				// <built-in> buffer, outside the configured header paths.
 				name := clang.String(decl)
@@ -458,7 +459,6 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 				return clang.Continue
 			}
 			if pkgOf != nil {
-				at := clang.PresumedFile(decl.Location())
 				if _, ok := lastSeen[at]; ok {
 					return clang.Continue // already loaded
 				}
