@@ -21,7 +21,9 @@ import (
 	"log"
 	"strings"
 
+	"github.com/goplus/lib/c"
 	"github.com/goplus/llcppg/clang"
+	lc "github.com/llarhub/clang-c"
 )
 
 // -----------------------------------------------------------------------------
@@ -44,6 +46,46 @@ func docCommentsEx[nodeT nodeCursor](decl nodeT) []*ast.Comment {
 		return nil
 	}
 	return toLineComments(raw)
+}
+
+// Keep the C declaration when c.Pointer hides a legacy function type:
+//
+//	int (*callback)() -> Callback c.Pointer // int (*callback)()
+func legacyFuncComment(decl clang.Cursor) string {
+	typ := decl.Type()
+	if decl.Kind == lc.Cursor_TypedefDecl {
+		typ = decl.TypedefDeclUnderlyingType()
+	} else if decl.Kind == lc.Cursor_FunctionDecl && typ.Kind == lc.Type_FunctionNoProto {
+		typ = typ.Result()
+	}
+	if !hasLegacyFunc(typ) {
+		return ""
+	}
+	text := clang.GoStringAndDispose(decl.PrettyPrinted(0))
+	return "// " + strings.Join(strings.Fields(text), " ")
+}
+
+func hasLegacyFunc(typ lc.Type) bool {
+	typ = typ.Canonical()
+	switch typ.Kind {
+	case lc.Type_FunctionNoProto:
+		return true
+	case lc.Type_Pointer:
+		return hasLegacyFunc(typ.Pointee())
+	case lc.Type_ConstantArray, lc.Type_IncompleteArray, lc.Type_VariableArray:
+		return hasLegacyFunc(typ.ArrayElement())
+	case lc.Type_FunctionProto:
+		if hasLegacyFunc(typ.Result()) {
+			return true
+		}
+		for i := range typ.NumArgTypes() {
+			if hasLegacyFunc(typ.Arg(c.Uint(i))) {
+				return true
+			}
+		}
+	}
+	// Record members own their comments, e.g. struct { int (*cb)(); } nested.
+	return false
 }
 
 // cleanCommentLine strips the C/C++ comment markers and Doxygen/Javadoc
@@ -163,6 +205,13 @@ func lineCommentGroup(decl clang.Cursor) (ret fieldComment) {
 	if len(lines) > 1 {
 		docs = append(docs, lines...)
 		lines = nil
+	}
+	if extra := legacyFuncComment(decl); extra != "" {
+		if len(lines) == 0 {
+			lines = toLineComments(extra)
+		} else {
+			docs = append(docs, toLineComments(extra)...)
+		}
 	}
 	if len(docs) != 0 {
 		ret.doc = &ast.CommentGroup{List: docs}

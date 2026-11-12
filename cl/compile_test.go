@@ -118,6 +118,7 @@ func testFromDir(t *testing.T, sel, relDir string, srcLang cl.Language, genPubFi
 		for i, srcFile := range srcFiles {
 			presumedFile := filepath.Join(pkgDir, srcFile)
 			flags := tool.ParseFlags(nil, cltest.LanguageOf(lang), "")
+			flags = append(flags, testParseFlags[myPkgName]...)
 			u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, presumedFile, flags...)
 			if err != nil {
 				t.Fatal("ParseTranslationUnit failed:", err)
@@ -205,6 +206,11 @@ func testFromDir(t *testing.T, sel, relDir string, srcLang cl.Language, genPubFi
 var langExts = [...]string{
 	cl.LanguageC:   ".c",
 	cl.LanguageCXX: ".cpp",
+}
+
+var testParseFlags = map[string][]string{
+	"function_no_proto":    {"-std=c17"},
+	"function_pointer_c23": {"-std=c23"},
 }
 
 func TestC(t *testing.T) {
