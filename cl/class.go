@@ -228,6 +228,7 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string,
 
 	this.typNamed = typDecl.Type()
 	this.tparams = tparams
+	this.fieldComments = make(map[*types.Var]fieldComment)
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
@@ -245,7 +246,6 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string,
 		}
 	}
 
-	this.fieldComments = make(map[*types.Var]fieldComment)
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
 		loadClassMember(ctx, pkgTypes, this, cName, decl, feats)
 		return clang.Continue
