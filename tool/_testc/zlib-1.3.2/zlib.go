@@ -67,6 +67,8 @@ const DEFLATED = 8
 const NULL = 0
 
 type StreamS struct {
+	// best guess about the data type: binary or text
+	// for deflate, or the decoding state for inflate
 	DataType c.Int
 }
 

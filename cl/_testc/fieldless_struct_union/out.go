@@ -7,21 +7,32 @@ import (
 
 const XGoPackage = true
 
+// The unnamed struct promotes x and y; y retains its nonzero offset.
 type Direct struct {
 	_xgo_union [1]uint64
 }
+
+// Nonzero offsets accumulate through several anonymous record levels.
 type Recursive struct {
 	_xgo_union [2]uint64
 }
+
+// A union nested in a struct still shares the enclosing union's storage.
 type Mixed struct {
 	_xgo_union [1]uint64
 }
+
+// Promotion stops at the named member; its own fields are not lifted.
 type NamedBoundary struct {
 	_xgo_union [1]uint64
 }
+
+// Floating-point leaves must remain floating-point storage.
 type AllFloats struct {
 	_xgo_union [2]float32
 }
+
+// Without a sibling, the anonymous record must still supply scalar leaves.
 type OnlyFloats struct {
 	_xgo_union [2]float64
 }
@@ -31,9 +42,13 @@ type Envelope struct {
 	Kind c.Int
 	_llcppg_anon_11
 }
+
+// The anonymous union adds no offset before the struct view: value.y is native.
 type AnonymousUnion struct {
 	_xgo_union [1]uint64
 }
+
+// Each overlapping struct needs its own view: y and tail both follow four bytes.
 type Alternatives struct {
 	_xgo_union [1]uint64
 }

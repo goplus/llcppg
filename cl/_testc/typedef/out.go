@@ -14,13 +14,20 @@ const (
 )
 
 type CXTUResourceUsageEntry struct {
-	Kind   CXTUResourceUsageKind
+	// The memory usage category.
+	Kind CXTUResourceUsageKind
+	// Amount of resources used.
+	// The units will depend on the resource kind.
 	Amount c.Ulong
 }
 
 // The memory usage of a CXTranslationUnit, broken into categories.
 type CXTUResourceUsage struct {
-	Data       unsafe.Pointer
+	// Private data member, used for queries.
+	Data unsafe.Pointer
+	// The number of entries in the 'entries' array.
 	NumEntries c.Uint
-	Entries    *CXTUResourceUsageEntry
+	// An array of key-value pairs, representing the breakdown of memory
+	// usage.
+	Entries *CXTUResourceUsageEntry
 }

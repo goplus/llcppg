@@ -7,9 +7,12 @@ import (
 
 const XGoPackage = true
 
+// Nested union regression adapted from v0.7.8 _xtool/internal/parser/testdata/union/temp.h.
 type OuterUnion struct {
 	_xgo_union [2]uint64
 }
+
+// The inner union determines the outer size and alignment, not the int member.
 type OuterWithLargeInner struct {
 	_xgo_union [2]uint64
 }
@@ -20,6 +23,8 @@ func (p *OuterUnion) XGof_ref_i() *c.Int {
 func (p *OuterUnion) XGof_ref_f() *c.Float {
 	return (*c.Float)(unsafe.Pointer(p))
 }
+
+// Exercise different outer and inner sizes and alignments.
 func (p *OuterUnion) XGof_ref_d() *[2]c.Double {
 	return (*[2]c.Double)(unsafe.Pointer(p))
 }
