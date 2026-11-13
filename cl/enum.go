@@ -17,8 +17,8 @@
 package cl
 
 import (
+	"go/constant"
 	"go/types"
-	"math/big"
 
 	"github.com/goplus/gogen"
 	"github.com/goplus/llcppg/clang"
@@ -118,9 +118,10 @@ func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
 		var val any
 		switch kind {
 		case lc.Type_Char_U, lc.Type_UChar, lc.Type_UShort, lc.Type_UInt, lc.Type_ULong, lc.Type_ULongLong:
-			// The signed accessor turns 0xffffffffu into -1; big.Int also
-			// preserves 0xffffffffffffffffULL beyond int64.
-			val = new(big.Int).SetUint64(uint64(item.EnumConstantDeclUnsignedValue()))
+			// The signed accessor turns 0xffffffffu into -1. Only values
+			// beyond int64, e.g. 0xffffffffffffffffULL, need big.Int.
+			v := uint64(item.EnumConstantDeclUnsignedValue())
+			val = constant.Val(constant.MakeUint64(v))
 		default:
 			val = int64(item.EnumConstantDeclValue())
 		}
