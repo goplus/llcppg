@@ -81,6 +81,10 @@ func emitMacroConst(defs *gogen.ConstDefs, ctx *pkgCtx, decl clang.Cursor, docRa
 		return
 	}
 
+	if _, exists := ctx.macroVals[origName]; !exists {
+		ctx.macroVals[origName] = decl
+	}
+
 	tu := clang.TU(decl)
 	tokens, dispose := tu.Tokenize(decl.Extent())
 	defer dispose()
