@@ -104,7 +104,14 @@ type clangNode struct {
 }
 
 func (n clangNode) RawComment() string {
-	return clang.RawComment(n.Cursor)
+	raw := clang.RawComment(n.Cursor)
+	if extra := legacyFuncComment(n.Cursor); extra != "" {
+		if raw != "" {
+			raw += "\n"
+		}
+		raw += extra
+	}
+	return raw
 }
 
 func (n clangNode) NodePos(ctx *pkgCtx) token.Pos {
@@ -167,6 +174,7 @@ type pkgCtx struct {
 	ctyp [cBasicMax]types.Type
 	tany types.Type
 	tptr types.Type
+	cptr types.Type
 
 	sizeof_ types.Object
 	cStr_   types.Object
@@ -421,6 +429,13 @@ func (p *pkgCtx) unsafePointer() types.Type {
 		p.tptr = p.unsafe().Ref("Pointer").Type()
 	}
 	return p.tptr
+}
+
+func (p *pkgCtx) cPointer() types.Type {
+	if p.cptr == nil {
+		p.cptr = p.c.Ref("Pointer").Type()
+	}
+	return p.cptr
 }
 
 func (p *pkgCtx) any() types.Type {

@@ -288,7 +288,7 @@ type AMDHSAKernelDescriptor struct {
 	Reserved0                 [4]c.Uint8T
 	KernelCodeEntryByteOffset c.Int64T
 	Reserved1                 [20]c.Uint8T
-	ComputePgmRsrc3           c.Uint32T
+	ComputePgmRsrc3           c.Uint32T // GFX10+ and GFX90A+
 	ComputePgmRsrc1           c.Uint32T
 	ComputePgmRsrc2           c.Uint32T
 	KernelCodeProperties      c.Uint16T

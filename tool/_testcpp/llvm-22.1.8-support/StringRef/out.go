@@ -16,7 +16,9 @@ const LLGoPackage = "link: -L$(llvm-config --libdir) -lLLVM; -lLLVM"
 // lifetime extends past that of the StringRef. For this reason, it is not in
 // general safe to store a StringRef.
 type StringRef struct {
-	Data   *c.Char
+	// The start of the string, in an external buffer.
+	Data *c.Char
+	// The length of the string.
 	Length c.SizeT
 }
 
