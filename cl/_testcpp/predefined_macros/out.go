@@ -1,0 +1,11 @@
+package foo
+
+const (
+	COMPILER_CLANG   = 1
+	CHAR_BITS        = 8
+	INT_BITS         = 32
+	INT_MAX_VALUE    = 2147483647
+	BUILTIN_EXPR     = 42
+	LITERAL_ENCODING = "UTF-8"
+)
+const PLATFORM_FLAG = 1

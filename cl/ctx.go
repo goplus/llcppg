@@ -338,6 +338,22 @@ func (p *pkgCtx) fileOffset(pos token.Pos) (src []byte, offset int, ok bool) {
 	return
 }
 
+func (p *pkgCtx) addMacro(file Source, decl clang.Cursor) {
+	name := clang.String(decl)
+	if _, ok := p.macroVals[name]; ok {
+		return
+	}
+	tokens, dispose := file.Tokenize(decl.Extent())
+	defer dispose()
+
+	// TODO(MeteorsLiu): support empty defined macros and macros whose value are identifier
+	if len(tokens) > 1 {
+		if v, ok := evalConstExpr(p, file, tokens[1:]); ok {
+			p.macroVals[name] = v
+		}
+	}
+}
+
 func (p *pkgCtx) addLoadUnit(f compileFunc) {
 	p.loads = append(p.loads, compileUnit{
 		fn: f,
