@@ -365,15 +365,16 @@ func (p Module) IncludeDir(modPath string) (includeDir string, err error) {
 // ParseFlags constructs the command-line flags for parsing C/C++ source files with clang.
 func ParseFlags(includeDirs []string, lang, platformDir string) []string {
 	n := len(includeDirs)
-	flags := make([]string, n+4, n+6)
+	flags := make([]string, n+5, n+7)
 	for i, dir := range includeDirs {
 		flags[i] = "-I" + dir
 	}
 	flags[n] = "-x"
 	flags[n+1] = lang
+	flags[n+2] = "-fno-blocks"
 	// Preserve declared types, such as size_t in strlen, instead of builtin types.
-	flags[n+2] = "-fno-builtin"
-	flags[n+3] = "-fparse-all-comments"
+	flags[n+3] = "-fno-builtin"
+	flags[n+4] = "-fparse-all-comments"
 	if platformDir != "" {
 		if triple, ok := targetTriple(platformDir); ok {
 			flags = append(flags, "-target", triple)
