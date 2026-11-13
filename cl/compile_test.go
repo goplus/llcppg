@@ -64,6 +64,8 @@ func testGenGo(t *testing.T, pkg *gogen.Package, dir string, exp any) {
 	testDiff(t, dir, "/out.go.txt", &b, exp)
 }
 
+var testParseFlags []string
+
 func testFromDir(t *testing.T, sel, relDir string, srcLang cl.Language, genPubFile ...bool) {
 	idx := clang.CreateIndex(1, 1)
 	defer idx.Dispose()
@@ -117,7 +119,7 @@ func testFromDir(t *testing.T, sel, relDir string, srcLang cl.Language, genPubFi
 		files := make([]cl.Source, len(srcFiles))
 		for i, srcFile := range srcFiles {
 			presumedFile := filepath.Join(pkgDir, srcFile)
-			flags := tool.ParseFlags(nil, cltest.LanguageOf(lang), "")
+			flags := append(tool.ParseFlags(nil, cltest.LanguageOf(lang), ""), testParseFlags...)
 			u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, presumedFile, flags...)
 			if err != nil {
 				t.Fatal("ParseTranslationUnit failed:", err)
@@ -216,6 +218,25 @@ func TestC(t *testing.T) {
 
 func TestCpp(t *testing.T) {
 	testFromDir(t, "", "./_testcpp", cl.LanguageCXX)
+}
+
+func TestMangling(t *testing.T) {
+	defer func() { testParseFlags = nil }()
+	for _, target := range []string{
+		"x86_64-apple-darwin",
+		"x86_64-unknown-linux-gnu",
+		"i686-w64-windows-gnu",
+	} {
+		t.Run(target, func(t *testing.T) {
+			testParseFlags = []string{"-target", target}
+			t.Run("C", func(t *testing.T) {
+				testFromDir(t, "mangling", "./_testc", cl.LanguageC)
+			})
+			t.Run("Cpp", func(t *testing.T) {
+				testFromDir(t, "mangling", "./_testcpp", cl.LanguageCXX)
+			})
+		})
+	}
 }
 
 func TestPP(t *testing.T) {

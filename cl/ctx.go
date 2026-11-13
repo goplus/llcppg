@@ -171,6 +171,8 @@ type pkgCtx struct {
 	sizeof_ types.Object
 	cStr_   types.Object
 
+	symbolPrefix_ *string
+
 	cflags string
 	lang   Language
 
@@ -211,7 +213,7 @@ type pkgCtx struct {
 	files map[clang.File]file // clang.File => file
 
 	mgroup       *macroGrouper           // macro grouping current state
-	macroVals    map[string]any          // macroName => value
+	macroVals    map[string]any          // macroName => constant value or clang.Cursor
 	compiledFns  map[string]*gogen.Func  // func USR => generated Go function
 	ovobjs       map[string]*overloadObj // objUSR => overload object
 	types        map[string]typeObj      // c/c++ fullName => type name object (include external types)
@@ -346,7 +348,8 @@ func (p *pkgCtx) addMacro(file Source, decl clang.Cursor) {
 	tokens, dispose := file.Tokenize(decl.Extent())
 	defer dispose()
 
-	// TODO(MeteorsLiu): support empty defined macros and macros whose value are identifier
+	// Preserve tokens that are not constants, e.g. #define PREFIX _.
+	p.macroVals[name] = decl
 	if len(tokens) > 1 {
 		if v, ok := evalConstExpr(p, file, tokens[1:]); ok {
 			p.macroVals[name] = v
@@ -421,6 +424,23 @@ func (p *pkgCtx) unsafePointer() types.Type {
 		p.tptr = p.unsafe().Ref("Pointer").Type()
 	}
 	return p.tptr
+}
+
+func (p *pkgCtx) symbolPrefix() string {
+	if p.symbolPrefix_ == nil {
+		prefix := ""
+		if decl, ok := p.macroVals["__USER_LABEL_PREFIX__"].(clang.Cursor); ok {
+			// The prefix is replacement text, e.g. _ on Darwin, empty on Linux.
+			tu := clang.TU(decl)
+			tokens, dispose := tu.Tokenize(decl.Extent())
+			defer dispose()
+			if len(tokens) > 1 {
+				prefix = tu.TokenSpelling(tokens[1])
+			}
+		}
+		p.symbolPrefix_ = &prefix
+	}
+	return *p.symbolPrefix_
 }
 
 func (p *pkgCtx) any() types.Type {

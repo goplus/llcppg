@@ -339,7 +339,9 @@ func parseOperand(ctx *pkgCtx, tu clang.TranslationUnit, tokens []lc.Token) (kin
 			}
 		}
 	case token.IDENT:
-		if v, ok = ctx.macroVals[lit]; !ok {
+		v, ok = ctx.macroVals[lit]
+		_, isDecl := v.(clang.Cursor)
+		if !ok || isDecl {
 			kind, v, ok = fca_Ident, lit, true
 		}
 	case token.STRING:

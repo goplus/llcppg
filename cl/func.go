@@ -100,7 +100,7 @@ func compileFuncOrMethod(ctx *pkgCtx, obj *overloadObj, this *classCtx) {
 		return
 	}
 
-	manglingName := clang.Mangling(fn)
+	manglingName := clang.Mangling(fn, ctx.symbolPrefix())
 	if manglingName == "" {
 		ctx.ignoref(NoManglingIgnore, fn, "func %s: no mangled symbol, ignored", cName)
 		return

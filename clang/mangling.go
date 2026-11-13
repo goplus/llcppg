@@ -1,5 +1,3 @@
-//go:build darwin
-
 /*
  * Copyright (c) 2026 The XGo Authors (xgo.dev). All rights reserved.
  *
@@ -18,23 +16,15 @@
 
 package clang
 
-import (
-	"github.com/goplus/lib/c"
-)
+import "strings"
 
 // -----------------------------------------------------------------------------
 
 /**
  * Retrieve a name for the entity referenced by this cursor.
  */
-func Mangling(fn Cursor) string {
-	m := fn.Mangling()
-	manglingName := c.GoString(m.CStr())
-	m.Dispose()
-	if manglingName == "" {
-		return ""
-	}
-	return manglingName[1:]
+func Mangling(fn Cursor, prefix string) string {
+	return strings.TrimPrefix(GoStringAndDispose(fn.Mangling()), prefix)
 }
 
 // -----------------------------------------------------------------------------
