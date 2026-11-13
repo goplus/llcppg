@@ -281,7 +281,7 @@ func TestTargetTriple(t *testing.T) {
 
 func TestParseFlags(t *testing.T) {
 	flags := ParseFlags([]string{"./include"}, "c", "darwin-arm64")
-	if !reflect.DeepEqual(flags, []string{"-I./include", "-x", "c", "-fno-builtin", "-fparse-all-comments", "-target", "arm64-apple-darwin"}) {
+	if !reflect.DeepEqual(flags, []string{"-I./include", "-x", "c", "-fno-builtin", "-fparse-all-comments", "-fimplicit-module-maps", "-target", "arm64-apple-darwin"}) {
 		t.Fatal("ParseFlags failed:", flags)
 	}
 }

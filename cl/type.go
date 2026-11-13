@@ -275,6 +275,11 @@ func namedType(ctx *pkgCtx, typ lc.Type, feats *int) (ret types.Type, found bool
 	if o, ok := ctx.getTypeObj(cName, feats); ok {
 		return o.Type(), true
 	}
+	if alias, ok := builtinAliasOf(decl); ok {
+		if o, ok := ctx.getTypeObj(alias, feats); ok {
+			return o.Type(), true
+		}
+	}
 	return
 }
 
@@ -506,6 +511,30 @@ func hasPredefinedDirective(name string) bool {
 		}
 	}
 	return false
+}
+
+// builtinAliasOf returns a typedef's underlying declaration name only when the
+// typedef belongs to a Clang _Builtin_* module. For example,
+// typedef __builtin_va_list __gnuc_va_list resolves to __builtin_va_list,
+// allowing namedType to reuse its existing .pub mapping without loading the
+// compiler header's declarations.
+//
+// Check decl's module, not the underlying declaration's: __builtin_va_list has
+// no source file. Third-party typedefs must follow the normal configured input
+// and dependency lookup, even when their underlying type is a builtin.
+func builtinAliasOf(decl clang.Cursor) (cName string, found bool) {
+	var file lc.File
+	decl.Location().Expansion(&file, nil, nil, nil)
+	mod := decl.TranslationUnit().ModuleForFile(file)
+	if mod == 0 || !strings.HasPrefix(clang.GoStringAndDispose(mod.FullName()), "_Builtin_") {
+		return
+	}
+	underlying := decl.TypedefDeclUnderlyingType()
+	underDecl := underlying.Declaration()
+	if underDecl.IsNull() != 0 {
+		return
+	}
+	return cNameOf(underDecl), true
 }
 
 var clangPredefinedDirectives = map[string]none{
