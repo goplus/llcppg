@@ -443,19 +443,7 @@ func loadFiles(ctx *pkgCtx, files []Source, myPkgPath string, goFileOf func(head
 		clang.VisitChildren(f.Cursor(), func(decl, parent clang.Cursor) clang.ChildVisitResult {
 			at := clang.PresumedFile(decl.Location())
 			if decl.Kind == lc.Cursor_MacroDefinition && at == "<built-in>" && decl.IsMacroFunctionLike() == 0 {
-				// Predefined macros such as __INT_MAX__ come from Clang's
-				// <built-in> buffer, outside the configured header paths.
-				name := clang.String(decl)
-				if _, ok := ctx.macroVals[name]; ok {
-					return clang.Continue
-				}
-				tokens, dispose := f.Tokenize(decl.Extent())
-				if len(tokens) > 1 {
-					if v, ok := evalConstExpr(ctx, f, tokens[1:]); ok {
-						ctx.macroVals[name] = v
-					}
-				}
-				dispose()
+				ctx.addMacro(f, decl)
 				return clang.Continue
 			}
 			if pkgOf != nil {
