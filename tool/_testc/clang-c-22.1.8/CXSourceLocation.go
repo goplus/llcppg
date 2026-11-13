@@ -29,7 +29,9 @@ type SourceRange struct {
 
 // Identifies an array of ranges.
 type SourceRangeList struct {
-	Count  c.Uint
+	// The number of ranges in the \c ranges array.
+	Count c.Uint
+	// An array of \c CXSourceRanges.
 	Ranges *SourceRange
 }
 

@@ -5,9 +5,9 @@ import "github.com/goplus/lib/c"
 const LUA_REGISTRYINDEX = -1073742823
 
 type LBuffer struct {
-	B    *c.Char
-	Size SizeT
-	N    SizeT
+	B    *c.Char // buffer address
+	Size SizeT   // buffer size
+	N    SizeT   // number of characters in buffer
 }
 type State struct {
 }

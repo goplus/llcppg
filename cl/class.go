@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"go/ast"
 	"go/types"
 	"strconv"
 	"unsafe"
@@ -59,6 +60,7 @@ type classCtx struct {
 	decl          clang.Cursor
 	typNamed      *types.Named
 	fields        []*types.Var
+	fieldComments map[*types.Var]fieldComment
 	publicMethods []*overloadObj
 	polymorphic   bool // declares or inherits virtual methods
 	ownsVptr      bool // owns the vptr field (polymorphic with no primary base)
@@ -226,6 +228,7 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string,
 
 	this.typNamed = typDecl.Type()
 	this.tparams = tparams
+	this.fieldComments = make(map[*types.Var]fieldComment)
 
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
@@ -273,6 +276,15 @@ func initClassTypeEx(ctx *pkgCtx, typDecl typDecl, this *classCtx, cName string,
 	}
 	typStruc := types.NewStruct(this.fields, nil)
 	typDecl.InitType(pkg, typStruc)
+	if len(this.fieldComments) != 0 {
+		docs := make([]*ast.CommentGroup, len(this.fields))
+		lines := make([]*ast.CommentGroup, len(this.fields))
+		for i, field := range this.fields {
+			comments := this.fieldComments[field]
+			docs[i], lines[i] = comments.doc, comments.line
+		}
+		typDecl.SetBodyComments(pkg, docs, lines)
+	}
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
 		compileClassImpl(ctx, this)
 	})
@@ -333,6 +345,9 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, cName stri
 		}
 		fld := types.NewField(goNodePos(ctx, decl), pkg, fldGoName, fldType, false)
 		this.fields = append(this.fields, fld)
+		if comments := lineCommentGroup(decl); comments.doc != nil || comments.line != nil {
+			this.fieldComments[fld] = comments
+		}
 
 	case lc.Cursor_VarDecl:
 		if isPublic(decl) {
@@ -382,6 +397,9 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, cName stri
 			}
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
 			this.fields = append(this.fields, fld)
+			if comments := lineCommentGroup(decl); comments.doc != nil || comments.line != nil {
+				this.fieldComments[fld] = comments
+			}
 		case decl.IsAnonymous() != 0:
 			// noop
 		default:
@@ -404,6 +422,9 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, cName stri
 			hoisted := emitUnion(ctx, decl, ctx.nextAnonName())
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
 			this.fields = append(this.fields, fld)
+			if comments := lineCommentGroup(decl); comments.doc != nil || comments.line != nil {
+				this.fieldComments[fld] = comments
+			}
 		case decl.IsAnonymous() != 0:
 			// noop
 		default:
