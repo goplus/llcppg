@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"go/token"
 	"go/types"
-	"sort"
+	"unsafe"
 
 	"github.com/goplus/llcppg/clang"
 	lc "github.com/llarhub/clang-c"
@@ -39,6 +39,23 @@ const unionStorageName = "_xgo_union"
 // into the union's storage. The "XGof_"/"XGo_" prefixes are reserved, so a
 // method derived from a C function must never start with them.
 const unionRefPrefix = "XGof_ref_"
+
+type unionCtx struct {
+	scopeCtx
+	decl clang.Cursor
+
+	members     []unionMember
+	parentTypes map[clang.Cursor]types.Type
+}
+
+type unionMember struct {
+	decl clang.Cursor
+	typ  types.Type
+}
+
+func (p *unionCtx) scope() *scopeCtx {
+	return (*scopeCtx)(unsafe.Pointer(p))
+}
 
 // loadUnion translates a C/C++ union declaration into Go declarations.
 //
@@ -69,16 +86,21 @@ func loadUnion(ctx *pkgCtx, cName string, decl clang.Cursor) {
 		return // declaration only, no definition
 	}
 
-	initUnionType(ctx, decl, typDecl)
+	feats := 0
+	initUnionType(ctx, decl, typDecl, &feats)
+	if feats&featAllIgnore != 0 {
+		ctx.ignoref(feats, decl, "union %s: unsupported features, ignored", cName)
+		ctx.ignoreType(cName, feats)
+	}
 }
 
-func emitUnion(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
+func emitUnion(ctx *pkgCtx, decl clang.Cursor, goName string, feats *int) *types.Named {
 	typDecl := newType(ctx, decl, "", goName)
-	initUnionType(ctx, decl, typDecl)
+	initUnionType(ctx, decl, typDecl, feats)
 	return typDecl.Type()
 }
 
-func initUnionType(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl) {
+func initUnionType(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, feats *int) {
 	pkg := ctx.pkg
 	typ := decl.Type()
 	storage, ok := unionStorageType(typ)
@@ -88,75 +110,127 @@ func initUnionType(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl) {
 		typDecl.InitType(pkg, types.NewStruct(nil, nil))
 		return
 	}
-	typDecl.InitType(pkg, unionStruct(ctx, decl, storage))
-
-	// Collect the members that get an accessor, then generate the accessors in
-	// the compile phase (after every type is registered) so member types
-	// referencing other records resolve regardless of declaration order.
-	// Bit-fields are skipped; an under-aligned union (!aligned) generates no
-	// accessors at all.
-	var members []clang.Cursor
-
-	childs := map[clang.Cursor][]clang.Cursor{} // parent cursor -> field cursor
-
+	this := &unionCtx{
+		decl:        decl,
+		parentTypes: make(map[clang.Cursor]types.Type),
+	}
 	clang.VisitChildren(decl, func(m, parent clang.Cursor) clang.ChildVisitResult {
-		switch m.Kind {
-		case lc.Cursor_FieldDecl:
-			// In union { struct { int tag; union { int x; }; }; },
-			// x belongs to the outer struct's view, not the union's base.
-			var record clang.Cursor
-			for owner := parent; lc.EqualCursors(owner, decl) == 0; owner = owner.SemanticParent() {
-				if owner.Kind == lc.Cursor_StructDecl {
-					record = owner
-				}
-			}
-			if record.Kind == lc.Cursor_StructDecl {
-				childs[record] = append(childs[record], m)
-			} else {
-				members = append(members, m)
-			}
-		case lc.Cursor_StructDecl, lc.Cursor_UnionDecl:
-			// union { union { int x; }; } keeps x at the outer base.
-			// union { struct { int x, y; }; } promotes both fields, but y
-			// follows x in its struct view. A named union member such as
-			// union { int x; } inner retains u.inner.x through its FieldDecl;
-			// struct { int x; } named similarly retains u.named.x.
-			if m.IsAnonymousRecordDecl() != 0 {
-				return clang.Recurse
-			}
-		}
-		return clang.Continue
+		return loadUnionMember(ctx, pkg.Types, this, m, parent, feats)
 	})
-
-	// union { struct { int x; }; struct { int y; }; } must name x's view
-	// before y's, regardless of the map's iteration order.
-	parents := make([]clang.Cursor, 0, len(childs))
-	for parent := range childs {
-		parents = append(parents, parent)
-	}
-	sort.Slice(parents, func(i, j int) bool {
-		return goNodePos(ctx, parents[i]) < goNodePos(ctx, parents[j])
-	})
-
-	// Prepare struct views after collecting fields. In struct { int tag;
-	// union { int x; }; }, this queues the inner XGof_ref_x before the
-	// outer accessor needs to forward to it.
-	structTypes := make([]types.Type, len(parents))
-	for i, parent := range parents {
-		structTypes[i] = toType(ctx, pkg.Types, parent.Type(), flagIsVarDef, nil)
+	if *feats&featAllIgnore != 0 {
+		typDecl.Delete()
+		return
 	}
 
+	// Members overlap: union { int i; double d; } needs one storage field.
+	typDecl.InitType(pkg, unionStruct(ctx, decl, storage))
 	recvPtr := types.NewPointer(typDecl.Type())
 	ctx.addCompileUnit(func(ctx *pkgCtx) {
-		for _, m := range members {
-			genUnionAccessor(ctx, recvPtr, m)
+		compileUnionImpl(ctx, this, recvPtr)
+	})
+}
+
+func loadUnionMember(ctx *pkgCtx, pkg *types.Package, this *unionCtx, decl, parent clang.Cursor, feats *int) clang.ChildVisitResult {
+	switch decl.Kind {
+	case lc.Cursor_FieldDecl:
+		// union U { union { int b; }; };
+		// b is promoted without a parentTyp.
+		// union U { struct { int a; enum { E } e; }; };
+		// a, e: parentTyp is the anonymous struct containing them.
+		// union U { struct { int tag; struct { int a; }; union { int b; }; }; };
+		// tag, a, b: parentTyp is the outer anonymous struct.
+		if parentTyp, ok := this.parentTypes[parent]; ok {
+			this.members = append(this.members, unionMember{decl: decl})
+			this.parentTypes[decl] = parentTyp
+			return clang.Continue
 		}
-		for i, parent := range parents {
-			for _, child := range childs[parent] {
-				genUnionNestedStructAccessor(ctx, recvPtr, structTypes[i], child)
+		var fldType types.Type
+
+		ft := decl.Type()
+		if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 && ftd.Kind != lc.Cursor_UnionDecl {
+			switch {
+			case ft.Kind == lc.Type_Record:
+				var ok bool
+				fldType, ok = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
+				if !ok {
+					*feats |= featExplicitIgnore
+					return clang.Continue
+				}
+			case ft.Kind == lc.Type_Enum:
+				fldType = emitEnum(ctx, ftd, ctx.nextAnonName())
+			default:
+				ctx.panicf(ftd, "unknown anonymous field type (%d: %s)", ft.Kind, clang.String(ft))
+			}
+		} else {
+			if fldType = toTypeEx(ctx, pkg, ft, flagIsVarDef, feats, this.scope()); *feats&featAllIgnore != 0 {
+				return clang.Continue
 			}
 		}
-	})
+		this.members = append(this.members, unionMember{decl: decl, typ: fldType})
+	case lc.Cursor_VarDecl:
+		if isPublic(decl) {
+			loadVar(ctx, decl)
+		}
+	case lc.Cursor_UnionDecl:
+		// a union-nested fieldless union, like,
+		// for field union, handle in Cursor_FieldDecl branch
+		// union{ union { } }
+		if decl.IsAnonymousRecordDecl() != 0 {
+			// union U { union { int x; }; };
+			// Inner union: no parentTyp; recurse to collect x as U's member.
+			// union U { struct { int tag; union { int x; }; }; };
+			// Inner union: parentTyp is the struct containing tag; recurse using that view.
+			if parentTyp, ok := this.parentTypes[parent]; ok {
+				this.parentTypes[decl] = parentTyp
+			}
+			return clang.Recurse
+		} else if decl.IsAnonymous() == 0 {
+			// The parent struct view already loads V:
+			// union U { struct { union V { int x; } v; }; };
+			if this.parentTypes[parent] == nil {
+				loadUnion(ctx, cNameOf(decl), decl)
+			}
+		}
+	case lc.Cursor_ClassDecl, lc.Cursor_StructDecl:
+		// a union-nested fieldless struct, like,
+		// union{ struct{ int x; } }
+		if decl.IsAnonymousRecordDecl() != 0 {
+			// union U { struct { int x; }; };
+			// This struct: no parentTyp; emit its own Go view, then recurse to collect x.
+			// union U { struct { int tag; struct { int x; }; }; };
+			// Inner struct: parentTyp is the struct containing tag; reuse it and recurse.
+			parentTyp, ok := this.parentTypes[parent]
+			if !ok {
+				parentTyp, ok = emitClass(ctx, decl, ctx.nextAnonName(), this.scope())
+				if !ok {
+					*feats |= featExplicitIgnore
+					return clang.Continue
+				}
+			}
+			this.parentTypes[decl] = parentTyp
+			return clang.Recurse
+		} else if decl.IsAnonymous() == 0 {
+			// The parent struct view already loads S:
+			// union U { struct { struct S { int x; } s; }; };
+			if this.parentTypes[parent] == nil {
+				nested := newClassCtx(ctx, decl, this.scope())
+				loadClass(ctx, cNameOf(decl), nested, decl)
+			}
+		}
+	case lc.Cursor_EnumDecl:
+		// a union-nested fieldless enum, like
+		// union{ enum{ } }
+		if isPublic(decl) {
+			loadEnum(ctx, decl)
+		}
+
+	case lc.Cursor_TypedefDecl, lc.Cursor_TypeAliasDecl, lc.Cursor_TypeAliasTemplateDecl:
+		// a union-nested typedef
+		if isPublic(decl) {
+			loadTypedef(ctx, decl, this.scope())
+		}
+	}
+	return clang.Continue
 }
 
 // unionStruct builds the "type X struct { _xgo_union <storage> }" definition.
@@ -263,25 +337,53 @@ func walkFloatLeaves(typ lc.Type, width int64, found *bool) bool {
 	}
 }
 
+func compileUnionImpl(ctx *pkgCtx, this *unionCtx, recvPtr types.Type) {
+	for _, member := range this.members {
+		// union U { int a; union { int b; }; struct { int c; union { int d; }; }; };
+		// a, b: no parentTyp; c, d: parentTyp is the anonymous struct containing c.
+		if parentTyp, ok := this.parentTypes[member.decl]; ok {
+			genUnionNestedStructAccessor(ctx, recvPtr, parentTyp, member.decl)
+		} else {
+			genUnionAccessor(ctx, recvPtr, member.typ, member.decl)
+		}
+	}
+}
+
+// An accessor's callback result needs its own calling convention.
+// union U { int (*cb)(int); }; needs XGof_ref_cb() *_llcppg_anon_0.
+func unionCallbackType(ctx *pkgCtx, typ types.Type, decl clang.Cursor) types.Type {
+	sig, ok := typ.(*types.Signature)
+	if !ok {
+		return typ
+	}
+	featCallback := featHasCdeclCallback
+	if decl.Type().Canonical().Pointee().FunctionTypeCallingConv() == lc.CallingConv_X86StdCall {
+		featCallback = featHasStdcallCallback
+	}
+	typDecl := newType(ctx, decl, "", ctx.nextAnonName())
+	typDecl.defs.SetComments(doDirectiveCallback(nil, featCallback))
+	typDecl.InitType(ctx.pkg, sig)
+	return typDecl.Type()
+}
+
 // genUnionAccessor emits, for a member foo of type T,
 //
 //	func (p *X) XGof_ref_foo() *T { return (*T)(unsafe.Pointer(p)) }
-func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
+func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, fieldType types.Type, decl clang.Cursor) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
-	member := clang.String(m)
-
-	fldType := toType(ctx, pkgTypes, m.Type(), flagIsVarDef, nil)
+	member := clang.String(decl)
 
 	name := unionRefPrefix + member
-	retType := types.NewPointer(fldType)
+	fieldType = unionCallbackType(ctx, fieldType, decl)
+	retType := types.NewPointer(fieldType)
 	recv := types.NewParam(0, pkgTypes, "p", recvPtr)
 	results := types.NewTuple(types.NewParam(0, pkgTypes, "", retType))
 	sig := types.NewSignatureType(recv, nil, nil, nil, results, false)
 
-	f, err := pkg.NewFuncWith(goNodePos(ctx, m), name, sig, nil)
+	f, err := pkg.NewFuncWith(goNodePos(ctx, decl), name, sig, nil)
 	if err != nil {
-		ctx.panicf(m, "union field %s: genUnionAccessor failed - %v", member, err)
+		ctx.panicf(decl, "union field %s: genUnionAccessor failed - %v", member, err)
 	}
 	cb := f.BodyStart(pkg)
 	// return (*T)(unsafe.Pointer(p))
@@ -301,22 +403,28 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 // through the embedded union's accessor, so it emits
 //
 //	func (p *X) XGof_ref_foo() *T { return (*S)(unsafe.Pointer(p)).XGof_ref_foo() }
-func genUnionNestedStructAccessor(ctx *pkgCtx, recvPtr types.Type, structTyp types.Type, m clang.Cursor) {
+func genUnionNestedStructAccessor(ctx *pkgCtx, recvPtr types.Type, parentTyp types.Type, m clang.Cursor) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
 	member := clang.String(m)
 
 	name := unionRefPrefix + member
 	selector := ctx.fieldName(member, isPublic(m))
-	obj, _, _ := types.LookupFieldOrMethod(types.NewPointer(structTyp), true, pkgTypes, selector)
+	obj, _, _ := types.LookupFieldOrMethod(types.NewPointer(parentTyp), true, pkgTypes, selector)
 	field := obj != nil
 	var retType types.Type
 	if field {
 		retType = types.NewPointer(obj.Type())
 	} else {
 		selector = name
-		obj, _, _ = types.LookupFieldOrMethod(types.NewPointer(structTyp), true, pkgTypes, selector)
+		obj, _, _ = types.LookupFieldOrMethod(types.NewPointer(parentTyp), true, pkgTypes, selector)
 		retType = obj.Type().(*types.Signature).Results().At(0).Type()
+	}
+	elemType := retType.(*types.Pointer).Elem()
+	callbackType := unionCallbackType(ctx, elemType, m)
+	cast := callbackType != elemType
+	if cast {
+		retType = types.NewPointer(callbackType)
 	}
 	recv := types.NewParam(0, pkgTypes, "p", recvPtr)
 	results := types.NewTuple(types.NewParam(0, pkgTypes, "", retType))
@@ -327,11 +435,17 @@ func genUnionNestedStructAccessor(ctx *pkgCtx, recvPtr types.Type, structTyp typ
 		ctx.panicf(m, "union field %s: genUnionNestedStructAccessor failed - %v", member, err)
 	}
 	cb := f.BodyStart(pkg)
-	cb.Typ(types.NewPointer(structTyp)).Typ(ctx.unsafePointer()).VarVal("p").Call(1).Call(1)
+	if cast {
+		cb.Typ(retType)
+	}
+	cb.Typ(types.NewPointer(parentTyp)).Typ(ctx.unsafePointer()).VarVal("p").Call(1).Call(1)
 	if field {
 		cb.MemberRef(selector).UnaryOp(token.AND)
 	} else {
 		cb.MemberVal(selector, 1).Call(0)
+	}
+	if cast {
+		cb.Call(1)
 	}
 	cb.Return(1).End()
 }
