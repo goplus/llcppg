@@ -156,11 +156,11 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	switch typ.Kind {
 	case lc.Type_Void:
 		return tyVoid
-	case lc.Type_Char_S:
+	case lc.Type_Char_S, lc.Type_Char_U:
 		return ctx.basicTyp(cChar)
 	case lc.Type_SChar:
 		return types.Typ[types.Int8]
-	case lc.Type_Char_U, lc.Type_UChar:
+	case lc.Type_UChar:
 		return types.Typ[types.Uint8]
 	case lc.Type_Short:
 		return types.Typ[types.Int16]
