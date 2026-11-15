@@ -1,0 +1,4 @@
+module ExternalAliases [system] {
+    header "types.h"
+    export *
+}
