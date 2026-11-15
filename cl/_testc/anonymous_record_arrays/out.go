@@ -17,6 +17,8 @@ type Device struct {
 type Grid struct {
 	Cells [2][3]_llcppg_anon_1
 }
+
+// The union accessor returns an array view, so entries[1].y aliases words[3].
 type Samples struct {
 	_xgo_union [6]uint64
 }

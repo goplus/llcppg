@@ -32,9 +32,14 @@ const (
 // system along with the current contents of that file that have not
 // yet been saved to disk.
 type UnsavedFile struct {
+	// The file whose contents have not yet been saved.
+	//
+	// This file must already exist in the file system.
 	Filename *c.Char
+	// A buffer containing the unsaved contents of this file.
 	Contents *c.Char
-	Length   c.Ulong
+	// The length of the unsaved contents of this buffer.
+	Length c.Ulong
 }
 
 // Describes the availability of a particular entity, which indicates
@@ -57,8 +62,16 @@ const (
 
 // Describes a version number of the form major.minor.subminor.
 type Version struct {
-	Major    c.Int
-	Minor    c.Int
+	// The major version number, e.g., the '10' in '10.7.3'. A negative
+	// value indicates that there is no version number at all.
+	Major c.Int
+	// The minor version number, e.g., the '7' in '10.7.3'. This value
+	// will be negative if no minor version number was provided, e.g., for
+	// version '10'.
+	Minor c.Int
+	// The subminor version number, e.g., the '3' in '10.7.3'. This value
+	// will be negative if no minor or subminor version number was provided,
+	// e.g., in version '10' or '10.7'.
 	Subminor c.Int
 }
 
@@ -329,15 +342,22 @@ const (
 )
 
 type TUResourceUsageEntry struct {
-	Kind   TUResourceUsageKind
+	// The memory usage category.
+	Kind TUResourceUsageKind
+	// Amount of resources used.
+	// The units will depend on the resource kind.
 	Amount c.Ulong
 }
 
 // The memory usage of a CXTranslationUnit, broken into categories.
 type TUResourceUsage struct {
-	Data       unsafe.Pointer
+	// Private data member, used for queries.
+	Data unsafe.Pointer
+	// The number of entries in the 'entries' array.
 	NumEntries c.Uint
-	Entries    *TUResourceUsageEntry
+	// An array of key-value pairs, representing the breakdown of memory
+	// usage.
+	Entries *TUResourceUsageEntry
 }
 
 // Describes the kind of entity that a cursor refers to.
@@ -1114,12 +1134,24 @@ const (
 // Describes the availability of a given entity on a particular platform, e.g.,
 // a particular class might only be available on Mac OS 10.7 or newer.
 type PlatformAvailability struct {
-	Platform    CXString.String
-	Introduced  Version
-	Deprecated  Version
-	Obsoleted   Version
+	// A string that describes the platform for which this structure
+	// provides availability information.
+	//
+	// Possible values are "ios" or "macos".
+	Platform CXString.String
+	// The version number in which this entity was introduced.
+	Introduced Version
+	// The version number in which this entity was deprecated (but is
+	// still available).
+	Deprecated Version
+	// The version number in which this entity was obsoleted, and therefore
+	// is no longer available.
+	Obsoleted Version
+	// Whether the entity is unconditionally unavailable on this platform.
 	Unavailable c.Int
-	Message     CXString.String
+	// An optional message to provide to a user of this API, e.g., to
+	// suggest replacement APIs.
+	Message CXString.String
 }
 
 // Describe the "language" of the entity referred to by a cursor.
@@ -1617,7 +1649,17 @@ type Token struct {
 
 // A single result of code completion.
 type CompletionResult struct {
-	CursorKind       CursorKind
+	// The kind of entity that this completion refers to.
+	//
+	// The cursor kind will be a macro, keyword, or a declaration (one of the
+	// *Decl cursor kinds), describing the entity that the completion is
+	// referring to.
+	//
+	// \todo In the future, we would like to provide a full cursor, to allow
+	// the client to extract additional information from declaration.
+	CursorKind CursorKind
+	// The code-completion string that describes how to insert this
+	// code-completion result into the editing buffer.
 	CompletionString CompletionString
 }
 
@@ -1756,7 +1798,10 @@ const (
 // produced by \c clang_codeCompleteAt(). Its contents must be freed by
 // \c clang_disposeCodeCompleteResults.
 type CodeCompleteResults struct {
-	Results    *CompletionResult
+	// The code-completion results.
+	Results *CompletionResult
+	// The number of code-completion results stored in the
+	// \c Results array.
 	NumResults c.Uint
 }
 
@@ -1906,19 +1951,29 @@ type IdxLoc struct {
 
 // Data for ppIncludedFile callback.
 type IdxIncludedFileInfo struct {
-	HashLoc        IdxLoc
-	Filename       *c.Char
-	File           CXFile.File
-	IsImport       c.Int
-	IsAngled       c.Int
+	// Location of '#' in the \#include/\#import directive.
+	HashLoc IdxLoc
+	// Filename as written in the \#include/\#import directive.
+	Filename *c.Char
+	// The actual file that the \#include/\#import directive resolved to.
+	File     CXFile.File
+	IsImport c.Int
+	IsAngled c.Int
+	// Non-zero if the directive was automatically turned into a module
+	// import.
 	IsModuleImport c.Int
 }
 
 // Data for IndexerCallbacks#importedASTFile.
 type IdxImportedASTFileInfo struct {
-	File       CXFile.File
-	Module     Module
-	Loc        IdxLoc
+	// Top level AST file containing the imported PCH, module or submodule.
+	File CXFile.File
+	// The imported module or NULL if the AST file is a PCH.
+	Module Module
+	// Location where the file is imported. Applicable only for modules.
+	Loc IdxLoc
+	// Non-zero if an inclusion directive was automatically turned into
+	// a module import. Applicable only for modules.
 	IsImplicit c.Int
 }
 type IdxEntityKind c.Uint
@@ -2023,15 +2078,19 @@ type IdxDeclInfo struct {
 	Cursor            Cursor
 	Loc               IdxLoc
 	SemanticContainer *IdxContainerInfo
-	LexicalContainer  *IdxContainerInfo
-	IsRedeclaration   c.Int
-	IsDefinition      c.Int
-	IsContainer       c.Int
-	DeclAsContainer   *IdxContainerInfo
-	IsImplicit        c.Int
-	Attributes        **IdxAttrInfo
-	NumAttributes     c.Uint
-	Flags             c.Uint
+	// Generally same as #semanticContainer but can be different in
+	// cases like out-of-line C++ member functions.
+	LexicalContainer *IdxContainerInfo
+	IsRedeclaration  c.Int
+	IsDefinition     c.Int
+	IsContainer      c.Int
+	DeclAsContainer  *IdxContainerInfo
+	// Whether the declaration exists in code or was created implicitly
+	// by the compiler, e.g. implicit Objective-C methods for properties.
+	IsImplicit    c.Int
+	Attributes    **IdxAttrInfo
+	NumAttributes c.Uint
+	Flags         c.Uint
 }
 type IdxObjCContainerKind c.Uint
 
@@ -2117,13 +2176,26 @@ const (
 
 // Data for IndexerCallbacks#indexEntityReference.
 type IdxEntityRefInfo struct {
-	Kind             IdxEntityRefKind
-	Cursor           Cursor
-	Loc              IdxLoc
+	Kind IdxEntityRefKind
+	// Reference cursor.
+	Cursor Cursor
+	Loc    IdxLoc
+	// The entity that gets referenced.
 	ReferencedEntity *IdxEntityInfo
-	ParentEntity     *IdxEntityInfo
-	Container        *IdxContainerInfo
-	Role             SymbolRole
+	// Immediate "parent" of the reference. For example:
+	//
+	// \code
+	// Foo *var;
+	// \endcode
+	//
+	// The parent of reference of type 'Foo' is the variable 'var'.
+	// For references inside statement bodies of functions/methods,
+	// the parentEntity will be the function/method.
+	ParentEntity *IdxEntityInfo
+	// Lexical container context of the reference.
+	Container *IdxContainerInfo
+	// Sets of symbol roles of the reference.
+	Role SymbolRole
 }
 
 // A group of callbacks used by #clang_indexSourceFile and
@@ -2131,14 +2203,26 @@ type IdxEntityRefInfo struct {
 //
 //llgo:cdecl
 type IndexerCallbacks struct {
-	AbortQuery             func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) c.Int
-	Diagnostic             func(_llcppg_param1 ClientData, _llcppg_param2 CXDiagnostic.DiagnosticSet, _llcppg_param3 unsafe.Pointer)
-	EnteredMainFile        func(_llcppg_param1 ClientData, _llcppg_param2 CXFile.File, _llcppg_param3 unsafe.Pointer) IdxClientFile
-	PpIncludedFile         func(_llcppg_param1 ClientData, _llcppg_param2 *IdxIncludedFileInfo) IdxClientFile
-	ImportedASTFile        func(_llcppg_param1 ClientData, _llcppg_param2 *IdxImportedASTFileInfo) IdxClientASTFile
+	// Called periodically to check whether indexing should be aborted.
+	// Should return 0 to continue, and non-zero to abort.
+	AbortQuery func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) c.Int
+	// Called at the end of indexing; passes the complete diagnostic set.
+	Diagnostic      func(_llcppg_param1 ClientData, _llcppg_param2 CXDiagnostic.DiagnosticSet, _llcppg_param3 unsafe.Pointer)
+	EnteredMainFile func(_llcppg_param1 ClientData, _llcppg_param2 CXFile.File, _llcppg_param3 unsafe.Pointer) IdxClientFile
+	// Called when a file gets \#included/\#imported.
+	PpIncludedFile func(_llcppg_param1 ClientData, _llcppg_param2 *IdxIncludedFileInfo) IdxClientFile
+	// Called when a AST file (PCH or module) gets imported.
+	//
+	// AST files will not get indexed (there will not be callbacks to index all
+	// the entities in an AST file). The recommended action is that, if the AST
+	// file is not already indexed, to initiate a new indexing job specific to
+	// the AST file.
+	ImportedASTFile func(_llcppg_param1 ClientData, _llcppg_param2 *IdxImportedASTFileInfo) IdxClientASTFile
+	// Called at the beginning of indexing a translation unit.
 	StartedTranslationUnit func(_llcppg_param1 ClientData, _llcppg_param2 unsafe.Pointer) IdxClientContainer
 	IndexDeclaration       func(_llcppg_param1 ClientData, _llcppg_param2 *IdxDeclInfo)
-	IndexEntityReference   func(_llcppg_param1 ClientData, _llcppg_param2 *IdxEntityRefInfo)
+	// Called to index a reference of an entity.
+	IndexEntityReference func(_llcppg_param1 ClientData, _llcppg_param2 *IdxEntityRefInfo)
 }
 type IndexOptFlags c.Uint
 
