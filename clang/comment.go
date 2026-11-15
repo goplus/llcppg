@@ -82,9 +82,6 @@ func RawCommentsOf(entity clang.Cursor) (ret RawComments) {
 	// behind it. Back up to the start of the macro's own line first, then scan
 	// for an adjacent comment above it.
 	ret.Preceding = precedingRawComment(src, lineStart(src, int(offset)))
-	if ret.Preceding != "" {
-		return
-	}
 	var end c.Uint
 	rg.End().Expansion(nil, nil, nil, &end)
 	isTrailing, raw := followingRawComment(src, int(end))
