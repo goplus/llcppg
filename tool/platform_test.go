@@ -23,6 +23,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/goplus/llcppg/clang"
 )
 
 // withPlatform pins GOOS/GOARCH for the duration of a test so results are
@@ -281,7 +283,42 @@ func TestTargetTriple(t *testing.T) {
 
 func TestParseFlags(t *testing.T) {
 	flags := ParseFlags([]string{"./include"}, "c", "darwin-arm64")
-	if !reflect.DeepEqual(flags, []string{"-I./include", "-x", "c", "-fno-builtin", "-fparse-all-comments", "-target", "arm64-apple-darwin"}) {
+	if !reflect.DeepEqual(flags, []string{"-I./include", "-x", "c", "-fno-blocks", "-fno-builtin", "-fparse-all-comments", "-target", "arm64-apple-darwin"}) {
 		t.Fatal("ParseFlags failed:", flags)
+	}
+
+	header := filepath.Join(t.TempDir(), "blocks.h")
+	source := "#ifdef __BLOCKS__\nint (^block_only)(int);\n#endif\nint ordinary(int);\n"
+	if err := os.WriteFile(header, []byte(source), 0644); err != nil {
+		t.Fatal(err)
+	}
+	idx := clang.CreateIndex(1, 1)
+	defer idx.Dispose()
+	for _, lang := range []string{"c", "c++"} {
+		for _, platform := range []string{"", "darwin-arm64", "darwin-amd64", "linux-arm64", "linux-amd64"} {
+			t.Run(lang+"/"+platform, func(t *testing.T) {
+				tu, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, header, ParseFlags(nil, lang, platform)...)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer tu.Dispose()
+				if n := tu.NumDiagnostics(); n != 0 {
+					t.Fatalf("got %d diagnostics", n)
+				}
+				found := false
+				clang.VisitChildren(tu.Cursor(), func(cur, parent clang.Cursor) clang.ChildVisitResult {
+					switch clang.String(cur) {
+					case "ordinary":
+						found = true
+					case "block_only":
+						t.Error("block-only declaration was not excluded")
+					}
+					return clang.Continue
+				})
+				if !found {
+					t.Error("ordinary declaration was not found")
+				}
+			})
+		}
 	}
 }
