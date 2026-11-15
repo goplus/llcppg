@@ -110,7 +110,7 @@ func compileVar(ctx *pkgCtx, decl clang.Cursor) {
 		return
 	}
 
-	manglingName := clang.Mangling(decl)
+	manglingName := clang.Mangling(decl, ctx.symbolPrefix())
 	if _, ok := ctx.nameLookup(manglingName); !ok {
 		ctx.ignoref(featExplicitIgnore, decl, "var %s: symbol not found in lib files, ignored", cName)
 		return
