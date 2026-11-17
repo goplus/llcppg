@@ -33,6 +33,8 @@ type scopeCtx struct {
 	overloads map[string]*overloads // cName => overload items
 	tparams   []*types.TypeParam    // type parameters, only for class/struct scope
 	parent    *scopeCtx
+	// Declarators share their anonymous type: struct { int x; } a, *b.
+	anonTypes map[lc.Type]*types.Named
 }
 
 func (p *scopeCtx) typeParams(in []*types.TypeParam) []*types.TypeParam {
@@ -333,6 +335,7 @@ func newClassCtx(ctx *pkgCtx, cls clang.Cursor, parent *scopeCtx) *classCtx {
 	this := &classCtx{
 		decl:      cls,
 		overloads: make(map[string]*overloads),
+		anonTypes: make(map[lc.Type]*types.Named),
 		parent:    parent,
 	}
 	clang.VisitChildren(cls, func(decl, parent clang.Cursor) clang.ChildVisitResult {
