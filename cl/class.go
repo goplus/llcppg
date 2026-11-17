@@ -283,6 +283,7 @@ func emitClass(ctx *pkgCtx, cls clang.Cursor, goName string, parent *scopeCtx) (
 	this := &classCtx{
 		decl:      cls,
 		overloads: make(map[string]*overloads),
+		anonTypes: make(map[lc.Type]*types.Named),
 		parent:    parent,
 	}
 	if !initClassType(ctx, typDecl, this, "", nil) {
@@ -310,19 +311,24 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, cName stri
 			fldGoName = ctx.fieldName(origName, isPublic(decl))
 			ft := decl.Type()
 			if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 && ftd.Kind != lc.Cursor_UnionDecl {
-				switch {
-				case ft.Kind == lc.Type_Record:
-					var ok bool
-					fldType, ok = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
-					if !ok {
-						*feats |= featExplicitIgnore
-						return
+				typ := this.anonTypes[ftd.Type()]
+				if typ == nil {
+					switch {
+					case ft.Kind == lc.Type_Record:
+						var ok bool
+						typ, ok = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
+						if !ok {
+							*feats |= featExplicitIgnore
+							return
+						}
+					case ft.Kind == lc.Type_Enum:
+						typ = emitEnum(ctx, ftd, ctx.nextAnonName())
+					default:
+						ctx.panicf(ftd, "unknown anonymous field type (%d: %s)", ft.Kind, clang.String(ft))
 					}
-				case ft.Kind == lc.Type_Enum:
-					fldType = emitEnum(ctx, ftd, ctx.nextAnonName())
-				default:
-					ctx.panicf(ftd, "unknown anonymous field type (%d: %s)", ft.Kind, clang.String(ft))
+					this.anonTypes[ftd.Type()] = typ
 				}
+				fldType = typ
 			} else {
 				if fldType = toTypeEx(ctx, pkg, ft, flagIsVarDef, feats, this.scope()); *feats&featAllIgnore != 0 {
 					return

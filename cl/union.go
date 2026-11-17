@@ -112,6 +112,7 @@ func initUnionType(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, feats *int) 
 	}
 	this := &unionCtx{
 		decl:        decl,
+		anonTypes:   make(map[lc.Type]*types.Named),
 		parentTypes: make(map[clang.Cursor]types.Type),
 	}
 	clang.VisitChildren(decl, func(m, parent clang.Cursor) clang.ChildVisitResult {
@@ -148,19 +149,24 @@ func loadUnionMember(ctx *pkgCtx, pkg *types.Package, this *unionCtx, decl, pare
 
 		ft := decl.Type()
 		if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 && ftd.Kind != lc.Cursor_UnionDecl {
-			switch {
-			case ft.Kind == lc.Type_Record:
-				var ok bool
-				fldType, ok = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
-				if !ok {
-					*feats |= featExplicitIgnore
-					return clang.Continue
+			typ := this.anonTypes[ftd.Type()]
+			if typ == nil {
+				switch {
+				case ft.Kind == lc.Type_Record:
+					var ok bool
+					typ, ok = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
+					if !ok {
+						*feats |= featExplicitIgnore
+						return clang.Continue
+					}
+				case ft.Kind == lc.Type_Enum:
+					typ = emitEnum(ctx, ftd, ctx.nextAnonName())
+				default:
+					ctx.panicf(ftd, "unknown anonymous field type (%d: %s)", ft.Kind, clang.String(ft))
 				}
-			case ft.Kind == lc.Type_Enum:
-				fldType = emitEnum(ctx, ftd, ctx.nextAnonName())
-			default:
-				ctx.panicf(ftd, "unknown anonymous field type (%d: %s)", ft.Kind, clang.String(ft))
+				this.anonTypes[ftd.Type()] = typ
 			}
+			fldType = typ
 		} else {
 			if fldType = toTypeEx(ctx, pkg, ft, flagIsVarDef, feats, this.scope()); *feats&featAllIgnore != 0 {
 				return clang.Continue

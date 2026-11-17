@@ -206,13 +206,23 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		// struct { int x; } items[64] needs an element type. A registered
 		// typedef such as Alias keeps its existing type through namedType.
 		if decl := typ.Declaration(); decl.IsAnonymous() != 0 && *feats&featAllIgnore == 0 {
-			switch decl.Kind {
-			case lc.Cursor_UnionDecl:
-				return emitUnion(ctx, decl, ctx.nextAnonName(), feats)
-			case lc.Cursor_StructDecl:
-				if t, ok := emitClass(ctx, decl, ctx.nextAnonName(), scope); ok {
+			if scope != nil {
+				if t := scope.anonTypes[decl.Type()]; t != nil {
 					return t
 				}
+			}
+			var t *types.Named
+			switch decl.Kind {
+			case lc.Cursor_UnionDecl:
+				t = emitUnion(ctx, decl, ctx.nextAnonName(), feats)
+			case lc.Cursor_StructDecl:
+				t, _ = emitClass(ctx, decl, ctx.nextAnonName(), scope)
+			}
+			if t != nil {
+				if scope != nil && *feats&featAllIgnore == 0 {
+					scope.anonTypes[decl.Type()] = t
+				}
+				return t
 			}
 		}
 	case lc.Type_Elaborated:
