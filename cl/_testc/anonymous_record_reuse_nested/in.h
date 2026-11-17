@@ -1,3 +1,31 @@
+union PromotedFields {
+    struct {
+        struct { int x; } a, b;
+    };
+};
+
+union PromotedUnionFields {
+    int outer;
+    union {
+        int x;
+        struct { int x; } a, b;
+    };
+    int tail;
+};
+
+union NestedPromotedUnionFields {
+    int outer;
+    union {
+        int x;
+        union {
+            int y;
+            struct { int value; } a, b;
+        };
+        int afterW;
+    };
+    int tail;
+};
+
 struct StructNamedStructFields {
     int before;
     struct {

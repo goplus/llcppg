@@ -29,38 +29,258 @@ struct DistinctDeclarations {
     struct { int x; } b;
 };
 
-union PromotedFields {
-    struct {
-        struct { int x; } a, b;
-    };
+struct StructPointerFields {
+    struct { int value; } *a, *b;
 };
 
-struct AliasFirst {
-    struct { int x; } a, b, c;
+struct StructDoublePointerFields {
+    struct { int value; } **a, **b;
 };
 
-struct AliasMiddle {
-    struct { int x; } a, b, c;
+struct StructArrayFields {
+    struct { int value; } a[2], b[1 + 1];
 };
 
-union PromotedUnionFields {
-    int outer;
-    union {
-        int x;
-        struct { int x; } a, b;
-    };
-    int tail;
+struct StructMatrixFields {
+    struct { int value; } a[2][3], b[2][3];
 };
 
-union NestedPromotedUnionFields {
-    int outer;
-    union {
-        int x;
-        union {
-            int y;
-            struct { int value; } a, b;
-        };
-        int afterW;
-    };
-    int tail;
+struct StructPointerArrayFields {
+    struct { int value; } *a[2], *b[2];
+};
+
+struct StructArrayPointerFields {
+    struct { int value; } (*a)[2], (*b)[2];
+};
+
+struct StructConstFields {
+    const struct { int value; } a, b;
+};
+
+struct UnionDoublePointerFields {
+    union { int integer; double decimal; } **a, **b;
+};
+
+struct UnionArrayFields {
+    union { int integer; double decimal; } a[2], b[1 + 1];
+};
+
+struct UnionMatrixFields {
+    union { int integer; double decimal; } a[2][3], b[2][3];
+};
+
+struct UnionPointerArrayFields {
+    union { int integer; double decimal; } *a[2], *b[2];
+};
+
+struct UnionArrayPointerFields {
+    union { int integer; double decimal; } (*a)[2], (*b)[2];
+};
+
+struct UnionConstFields {
+    const union { int integer; double decimal; } a, b;
+};
+
+struct CallbackRecordFields {
+    struct { void (*call)(int); } a, b;
+};
+
+union StructPointerMembers {
+    struct { int value; } *a, *b;
+};
+
+union StructDoublePointerMembers {
+    struct { int value; } **a, **b;
+};
+
+union StructArrayMembers {
+    struct { int value; } a[2], b[1 + 1];
+};
+
+union StructMatrixMembers {
+    struct { int value; } a[2][3], b[2][3];
+};
+
+union StructPointerArrayMembers {
+    struct { int value; } *a[2], *b[2];
+};
+
+union StructArrayPointerMembers {
+    struct { int value; } (*a)[2], (*b)[2];
+};
+
+union StructConstMembers {
+    const struct { int value; } a, b;
+};
+
+union UnionDoublePointerMembers {
+    union { int integer; double decimal; } **a, **b;
+};
+
+union UnionArrayMembers {
+    union { int integer; double decimal; } a[2], b[1 + 1];
+};
+
+union UnionMatrixMembers {
+    union { int integer; double decimal; } a[2][3], b[2][3];
+};
+
+union UnionPointerArrayMembers {
+    union { int integer; double decimal; } *a[2], *b[2];
+};
+
+union UnionArrayPointerMembers {
+    union { int integer; double decimal; } (*a)[2], (*b)[2];
+};
+
+union UnionConstMembers {
+    const union { int integer; double decimal; } a, b;
+};
+
+union CallbackRecordMembers {
+    struct { void (*call)(int); } a, b;
+};
+
+struct StructValuePointerFields {
+    struct { int value; } a, *b;
+};
+
+struct StructPointerValueFields {
+    struct { int value; } *a, b;
+};
+
+struct StructPointerDepthFields {
+    struct { int value; } *a, **b;
+};
+
+struct StructValueArrayFields {
+    struct { int value; } a, b[2];
+};
+
+struct StructArrayExtentFields {
+    struct { int value; } a[2], b[3];
+};
+
+struct StructMixedPointerArrayFields {
+    struct { int value; } *a[2], (*b)[2];
+};
+
+struct StructPointerConstFields {
+    struct { int value; } *const a, *b;
+};
+
+struct StructAlternatingFields {
+    struct { int value; } a, *b, c;
+};
+
+struct UnionValuePointerFields {
+    union { int integer; double decimal; } a, *b;
+};
+
+struct UnionPointerValueFields {
+    union { int integer; double decimal; } *a, b;
+};
+
+struct UnionPointerDepthFields {
+    union { int integer; double decimal; } *a, **b;
+};
+
+struct UnionValueArrayFields {
+    union { int integer; double decimal; } a, b[2];
+};
+
+struct UnionArrayExtentFields {
+    union { int integer; double decimal; } a[2], b[3];
+};
+
+struct UnionMixedPointerArrayFields {
+    union { int integer; double decimal; } *a[2], (*b)[2];
+};
+
+struct UnionPointerConstFields {
+    union { int integer; double decimal; } *const a, *b;
+};
+
+struct UnionAlternatingFields {
+    union { int integer; double decimal; } a, *b, c;
+};
+
+union StructValuePointerMembers {
+    struct { int value; } a, *b;
+};
+
+union StructPointerValueMembers {
+    struct { int value; } *a, b;
+};
+
+union StructPointerDepthMembers {
+    struct { int value; } *a, **b;
+};
+
+union StructValueArrayMembers {
+    struct { int value; } a, b[2];
+};
+
+union StructArrayExtentMembers {
+    struct { int value; } a[2], b[3];
+};
+
+union StructMixedPointerArrayMembers {
+    struct { int value; } *a[2], (*b)[2];
+};
+
+union StructPointerConstMembers {
+    struct { int value; } *const a, *b;
+};
+
+union StructAlternatingMembers {
+    struct { int value; } a, *b, c;
+};
+
+union UnionValuePointerMembers {
+    union { int integer; double decimal; } a, *b;
+};
+
+union UnionPointerValueMembers {
+    union { int integer; double decimal; } *a, b;
+};
+
+union UnionPointerDepthMembers {
+    union { int integer; double decimal; } *a, **b;
+};
+
+union UnionValueArrayMembers {
+    union { int integer; double decimal; } a, b[2];
+};
+
+union UnionArrayExtentMembers {
+    union { int integer; double decimal; } a[2], b[3];
+};
+
+union UnionMixedPointerArrayMembers {
+    union { int integer; double decimal; } *a[2], (*b)[2];
+};
+
+union UnionPointerConstMembers {
+    union { int integer; double decimal; } *const a, *b;
+};
+
+union UnionAlternatingMembers {
+    union { int integer; double decimal; } a, *b, c;
+};
+
+struct EnumValueFields {
+    enum { EnumValueFieldsValue = 1 } a, b, c;
+};
+
+struct EnumConstFields {
+    const enum { EnumConstFieldsValue = 1 } a, b;
+};
+
+union EnumValueMembers {
+    enum { EnumValueMembersValue = 1 } a, b, c;
+};
+
+union EnumConstMembers {
+    const enum { EnumConstMembersValue = 1 } a, b;
 };

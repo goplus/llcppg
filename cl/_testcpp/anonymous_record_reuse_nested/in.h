@@ -1,3 +1,31 @@
+union PromotedFields {
+    struct {
+        struct { int x; } a, b;
+    };
+};
+
+union PromotedUnionFields {
+    int outer;
+    union {
+        int x;
+        struct { int x; } a, b;
+    };
+    int tail;
+};
+
+union NestedPromotedUnionFields {
+    int outer;
+    union {
+        int x;
+        union {
+            int y;
+            struct { int value; } a, b;
+        };
+        int afterW;
+    };
+    int tail;
+};
+
 struct StructNamedStructFields {
     int before;
     struct {
@@ -106,6 +134,48 @@ union UnionPromotedUnionMembers {
     int before;
     union {
         union { int integer; double decimal; } a, b;
+    };
+    int after;
+};
+
+// C++ anonymous records cannot declare enums: use enum E { V }; union { E a, b; }.
+
+enum StructPromotedEnumFieldsType { StructPromotedEnumFieldsValue = 1 };
+
+struct StructPromotedEnumFields {
+    int before;
+    struct {
+        StructPromotedEnumFieldsType a, b;
+    };
+    int after;
+};
+
+enum UnionPromotedEnumFieldsType { UnionPromotedEnumFieldsValue = 1 };
+
+struct UnionPromotedEnumFields {
+    int before;
+    union {
+        UnionPromotedEnumFieldsType a, b;
+    };
+    int after;
+};
+
+enum StructPromotedEnumMembersType { StructPromotedEnumMembersValue = 1 };
+
+union StructPromotedEnumMembers {
+    int before;
+    struct {
+        StructPromotedEnumMembersType a, b;
+    };
+    int after;
+};
+
+enum UnionPromotedEnumMembersType { UnionPromotedEnumMembersValue = 1 };
+
+union UnionPromotedEnumMembers {
+    int before;
+    union {
+        UnionPromotedEnumMembersType a, b;
     };
     int after;
 };

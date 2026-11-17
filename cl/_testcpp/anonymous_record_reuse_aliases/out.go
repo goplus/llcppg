@@ -7,6 +7,16 @@ import (
 
 const XGoPackage = true
 
+type AliasFirst struct {
+	A c.Int
+	B _llcppg_anon_0
+	C _llcppg_anon_0
+}
+type AliasMiddle struct {
+	A _llcppg_anon_1
+	B c.Int
+	C _llcppg_anon_1
+}
 type TaggedStruct struct {
 	Value c.Int
 }
@@ -90,6 +100,78 @@ type InlineUnionMembers struct {
 type InlineEnumMembers struct {
 	_xgo_union [1]uint64
 }
+type StructValue struct {
+	Value c.Int
+}
+type StructTypedefFields struct {
+	A StructValue
+	B StructPointer
+	C StructArray
+}
+type StructTypedefMembers struct {
+	_xgo_union [1]uint64
+}
+type UnionValue struct {
+	_xgo_union [1]uint64
+}
+type UnionTypedefFields struct {
+	A UnionValue
+	B UnionPointer
+	C UnionArray
+}
+type UnionTypedefMembers struct {
+	_xgo_union [2]uint64
+}
+type EnumValue c.Uint
+
+const EnumValueValue EnumValue = 1
+
+type EnumTypedefFields struct {
+	A EnumValue
+	B EnumPointer
+	C EnumArray
+}
+type EnumTypedefMembers struct {
+	_xgo_union [1]uint64
+}
+type ScopedAliasFields struct {
+	A ScopedAliasFieldsValue
+	B ScopedAliasFieldsPointer
+	C [2]ScopedAliasFieldsValue
+}
+type ScopedAliasMembers struct {
+	_xgo_union [1]uint64
+}
+type ScopedTypedefFields struct {
+	A ScopedTypedefFieldsValue
+	B ScopedTypedefFieldsPointer
+}
+type ScopedTypedefMembers struct {
+	_xgo_union [1]uint64
+}
+type ScopedEnumFields struct {
+	A ScopedEnumFieldsKind
+	B ScopedEnumFieldsKind
+}
+type ScopedEnumMembers struct {
+	_xgo_union [1]uint32
+}
+type LeftValue struct {
+	Value c.Int
+}
+type RightValue struct {
+	Value c.Int
+}
+type NamespaceFields struct {
+	A LeftValue
+	B RightValue
+}
+type _llcppg_anon_0 struct {
+	X c.Int
+}
+type _llcppg_anon_1 struct {
+	X c.Int
+}
 type StructAlias2 = StructAlias
 type UnionAlias2 = UnionAlias
 type EnumAlias2 = EnumAlias
@@ -112,6 +194,36 @@ type InlineUnionMembersInlineUnionMembersType struct {
 type InlineEnumMembersInlineEnumMembersType c.Uint
 
 const InlineEnumMembers_InlineEnumMembersTypeValue InlineEnumMembersInlineEnumMembersType = 1
+
+type StructPointer = *StructValue
+type StructArray = [2]StructValue
+type UnionPointer = *UnionValue
+type UnionArray = [2]UnionValue
+type EnumPointer = *EnumValue
+type EnumArray = [2]EnumValue
+type ScopedAliasFieldsValue struct {
+	Value c.Int
+}
+type ScopedAliasFieldsPointer = *ScopedAliasFieldsValue
+type ScopedAliasMembersValue struct {
+	Value c.Int
+}
+type ScopedAliasMembersPointer = *ScopedAliasMembersValue
+type ScopedTypedefFieldsValue struct {
+	Value c.Int
+}
+type ScopedTypedefFieldsPointer = *ScopedTypedefFieldsValue
+type ScopedTypedefMembersValue struct {
+	Value c.Int
+}
+type ScopedTypedefMembersPointer = *ScopedTypedefMembersValue
+type ScopedEnumFieldsKind c.Uint
+
+const ScopedEnumFieldsKind_Value ScopedEnumFieldsKind = 1
+
+type ScopedEnumMembersKind c.Uint
+
+const ScopedEnumMembersKind_Value ScopedEnumMembersKind = 1
 
 func (p *TaggedUnion) XGof_ref_integer() *c.Int {
 	return (*c.Int)(unsafe.Pointer(p))
@@ -235,4 +347,58 @@ func (p *InlineEnumMembers) XGof_ref_b() **InlineEnumMembersInlineEnumMembersTyp
 }
 func (p *InlineEnumMembers) XGof_ref_c() *[2]InlineEnumMembersInlineEnumMembersType {
 	return (*[2]InlineEnumMembersInlineEnumMembersType)(unsafe.Pointer(p))
+}
+func (p *StructTypedefMembers) XGof_ref_a() *StructValue {
+	return (*StructValue)(unsafe.Pointer(p))
+}
+func (p *StructTypedefMembers) XGof_ref_b() *StructPointer {
+	return (*StructPointer)(unsafe.Pointer(p))
+}
+func (p *StructTypedefMembers) XGof_ref_c() *StructArray {
+	return (*StructArray)(unsafe.Pointer(p))
+}
+func (p *UnionValue) XGof_ref_integer() *c.Int {
+	return (*c.Int)(unsafe.Pointer(p))
+}
+func (p *UnionValue) XGof_ref_decimal() *c.Double {
+	return (*c.Double)(unsafe.Pointer(p))
+}
+func (p *UnionTypedefMembers) XGof_ref_a() *UnionValue {
+	return (*UnionValue)(unsafe.Pointer(p))
+}
+func (p *UnionTypedefMembers) XGof_ref_b() *UnionPointer {
+	return (*UnionPointer)(unsafe.Pointer(p))
+}
+func (p *UnionTypedefMembers) XGof_ref_c() *UnionArray {
+	return (*UnionArray)(unsafe.Pointer(p))
+}
+func (p *EnumTypedefMembers) XGof_ref_a() *EnumValue {
+	return (*EnumValue)(unsafe.Pointer(p))
+}
+func (p *EnumTypedefMembers) XGof_ref_b() *EnumPointer {
+	return (*EnumPointer)(unsafe.Pointer(p))
+}
+func (p *EnumTypedefMembers) XGof_ref_c() *EnumArray {
+	return (*EnumArray)(unsafe.Pointer(p))
+}
+func (p *ScopedAliasMembers) XGof_ref_a() *ScopedAliasMembersValue {
+	return (*ScopedAliasMembersValue)(unsafe.Pointer(p))
+}
+func (p *ScopedAliasMembers) XGof_ref_b() *ScopedAliasMembersPointer {
+	return (*ScopedAliasMembersPointer)(unsafe.Pointer(p))
+}
+func (p *ScopedAliasMembers) XGof_ref_c() *[2]ScopedAliasMembersValue {
+	return (*[2]ScopedAliasMembersValue)(unsafe.Pointer(p))
+}
+func (p *ScopedTypedefMembers) XGof_ref_a() *ScopedTypedefMembersValue {
+	return (*ScopedTypedefMembersValue)(unsafe.Pointer(p))
+}
+func (p *ScopedTypedefMembers) XGof_ref_b() *ScopedTypedefMembersPointer {
+	return (*ScopedTypedefMembersPointer)(unsafe.Pointer(p))
+}
+func (p *ScopedEnumMembers) XGof_ref_a() *ScopedEnumMembersKind {
+	return (*ScopedEnumMembersKind)(unsafe.Pointer(p))
+}
+func (p *ScopedEnumMembers) XGof_ref_b() *ScopedEnumMembersKind {
+	return (*ScopedEnumMembersKind)(unsafe.Pointer(p))
 }
