@@ -355,7 +355,8 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 	typdecls := make(map[string]typDecl)
 	ctx := &pkgCtx{
 		overloads: make(map[string]*overloads), pkg: pkg, cb: pkg.CB(),
-		llgo: llgo, fset: pkg.Fset, lang: conf.Language, failFast: conf.FailFast,
+		anonTypes: make(map[lc.Type]*types.Named),
+		llgo:      llgo, fset: pkg.Fset, lang: conf.Language, failFast: conf.FailFast,
 		stdRecvName: conf.UseStdRecvName, wrapFileHeader: conf.WrapFileHeader,
 		cflags: conf.CFlags, forceCamelCase: conf.ForceCamelCase,
 		typeAbbr: typeAbbr, methodPrefix: conf.MethodPrefix, methods: conf.Method,
