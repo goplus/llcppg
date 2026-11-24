@@ -1,22 +1,22 @@
-package tool
+package merge
 
 import (
 	"go/ast"
 	"go/doc/comment"
+	"iter"
 	"reflect"
 	"slices"
 	"strings"
 	"unicode"
 )
 
+// commentgroup splits a doc comment into documentation and directives, such as //go:linkname.
 type commentgroup struct {
 	doc        []*ast.Comment
-	line       *ast.CommentGroup
 	directives []string
 }
 
-func (g *commentgroup) load(doc, lineComment *ast.CommentGroup) {
-	*g = commentgroup{line: lineComment}
+func parseComments(doc *ast.CommentGroup) (g commentgroup) {
 	if doc == nil {
 		return
 	}
@@ -48,10 +48,43 @@ func (g *commentgroup) load(doc, lineComment *ast.CommentGroup) {
 	for len(g.doc) > 0 && strings.TrimSpace(g.doc[len(g.doc)-1].Text) == "//" {
 		g.doc = g.doc[:len(g.doc)-1]
 	}
+	return
 }
 
-func (g commentgroup) equalDirectives(other commentgroup) bool {
-	return slices.Equal(g.directives, other.directives)
+// commonDoc reduces doc to the leading paragraphs it shares with others, keeping its directives.
+func commonDoc(doc *ast.CommentGroup, others iter.Seq[*ast.CommentGroup]) *ast.CommentGroup {
+	g := parseComments(doc)
+	original := g
+	for other := range others {
+		if len(g.doc) == 0 {
+			break
+		}
+		g.intersect(parseComments(other))
+	}
+	if g.equalDoc(original) {
+		return doc
+	}
+	return g.withDirectives(doc)
+}
+
+// commonLine returns line if all others have the same line comment, and nil otherwise.
+func commonLine(line *ast.CommentGroup, others iter.Seq[*ast.CommentGroup]) *ast.CommentGroup {
+	for other := range others {
+		if !equalLineComments(line, other) {
+			return nil
+		}
+	}
+	return line
+}
+
+func specComments(spec ast.Spec) (doc, line *ast.CommentGroup) {
+	switch spec := spec.(type) {
+	case *ast.TypeSpec:
+		return spec.Doc, spec.Comment
+	case *ast.ValueSpec:
+		return spec.Doc, spec.Comment
+	}
+	return nil, nil
 }
 
 func (g commentgroup) equalDoc(other commentgroup) bool {
@@ -70,9 +103,6 @@ func equalLineComments(a, b *ast.CommentGroup) bool {
 }
 
 func (g *commentgroup) intersect(other commentgroup) {
-	if g.line != nil && !equalLineComments(g.line, other.line) {
-		g.line = nil
-	}
 	if len(g.doc) == 0 || g.equalDoc(other) {
 		return
 	}

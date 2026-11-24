@@ -1,4 +1,4 @@
-package tool
+package merge
 
 import (
 	"bytes"
@@ -15,6 +15,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goplus/llcppg/tool"
 	"github.com/qiniu/x/test"
 )
 
@@ -73,7 +74,7 @@ func TestMergeGolden(t *testing.T) {
 				for i, path := range paths {
 					paths[i] = filepath.Base(path)
 				}
-				files, err := LoadGoFiles(fset, platformDir, paths, parser.ParseComments)
+				files, err := tool.LoadGoFiles(fset, platformDir, paths, parser.ParseComments)
 				if err != nil {
 					t.Fatal(err)
 				}

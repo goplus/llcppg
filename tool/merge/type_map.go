@@ -1,8 +1,8 @@
 // Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
-// license that can be found in tool/internal/astutil/LICENSE.
+// license that can be found in tool/merge/internal/astutil/LICENSE.
 
-package tool
+package merge
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"go/token"
 	"hash/maphash"
 
-	"github.com/goplus/llcppg/tool/internal/astutil"
+	"github.com/goplus/llcppg/tool/merge/internal/astutil"
 )
 
 // astMap is a hash table that maps structurally equal AST nodes to arbitrary values.

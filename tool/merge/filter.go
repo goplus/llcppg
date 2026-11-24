@@ -4,7 +4,7 @@
 
 // From golang.org/x/sys/unix/internal/mkmerge at v0.47.0.
 
-package tool
+package merge
 
 import "go/ast"
 
