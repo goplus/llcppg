@@ -80,12 +80,22 @@ func TestMergeGolden(t *testing.T) {
 				}
 				pkgs = append(pkgs, &PlatformPackage{Tags: strings.Split(platform.Name(), "-"), Files: files})
 			}
-			merged, err := Merge(pkgs)
-			if err != nil {
+			outDir := filepath.Join(dir, "out")
+			merged, mergeErr := Merge(pkgs)
+			if expected, err := os.ReadFile(filepath.Join(outDir, "error")); err == nil {
+				// Duplicate diagnostics may list a.go and b.go in either order.
+				want := strings.TrimSpace(string(expected))
+				if want == "" || mergeErr == nil || !strings.Contains(mergeErr.Error(), want) {
+					t.Fatalf("Merge error = %v, want an error containing %q", mergeErr, want)
+				}
+				return
+			} else if !os.IsNotExist(err) {
 				t.Fatal(err)
 			}
+			if mergeErr != nil {
+				t.Fatal(mergeErr)
+			}
 
-			outDir := filepath.Join(dir, "out")
 			for _, name := range slices.Sorted(maps.Keys(merged)) {
 				golden := filepath.Join(outDir, strings.TrimSuffix(name, ".go")+".merge.go")
 				want, err := os.ReadFile(golden)
@@ -109,5 +119,61 @@ func TestMergeGolden(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestMergeInvalidInput(t *testing.T) {
+	linux := []string{"linux", "amd64"}
+	tests := []struct {
+		name      string
+		packages  []*PlatformPackage
+		wantError string
+	}{
+		{"duplicate_platform", []*PlatformPackage{{Tags: linux}, {Tags: linux}}, `duplicate platform "linux-amd64"`},
+		{"missing_package_name", []*PlatformPackage{{
+			Tags:  linux,
+			Files: map[string]*ast.File{"input.go": {}},
+		}}, `missing package name in "input.go"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Merge(tt.packages)
+			if err == nil || !strings.Contains(err.Error(), tt.wantError) {
+				t.Fatalf("Merge error = %v, want an error containing %q", err, tt.wantError)
+			}
+		})
+	}
+}
+
+func TestMergeKeepsOrderWithoutFileStart(t *testing.T) {
+	// gogen's ASTFile omits FileStart, so a positioned First stays before an unpositioned Second.
+	file := &ast.File{
+		Name: ast.NewIdent("example"),
+		Decls: []ast.Decl{
+			&ast.FuncDecl{Name: ast.NewIdent("First"), Type: &ast.FuncType{Func: 10, Params: &ast.FieldList{}}},
+			&ast.FuncDecl{Name: ast.NewIdent("Second"), Type: &ast.FuncType{Params: &ast.FieldList{}}},
+		},
+	}
+	merged, err := Merge([]*PlatformPackage{{
+		Tags:  []string{"linux", "amd64"},
+		Files: map[string]*ast.File{"input.go": file},
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := merged["input.go"]
+	if out == nil {
+		t.Fatal("missing merged input.go")
+	}
+	var names []string
+	for _, decl := range out.Decls {
+		fn, ok := decl.(*ast.FuncDecl)
+		if !ok {
+			t.Fatalf("unexpected declaration %T", decl)
+		}
+		names = append(names, fn.Name.Name)
+	}
+	if want := []string{"First", "Second"}; !slices.Equal(names, want) {
+		t.Fatalf("declaration order = %v, want %v", names, want)
 	}
 }

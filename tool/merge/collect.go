@@ -50,15 +50,15 @@ func (p *mergeIndex) collectTypes(decl *ast.GenDecl, ref declRef, imports map[st
 	}
 }
 
-// collectValues groups each name separately, but the shared initializer
-// stays in the source spec, as in var A, B = pair().
+// collectValues groups each spec once so var A, B = pair() is emitted once.
+// The first name, A, indexes the whole spec.
 func (p *mergeIndex) collectValues(decl *ast.GenDecl, ref declRef, imports map[string]importPath) {
 	for i, spec := range decl.Specs {
 		ref.specIndex = i
 		value := spec.(*ast.ValueSpec)
 		p.collectImportRefs(value, nil, imports)
-		for _, name := range value.Names {
-			p.collectValue(name.Name, decl, ref)
+		if len(value.Names) != 0 {
+			p.collectValue(value.Names[0].Name, decl, ref)
 		}
 	}
 }

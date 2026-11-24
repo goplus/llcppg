@@ -66,10 +66,10 @@ func (p *mergeIndex) replaced(ref declRef) bool {
 			refs, ok := p.types.at(decl.Specs[ref.specIndex]).(*[]declRef)
 			return ok && p.shared(*refs) && slices.Contains(*refs, ref)
 		case token.VAR, token.CONST:
-			for _, name := range decl.Specs[ref.specIndex].(*ast.ValueSpec).Names {
-				if refs := p.values[name.Name]; p.shared(refs) && slices.Contains(refs, ref) {
-					return true
-				}
+			names := decl.Specs[ref.specIndex].(*ast.ValueSpec).Names
+			if len(names) != 0 {
+				refs := p.values[names[0].Name]
+				return p.shared(refs) && slices.Contains(refs, ref)
 			}
 		}
 	}

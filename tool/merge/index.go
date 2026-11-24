@@ -11,7 +11,7 @@ type mergeIndex struct {
 	files      files
 	types      astMap                    // type spec => *[]declRef
 	symbols    map[string][][]declRef    // function key, such as T.M => groups of equal signatures
-	values     map[string][]declRef      // const or var name => declarations
+	values     map[string][]declRef      // first name of a const or var spec => declarations
 	importRefs map[*ast.Ident]importPath // package qualifier => import path
 }
 
