@@ -26,9 +26,10 @@ import (
 )
 
 var (
-	verbose  = flag.Bool("v", false, "enable verbose output")
-	debug    = flag.Bool("debug", false, "enable debug output")
-	initRepo = flag.Bool("init", false, "bootstrap a new binding repository from the template; the module name is taken from the optional argument, or inferred from the current directory name")
+	verbose   = flag.Bool("v", false, "enable verbose output")
+	debug     = flag.Bool("debug", false, "enable debug output")
+	initRepo  = flag.Bool("init", false, "bootstrap a new binding repository from the template; the module name is taken from the optional argument, or inferred from the current directory name")
+	mergeMode = flag.Bool("merge", false, "merge generated per-platform Go packages")
 
 	docMode     = flag.Bool("doc", false, "serve the documentation of the Go package in the current directory and open it in a browser")
 	docHTTP     = flag.String("http", docserver.DefaultAddr, "listen address for -doc (loopback only unless an explicit non-loopback host is given)")
@@ -40,6 +41,7 @@ var (
 const (
 	cmdDoc = 1 << iota
 	cmdInit
+	cmdMerge
 	cmdGen = 0
 )
 
@@ -49,6 +51,9 @@ func getCmd() (cmd int) {
 	}
 	if *initRepo {
 		cmd |= cmdInit
+	}
+	if *mergeMode {
+		cmd |= cmdMerge
 	}
 	return
 }
@@ -63,6 +68,8 @@ func main() {
 		runDoc()
 	case cmdInit:
 		runInit()
+	case cmdMerge:
+		runMerge()
 	default:
 		help()
 		os.Exit(1)
@@ -71,6 +78,7 @@ func main() {
 
 func help() {
 	fmt.Println("usage: llcppg [-v -debug] [-d NAME=VALUE ...] <dest-gopkg-dir> [<src-header-files-and-cfg-dir>]")
+	fmt.Println("       llcppg -merge <dest-gopkg-dir> [<src-platform-packages-dir>]")
 	fmt.Println("       llcppg -init [<module-name>]")
 	fmt.Println("       llcppg -doc [-http addr] [-open=false] [-all] [-autoexit=false]")
 }
