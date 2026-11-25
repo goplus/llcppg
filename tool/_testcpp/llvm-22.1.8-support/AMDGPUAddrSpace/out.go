@@ -37,7 +37,7 @@ const (
 	AMDGPUAS_CONSTANT_BUFFER_14 = 22
 	AMDGPUAS_CONSTANT_BUFFER_15 = 23
 	// Some places use this if the address space can't be determined.
-	AMDGPUAS_UNKNOWN_ADDRESS_SPACE = -1
+	AMDGPUAS_UNKNOWN_ADDRESS_SPACE = 4294967295
 )
 const (
 	AMDGPU_DWARFAS_GLOBAL       = 0

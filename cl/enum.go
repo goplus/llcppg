@@ -17,6 +17,7 @@
 package cl
 
 import (
+	"go/constant"
 	"go/types"
 
 	"github.com/goplus/gogen"
@@ -81,10 +82,11 @@ func emitEnum(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
 func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
 	pkg := ctx.pkg
 	pkgTypes := pkg.Types
+	typ := decl.EnumDeclIntegerType()
+	kind := typ.Canonical().Kind
 
 	if typDecl.defs != nil {
 		feats := 0
-		typ := decl.EnumDeclIntegerType()
 		underType := toTypeEx(ctx, pkgTypes, typ, flagIsTypeDef, &feats, nil)
 		if feats&featAllIgnore != 0 {
 			ctx.panicf(decl, "enum %s: unsupported underlying type %s (%d: %s)", cNameOf(decl), cTypeName(typ), typ.Kind, clang.String(typ))
@@ -113,7 +115,16 @@ func initEnumvals(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl, ns string) {
 			return clang.Continue
 		}
 		name := ctx.enumvalName(clang.String(item), ns)
-		val := int(item.EnumConstantDeclValue()) // TODO(xsw): use int64 for 64-bit enums?
+		var val any
+		switch kind {
+		case lc.Type_Char_U, lc.Type_UChar, lc.Type_UShort, lc.Type_UInt, lc.Type_ULong, lc.Type_ULongLong:
+			// The signed accessor turns 0xffffffffu into -1. Only values
+			// beyond int64, e.g. 0xffffffffffffffffULL, need big.Int.
+			v := uint64(item.EnumConstantDeclUnsignedValue())
+			val = constant.Val(constant.MakeUint64(v))
+		default:
+			val = int64(item.EnumConstantDeclValue())
+		}
 		at := defs.NewPos()
 		if doc := docCommentGroup(item); doc != nil {
 			at.Doc = doc
