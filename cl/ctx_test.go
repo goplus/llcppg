@@ -71,6 +71,30 @@ func Test_insertObj(t *testing.T) {
 	}
 }
 
+func TestNoLibcReferences(t *testing.T) {
+	ctx := newPkgCtx()
+	for _, tt := range []struct {
+		name string
+		want string
+		call func()
+	}{
+		{"type", "NoLibc: required type c.LongDouble is unavailable", func() { ctx.basicTyp(cLongDouble) }},
+		{"string", "NoLibc: c.Str is unavailable", func() { ctx.cStr() }},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r, ok := recover().(string); !ok || !strings.Contains(r, tt.want) {
+					t.Fatalf("panic = %v, want %q", r, tt.want)
+				}
+			}()
+			tt.call()
+		})
+	}
+	if _, ok := ctx.goNamedTypeObj("c.Int", nil); ok || ctx.errCnt != 1 {
+		t.Fatalf("c.Int lookup: ok = %v, errors = %d", ok, ctx.errCnt)
+	}
+}
+
 func Test_npErrorf(t *testing.T) {
 	defer func() {
 		if e := recover(); e == nil {

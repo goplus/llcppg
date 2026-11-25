@@ -135,14 +135,22 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 	}
 	nDeps := len(pkgPaths)
 	for _, stdlibDir := range stdlibDirs {
-		pkgPaths = append(pkgPaths, stdlibPkgPath)
+		if !cfg.NoLibc {
+			pkgPaths = append(pkgPaths, stdlibPkgPath)
+		}
 		incDirs = append(incDirs, stdlibDir)
 	}
 
 	imp := packages.NewImporter(fset, workDir)
 
 	c := cache.New(pkgHash)
-	c.Prepare(workDir, pkgPaths[1:nDeps+1]...)
+	nImports := nDeps
+	if !cfg.NoLibc {
+		nImports++
+	}
+	if nImports > 1 {
+		c.Prepare(workDir, pkgPaths[1:nImports]...)
+	}
 	imp.SetCache(c)
 
 	dir, recursive, platformDir, err := cfg.srcDir(workDir)
@@ -188,6 +196,11 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 		return
 	}
 	defer DisposeSources(files)
+
+	if cfg.NoLibc {
+		// Headers such as <stddef.h> remain available to Clang, without an implicit Go package.
+		incDirs = incDirs[:nDeps]
+	}
 
 	groupSubdirBy := groupSubdirByNone
 	switch cfg.GroupSubdirBy {
@@ -244,6 +257,7 @@ func (cfg *Config) NewPackage(pkgPath, pkgName, destDir, workDir string, index c
 		FailFast:          cfg.FailFast,
 		UseStdRecvName:    true,
 		LoadLibcPubFile:   true,
+		NoLibc:            cfg.NoLibc,
 		NameLookup:        nil,
 		PubFileLookup:     mod.PubFileLookup,
 		PackageOf: func(headerFile string) (pkgPath string, ok bool) {

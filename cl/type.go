@@ -157,6 +157,9 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	case lc.Type_Void:
 		return tyVoid
 	case lc.Type_Char_S:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cChar, typ)
+		}
 		return ctx.basicTyp(cChar)
 	case lc.Type_SChar:
 		return types.Typ[types.Int8]
@@ -167,20 +170,44 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 	case lc.Type_UShort:
 		return types.Typ[types.Uint16]
 	case lc.Type_Int:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cInt, typ)
+		}
 		return ctx.basicTyp(cInt)
 	case lc.Type_UInt:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cUint, typ)
+		}
 		return ctx.basicTyp(cUint)
 	case lc.Type_Long:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cLong, typ)
+		}
 		return ctx.basicTyp(cLong)
 	case lc.Type_ULong:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cUlong, typ)
+		}
 		return ctx.basicTyp(cUlong)
 	case lc.Type_LongLong:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cLongLong, typ)
+		}
 		return ctx.basicTyp(cLongLong)
 	case lc.Type_ULongLong:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cUlongLong, typ)
+		}
 		return ctx.basicTyp(cUlongLong)
 	case lc.Type_Float:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cFloat, typ)
+		}
 		return ctx.basicTyp(cFloat)
 	case lc.Type_Double:
+		if ctx.c.Types == nil {
+			return defaultBasicTyp(ctx, cDouble, typ)
+		}
 		return ctx.basicTyp(cDouble)
 	case lc.Type_Pointer:
 		elem := typ.Pointee()
@@ -452,6 +479,43 @@ var ctypBasic = [cBasicMax]string{
 	cLongDouble: "LongDouble",
 	cFloat16:    "Float16",
 	cWcharT:     "WcharT",
+}
+
+func defaultBasicTyp(ctx *pkgCtx, kind basicKind, ct lc.Type) types.Type {
+	// NoLibc uses the target's primitive types, e.g. long is int32 on Windows and int64 on LP64 targets.
+	switch kind {
+	case cChar, cInt, cLong, cLongLong:
+		switch ct.SizeOf() {
+		case 1:
+			return types.Typ[types.Int8]
+		case 2:
+			return types.Typ[types.Int16]
+		case 4:
+			return types.Typ[types.Int32]
+		case 8:
+			return types.Typ[types.Int64]
+		}
+	case cUint, cUlong, cUlongLong:
+		switch ct.SizeOf() {
+		case 1:
+			return types.Typ[types.Uint8]
+		case 2:
+			return types.Typ[types.Uint16]
+		case 4:
+			return types.Typ[types.Uint32]
+		case 8:
+			return types.Typ[types.Uint64]
+		}
+	case cFloat, cDouble:
+		switch ct.SizeOf() {
+		case 4:
+			return types.Typ[types.Float32]
+		case 8:
+			return types.Typ[types.Float64]
+		}
+	}
+	ctx.panicf(ct.Declaration(), "NoLibc: required type c.%s is unavailable", ctypBasic[kind])
+	return nil
 }
 
 // -----------------------------------------------------------------------------

@@ -70,6 +70,9 @@ type Config struct {
 	// dependencies (module paths), optional
 	Deps []string `json:"Deps"`
 
+	// NoLibc uses concrete Go types (e.g. int32) instead of implicitly loading lib/c.
+	NoLibc bool `json:"NoLibc"`
+
 	// Class specifies a list of C/C++ typedef names to be treated as classes (optional).
 	Class []string `json:"Class"`
 

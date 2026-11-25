@@ -282,6 +282,9 @@ type Config struct {
 	// as-is.
 	ForceCamelCase bool
 
+	// NoLibc uses concrete Go types (e.g. int32) instead of implicitly loading lib/c.
+	NoLibc bool
+
 	// LoadLibcPubFile specifies whether to load the pubFile for libc package (optional).
 	LoadLibcPubFile bool
 
@@ -381,7 +384,9 @@ func NewPackage(pkgPath, pkgName string, files []Source, conf *Config) (ret Pack
 		},
 	}
 
-	if conf.LoadLibcPubFile {
+	if conf.NoLibc {
+		ctx.ctyp[cVoid] = types.NewArray(types.Universe.Lookup("byte").Type(), 0)
+	} else if conf.LoadLibcPubFile {
 		ctx.c.Types = ctx.loadPkg(libcPkgPath)
 		// Consumers load these pub mappings automatically before importing
 		// dependencies, so they need no generated D entries.

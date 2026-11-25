@@ -400,6 +400,9 @@ func doCompile(p *pkgCtx, pcompiles *[]compileUnit) {
 
 func (p *pkgCtx) cStr() types.Object {
 	if p.cStr_ == nil {
+		if p.c.Types == nil {
+			p.panicf(lc.GetNullCursor(), "NoLibc: c.Str is unavailable")
+		}
 		p.cStr_ = p.c.Ref("Str")
 	}
 	return p.cStr_
@@ -433,6 +436,9 @@ func (p *pkgCtx) any() types.Type {
 func (p *pkgCtx) basicTyp(kind basicKind) types.Type {
 	typ := p.ctyp[kind]
 	if typ == nil {
+		if p.c.Types == nil {
+			p.panicf(lc.GetNullCursor(), "NoLibc: required type c.%s is unavailable", ctypBasic[kind])
+		}
 		typ = p.c.Ref(ctypBasic[kind]).Type()
 	}
 	return typ
@@ -511,6 +517,10 @@ func (p *pkgCtx) goNamedTypeObj(typName string, at *scopeCtx) (ret *types.TypeNa
 			pkg = p.pkg.Types
 		case "c":
 			pkg = p.c.Types
+			if pkg == nil {
+				p.npErrorf("NoLibc: cannot resolve %s", typName)
+				return
+			}
 		default:
 			pkg = p.pkg.TryImport(pkgPath).Types
 			if pkg == nil {

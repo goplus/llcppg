@@ -1,0 +1,1 @@
+#define PROBE_INT_TYPE __INT32_TYPE__
