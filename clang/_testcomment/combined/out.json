@@ -1,0 +1,17 @@
+[
+	{
+		"name": "LIMIT",
+		"preceding": "/** A macro's leading documentation. */",
+		"inline": "// Its inline documentation."
+	},
+	{
+		"name": "value",
+		"preceding": "// A variable's leading documentation.",
+		"inline": "// Its inline documentation."
+	},
+	{
+		"name": "run",
+		"preceding": "// A function's leading documentation.",
+		"inline": "/* Its inline documentation. */"
+	}
+]

@@ -46,11 +46,16 @@ const (
 
 //llgo:cdecl
 type MemAllocatorEx struct {
-	Ctx     unsafe.Pointer
-	Malloc  func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.SizeT) unsafe.Pointer
-	Calloc  func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.SizeT, _llcppg_param3 c.SizeT) unsafe.Pointer
+	// user context passed as the first argument to the 4 functions
+	Ctx unsafe.Pointer
+	// allocate a memory block
+	Malloc func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.SizeT) unsafe.Pointer
+	// allocate a memory block initialized by zeros
+	Calloc func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 c.SizeT, _llcppg_param3 c.SizeT) unsafe.Pointer
+	// allocate or resize a memory block
 	Realloc func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 unsafe.Pointer, _llcppg_param3 c.SizeT) unsafe.Pointer
-	Free    func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 unsafe.Pointer)
+	// release a memory block
+	Free func(_llcppg_param1 unsafe.Pointer, _llcppg_param2 unsafe.Pointer)
 }
 
 // When Py_LIMITED_API is not defined, the type layout of Py_tss_t is

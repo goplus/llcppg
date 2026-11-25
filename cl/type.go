@@ -191,6 +191,12 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		// it before recursing so inner arrays are not wrongly decayed.
 		pointee := toTypeEx(ctx, pkg, elem, flagIsTypeDef, feats, scope)
 		*feats &^= featUncompleted // NOTE(xsw): a pointer is considered complete
+		// The function address is already represented by c.Pointer:
+		//
+		//	int (*)() -> c.Pointer; int (**)() -> *c.Pointer
+		if elem.Canonical().Kind == lc.Type_FunctionNoProto && types.Identical(pointee, ctx.cPointer()) {
+			return pointee
+		}
 		return newPointer(ctx, pointee)
 	case lc.Type_LValueReference, lc.Type_RValueReference: // TODO(xsw): check RVRef is a pointer
 		elem := typ.NonReference()
@@ -199,6 +205,8 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		return newPointer(ctx, pointee)
 	case lc.Type_FunctionProto:
 		return toFuncType(ctx, pkg, typ, feats)
+	case lc.Type_FunctionNoProto:
+		return ctx.cPointer()
 	case lc.Type_Enum, lc.Type_Record, lc.Type_Typedef:
 		if t, ok := namedType(ctx, typ, feats); ok {
 			return t
