@@ -309,10 +309,8 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, cName stri
 		} else {
 			fldGoName = ctx.fieldName(origName, isPublic(decl))
 			ft := decl.Type()
-			if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 {
+			if ftd := ft.Declaration(); ftd.IsAnonymous() != 0 && ftd.Kind != lc.Cursor_UnionDecl {
 				switch {
-				case ftd.Kind == lc.Cursor_UnionDecl:
-					fldType = toType(ctx, pkg, ft, flagIsVarDef, this.scope())
 				case ft.Kind == lc.Type_Record:
 					var ok bool
 					fldType, ok = emitClass(ctx, ftd, ctx.nextAnonName(), this.scope())
@@ -401,7 +399,10 @@ func loadClassMember(ctx *pkgCtx, pkg *types.Package, this *classCtx, cName stri
 	case lc.Cursor_UnionDecl:
 		switch {
 		case decl.IsAnonymousRecordDecl() != 0:
-			hoisted := emitUnion(ctx, decl, ctx.nextAnonName())
+			hoisted := emitUnion(ctx, decl, ctx.nextAnonName(), feats)
+			if *feats&featAllIgnore != 0 {
+				return
+			}
 			fld := types.NewField(goNodePos(ctx, decl), pkg, hoisted.Obj().Name(), hoisted, true)
 			this.fields = append(this.fields, fld)
 		case decl.IsAnonymous() != 0:

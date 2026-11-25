@@ -208,7 +208,7 @@ func toTypeEx(ctx *pkgCtx, pkg *types.Package, typ lc.Type, flags int, feats *in
 		if decl := typ.Declaration(); decl.IsAnonymous() != 0 && *feats&featAllIgnore == 0 {
 			switch decl.Kind {
 			case lc.Cursor_UnionDecl:
-				return emitUnion(ctx, decl, ctx.nextAnonName())
+				return emitUnion(ctx, decl, ctx.nextAnonName(), feats)
 			case lc.Cursor_StructDecl:
 				if t, ok := emitClass(ctx, decl, ctx.nextAnonName(), scope); ok {
 					return t
