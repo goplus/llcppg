@@ -320,6 +320,39 @@ func TestNoLibc(t *testing.T) {
 	testFromDir(t, "", "./_testc/no_libc", false)
 }
 
+func TestNoLibcAVR(t *testing.T) {
+	const dir = "./_testc/no_libc"
+	header, err := filepath.Abs(dir + "/include/stdint.h")
+	if err != nil {
+		t.Fatal(err)
+	}
+	idx := clang.CreateIndex(1, 1)
+	defer idx.Dispose()
+	flags := append(tool.ParseFlags(nil, "c", ""), "-target", "avr", "-mmcu=atmega328p")
+	u, err := idx.ParseTranslationUnit(clang.DetailedPreprocessingRecord, header, flags...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer u.Dispose()
+
+	pkg, err := cl.NewPackage("", "example", []cl.Source{u}, &cl.Config{
+		Language:      cl.LanguageC,
+		NoLibc:        true,
+		DefaultGoFile: "stdint.go",
+		PackageOf: func(at string) (string, bool) {
+			return "", at == header
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	exp, err := os.ReadFile(dir + "/stdint.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	testGenGo(t, pkg.Package, dir, "stdint.go", exp)
+}
+
 func TestZlib(t *testing.T) {
 	testFromDir(t, "", "./_testc/zlib-1.3.2", false)
 }
