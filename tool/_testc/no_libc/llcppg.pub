@@ -1,0 +1,24 @@
+D testcl/no_libc/dep
+T Char Char
+T ConfiguredInt ConfiguredInt
+T Double Double
+T External External
+T Float Float
+T Int Int
+T Long Long
+T LongLong LongLong
+T Sample Sample
+T Status Status
+T Uint Uint
+T Ulong Ulong
+T UlongLong UlongLong
+T Void Void
+T int16_t Int16T
+T int32_t Int32T
+T int64_t Int64T
+T int8_t Int8T
+T probe_int_t ProbeIntT
+T uint16_t Uint16T
+T uint32_t Uint32T
+T uint64_t Uint64T
+T uint8_t Uint8T

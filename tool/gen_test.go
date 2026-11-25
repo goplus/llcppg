@@ -316,6 +316,10 @@ var langExts = [...]string{
 	cl.LanguageCXX: ".cpp",
 }
 
+func TestNoLibc(t *testing.T) {
+	testFromDir(t, "", "./_testc/no_libc", false)
+}
+
 func TestZlib(t *testing.T) {
 	testFromDir(t, "", "./_testc/zlib-1.3.2", false)
 }
