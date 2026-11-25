@@ -1,0 +1,1 @@
+typedef __builtin_va_list unconfigured_va_list;
