@@ -148,6 +148,31 @@ func docCommentGroup(decl clang.Cursor) *ast.CommentGroup {
 	return doDocCommentGroup(docComments(decl))
 }
 
+type fieldComment struct {
+	doc  *ast.CommentGroup
+	line *ast.CommentGroup
+}
+
+func lineCommentGroup(decl clang.Cursor) (ret fieldComment) {
+	raw := clang.RawCommentsOf(decl)
+	docs := toLineComments(raw.Preceding)
+	lines := toLineComments(raw.Inline)
+	// gogen v1.26.7 can join fields after a block comment:
+	//
+	//	X int /* note */Y int
+	if len(lines) > 1 {
+		docs = append(docs, lines...)
+		lines = nil
+	}
+	if len(docs) != 0 {
+		ret.doc = &ast.CommentGroup{List: docs}
+	}
+	if len(lines) != 0 {
+		ret.line = &ast.CommentGroup{List: lines}
+	}
+	return
+}
+
 func doDocCommentGroup(comments []*ast.Comment) *ast.CommentGroup {
 	if len(comments) == 0 {
 		return nil

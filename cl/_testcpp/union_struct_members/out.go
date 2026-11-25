@@ -7,9 +7,12 @@ import (
 
 const XGoPackage = true
 
+// Anonymous member structs keep their own field offsets inside shared storage.
 type Members struct {
 	_xgo_union [4]uint64
 }
+
+// The inner union follows kind at its aligned offset, not at the outer base.
 type StructUnion struct {
 	_xgo_union [2]uint64
 }
@@ -19,6 +22,8 @@ type Token struct {
 	Type c.Int
 	Data _llcppg_anon_0
 }
+
+// Each named member preserves a level of the access path.
 type Nested struct {
 	_xgo_union [4]uint32
 }

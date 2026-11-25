@@ -12,12 +12,16 @@ type Packet struct {
 	Kind c.Int
 	Data _llcppg_anon_0
 }
+
+// Fieldless union levels promote members without adding storage.
 type Anonymous struct {
 	_xgo_union [1]uint32
 }
 type Recursive struct {
 	_xgo_union [1]uint32
 }
+
+// Promotion stops at an actual named member.
 type Mixed struct {
 	_xgo_union [1]uint32
 }
@@ -27,6 +31,8 @@ type Envelope struct {
 	Kind c.Int
 	_llcppg_anon_1
 }
+
+// Existing named unions and typedefs keep their types.
 type Tagged struct {
 	_xgo_union [1]uint32
 }

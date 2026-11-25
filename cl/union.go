@@ -18,6 +18,7 @@ package cl
 
 import (
 	"fmt"
+	"go/ast"
 	"go/token"
 	"go/types"
 	"sort"
@@ -79,6 +80,9 @@ func emitUnion(ctx *pkgCtx, decl clang.Cursor, goName string) *types.Named {
 }
 
 func initUnionType(ctx *pkgCtx, decl clang.Cursor, typDecl typDecl) {
+	if doc := docCommentGroup(decl); doc != nil {
+		typDecl.defs.SetComments(doc)
+	}
 	pkg := ctx.pkg
 	typ := decl.Type()
 	storage, ok := unionStorageType(typ)
@@ -283,6 +287,15 @@ func genUnionAccessor(ctx *pkgCtx, recvPtr types.Type, m clang.Cursor) {
 	if err != nil {
 		ctx.panicf(m, "union field %s: genUnionAccessor failed - %v", member, err)
 	}
+	comments := lineCommentGroup(m)
+	var doc []*ast.Comment
+	if comments.doc != nil {
+		doc = comments.doc.List
+	}
+	if comments.line != nil {
+		doc = append(doc, comments.line.List...)
+	}
+	f.SetComments(pkg, doDocCommentGroup(doc))
 	cb := f.BodyStart(pkg)
 	// return (*T)(unsafe.Pointer(p))
 	cb.Typ(retType).
@@ -326,6 +339,15 @@ func genUnionNestedStructAccessor(ctx *pkgCtx, recvPtr types.Type, structTyp typ
 	if err != nil {
 		ctx.panicf(m, "union field %s: genUnionNestedStructAccessor failed - %v", member, err)
 	}
+	comments := lineCommentGroup(m)
+	var doc []*ast.Comment
+	if comments.doc != nil {
+		doc = comments.doc.List
+	}
+	if comments.line != nil {
+		doc = append(doc, comments.line.List...)
+	}
+	f.SetComments(pkg, doDocCommentGroup(doc))
 	cb := f.BodyStart(pkg)
 	cb.Typ(types.NewPointer(structTyp)).Typ(ctx.unsafePointer()).VarVal("p").Call(1).Call(1)
 	if field {
